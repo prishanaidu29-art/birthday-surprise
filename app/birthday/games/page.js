@@ -827,38 +827,51 @@ function HeartsDistanceGame() {
       setHearts(prevHearts => {
         let newCollectedHearts = []
         let scoreIncrease = 0
+        const processedHeartIds = new Set() // Track hearts processed in this frame
         
         const updatedHearts = prevHearts.map(heart => {
           let updatedHeart = { ...heart, pulse: heart.pulse + 0.1 }
           
-          if (!heart.collected) {
+          // Skip if heart is already collected or already processed this frame
+          if (!heart.collected && !processedHeartIds.has(heart.id)) {
             const distanceSquared = Math.pow(newX - heart.x, 2) + Math.pow(newY - heart.y, 2)
             const distance = Math.sqrt(distanceSquared)
             
             // Magnetic attraction when player is within range
-            const magneticRange = 12 // Range where hearts get attracted
-            const collectionRange = 4 // Range where hearts get collected
+            const magneticRange = 8 // Range where hearts get attracted (reduced for better control)
+            const collectionRange = 2.5 // Range where hearts get collected (much smaller for precise collection)
             
             if (distance <= magneticRange && distance > collectionRange) {
-              // Calculate magnetic pull towards player
-              const pullStrength = 0.8 // How strong the magnetic effect is
+              // Calculate magnetic pull towards player with acceleration effect
+              const pullStrength = Math.max(1.2, 2.5 - (distance / magneticRange * 1.5)) // Stronger pull when closer
               const deltaX = newX - heart.x
               const deltaY = newY - heart.y
               
-              // Move heart towards player
+              // Move heart towards player with some momentum
               const moveX = (deltaX / distance) * pullStrength
               const moveY = (deltaY / distance) * pullStrength
               
               updatedHeart = {
                 ...updatedHeart,
                 x: Math.max(2, Math.min(96, heart.x + moveX)),
-                y: Math.max(2, Math.min(96, heart.y + moveY))
+                y: Math.max(2, Math.min(96, heart.y + moveY)),
+                // Add magnetic state for visual effects
+                isBeingAttracted: true,
+                attractionStrength: Math.min(1, (magneticRange - distance) / magneticRange)
               }
-            } else if (distance <= collectionRange) {
-              // Collect the heart when very close
+            } else if (distance <= collectionRange && !heart.collected) {
+              // Collect the heart when very close to center - only if not already collected
+              processedHeartIds.add(heart.id) // Mark as processed
               newCollectedHearts.push(heart.id)
               scoreIncrease += 100
               return { ...updatedHeart, collected: true }
+            } else {
+              // Clear magnetic state when not in range
+              updatedHeart = {
+                ...updatedHeart,
+                isBeingAttracted: false,
+                attractionStrength: 0
+              }
             }
           }
           return updatedHeart
@@ -1014,6 +1027,7 @@ function HeartsDistanceGame() {
           <h3 className="font-bold text-pink-800 mb-2">How to Play:</h3>
           <div className="text-sm text-pink-700 space-y-1">
             <p>• Use WASD or Arrow keys to move</p>
+            <p>• Hearts are magnetically attracted to you! 🧲✨</p>
             <p>• Collect all 30 hearts floating in space</p>
             <p>• Press Space or Escape to pause/resume</p>
             <p>• Complete within 60 seconds for the best score!</p>
@@ -1154,6 +1168,35 @@ function HeartsDistanceGame() {
               boxShadow: '0 0 20px rgba(236, 72, 153, 0.8)'
             }}
           >
+            {/* Magnetic field visualization - outer range */}
+            <div 
+              className="absolute animate-pulse opacity-20"
+              style={{
+                width: '64px', // 8 units magnetic range (8 * 8px per unit)
+                height: '64px',
+                transform: 'translate(-50%, -50%)',
+                left: '50%',
+                top: '50%'
+              }}
+            >
+              <div className="w-full h-full border-2 border-dashed border-yellow-400 rounded-full"></div>
+            </div>
+            
+            {/* Magnetic field visualization - collection range */}
+            <div 
+              className="absolute animate-pulse opacity-30"
+              style={{
+                width: '20px', // 2.5 units collection range (2.5 * 8px per unit)
+                height: '20px',
+                transform: 'translate(-50%, -50%)',
+                left: '50%',
+                top: '50%',
+                animationDelay: '0.5s'
+              }}
+            >
+              <div className="w-full h-full border border-yellow-300 rounded-full bg-yellow-200/20"></div>
+            </div>
+            
             {/* Player initial "J" for Jerzen */}
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white font-bold text-sm">J</span>
@@ -1165,47 +1208,113 @@ function HeartsDistanceGame() {
           {hearts.map(heart => {
             if (heart.collected) return null;
             
-            // Calculate if heart is in magnetic range for visual effect
-            const distanceToPlayer = Math.sqrt(
-              Math.pow(playerPosition.x - heart.x, 2) + 
-              Math.pow(playerPosition.y - heart.y, 2)
-            )
-            const isInMagneticRange = distanceToPlayer <= 12
+            const isBeingAttracted = heart.isBeingAttracted || false
+            const attractionStrength = heart.attractionStrength || 0
             
             return (
               <div
                 key={heart.id}
-                className="absolute z-10 transition-all duration-200"
+                className={`absolute z-10 transition-all duration-100 ${
+                  isBeingAttracted ? 'animate-pulse' : ''
+                }`}
                 style={{
                   left: `${heart.x}%`,
                   top: `${heart.y}%`,
-                  transform: 'translate(-50%, -50%)',
+                  transform: `translate(-50%, -50%) ${isBeingAttracted ? `scale(${1 + attractionStrength * 0.3})` : 'scale(1)'}`,
                 }}
               >
-                {/* Magnetic glow effect */}
-                {isInMagneticRange && (
-                  <div 
-                    className="absolute inset-0 animate-pulse"
-                    style={{
-                      transform: 'translate(-50%, -50%)',
-                      left: '50%',
-                      top: '50%'
-                    }}
-                  >
-                    <div className="w-12 h-12 bg-yellow-300/30 rounded-full blur-sm"></div>
-                  </div>
+                {/* Multiple magnetic effects */}
+                {isBeingAttracted && (
+                  <>
+                    {/* Outer glow ring */}
+                    <div 
+                      className="absolute animate-ping"
+                      style={{
+                        transform: 'translate(-50%, -50%)',
+                        left: '50%',
+                        top: '50%',
+                        opacity: attractionStrength * 0.8
+                      }}
+                    >
+                      <div 
+                        className="bg-yellow-400/40 rounded-full blur-md"
+                        style={{
+                          width: `${20 + attractionStrength * 15}px`,
+                          height: `${20 + attractionStrength * 15}px`
+                        }}
+                      ></div>
+                    </div>
+                    
+                    {/* Inner intense glow */}
+                    <div 
+                      className="absolute animate-pulse"
+                      style={{
+                        transform: 'translate(-50%, -50%)',
+                        left: '50%',
+                        top: '50%',
+                        opacity: attractionStrength
+                      }}
+                    >
+                      <div 
+                        className="bg-yellow-300/60 rounded-full blur-sm"
+                        style={{
+                          width: `${12 + attractionStrength * 8}px`,
+                          height: `${12 + attractionStrength * 8}px`
+                        }}
+                      ></div>
+                    </div>
+                    
+                    {/* Sparkling particles effect */}
+                    {attractionStrength > 0.5 && (
+                      <>
+                        <div 
+                          className="absolute animate-bounce"
+                          style={{
+                            transform: 'translate(-50%, -50%)',
+                            left: '30%',
+                            top: '30%'
+                          }}
+                        >
+                          <div className="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                        </div>
+                        <div 
+                          className="absolute animate-bounce"
+                          style={{
+                            transform: 'translate(-50%, -50%)',
+                            left: '70%',
+                            top: '70%',
+                            animationDelay: '0.1s'
+                          }}
+                        >
+                          <div className="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                        </div>
+                        <div 
+                          className="absolute animate-bounce"
+                          style={{
+                            transform: 'translate(-50%, -50%)',
+                            left: '70%',
+                            top: '30%',
+                            animationDelay: '0.2s'
+                          }}
+                        >
+                          <div className="w-1 h-1 bg-yellow-400 rounded-full"></div>
+                        </div>
+                      </>
+                    )}
+                  </>
                 )}
                 
                 <Heart 
-                  className={`text-yellow-500 drop-shadow-lg animate-gentle-float ${
-                    isInMagneticRange ? 'animate-pulse' : ''
+                  className={`text-yellow-500 drop-shadow-lg ${
+                    isBeingAttracted ? 'animate-bounce' : 'animate-gentle-float'
                   }`}
-                  size={24 + Math.sin(heart.pulse) * 4 + (isInMagneticRange ? 2 : 0)}
+                  size={24 + Math.sin(heart.pulse) * 4 + (isBeingAttracted ? attractionStrength * 6 : 0)}
                   fill="currentColor"
                   style={{
-                    filter: isInMagneticRange 
-                      ? 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.9))' 
-                      : 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.6))'
+                    filter: isBeingAttracted 
+                      ? `drop-shadow(0 0 ${15 + attractionStrength * 10}px rgba(234, 179, 8, ${0.7 + attractionStrength * 0.3}))` 
+                      : 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.6))',
+                    transform: isBeingAttracted ? `rotate(${Math.sin(heart.pulse * 2) * attractionStrength * 15}deg)` : 'rotate(0deg)'
                   }}
                 />
               </div>
@@ -1298,7 +1407,7 @@ function HeartsDistanceGame() {
           <div className="absolute bottom-4 left-4 right-4 text-center">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 inline-block shadow-lg">
               <p className="text-sm font-medium text-gray-700">
-                Use WASD or Arrow keys • Collect all hearts • Avoid obstacles & monster • Space/Esc to pause!
+                Use WASD or Arrow keys • Hearts are magnetically attracted! 🧲 • Avoid obstacles & monster • Space/Esc to pause!
               </p>
             </div>
           </div>
