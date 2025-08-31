@@ -252,7 +252,7 @@ export default function GamePage() {
         cancelAnimationFrame(animationFrameRef.current)
       }
     }
-  }, [gameStarted, gameWon, gameOver])
+  }, [gameStarted, gameWon, gameOver, obstacles])
 
   // Separate collision detection effect using refs
   useEffect(() => {
