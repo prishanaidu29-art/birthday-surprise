@@ -863,7 +863,7 @@ function HeartsDistanceGame() {
               // Collect the heart when very close to center - only if not already collected
               processedHeartIds.add(heart.id) // Mark as processed
               newCollectedHearts.push(heart.id)
-              scoreIncrease += 100
+              scoreIncrease += 1 // 1 point per heart
               return { ...updatedHeart, collected: true }
             } else {
               // Clear magnetic state when not in range
