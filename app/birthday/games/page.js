@@ -823,16 +823,39 @@ function HeartsDistanceGame() {
         setMonster(newMonsterPos)
       }
 
-      // Check heart collisions
+      // Check heart collisions with magnetic attraction
       setHearts(prevHearts => {
         let newCollectedHearts = []
         let scoreIncrease = 0
         
         const updatedHearts = prevHearts.map(heart => {
-          const updatedHeart = { ...heart, pulse: heart.pulse + 0.1 }
+          let updatedHeart = { ...heart, pulse: heart.pulse + 0.1 }
+          
           if (!heart.collected) {
             const distanceSquared = Math.pow(newX - heart.x, 2) + Math.pow(newY - heart.y, 2)
-            if (distanceSquared < 16) { // 4^2 = 16
+            const distance = Math.sqrt(distanceSquared)
+            
+            // Magnetic attraction when player is within range
+            const magneticRange = 12 // Range where hearts get attracted
+            const collectionRange = 4 // Range where hearts get collected
+            
+            if (distance <= magneticRange && distance > collectionRange) {
+              // Calculate magnetic pull towards player
+              const pullStrength = 0.8 // How strong the magnetic effect is
+              const deltaX = newX - heart.x
+              const deltaY = newY - heart.y
+              
+              // Move heart towards player
+              const moveX = (deltaX / distance) * pullStrength
+              const moveY = (deltaY / distance) * pullStrength
+              
+              updatedHeart = {
+                ...updatedHeart,
+                x: Math.max(2, Math.min(96, heart.x + moveX)),
+                y: Math.max(2, Math.min(96, heart.y + moveY))
+              }
+            } else if (distance <= collectionRange) {
+              // Collect the heart when very close
               newCollectedHearts.push(heart.id)
               scoreIncrease += 100
               return { ...updatedHeart, collected: true }
@@ -1139,28 +1162,55 @@ function HeartsDistanceGame() {
           </div>
 
           {/* Hearts */}
-          {hearts.map(heart => (
-            <div
-              key={heart.id}
-              className={`absolute z-10 transition-all duration-300 ${
-                heart.collected ? 'opacity-0 scale-150' : ''
-              }`}
-              style={{
-                left: `${heart.x}%`,
-                top: `${heart.y}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              <Heart 
-                className="text-yellow-500 drop-shadow-lg animate-gentle-float" 
-                size={24 + Math.sin(heart.pulse) * 4}
-                fill="currentColor"
+          {hearts.map(heart => {
+            if (heart.collected) return null;
+            
+            // Calculate if heart is in magnetic range for visual effect
+            const distanceToPlayer = Math.sqrt(
+              Math.pow(playerPosition.x - heart.x, 2) + 
+              Math.pow(playerPosition.y - heart.y, 2)
+            )
+            const isInMagneticRange = distanceToPlayer <= 12
+            
+            return (
+              <div
+                key={heart.id}
+                className="absolute z-10 transition-all duration-200"
                 style={{
-                  filter: 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.6))'
+                  left: `${heart.x}%`,
+                  top: `${heart.y}%`,
+                  transform: 'translate(-50%, -50%)',
                 }}
-              />
-            </div>
-          ))}
+              >
+                {/* Magnetic glow effect */}
+                {isInMagneticRange && (
+                  <div 
+                    className="absolute inset-0 animate-pulse"
+                    style={{
+                      transform: 'translate(-50%, -50%)',
+                      left: '50%',
+                      top: '50%'
+                    }}
+                  >
+                    <div className="w-12 h-12 bg-yellow-300/30 rounded-full blur-sm"></div>
+                  </div>
+                )}
+                
+                <Heart 
+                  className={`text-yellow-500 drop-shadow-lg animate-gentle-float ${
+                    isInMagneticRange ? 'animate-pulse' : ''
+                  }`}
+                  size={24 + Math.sin(heart.pulse) * 4 + (isInMagneticRange ? 2 : 0)}
+                  fill="currentColor"
+                  style={{
+                    filter: isInMagneticRange 
+                      ? 'drop-shadow(0 0 15px rgba(234, 179, 8, 0.9))' 
+                      : 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.6))'
+                  }}
+                />
+              </div>
+            )
+          })}
 
           {/* Obstacles */}
           {obstacles.map(obstacle => (

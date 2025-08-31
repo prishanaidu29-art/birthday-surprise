@@ -12,7 +12,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git checkout:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:birthday-surprise-9mwtnhb83-w3bl1ngs-projects.vercel.app)"
     ],
     "deny": [],
     "ask": []
