@@ -36,45 +36,45 @@ export default function QuizPage() {
   const questions = [
     {
       id: 1,
-      question: "What's my favorite color?",
-      options: ["Purple", "Pink", "Blue", "Green"],
+      question: "When did we first meet?",
+      options: ["Adeng & Jecel's wedding", "Gatorade run", "SM North Edsa", "Melbourne"],
       correct: 0,
-      explanation: "Purple has always been my favorite! It's the color of creativity and magic. ✨"
+      explanation: "Pagkita mo palang sa akin type mo na ako! hahaha jk ✨"
     },
     {
       id: 2,
-      question: "What's my biggest dream?",
-      options: ["Travel the world", "Start a family", "Write a book", "All of the above"],
+      question: "What's your first pasalubong sa akin?",
+      options: ["Katinko", "White flower", "Nvidia GeForce RTX 4090 GPU", "Cereal treat from Baguio"],
       correct: 3,
-      explanation: "I want it all - adventures around the world, a wonderful family, and sharing our story, Jerze! 💫"
+      explanation: "Taray ang pogi ko naman may pasalubong yung chix! 💫"
     },
     {
       id: 3,
-      question: "What makes me laugh the most?",
-      options: ["Dad jokes", "Funny movies", "Your silly faces", "Cat videos"],
+      question: "First movie that we watched together?",
+      options: ["American Pie", "Get Out", "Inside Out 2", "Twister"],
       correct: 2,
-      explanation: "Your silly faces always crack me up! You have this way of making me smile even on tough days. 😄"
+      explanation: "Jan din tayo nag first share ng pop corn! 😄"
     },
     {
       id: 4,
-      question: "What's my love language?",
-      options: ["Physical touch", "Words of affirmation", "Quality time", "All of them"],
+      question: "First flower that I gave you?",
+      options: ["Pink Roses", "Sunflower", "White flower", "Yellow Tulips"],
       correct: 3,
-      explanation: "I adore all the ways you show me affection, my cutie ganda - your hugs, sweet words, and just being together! ❤️"
+      explanation: "Yan yung may paparazzi pa sa EastWest bank! 💛"
     },
     {
       id: 5,
-      question: "What's my favorite way to spend a Sunday?",
-      options: ["Sleeping in late", "Brunch and walks", "Movie marathons", "Cooking together"],
+      question: "Saan kami kumain when I first met your family?",
+      options: ["Kenny Rogers", "Manam", "Max's Restaurant", "Mesa"],
       correct: 1,
-      explanation: "Brunch dates followed by long walks talking about everything and nothing - perfect Sunday! 🥐"
+      explanation: "Ang galing nga pinatugtog din yung Dilaw doon so napakwento tuloy ako haha! 🍽️"
     },
     {
       id: 6,
       question: "What am I most grateful for?",
-      options: ["My family", "My health", "Finding you", "My dreams coming true"],
+      options: ["My career", "My health", "Finding you", "My dreams coming true"],
       correct: 2,
-      explanation: "Finding you changed everything. You're my greatest blessing and my favorite person. 💕"
+      explanation: "Finding you changed everything. You're my greatest blessing and my favorite person. 💕💛"
     }
   ]
 

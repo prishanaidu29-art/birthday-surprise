@@ -686,6 +686,7 @@ function HeartsDistanceGame() {
   const [gameStarted, setGameStarted] = useState(false)
   const [gameWon, setGameWon] = useState(false)
   const [gameOver, setGameOver] = useState(false)
+  const [gamePaused, setGamePaused] = useState(false)
   const [showVictoryModal, setShowVictoryModal] = useState(false)
   const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 50 })
   const [hearts, setHearts] = useState([])
@@ -736,13 +737,22 @@ function HeartsDistanceGame() {
 
   // Keyboard handling
   useEffect(() => {
-    if (!gameStarted) return
-
     const handleKeyDown = (e) => {
+      // Pause/Resume with spacebar or Escape
+      if (e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault()
+        if (gameStarted && !gameWon && !gameOver) {
+          setGamePaused(prev => !prev)
+        }
+        return
+      }
+      if (!gameStarted || gamePaused) return
+      
       keysPressed.current[e.key.toLowerCase()] = true
     }
 
     const handleKeyUp = (e) => {
+      if (!gameStarted || gamePaused) return
       keysPressed.current[e.key.toLowerCase()] = false
     }
 
@@ -753,11 +763,11 @@ function HeartsDistanceGame() {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
     }
-  }, [gameStarted])
+  }, [gameStarted, gameWon, gameOver, gamePaused])
 
   // Game loop
   useEffect(() => {
-    if (!gameStarted || gameWon || gameOver) return
+    if (!gameStarted || gameWon || gameOver || gamePaused) return
 
     const gameLoop = () => {
       // Smooth movement using current ref values
@@ -863,11 +873,11 @@ function HeartsDistanceGame() {
         cancelAnimationFrame(animationFrameId)
       }
     }
-  }, [gameStarted, gameOver, gameWon, obstacles])
+  }, [gameStarted, gameOver, gameWon, gamePaused, obstacles])
 
   // Timer
   useEffect(() => {
-    if (!gameStarted || gameOver) return
+    if (!gameStarted || gameOver || gamePaused) return
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -886,11 +896,11 @@ function HeartsDistanceGame() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [gameStarted, gameOver, collectedHearts.length, highScore])
+  }, [gameStarted, gameOver, gamePaused, collectedHearts.length, highScore])
 
   // Monster collision detection
   useEffect(() => {
-    if (!gameStarted || gameWon || gameOver) return
+    if (!gameStarted || gameWon || gameOver || gamePaused) return
 
     const checkCollision = () => {
       const collisionDistanceSquared = 
@@ -905,7 +915,7 @@ function HeartsDistanceGame() {
 
     const collisionTimer = setInterval(checkCollision, 50)
     return () => clearInterval(collisionTimer)
-  }, [gameStarted, gameWon, gameOver])
+  }, [gameStarted, gameWon, gameOver, gamePaused])
 
   // Check victory - need to collect all 30 hearts
   useEffect(() => {
@@ -926,6 +936,7 @@ function HeartsDistanceGame() {
     setGameStarted(false) // Set to false first to stop any running game loops
     setGameOver(false)
     setGameWon(false)
+    setGamePaused(false)
     setCollectedHearts([])
     setScore(0)
     setTimeLeft(60)
@@ -953,6 +964,7 @@ function HeartsDistanceGame() {
     setGameStarted(false)
     setGameOver(false)
     setGameWon(false)
+    setGamePaused(false)
     setShowVictoryModal(false)
     setPlayerPosition({ x: 50, y: 50 })
     setMonster({ x: 10, y: 10 })
@@ -980,6 +992,7 @@ function HeartsDistanceGame() {
           <div className="text-sm text-pink-700 space-y-1">
             <p>• Use WASD or Arrow keys to move</p>
             <p>• Collect all 30 hearts floating in space</p>
+            <p>• Press Space or Escape to pause/resume</p>
             <p>• Complete within 60 seconds for the best score!</p>
             <p>• A special surprise awaits when you win! ✨</p>
           </div>
@@ -1153,16 +1166,23 @@ function HeartsDistanceGame() {
           {obstacles.map(obstacle => (
             <div
               key={obstacle.id}
-              className="absolute bg-gradient-to-br from-red-400 to-red-600 rounded-lg z-10 animate-gentle-spin"
+              className="absolute z-10"
               style={{
                 left: `${obstacle.x}%`,
                 top: `${obstacle.y}%`,
                 width: `${obstacle.width}%`,
                 height: `${obstacle.height}%`,
-                transform: 'translate(-50%, -50%)',
-                boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)'
+                transform: 'translate(-50%, -50%)'
               }}
-            />
+            >
+              <div 
+                className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 rounded-lg"
+                style={{
+                  animation: gamePaused ? 'none' : 'spin 3s linear infinite',
+                  boxShadow: '0 0 15px rgba(239, 68, 68, 0.5)'
+                }}
+              />
+            </div>
           ))}
 
           {/* Monster */}
@@ -1214,17 +1234,44 @@ function HeartsDistanceGame() {
             <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
               <div className="text-sm font-bold text-gray-800">Time: {timeLeft}s</div>
             </div>
+            <button 
+              onClick={() => setGamePaused(prev => !prev)}
+              className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg hover:bg-white/100 transition-all"
+            >
+              <div className="text-sm font-bold text-gray-800">
+                {gamePaused ? '▶️' : '⏸️'}
+              </div>
+            </button>
           </div>
 
           {/* Instructions */}
           <div className="absolute bottom-4 left-4 right-4 text-center">
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 inline-block shadow-lg">
               <p className="text-sm font-medium text-gray-700">
-                Use WASD or Arrow keys • Collect all hearts • Avoid obstacles & the chasing monster!
+                Use WASD or Arrow keys • Collect all hearts • Avoid obstacles & monster • Space/Esc to pause!
               </p>
             </div>
           </div>
         </div>
+
+        {/* Pause Overlay */}
+        {gamePaused && gameStarted && (
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center max-w-md mx-4">
+              <div className="text-6xl mb-4">⏸️</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">Game Paused</h2>
+              <p className="text-gray-600 mb-6">
+                Press <kbd className="px-2 py-1 bg-gray-200 rounded text-sm">Space</kbd> or <kbd className="px-2 py-1 bg-gray-200 rounded text-sm">Esc</kbd> to resume
+              </p>
+              <button 
+                onClick={() => setGamePaused(false)}
+                className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-rose-600 transition-all shadow-lg"
+              >
+                ▶️ Resume Game
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Victory Modal */}
         {showVictoryModal && (

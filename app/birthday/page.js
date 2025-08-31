@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 export const dynamic = 'force-dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, Camera, MessageCircle, Gamepad2, Music, Calendar, Sparkles, Gift, Crown, Star, Brain, Joystick, RotateCcw } from 'lucide-react'
+import { Heart, Camera, MessageCircle, Gamepad2, Music, Calendar, Sparkles, Gift, Crown, Star, Brain, Joystick, RotateCcw, Globe, Plane } from 'lucide-react'
 import EasterEgg from '../../components/EasterEgg'
 
 export default function BirthdayPage() {
@@ -97,7 +97,7 @@ export default function BirthdayPage() {
     },
     {
       title: 'Birthday Messages',
-      description: 'Special messages from someone who loves you',
+      description: 'Heartfelt messages from the ones who love you',
       icon: MessageCircle,
       link: '/birthday/messages',
       gradient: 'from-blue-400 to-cyan-600',
@@ -113,11 +113,19 @@ export default function BirthdayPage() {
     },
     {
       title: 'Mini Games',
-      description: 'Fun games including Hearts Across Distance!',
+      description: 'Fun little games, each one tailored from my love for you',
       icon: Gamepad2,
       link: '/birthday/games',
       gradient: 'from-violet-400 to-purple-600',
       delay: '400ms'
+    },
+    {
+      title: 'Journey to You',
+      description: 'Interactive 3D globe showing our path to reunion',
+      icon: Globe,
+      link: '/birthday/journey',
+      gradient: 'from-indigo-400 to-blue-600',
+      delay: '500ms'
     }
   ]
 
