@@ -1,122 +1,156 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+
+export const dynamic = 'force-dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Music, Heart, Play, Pause, Volume2, ExternalLink, Clock, Calendar, Sparkles, Headphones } from 'lucide-react'
+import { ArrowLeft, Music, Heart, Play, Pause, Volume2, ExternalLink, Clock, Sparkles, Headphones } from 'lucide-react'
+import { useAuth } from '../../../hooks/useAuth'
 
 export default function PlaylistPage() {
   const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
   const [currentSong, setCurrentSong] = useState(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [playlist, setPlaylist] = useState([])
+  const [playlistInfo, setPlaylistInfo] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [audioRef, setAudioRef] = useState(null)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
 
-  // Check authentication
+  // Initialize audio
   useEffect(() => {
-    const authenticated = sessionStorage.getItem('birthday_authenticated')
-    if (authenticated !== 'true') {
-      router.push('/')
-    } else {
-      setIsLoaded(true)
+    const audio = new Audio()
+    audio.volume = 0.7
+    
+    audio.addEventListener('ended', () => {
+      setIsPlaying(false)
+      setCurrentSong(null)
+    })
+    
+    audio.addEventListener('pause', () => {
+      setIsPlaying(false)
+    })
+    
+    audio.addEventListener('play', () => {
+      setIsPlaying(true)
+    })
+    
+    setAudioRef(audio)
+    
+    return () => {
+      audio.pause()
+      audio.removeEventListener('ended', () => {})
+      audio.removeEventListener('pause', () => {})
+      audio.removeEventListener('play', () => {})
     }
-  }, [router])
+  }, [])
 
-  // Curated playlist - songs that remind me of you
-  const playlist = [
+  // Use auth hook
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+
+  // Check authentication and show loading screen
+  useEffect(() => {
+    if (!authLoading) {
+      if (isAuthenticated) {
+        setShowLoadingScreen(true)
+        
+        // Start fetching playlist immediately but show loading screen for at least 2 seconds
+        const fetchPromise = fetchSpotifyPlaylist()
+        const minLoadingTime = new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Wait for both the playlist to load AND the minimum loading time
+        Promise.all([fetchPromise, minLoadingTime]).then(() => {
+          setIsLoaded(true)
+        })
+      }
+    }
+  }, [isAuthenticated, authLoading])
+
+  const fetchSpotifyPlaylist = async () => {
+    try {
+      const response = await fetch('/api/playlist')
+      if (!response.ok) {
+        throw new Error('Failed to fetch playlist')
+      }
+      const data = await response.json()
+      setPlaylist(data.tracks)
+      setPlaylistInfo({
+        name: data.name,
+        description: data.description,
+        image: data.image
+      })
+    } catch (err) {
+      console.error('Error fetching playlist:', err)
+      setError('Failed to load playlist. Using fallback data.')
+      // Fallback to a few sample tracks if API fails
+      setPlaylist(getFallbackPlaylist())
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getFallbackPlaylist = () => [
     {
       id: 1,
-      title: "Perfect",
-      artist: "Ed Sheeran",
-      album: "÷ (Divide)",
-      duration: "4:23",
-      reason: "Because you are perfect to me in every way. This song plays in my head every time I see you smile.",
-      spotify_url: "https://open.spotify.com/track/0tgVpDi06FyKpA1z0VMD4v",
-      youtube_url: "https://www.youtube.com/watch?v=2Vv-BfVoq4g",
-      gradient: "from-green-400 to-blue-500",
-      mood: "Romantic"
-    },
-    {
-      id: 2,
-      title: "All of Me",
-      artist: "John Legend",
-      album: "Love in the Future",
-      duration: "4:29",
-      reason: "You have all of me - my heart, my soul, my everything. This song captures how completely I love you.",
-      spotify_url: "https://open.spotify.com/track/3U4isOIWM3VvDubwSI3y7a",
-      youtube_url: "https://www.youtube.com/watch?v=450p7goxZqg",
-      gradient: "from-red-400 to-pink-500",
-      mood: "Soulful"
-    },
-    {
-      id: 3,
-      title: "Can't Help Myself",
-      artist: "Four Tops",
-      album: "Four Tops Second Album",
-      duration: "2:57",
-      reason: "I can't help myself when it comes to you! This classic always makes me think of dancing with you.",
-      spotify_url: "https://open.spotify.com/track/7fzZnH4JWGJPiI4xFpMKT1",
-      youtube_url: "https://www.youtube.com/watch?v=bx1Bh8ZvH84",
-      gradient: "from-orange-400 to-red-500",
-      mood: "Fun"
-    },
-    {
-      id: 4,
-      title: "Golden",
-      artist: "Harry Styles",
-      album: "Fine Line",
-      duration: "3:28",
-      reason: "You're golden like sunshine, brightening every day. This song feels like pure joy - just like being with you.",
-      spotify_url: "https://open.spotify.com/track/6Qs4SXO9dwPj2a4WLBDkmT",
-      youtube_url: "https://www.youtube.com/watch?v=P3cffdsEXXw",
+      title: "Dilaw",
+      artist: "Maki",
+      album: "Dilaw",
+      duration: "3:12",
+      reason: "This amazing Filipino song reminds me of the golden moments we share together, my cutie ganda. Your smile lights up my world just like this melody.",
+      spotify_url: "https://open.spotify.com/track/2ADSh3Mp744n2586tpUtIW",
+      preview_url: "https://p.scdn.co/mp3-preview/6c6207cea32368c94e5ca1bbec7f86aeff1d3846?cid=3f398ac31e9548e993b18b641d8667e0",
       gradient: "from-yellow-400 to-orange-500",
       mood: "Uplifting"
     },
     {
-      id: 5,
-      title: "Make You Feel My Love",
-      artist: "Adele",
-      album: "19",
-      duration: "3:32",
-      reason: "I'd do anything to make you feel my love. Adele's version of this Bob Dylan classic gives me chills every time.",
-      spotify_url: "https://open.spotify.com/track/4i6cwNY2Hf83HbdIFg9zGQ",
-      youtube_url: "https://www.youtube.com/watch?v=0put0_a--Ng",
-      gradient: "from-purple-400 to-indigo-600",
-      mood: "Emotional"
-    },
-    {
-      id: 6,
-      title: "At Last",
-      artist: "Etta James",
-      album: "At Last!",
-      duration: "3:01",
-      reason: "At last, I found you! This timeless classic perfectly captures how I felt when we first met.",
-      spotify_url: "https://open.spotify.com/track/5W3cjX2J3tjhG8zb6u0qHn",
-      youtube_url: "https://www.youtube.com/watch?v=S-cbOl96RFM",
-      gradient: "from-indigo-400 to-purple-600",
-      mood: "Classic"
-    },
-    {
-      id: 7,
-      title: "Thinking Out Loud",
-      artist: "Ed Sheeran",
-      album: "x (Multiply)",
-      duration: "4:41",
-      reason: "When we're old and grey, I'll still love you the same. This song is our future together.",
-      spotify_url: "https://open.spotify.com/track/6PGoSes0D9eUDeeAafB2As",
-      youtube_url: "https://www.youtube.com/watch?v=lp-EO5I60KA",
-      gradient: "from-teal-400 to-green-500",
+      id: 2,
+      title: "Off My Face",
+      artist: "Justin Bieber",
+      album: "Justice",
+      duration: "2:36",
+      reason: "This song captures how I feel when I'm with you, Jerze - completely lost in happiness. You make me feel like I'm floating on air.",
+      spotify_url: "https://open.spotify.com/track/3T03rPwlL8NVk1yIaxeD8U",
+      preview_url: "https://p.scdn.co/mp3-preview/84a0f4fc43b14b81b0a4c37e9d8fbc3fc5b6a90b?cid=3f398ac31e9548e993b18b641d8667e0",
+      gradient: "from-purple-400 to-pink-500",
       mood: "Romantic"
     },
     {
-      id: 8,
-      title: "Here Comes the Sun",
-      artist: "The Beatles",
-      album: "Abbey Road",
-      duration: "3:05",
-      reason: "You are my sunshine after every storm. This Beatles classic reminds me that everything is better with you.",
-      spotify_url: "https://open.spotify.com/track/6dGnYIeXmHdcikdzNNDMm2",
-      youtube_url: "https://www.youtube.com/watch?v=KQetemT1sWc",
-      gradient: "from-yellow-300 to-yellow-600",
-      mood: "Happy"
+      id: 3,
+      title: "With You",
+      artist: "Chris Brown",
+      album: "Exclusive",
+      duration: "4:12",
+      reason: "Every time I hear this song, I imagine us dancing together. It perfectly describes how I want to spend every moment with you.",
+      spotify_url: "https://open.spotify.com/track/5Lgcn7u07bHuqbOtXkN62u",
+      preview_url: "https://p.scdn.co/mp3-preview/cd33a11a2a045dcb58969e49e9b976ed30c1bad8?cid=3f398ac31e9548e993b18b641d8667e0",
+      gradient: "from-blue-400 to-indigo-500",
+      mood: "Romantic"
+    },
+    {
+      id: 4,
+      title: "Enchanted (Taylor's Version)",
+      artist: "Taylor Swift",
+      album: "Speak Now (Taylor's Version)",
+      duration: "5:53",
+      reason: "This song tells the story of our first meeting - I was enchanted to meet you, and that magic never fades. You still enchant me every day.",
+      spotify_url: "https://open.spotify.com/track/3sW3oSbzsfecv9XoUdGs7h",
+      preview_url: "https://p.scdn.co/mp3-preview/3e67d6b24b6efa5e7c7d77e2ab94c9d6d7e27a68?cid=3f398ac31e9548e993b18b641d8667e0",
+      gradient: "from-purple-400 to-indigo-600",
+      mood: "Dreamy"
+    },
+    {
+      id: 5,
+      title: "Beautiful In White",
+      artist: "Shane Filan",
+      album: "Love Always",
+      duration: "3:52",
+      reason: "This song makes me dream of our future together, My Looove. I can picture you in white, and my heart fills with so much hope and joy.",
+      spotify_url: "https://open.spotify.com/track/43wROOsAEK0F3Fu46Vjn7W",
+      preview_url: "https://p.scdn.co/mp3-preview/a8b4b0f7e0c94f5c86f78f906c0a6f27a9d5d1be?cid=3f398ac31e9548e993b18b641d8667e0",
+      gradient: "from-red-400 to-pink-500",
+      mood: "Romantic"
     }
   ]
 
@@ -131,24 +165,526 @@ export default function PlaylistPage() {
   }
 
   const handleSongClick = (song) => {
+    if (!audioRef) {
+      console.log('Audio ref not ready')
+      return
+    }
+    
     if (currentSong?.id === song.id) {
-      setIsPlaying(!isPlaying)
+      // Same song - toggle play/pause
+      if (isPlaying) {
+        audioRef.pause()
+      } else {
+        audioRef.play().catch(error => {
+          console.error('Error playing audio:', error)
+          setError('Failed to play audio. This might be due to browser autoplay restrictions.')
+        })
+      }
     } else {
-      setCurrentSong(song)
-      setIsPlaying(true)
+      // New song - load and play
+      if (song.preview_url) {
+        console.log('Loading song:', song.title, 'Preview URL:', song.preview_url)
+        audioRef.src = song.preview_url
+        audioRef.load()
+        setCurrentSong(song)
+        audioRef.play().catch(error => {
+          console.error('Error playing audio:', error)
+          setError('Failed to play audio. Try clicking play again or check your audio settings.')
+        })
+      } else {
+        // No preview available - just show the song info
+        console.log('No preview available for:', song.title)
+        setCurrentSong(song)
+        setIsPlaying(false)
+      }
     }
   }
 
-  if (!isLoaded) {
+  if (authLoading || (showLoadingScreen && !isLoaded)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <div className="text-purple-600">Loading your playlist...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+        {/* Animated musical background elements */}
+        <div className="absolute inset-0">
+          {/* Floating musical notes */}
+          <div className="absolute top-20 left-[15%] text-purple-400 opacity-30 animate-musical-float-1">
+            ♪
+          </div>
+          <div className="absolute top-32 right-[20%] text-pink-400 opacity-25 animate-musical-float-2">
+            ♫
+          </div>
+          <div className="absolute bottom-32 left-[25%] text-blue-400 opacity-35 animate-musical-float-3">
+            ♩
+          </div>
+          <div className="absolute top-1/3 left-[10%] text-purple-300 opacity-20 animate-musical-float-4">
+            ♬
+          </div>
+          <div className="absolute bottom-40 right-[15%] text-pink-300 opacity-30 animate-musical-float-5">
+            ♪
+          </div>
+          <div className="absolute top-1/2 right-[35%] text-indigo-400 opacity-25 animate-musical-float-6">
+            ♫
+          </div>
+          
+          {/* Headphones and music icons */}
+          <div className="absolute top-16 right-[10%] text-purple-300 opacity-40 animate-gentle-float">
+            <Headphones size={28} />
+          </div>
+          <div className="absolute bottom-24 left-[12%] text-pink-300 opacity-35 animate-gentle-float-alt">
+            <Music size={24} />
+          </div>
         </div>
+
+        <div className="text-center z-10 max-w-md mx-auto px-6">
+          {/* Main loading animation - Audio Visualizer */}
+          <div className="relative mb-8">
+            {/* Central music icon with glow */}
+            <div className="relative w-20 h-20 mx-auto mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full animate-musical-pulse"></div>
+              <div className="absolute inset-2 bg-white rounded-full flex items-center justify-center">
+                <Music className="w-8 h-8 text-purple-500 animate-gentle-pulse" />
+              </div>
+              {/* Orbiting musical notes */}
+              <div className="absolute inset-0 animate-spin-slow">
+                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 text-purple-500 text-lg animate-gentle-pulse">♪</div>
+                <div className="absolute -right-2 top-1/2 transform -translate-y-1/2 text-pink-500 text-sm animate-gentle-pulse" style={{ animationDelay: '0.5s' }}>♫</div>
+                <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 text-blue-500 text-lg animate-gentle-pulse" style={{ animationDelay: '1s' }}>♩</div>
+                <div className="absolute -left-2 top-1/2 transform -translate-y-1/2 text-purple-400 text-sm animate-gentle-pulse" style={{ animationDelay: '1.5s' }}>♬</div>
+              </div>
+            </div>
+
+            {/* Audio wave visualizer */}
+            <div className="flex items-end justify-center gap-1 mb-6 h-16">
+              <div className="w-2 bg-gradient-to-t from-purple-400 to-purple-600 rounded-full animate-audio-wave-1" style={{ height: '16px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-pink-400 to-pink-600 rounded-full animate-audio-wave-2" style={{ height: '24px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-blue-400 to-blue-600 rounded-full animate-audio-wave-3" style={{ height: '32px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-purple-400 to-purple-600 rounded-full animate-audio-wave-4" style={{ height: '20px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-pink-400 to-pink-600 rounded-full animate-audio-wave-5" style={{ height: '28px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-indigo-400 to-indigo-600 rounded-full animate-audio-wave-6" style={{ height: '36px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-purple-500 to-purple-700 rounded-full animate-audio-wave-7" style={{ height: '24px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-pink-400 to-pink-600 rounded-full animate-audio-wave-8" style={{ height: '18px' }}></div>
+              <div className="w-2 bg-gradient-to-t from-blue-400 to-blue-600 rounded-full animate-audio-wave-9" style={{ height: '30px' }}></div>
+            </div>
+          </div>
+
+          {/* Loading text with musical theme */}
+          <div className="mb-4">
+            <h2 className="text-2xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-gentle-glow">
+                Loading Your Playlist
+              </span>
+            </h2>
+            <p className="text-purple-600 animate-gentle-pulse mb-4">
+              Preparing the perfect mix for you...
+            </p>
+            
+            {/* Musical loading dots */}
+            <div className="flex justify-center items-center gap-2 mb-6">
+              <span className="text-purple-500 text-lg animate-musical-note-1">♪</span>
+              <span className="text-pink-500 text-lg animate-musical-note-2">♫</span>
+              <span className="text-blue-500 text-lg animate-musical-note-3">♪</span>
+            </div>
+          </div>
+
+          {/* Progress indicator */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="w-3 h-3 bg-purple-500 rounded-full animate-gentle-pulse"></div>
+              <span className="text-sm font-medium text-gray-700">Connecting to Spotify</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full animate-music-progress"></div>
+            </div>
+            <p className="text-xs text-gray-500">Fetching your curated love songs...</p>
+          </div>
+
+          {error && (
+            <div className="mt-6 text-sm text-orange-600 bg-orange-100 rounded-2xl p-4 border border-orange-200">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-orange-500">⚠</span>
+                <span className="font-medium">Loading Notice</span>
+              </div>
+              {error}
+            </div>
+          )}
+        </div>
+
+        <style jsx>{`
+          @keyframes musical-float-1 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.3;
+            }
+            50% { 
+              transform: rotate(10deg) scale(1.1); 
+              opacity: 0.6;
+            }
+          }
+          
+          @keyframes musical-float-2 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.25;
+            }
+            33% {
+              transform: rotate(-8deg) scale(1.05);
+              opacity: 0.5;
+            }
+            66% {
+              transform: rotate(5deg) scale(1.1);
+              opacity: 0.7;
+            }
+          }
+          
+          @keyframes musical-float-3 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.35;
+            }
+            40% {
+              transform: rotate(12deg) scale(1.1);
+              opacity: 0.6;
+            }
+            80% {
+              transform: rotate(-6deg) scale(0.9);
+              opacity: 0.8;
+            }
+          }
+          
+          @keyframes musical-float-4 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.2;
+            }
+            50% { 
+              transform: rotate(-15deg) scale(1.05); 
+              opacity: 0.5;
+            }
+          }
+          
+          @keyframes musical-float-5 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.3;
+            }
+            25% {
+              transform: rotate(8deg) scale(1.2);
+              opacity: 0.6;
+            }
+            75% {
+              transform: rotate(-12deg) scale(0.8);
+              opacity: 0.4;
+            }
+          }
+          
+          @keyframes musical-float-6 {
+            0%, 100% { 
+              transform: rotate(0deg) scale(1); 
+              opacity: 0.25;
+            }
+            60% { 
+              transform: rotate(20deg) scale(1.1); 
+              opacity: 0.7;
+            }
+          }
+          
+          @keyframes musical-pulse {
+            0%, 100% {
+              transform: scale(1);
+              box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+            }
+            50% {
+              transform: scale(1.1);
+              box-shadow: 0 0 30px rgba(168, 85, 247, 0.8);
+            }
+          }
+          
+          @keyframes musical-bounce {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.2); }
+          }
+          
+          @keyframes audio-wave-1 {
+            0%, 100% { height: 16px; }
+            50% { height: 32px; }
+          }
+          
+          @keyframes audio-wave-2 {
+            0%, 100% { height: 24px; }
+            50% { height: 16px; }
+          }
+          
+          @keyframes audio-wave-3 {
+            0%, 100% { height: 32px; }
+            50% { height: 48px; }
+          }
+          
+          @keyframes audio-wave-4 {
+            0%, 100% { height: 20px; }
+            50% { height: 40px; }
+          }
+          
+          @keyframes audio-wave-5 {
+            0%, 100% { height: 28px; }
+            50% { height: 20px; }
+          }
+          
+          @keyframes audio-wave-6 {
+            0%, 100% { height: 36px; }
+            50% { height: 52px; }
+          }
+          
+          @keyframes audio-wave-7 {
+            0%, 100% { height: 24px; }
+            50% { height: 36px; }
+          }
+          
+          @keyframes audio-wave-8 {
+            0%, 100% { height: 18px; }
+            50% { height: 28px; }
+          }
+          
+          @keyframes audio-wave-9 {
+            0%, 100% { height: 30px; }
+            50% { height: 22px; }
+          }
+          
+          @keyframes musical-note-1 {
+            0%, 100% { 
+              transform: translateY(0px) rotate(0deg); 
+              opacity: 0.6;
+            }
+            33% { 
+              transform: translateY(-6px) rotate(10deg); 
+              opacity: 1;
+            }
+            66% { 
+              transform: translateY(-3px) rotate(-5deg); 
+              opacity: 0.8;
+            }
+          }
+          
+          @keyframes musical-note-2 {
+            0%, 100% { 
+              transform: translateY(0px) scale(1); 
+              opacity: 0.7;
+            }
+            50% { 
+              transform: translateY(-8px) scale(1.3); 
+              opacity: 1;
+            }
+          }
+          
+          @keyframes musical-note-3 {
+            0%, 100% { 
+              transform: translateY(0px) rotate(0deg); 
+              opacity: 0.6;
+            }
+            40% { 
+              transform: translateY(-4px) rotate(-8deg); 
+              opacity: 0.9;
+            }
+            80% { 
+              transform: translateY(-7px) rotate(3deg); 
+              opacity: 1;
+            }
+          }
+          
+          .animate-musical-float-1 { 
+            animation: musical-float-1 4s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 24px;
+            font-weight: bold;
+          }
+          .animate-musical-float-2 { 
+            animation: musical-float-2 5s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .animate-musical-float-3 { 
+            animation: musical-float-3 6s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 26px;
+            font-weight: bold;
+          }
+          .animate-musical-float-4 { 
+            animation: musical-float-4 4.5s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 22px;
+            font-weight: bold;
+          }
+          .animate-musical-float-5 { 
+            animation: musical-float-5 5.5s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 18px;
+            font-weight: bold;
+          }
+          .animate-musical-float-6 { 
+            animation: musical-float-6 3.5s ease-in-out infinite; 
+            will-change: transform, opacity;
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .animate-musical-pulse { 
+            animation: musical-pulse 2s ease-in-out infinite; 
+            will-change: transform, box-shadow;
+          }
+          .animate-musical-bounce { 
+            animation: musical-bounce 1.5s ease-in-out infinite; 
+            will-change: transform;
+          }
+          .animate-audio-wave-1 { 
+            animation: audio-wave-1 0.8s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-2 { 
+            animation: audio-wave-2 1.2s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-3 { 
+            animation: audio-wave-3 0.9s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-4 { 
+            animation: audio-wave-4 1.1s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-5 { 
+            animation: audio-wave-5 0.7s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-6 { 
+            animation: audio-wave-6 1.0s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-7 { 
+            animation: audio-wave-7 1.3s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-8 { 
+            animation: audio-wave-8 0.8s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-audio-wave-9 { 
+            animation: audio-wave-9 1.1s ease-in-out infinite; 
+            will-change: height;
+          }
+          .animate-musical-note-1 { 
+            animation: musical-note-1 2s ease-in-out infinite; 
+            will-change: transform, opacity;
+          }
+          .animate-musical-note-2 { 
+            animation: musical-note-2 2.2s ease-in-out infinite 0.3s; 
+            will-change: transform, opacity;
+          }
+          .animate-musical-note-3 { 
+            animation: musical-note-3 1.8s ease-in-out infinite 0.6s; 
+            will-change: transform, opacity;
+          }
+          
+          .animate-gentle-float {
+            animation: gentle-float 6s ease-in-out infinite;
+            will-change: transform, opacity;
+          }
+          
+          .animate-gentle-float-alt {
+            animation: gentle-float-alt 7s ease-in-out infinite;
+            will-change: transform, opacity;
+          }
+          
+          .animate-gentle-bounce {
+            animation: gentle-bounce 2s ease-in-out infinite;
+            will-change: transform;
+          }
+          
+          .animate-gentle-pulse {
+            animation: gentle-pulse 3s ease-in-out infinite;
+            will-change: transform, opacity;
+          }
+          
+          .animate-gentle-glow {
+            animation: gentle-glow 4s ease-in-out infinite;
+            will-change: transform, opacity, filter;
+          }
+          
+          .animate-gentle-spin {
+            animation: gentle-spin 12s linear infinite;
+            will-change: transform;
+          }
+          
+          .animate-music-progress {
+            animation: music-progress 1.5s ease-out;
+          }
+          
+          @keyframes gentle-float {
+            0%, 100% { 
+              transform: translateY(0px) rotate(0deg); 
+              opacity: 0.4;
+            }
+            50% { 
+              transform: translateY(-15px) rotate(5deg); 
+              opacity: 0.7;
+            }
+          }
+          
+          @keyframes gentle-float-alt {
+            0%, 100% { 
+              transform: translateY(0px) translateX(0px) rotate(0deg); 
+              opacity: 0.35;
+            }
+            33% {
+              transform: translateY(-12px) translateX(4px) rotate(-3deg);
+              opacity: 0.6;
+            }
+            66% {
+              transform: translateY(-20px) translateX(-2px) rotate(8deg);
+              opacity: 0.8;
+            }
+          }
+          
+          @keyframes gentle-bounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+          }
+          
+          @keyframes gentle-pulse {
+            0%, 100% { 
+              opacity: 0.3; 
+              transform: scale(1); 
+            }
+            50% { 
+              opacity: 0.8; 
+              transform: scale(1.1); 
+            }
+          }
+          
+          @keyframes gentle-glow {
+            0%, 100% {
+              opacity: 0.8;
+              transform: scale(1);
+              filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.3));
+            }
+            50% {
+              opacity: 1;
+              transform: scale(1.02);
+              filter: drop-shadow(0 0 16px rgba(168, 85, 247, 0.5));
+            }
+          }
+          
+          @keyframes music-progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+          }
+          
+          @keyframes gentle-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     )
   }
+
 
   const totalDuration = playlist.reduce((total, song) => {
     const [minutes, seconds] = song.duration.split(':').map(Number)
@@ -162,48 +698,56 @@ export default function PlaylistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className="center-container bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-float">
+        <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-gentle-float">
           <Music size={25} />
         </div>
         <div className="absolute top-1/3 right-20 text-purple-400 opacity-50">
-          <Sparkles size={20} className="animate-spin-slow" />
+          <Sparkles size={20} className="animate-gentle-spin" />
         </div>
         <div className="absolute bottom-20 left-1/4 text-blue-300 opacity-60">
-          <Headphones size={22} className="animate-pulse" />
+          <Headphones size={22} className="animate-gentle-pulse" />
         </div>
         <div className="absolute top-1/2 right-1/4 text-pink-400 opacity-40">
-          <Heart size={18} fill="currentColor" className="animate-bounce" />
+          <Heart size={18} fill="currentColor" className="animate-gentle-pulse" />
         </div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-6xl">
+      <div className="center-content relative z-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors mb-6"
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
           >
-            <ArrowLeft size={20} className="mr-2" />
+            <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
           </Link>
           
-          <div className="text-center">
+          <div className="text-center content-section">
             <div className="inline-flex items-center justify-center mb-4">
               <Music className="text-purple-500 w-8 h-8 mr-3" />
-              <Heart className="text-pink-500 w-6 h-6" fill="currentColor" />
+              <Heart className="text-yellow-500 w-6 h-6" fill="currentColor" />
               <Music className="text-purple-500 w-8 h-8 ml-3" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                Songs That Remind Me of You
+                {playlistInfo?.name || "Songs That Remind Me of Jerzen"}
               </span>
             </h1>
-            <p className="text-lg text-gray-700 mb-4">
-              Every melody tells our story 🎵
+            <p className="text-base sm:text-lg text-gray-700 mb-4">
+              {playlistInfo?.description || "Every melody tells our story, my Looove 🎵"}
             </p>
+            
+            {/* Preview availability notice */}
+            <div className="max-w-2xl mx-auto audio-preview px-2 sm:px-0">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+                <span className="font-medium">🎵 Audio Previews:</span> Most songs show "No preview" - this is normal with Spotify's free tier. 
+                Click the Spotify links to listen to full songs on Spotify! Songs with previews will play 30-second clips.
+              </div>
+            </div>
             
             {/* Playlist stats */}
             <div className="inline-flex items-center gap-6 bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-3 shadow-lg">
@@ -226,11 +770,11 @@ export default function PlaylistPage() {
         {/* Current playing */}
         {currentSong && (
           <div className="mb-8 animate-slide-in">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating overflow-hidden border border-white/20 card-spacing">
               <div className={`h-2 bg-gradient-to-r ${currentSong.gradient}`}></div>
-              <div className="p-6 md:p-8">
+              <div className="p-4 sm:p-6 md:p-8">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className={`p-4 bg-gradient-to-br ${currentSong.gradient} rounded-2xl shadow-lg`}>
+                  <div className={`icon-container-lg bg-gradient-to-br ${currentSong.gradient} rounded-2xl shadow-lg`}>
                     {isPlaying ? (
                       <Pause className="text-white w-8 h-8" />
                     ) : (
@@ -241,15 +785,20 @@ export default function PlaylistPage() {
                     <h3 className="text-xl font-bold text-gray-800">{currentSong.title}</h3>
                     <p className="text-gray-600">{currentSong.artist}</p>
                     <div className="flex items-center gap-4 mt-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${moodColors[currentSong.mood]}`}>
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${moodColors[currentSong.mood]}`}>
                         {currentSong.mood}
                       </span>
                       <span className="text-sm text-gray-500">{currentSong.duration}</span>
+                      {!currentSong.preview_url && (
+                        <span className="text-xs text-orange-600 bg-orange-100 px-3 py-1.5 rounded-full font-medium">
+                          No preview
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
                 <p className="text-gray-700 italic leading-relaxed">
-                  "{currentSong.reason}"
+                  &ldquo;{currentSong.reason}&rdquo;
                 </p>
                 <div className="flex gap-3 mt-4">
                   <a
@@ -277,13 +826,13 @@ export default function PlaylistPage() {
         )}
 
         {/* Playlist */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating overflow-hidden max-w-5xl mx-auto w-full border border-white/20">
           <div className="p-6 border-b border-gray-100">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center playlist-header">
               <Volume2 className="mr-3 text-purple-500" />
               Our Love Playlist
             </h2>
-            <p className="text-gray-600 mt-2">Click any song to see why it reminds me of you</p>
+            <p className="text-gray-600">Click any song to see why it reminds me of you</p>
           </div>
           
           <div className="divide-y divide-gray-100">
@@ -291,7 +840,7 @@ export default function PlaylistPage() {
               <div
                 key={song.id}
                 onClick={() => handleSongClick(song)}
-                className={`p-6 hover:bg-purple-50 transition-all cursor-pointer group ${
+                className={`p-4 sm:p-6 hover:bg-purple-50 transition-all cursor-pointer group ${
                   currentSong?.id === song.id ? 'bg-purple-50 border-l-4 border-purple-500' : ''
                 }`}
               >
@@ -323,9 +872,14 @@ export default function PlaylistPage() {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${moodColors[song.mood]}`}>
+                    <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${moodColors[song.mood]}`}>
                       {song.mood}
                     </span>
+                    {!song.preview_url && (
+                      <span className="text-xs text-orange-600 bg-orange-100 px-3 py-1.5 rounded-full font-medium">
+                        No preview
+                      </span>
+                    )}
                     <span className="text-sm text-gray-500 w-12 text-right">
                       {song.duration}
                     </span>
@@ -335,7 +889,7 @@ export default function PlaylistPage() {
                 {currentSong?.id === song.id && (
                   <div className="mt-4 pt-4 border-t border-purple-200 animate-fade-in">
                     <p className="text-gray-700 italic leading-relaxed mb-4">
-                      "{song.reason}"
+                      &ldquo;{song.reason}&rdquo;
                     </p>
                     <div className="flex gap-3">
                       <a
@@ -365,8 +919,8 @@ export default function PlaylistPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 max-w-2xl mx-auto">
-          <Heart className="text-red-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
+        <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+          <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
           <p className="text-gray-600 font-medium mb-2">
             Music is the language of love, and these songs speak my heart
           </p>

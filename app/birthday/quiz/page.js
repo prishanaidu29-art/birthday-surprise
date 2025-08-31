@@ -1,13 +1,16 @@
 'use client'
 import React, { useState, useEffect } from 'react'
+
+export const dynamic = 'force-dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
-import { ArrowLeft, Brain, Heart, CheckCircle, XCircle, Trophy, RotateCcw, Sparkles, Star } from 'lucide-react'
+import { ArrowLeft, Brain, Heart, CheckCircle, XCircle, Trophy, RotateCcw, Sparkles, Star, HelpCircle, Lightbulb } from 'lucide-react'
 
 export default function QuizPage() {
   const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
+  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [showResults, setShowResults] = useState(false)
@@ -20,7 +23,12 @@ export default function QuizPage() {
     if (authenticated !== 'true') {
       router.push('/')
     } else {
-      setIsLoaded(true)
+      setShowLoadingScreen(true)
+      
+      // Show loading screen for 1.5 seconds
+      setTimeout(() => {
+        setIsLoaded(true)
+      }, 1500)
     }
   }, [router])
 
@@ -38,7 +46,7 @@ export default function QuizPage() {
       question: "What's my biggest dream?",
       options: ["Travel the world", "Start a family", "Write a book", "All of the above"],
       correct: 3,
-      explanation: "I want it all - adventures around the world, a beautiful family, and sharing our story! 💫"
+      explanation: "I want it all - adventures around the world, a wonderful family, and sharing our story, Jerze! 💫"
     },
     {
       id: 3,
@@ -52,7 +60,7 @@ export default function QuizPage() {
       question: "What's my love language?",
       options: ["Physical touch", "Words of affirmation", "Quality time", "All of them"],
       correct: 3,
-      explanation: "I love all the ways you show me love - your hugs, sweet words, and just being together! ❤️"
+      explanation: "I adore all the ways you show me affection, my cutie ganda - your hugs, sweet words, and just being together! ❤️"
     },
     {
       id: 5,
@@ -132,19 +140,174 @@ export default function QuizPage() {
     return "We have so much more to learn about each other! 💕"
   }
 
+  // Enhanced loading screen with quiz/brain theme
+  if (showLoadingScreen && !isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-100 overflow-hidden relative">
+        <div className="text-center z-10 max-w-lg mx-auto px-6">
+          <div className="relative mb-8">
+            <div className="relative w-24 h-24 mx-auto mb-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full animate-brain-pulse"></div>
+              <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+                <Brain className="w-8 h-8 text-blue-500 animate-brain-bounce" />
+              </div>
+            </div>
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-500 bg-clip-text text-transparent animate-quiz-glow">
+                  Loading Quiz Time! 🧠
+                </span>
+              </h1>
+              <p className="text-blue-600 text-lg animate-gentle-pulse mb-4">
+                Preparing fun questions for you...
+              </p>
+            </div>
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-quiz-progress"></div>
+              </div>
+              <p className="text-xs text-gray-500">Get ready to test your knowledge!</p>
+            </div>
+          </div>
+        </div>
+        <style jsx>{`
+          @keyframes brain-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
+            50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
+          }
+          @keyframes brain-bounce { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+          @keyframes quiz-glow { 0%, 100% { filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3)); } 50% { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6)); } }
+          @keyframes quiz-progress { 0% { width: 0%; } 100% { width: 100%; } }
+          @keyframes gentle-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+          .animate-brain-pulse { animation: brain-pulse 2s ease-in-out infinite; }
+          .animate-brain-bounce { animation: brain-bounce 1.5s ease-in-out infinite; }
+          .animate-quiz-glow { animation: quiz-glow 3s ease-in-out infinite; }
+          .animate-quiz-progress { animation: quiz-progress 1.5s ease-out; }
+          .animate-gentle-pulse { animation: gentle-pulse 3s ease-in-out infinite; }
+        `}</style>
+      </div>
+    )
+  }
+
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
-        <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <div className="text-purple-600">Loading your quiz...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+        {/* Floating quiz elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-20 left-16 text-purple-400 opacity-60">
+            <Brain size={22} className="animate-think" />
+          </div>
+          <div className="absolute top-1/4 right-24 text-pink-400 opacity-50">
+            <HelpCircle size={18} className="animate-question-bounce" />
+          </div>
+          <div className="absolute bottom-32 left-24 text-yellow-400 opacity-70">
+            <Lightbulb size={20} className="animate-idea-glow" />
+          </div>
+          <div className="absolute top-1/3 left-1/3 text-blue-300 opacity-40">
+            <CheckCircle size={16} className="animate-check-pop" />
+          </div>
+          <div className="absolute bottom-1/3 right-1/3 text-green-400 opacity-60">
+            <Star size={14} fill="currentColor" className="animate-star-twinkle" />
+          </div>
         </div>
+
+        <div className="text-center z-10">
+          {/* Quiz book loading animation */}
+          <div className="relative mb-8">
+            <div className="w-24 h-32 mx-auto bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg shadow-xl relative transform rotate-12 animate-book-flip">
+              {/* Book pages */}
+              <div className="absolute inset-2 bg-white rounded flex flex-col justify-center items-center">
+                <div className="w-12 h-1 bg-purple-300 rounded mb-1"></div>
+                <div className="w-8 h-1 bg-pink-300 rounded mb-1"></div>
+                <div className="w-10 h-1 bg-blue-300 rounded"></div>
+                <Brain className="w-6 h-6 text-purple-500 mt-2 animate-pulse" />
+              </div>
+              
+              {/* Question marks floating around */}
+              <div className="absolute -top-3 -right-2 text-yellow-400 animate-float-question">
+                <HelpCircle size={14} />
+              </div>
+              <div className="absolute -bottom-2 -left-3 text-pink-400 animate-float-question delay-700">
+                <HelpCircle size={12} />
+              </div>
+            </div>
+          </div>
+
+          {/* Loading text */}
+          <div className="text-2xl font-bold mb-2">
+            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
+              Loading Quiz
+            </span>
+          </div>
+          <div className="text-purple-600 mb-6">
+            Preparing your questions...
+          </div>
+
+          {/* Quiz progress indicators */}
+          <div className="flex justify-center space-x-3">
+            <div className="flex items-center space-x-1">
+              <div className="w-4 h-4 bg-purple-400 rounded-full animate-quiz-pulse"></div>
+              <span className="text-xs text-purple-600">Questions</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-4 h-4 bg-pink-400 rounded-full animate-quiz-pulse delay-300"></div>
+              <span className="text-xs text-pink-600">Options</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-4 h-4 bg-blue-400 rounded-full animate-quiz-pulse delay-600"></div>
+              <span className="text-xs text-blue-600">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <style jsx>{`
+          @keyframes think {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-8px) scale(1.1); }
+          }
+          @keyframes question-bounce {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(15deg); }
+          }
+          @keyframes idea-glow {
+            0%, 100% { opacity: 0.7; filter: brightness(1); }
+            50% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 10px currentColor); }
+          }
+          @keyframes check-pop {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+            50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+          }
+          @keyframes star-twinkle {
+            0%, 100% { opacity: 0.6; transform: scale(1) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+          }
+          @keyframes book-flip {
+            0%, 100% { transform: rotate(12deg) rotateY(0deg); }
+            50% { transform: rotate(8deg) rotateY(15deg); }
+          }
+          @keyframes float-question {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
+            50% { transform: translateY(-15px) rotate(20deg); opacity: 1; }
+          }
+          @keyframes quiz-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.8); }
+          }
+          .animate-think { animation: think 3s ease-in-out infinite; }
+          .animate-question-bounce { animation: question-bounce 2.5s ease-in-out infinite; }
+          .animate-idea-glow { animation: idea-glow 2s ease-in-out infinite; }
+          .animate-check-pop { animation: check-pop 3s ease-in-out infinite; }
+          .animate-star-twinkle { animation: star-twinkle 2.8s ease-in-out infinite; }
+          .animate-book-flip { animation: book-flip 4s ease-in-out infinite; }
+          .animate-float-question { animation: float-question 3s ease-in-out infinite; }
+          .animate-quiz-pulse { animation: quiz-pulse 1.5s ease-in-out infinite; }
+        `}</style>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className="center-container bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-bounce">
@@ -161,43 +324,45 @@ export default function QuizPage() {
         </div>
       </div>
 
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+      <div className="center-content relative z-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors mb-6"
+            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
           >
-            <ArrowLeft size={20} className="mr-2" />
+            <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
           </Link>
           
           <div className="text-center">
             <div className="inline-flex items-center justify-center mb-4">
               <Brain className="text-purple-500 w-8 h-8 mr-3" />
-              <Heart className="text-pink-500 w-6 h-6" fill="currentColor" />
+              <Heart className="text-yellow-500 w-6 h-6" fill="currentColor" />
               <Brain className="text-purple-500 w-8 h-8 ml-3" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                How Well Do You Know Me?
+                How Well Do You Know Jerzen?
               </span>
             </h1>
-            <p className="text-lg text-gray-700">
-              A fun quiz to test your knowledge about me! 🧠💕
+            <p className="text-base sm:text-lg text-gray-700">
+              A fun quiz to test your knowledge about your cutie ganda! 🧠💕
             </p>
           </div>
         </div>
 
         {!quizStarted ? (
           // Quiz intro
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 text-center animate-scale-in">
-              <Trophy className="text-yellow-500 w-16 h-16 mx-auto mb-6" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Ready for the Challenge?</h2>
+          <div className="max-w-2xl mx-auto px-2 sm:px-0">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 text-center animate-scale-in border border-white/20">
+              <div className="icon-container-xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg inline-block mb-6">
+                <Trophy className="text-white w-8 h-8" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Ready for the Challenge?</h2>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                I've prepared {questions.length} questions about myself. Let's see how much you've been paying attention! 
-                Each question has one correct answer, and I'll share little secrets about myself along the way.
+                I&apos;ve prepared {questions.length} questions about myself. Let&apos;s see how much you&apos;ve been paying attention! 
+                Each question has one correct answer, and I&apos;ll share little secrets about myself along the way.
               </p>
               <div className="bg-purple-50 rounded-2xl p-6 mb-8">
                 <h3 className="font-semibold text-purple-800 mb-2">Quiz Rules:</h3>
@@ -205,22 +370,24 @@ export default function QuizPage() {
                   <li>• {questions.length} multiple choice questions</li>
                   <li>• Take your time - no rush!</li>
                   <li>• You can go back and change answers</li>
-                  <li>• I'll explain each answer at the end</li>
+                  <li>• I&apos;ll explain each answer at the end</li>
                 </ul>
               </div>
-              <button
-                onClick={() => setQuizStarted(true)}
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 text-lg"
-              >
-                Start the Quiz! 🚀
-              </button>
+              <div className="pt-4">
+                <button
+                  onClick={() => setQuizStarted(true)}
+                  className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 text-lg min-h-[56px] cursor-pointer"
+                >
+                  Start the Quiz! 🚀
+                </button>
+              </div>
             </div>
           </div>
         ) : !showResults ? (
           // Quiz questions
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto px-2 sm:px-0">
             {/* Progress bar */}
-            <div className="mb-8">
+            <div className="mb-6">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm font-medium text-purple-600">
                   Question {currentQuestion + 1} of {questions.length}
@@ -238,12 +405,12 @@ export default function QuizPage() {
             </div>
 
             {/* Question card */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 animate-fade-in">
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 animate-fade-in border border-white/20 w-full">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 quiz-question text-center mb-8 min-h-[4rem] flex items-center justify-center">
                 {questions[currentQuestion].question}
               </h2>
 
-              <div className="space-y-4 mb-8">
+              <div className="quiz-options space-y-5">
                 {questions[currentQuestion].options.map((option, index) => (
                   <button
                     key={index}
@@ -255,7 +422,7 @@ export default function QuizPage() {
                     }`}
                   >
                     <div className="flex items-center">
-                      <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
+                      <div className={`w-6 h-6 rounded-full border-2 quiz-radio flex items-center justify-center flex-shrink-0 ${
                         selectedAnswers[currentQuestion] === index
                           ? 'border-purple-500 bg-purple-500'
                           : 'border-gray-300'
@@ -264,7 +431,7 @@ export default function QuizPage() {
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                         )}
                       </div>
-                      <span className={`font-medium ${
+                      <span className={`font-medium ml-3 ${
                         selectedAnswers[currentQuestion] === index
                           ? 'text-purple-700'
                           : 'text-gray-700'
@@ -277,36 +444,36 @@ export default function QuizPage() {
               </div>
 
               {/* Navigation buttons */}
-              <div className="flex justify-between">
+              <div className="flex justify-between quiz-nav-buttons">
                 <button
                   onClick={prevQuestion}
                   disabled={currentQuestion === 0}
-                  className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md hover:shadow-lg"
                 >
-                  Previous
+                  ← Previous
                 </button>
                 <button
                   onClick={nextQuestion}
                   disabled={selectedAnswers[currentQuestion] === undefined}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transform transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transform transition-all hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md"
                 >
-                  {currentQuestion === questions.length - 1 ? 'Finish Quiz' : 'Next'}
+                  {currentQuestion === questions.length - 1 ? 'Finish Quiz →' : 'Next →'}
                 </button>
               </div>
             </div>
           </div>
         ) : (
           // Results
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Score card */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 text-center mb-8 animate-scale-in">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-6 sm:p-8 md:p-10 text-center mb-8 animate-scale-in border border-white/20 mx-4 sm:mx-0">
               <Trophy className={`w-16 h-16 mx-auto mb-6 ${
                 score === questions.length ? 'text-yellow-500' : 
                 score >= questions.length * 0.8 ? 'text-blue-500' : 
                 score >= questions.length * 0.6 ? 'text-green-500' : 'text-purple-500'
               }`} />
               
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">Quiz Complete! 🎉</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Quiz Complete! 🎉</h2>
               
               <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-6 mb-6">
                 <div className="text-4xl font-bold mb-2">{score}/{questions.length}</div>
@@ -315,11 +482,11 @@ export default function QuizPage() {
                 </div>
               </div>
               
-              <p className="text-xl text-gray-700 mb-8">{getScoreMessage()}</p>
+              <p className="text-lg sm:text-xl text-gray-700 mb-6 sm:mb-8">{getScoreMessage()}</p>
               
               <button
                 onClick={restartQuiz}
-                className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1"
+                className="px-10 py-5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 min-h-[56px] cursor-pointer"
               >
                 <RotateCcw className="inline w-5 h-5 mr-2" />
                 Take Quiz Again
@@ -327,11 +494,11 @@ export default function QuizPage() {
             </div>
 
             {/* Answer explanations */}
-            <div className="space-y-6">
+            <div className="space-y-6 mx-4 sm:mx-0">
               <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">Let me explain my answers! 💭</h3>
               
               {questions.map((question, index) => (
-                <div key={question.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 animate-fade-in">
+                <div key={question.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 animate-fade-in">
                   <div className="flex items-start gap-4">
                     <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       selectedAnswers[index] === question.correct
@@ -345,24 +512,25 @@ export default function QuizPage() {
                       )}
                     </div>
                     
-                    <div className="flex-1">
-                      <h4 className="font-bold text-gray-800 mb-2">{question.question}</h4>
-                      <div className="mb-3">
-                        <span className="text-sm text-gray-600">Correct answer: </span>
-                        <span className="font-semibold text-green-600">
-                          {question.options[question.correct]}
-                        </span>
+                    <div className="flex-1 pl-2">
+                      <h4 className="font-bold text-gray-800 mb-4">{question.question}</h4>
+                      <div className="mb-4 space-y-2">
+                        <div>
+                          <span className="text-sm text-gray-600">Correct answer: </span>
+                          <span className="font-semibold text-green-600">
+                            {question.options[question.correct]}
+                          </span>
+                        </div>
                         {selectedAnswers[index] !== question.correct && (
-                          <>
-                            <br />
+                          <div>
                             <span className="text-sm text-gray-600">Your answer: </span>
                             <span className="font-semibold text-red-600">
                               {question.options[selectedAnswers[index]]}
                             </span>
-                          </>
+                          </div>
                         )}
                       </div>
-                      <p className="text-gray-700 italic">{question.explanation}</p>
+                      <p className="text-gray-700 italic leading-relaxed">{question.explanation}</p>
                     </div>
                   </div>
                 </div>
@@ -372,13 +540,13 @@ export default function QuizPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-12 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-6 max-w-xl mx-auto">
-          <Heart className="text-red-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
+        <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+          <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
           <p className="text-gray-600 font-medium">
             Every question reveals a little more of my heart
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Thanks for taking the time to know me better! 💕
+            Thanks for taking the time to know me better, My Looove! 💕
           </p>
         </div>
       </div>
