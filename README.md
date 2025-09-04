@@ -39,9 +39,9 @@ A personalized, interactive web application for celebrating special occasions. B
 - Personal music journey with meaningful tracks
 
 ### 📸 **Memory Gallery**
-- **3D Photo Viewer** - Enhanced photo browsing experience
+- **Photo Gallery** - Grid and timeline view options
 - Interactive gallery with smooth transitions
-- Cherished moments showcase
+- Cherished moments showcase with fallback demo content
 
 ### 🌍 **Journey Visualization**
 - **Interactive 3D Globe** - Visualizing paths and connections
