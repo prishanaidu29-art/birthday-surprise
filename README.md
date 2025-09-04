@@ -21,7 +21,6 @@ A personalized, interactive web application for celebrating special occasions. B
 - **Hearts Across Distance** - 3D adventure game with heart collection mechanics
 - **Memory Match** - Love-themed card matching game with scoring
 - **Quick Hearts** - Fast-paced reflex game with falling hearts
-- **Our Words** - Relationship knowledge quiz with explanations
 - Game statistics tracking and high score persistence
 
 ### 💌 **Multimedia Messages**
