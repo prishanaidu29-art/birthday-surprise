@@ -1,4 +1,4 @@
-# Birthday Surprise Website - Enhancement TODO List
+# Birthday Surprise Website - Development TODO List
 
 ## 🎮 Game: "Hearts Across Distance" - ✅ COMPLETED!
 
@@ -27,7 +27,7 @@
 ### Victory System & Video Message
 - [x] ~~Create video message modal popup system~~
 - [ ] Implement video storage solution (Supabase or local)
-- [ ] Record and prepare your video message for Jerzen
+- [ ] Record and prepare your video message
 - [x] ~~Add victory celebration effects (confetti, particles)~~
 - [x] ~~Create unlock animation sequence~~
 - [x] ~~Store game completion status in sessionStorage/Supabase~~
@@ -107,7 +107,7 @@
 ### Deployment
 - [ ] Test build process with Three.js dependencies
 - [ ] Deploy to staging environment
-- [ ] Final testing before Jerzen's birthday
+- [ ] Final testing before deployment
 - [ ] Prepare backup plan if any issues arise
 
 ## 🎉 Launch Day Preparations

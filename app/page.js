@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { Heart, Lock, Calendar, Sparkles, Star } from 'lucide-react'
 import EasterEgg from '../components/EasterEgg'
+import { useDarkMode } from '../hooks/useDarkMode'
 
 
 export default function LandingPage() {
@@ -15,6 +16,7 @@ export default function LandingPage() {
   const [showSuccessLoading, setShowSuccessLoading] = useState(false)
   const [hint, setHint] = useState(false)
   const router = useRouter()
+  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
 
   // Check if already authenticated
   useEffect(() => {
@@ -33,8 +35,8 @@ export default function LandingPage() {
     setIsLoading(true)
 
     // The password - you can change this!
-    // Using your favorite song
-    const SECRET_PASSWORD = 'dilaw' // favorite song
+    // Using a demo password
+    const SECRET_PASSWORD = 'demo123' // Change this to your desired password
 
     if (password === SECRET_PASSWORD) {
       // Log access to Supabase
@@ -60,10 +62,25 @@ export default function LandingPage() {
     }
   }
 
+  // Show loading screen while dark mode is loading
+  if (darkModeLoading) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100'} overflow-hidden relative`}>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+        </div>
+      </div>
+    )
+  }
+
   // Success loading screen
   if (showSuccessLoading) {
+    const backgroundClasses = isDarkMode 
+      ? "bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900" 
+      : "bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100"
+    
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${backgroundClasses} overflow-hidden relative`}>
         {/* Celebratory background elements */}
         <div className="absolute inset-0">
           {/* Floating birthday elements */}
@@ -104,7 +121,7 @@ export default function LandingPage() {
             {/* Central celebration icon with glow */}
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full animate-birthday-pulse"></div>
-              <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-full flex items-center justify-center`}>
                 <div className="text-3xl animate-birthday-bounce">🎂</div>
               </div>
               {/* Orbiting party elements */}
@@ -120,10 +137,10 @@ export default function LandingPage() {
             <div className="mb-6">
               <h1 className="text-3xl font-bold mb-4">
                 <span className="bg-gradient-to-r from-pink-500 via-purple-600 to-pink-500 bg-clip-text text-transparent animate-success-glow">
-                  Welcome, Birthday Girl! 🎉
+                  Welcome In! 🎉
                 </span>
               </h1>
-              <p className="text-purple-600 text-lg animate-gentle-pulse mb-4">
+              <p className={`${isDarkMode ? 'text-purple-400' : 'text-purple-600'} text-lg animate-gentle-pulse mb-4`}>
                 Preparing your magical surprise...
               </p>
               
@@ -136,15 +153,15 @@ export default function LandingPage() {
             </div>
 
             {/* Progress indicator */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
               <div className="flex items-center justify-center gap-3 mb-3">
                 <div className="w-3 h-3 bg-pink-500 rounded-full animate-gentle-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Unlocking Birthday Magic</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Unlocking Birthday Magic</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
                 <div className="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full animate-progress-fill"></div>
               </div>
-              <p className="text-xs text-gray-500">Get ready for the sweetest surprise!</p>
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get ready for the sweetest surprise!</p>
             </div>
           </div>
         </div>
@@ -430,8 +447,12 @@ export default function LandingPage() {
     )
   }
 
+  const backgroundClasses = isDarkMode 
+    ? "bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900" 
+    : "bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100"
+
   return (
-    <div className="center-container bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100">
+    <div className={`center-container ${backgroundClasses}`}>
       <div className="max-w-md w-full">
         {/* Floating hearts animation */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -450,7 +471,7 @@ export default function LandingPage() {
         </div>
 
         {/* Main card */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 space-y-8 transform transition-elegant hover:scale-[1.02] border border-white/20 my-8">
+        <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 space-y-8 transform transition-elegant hover:scale-[1.02] my-8`}>
           {/* Header */}
           <div className="text-center space-y-4">
             <div className="flex justify-center mb-6">
@@ -461,7 +482,7 @@ export default function LandingPage() {
             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-3">
               Special Day Incoming! 🎉
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 mb-6">
+            <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               Enter the magic password to unlock your surprise
             </p>
           </div>
@@ -474,7 +495,7 @@ export default function LandingPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter our special word..."
-                className="w-full px-5 py-4 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none transition-colors min-h-[48px]"
+                className={`w-full px-5 py-4 rounded-xl border-2 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:border-purple-500' : 'border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-purple-400'} focus:outline-none transition-colors min-h-[48px]`}
                 disabled={isLoading}
               />
             </div>
@@ -500,20 +521,20 @@ export default function LandingPage() {
           <div className="text-center mt-6">
             <button
               onClick={() => setHint(!hint)}
-              className="text-sm text-gray-500 hover:text-purple-600 transition-colors py-2 px-4 rounded-lg hover:bg-gray-50 min-h-[40px] cursor-pointer"
+              className={`text-sm ${isDarkMode ? 'text-gray-400 hover:text-purple-400 hover:bg-gray-800' : 'text-gray-500 hover:text-purple-600 hover:bg-gray-50'} transition-colors py-2 px-4 rounded-lg min-h-[40px] cursor-pointer`}
             >
               Need a hint? 💭
             </button>
             {hint && (
-              <p className="mt-4 text-xs text-gray-500 animate-fade-in">
-                Think about our favorite song so far... 🎵💛
+              <p className={`mt-4 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} animate-fade-in`}>
+                Think about the demo password... 🎵💛
               </p>
             )}
           </div>
 
           {/* Footer */}
-          <div className="text-center text-sm text-gray-500 pt-6 mt-8 border-t border-gray-200">
-            Made with <Heart className="inline text-yellow-500 animate-pulse" size={14} fill="currentColor" /> for My Looove
+          <div className={`text-center text-sm ${isDarkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'} pt-6 mt-8 border-t`}>
+            Made with <Heart className="inline text-yellow-500 animate-pulse" size={14} fill="currentColor" /> for Birthday Person
           </div>
         </div>
 

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
 import { ArrowLeft, Heart, Star, Sparkles, MessageCircle, User } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 export default function MessagesPage() {
   const router = useRouter()
@@ -16,6 +17,51 @@ export default function MessagesPage() {
   const [showAll, setShowAll] = useState(false)
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
+  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
+
+  // Helper function to detect and convert video URLs
+  const getVideoEmbedInfo = (url) => {
+    if (!url) return null
+    
+    // Check if it's a Google Drive URL
+    const googleDriveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/
+    const driveMatch = url.match(googleDriveRegex)
+    
+    if (driveMatch) {
+      return {
+        type: 'googledrive',
+        embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`,
+        fileId: driveMatch[1]
+      }
+    }
+    
+    // Check if it's a YouTube URL
+    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+    const youtubeMatch = url.match(youtubeRegex)
+    
+    if (youtubeMatch) {
+      return {
+        type: 'youtube',
+        embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}`,
+        videoId: youtubeMatch[1]
+      }
+    }
+    
+    // Check if it's a direct video file
+    const videoExtensions = /\.(mp4|webm|ogg|mov)(\?.*)?$/i
+    if (videoExtensions.test(url)) {
+      return {
+        type: 'direct',
+        url: url
+      }
+    }
+    
+    // Default to direct if not recognized
+    return {
+      type: 'direct',
+      url: url
+    }
+  }
 
   // Default fallback messages
   const getDefaultMessages = () => [
@@ -46,7 +92,7 @@ export default function MessagesPage() {
         .from('messages')
         .select('*')
         .eq('is_visible', true)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
 
       if (error) {
         console.error('Error fetching messages:', error)
@@ -84,7 +130,7 @@ export default function MessagesPage() {
   // Enhanced loading screen with love theme
   if (authLoading || (showLoadingScreen && !isLoaded)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-red-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-pink-900 to-red-900' : 'bg-gradient-to-br from-pink-100 via-purple-50 to-red-100'} overflow-hidden relative`}>
         {/* Floating love elements */}
         <div className="absolute inset-0">
           {/* Hearts and love symbols */}
@@ -122,7 +168,7 @@ export default function MessagesPage() {
             {/* Central love letter with glow */}
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-red-500 rounded-2xl animate-letter-pulse transform rotate-3"></div>
-              <div className="absolute inset-3 bg-white rounded-xl flex items-center justify-center">
+              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl flex items-center justify-center`}>
                 <div className="text-3xl animate-letter-bounce">💕</div>
               </div>
               {/* Orbiting love elements */}
@@ -149,7 +195,7 @@ export default function MessagesPage() {
                   Reading Love Letters 💌
                 </span>
               </h1>
-              <p className="text-red-600 text-lg animate-gentle-pulse mb-4">
+              <p className={`${isDarkMode ? 'text-red-400' : 'text-red-600'} text-lg animate-gentle-pulse mb-4`}>
                 Preparing heartfelt messages for you...
               </p>
               
@@ -162,15 +208,15 @@ export default function MessagesPage() {
             </div>
 
             {/* Love Progress indicator */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
               <div className="flex items-center justify-center gap-3 mb-3">
                 <div className="w-3 h-3 bg-pink-500 rounded-full animate-gentle-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Loading Sweet Messages</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Loading Sweet Messages</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
                 <div className="bg-gradient-to-r from-pink-500 to-red-600 h-2 rounded-full animate-love-progress"></div>
               </div>
-              <p className="text-xs text-gray-500">Words from the heart just for you!</p>
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Words from the heart just for you!</p>
             </div>
           </div>
         </div>
@@ -439,7 +485,7 @@ export default function MessagesPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
         {/* Floating message elements */}
         <div className="absolute inset-0">
           <div className="absolute top-16 left-12 text-pink-400 opacity-60">
@@ -467,7 +513,7 @@ export default function MessagesPage() {
               <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-14 border-r-14 border-b-10 border-transparent border-b-purple-300"></div>
               
               {/* Envelope body */}
-              <div className="absolute inset-2 bg-white rounded flex items-center justify-center">
+              <div className={`absolute inset-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded flex items-center justify-center`}>
                 <MessageCircle className="w-8 h-8 text-purple-500 animate-pulse" />
               </div>
               
@@ -496,7 +542,7 @@ export default function MessagesPage() {
               Loading Messages
             </span>
           </div>
-          <div className="text-purple-600 mb-6">
+          <div className={`${isDarkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>
             Reading your love letters...
           </div>
 
@@ -558,11 +604,11 @@ export default function MessagesPage() {
 
   if (messages.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
         <div className="container mx-auto px-4 py-8">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors mb-6"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-900/20' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium mb-6`}
           >
             <ArrowLeft size={20} className="mr-2" />
             Back to Birthday Hub
@@ -578,7 +624,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="center-container bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-10 left-10 text-pink-300 opacity-60 animate-bounce">
@@ -600,7 +646,7 @@ export default function MessagesPage() {
         <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-gray-800/50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
           >
             <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
@@ -614,10 +660,10 @@ export default function MessagesPage() {
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                Messages from the Heart for Jerzen
+                Messages from the Heart
               </span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-700">
+            <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Special words written just for you 💕
             </p>
           </div>
@@ -629,7 +675,7 @@ export default function MessagesPage() {
             <button
               onClick={() => setCurrentMessage(Math.max(0, currentMessage - 1))}
               disabled={currentMessage === 0}
-              className="px-6 py-3 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[44px]"
+              className={`px-6 py-3 ${isDarkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-700'} backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[44px]`}
             >
               ← Previous
             </button>
@@ -649,7 +695,7 @@ export default function MessagesPage() {
             <button
               onClick={() => setCurrentMessage(Math.min(messages.length - 1, currentMessage + 1))}
               disabled={currentMessage === messages.length - 1}
-              className="px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`px-4 py-2 ${isDarkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-700'} backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               Next →
             </button>
@@ -684,7 +730,7 @@ export default function MessagesPage() {
               return (
                 <div
                   key={msg.id}
-                  className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden animate-fade-in"
+                  className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden animate-fade-in`}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className={`h-1 bg-gradient-to-r ${gradient}`}></div>
@@ -694,8 +740,8 @@ export default function MessagesPage() {
                         <User className="text-white w-6 h-6" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-800">{msg.author}</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{msg.author}</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           {new Date(msg.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -704,9 +750,51 @@ export default function MessagesPage() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-gray-700 text-base sm:text-lg leading-relaxed">
+                    <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-base sm:text-lg leading-relaxed`}>
                       {msg.message}
                     </p>
+                    {msg.video_url && (() => {
+                      const videoInfo = getVideoEmbedInfo(msg.video_url)
+                      if (!videoInfo) return null
+                      
+                      return (
+                        <div className="mt-6">
+                          <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-2`}>
+                            {videoInfo.type === 'youtube' ? (
+                              <iframe
+                                src={videoInfo.embedUrl}
+                                className="w-full max-w-md mx-auto rounded-lg"
+                                style={{ height: '200px', aspectRatio: '16/9' }}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title="YouTube video"
+                              />
+                            ) : videoInfo.type === 'googledrive' ? (
+                              <iframe
+                                src={videoInfo.embedUrl}
+                                className="w-full max-w-md mx-auto rounded-lg"
+                                style={{ height: '200px', aspectRatio: '16/9' }}
+                                frameBorder="0"
+                                allow="autoplay"
+                                title="Google Drive video"
+                              />
+                            ) : (
+                              <video 
+                                controls 
+                                className="w-full max-w-md mx-auto rounded-lg"
+                                style={{ maxHeight: '300px' }}
+                                preload="metadata"
+                              >
+                                <source src={videoInfo.url} type="video/mp4" />
+                                <source src={videoInfo.url} type="video/webm" />
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })()}
                   </div>
                 </div>
               )
@@ -728,7 +816,7 @@ export default function MessagesPage() {
               const currentMsg = messages[currentMessage]
               
               return (
-                <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden animate-fade-in">
+                <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden animate-fade-in`}>
                   <div className={`h-2 bg-gradient-to-r ${currentGradient}`}></div>
                   <div className="p-6 sm:p-8 md:p-12">
                     <div className="flex items-center gap-4 mb-8">
@@ -736,8 +824,8 @@ export default function MessagesPage() {
                         <User className="text-white w-8 h-8" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-800">{currentMsg.author}</h3>
-                        <p className="text-gray-500">
+                        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{currentMsg.author}</h3>
+                        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           {new Date(currentMsg.created_at).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -746,9 +834,49 @@ export default function MessagesPage() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-gray-700 text-base sm:text-lg md:text-xl leading-relaxed mb-8">
-                      {currentMsg.message}
-                    </p>
+                <p className={`text-base sm:text-lg md:text-xl leading-relaxed mb-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{currentMsg.message}</p>
+                    {currentMsg.video_url && (() => {
+                      const videoInfo = getVideoEmbedInfo(currentMsg.video_url)
+                      if (!videoInfo) return null
+                      
+                      return (
+                        <div className="mb-8">
+                          <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-3`}>
+                            {videoInfo.type === 'youtube' ? (
+                              <iframe
+                                src={videoInfo.embedUrl}
+                                className="w-full max-w-lg mx-auto rounded-lg"
+                                style={{ height: '300px', aspectRatio: '16/9' }}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title="YouTube video"
+                              />
+                            ) : videoInfo.type === 'googledrive' ? (
+                              <iframe
+                                src={videoInfo.embedUrl}
+                                className="w-full max-w-lg mx-auto rounded-lg"
+                                style={{ height: '300px', aspectRatio: '16/9' }}
+                                frameBorder="0"
+                                allow="autoplay"
+                                title="Google Drive video"
+                              />
+                            ) : (
+                              <video 
+                                controls 
+                                className="w-full max-w-lg mx-auto rounded-lg"
+                                style={{ maxHeight: '400px' }}
+                                preload="metadata"
+                              >
+                                <source src={videoInfo.url} type="video/mp4" />
+                                <source src={videoInfo.url} type="video/webm" />
+                                Your browser does not support the video tag.
+                              </video>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })()}
                     <div className="text-center">
                       <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 rounded-full">
                         <Heart className="text-pink-500 w-4 h-4" fill="currentColor" />
@@ -766,13 +894,14 @@ export default function MessagesPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+        <div className={`text-center mt-12 mb-8 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto ${
+    isDarkMode ? 'bg-gray-800/90 border border-gray-700' : 'bg-white/95 border border-white/20'}`}>
           <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className="text-gray-600 font-medium">
+          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Every word written with love, every message crafted for you
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Happy Birthday, Jerze! 🎂✨
+          <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Happy Birthday! 🎂✨
           </p>
         </div>
       </div>

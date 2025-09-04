@@ -4,9 +4,10 @@ import dynamicImport from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
-import { ArrowLeft, Camera, Heart, Calendar, Image, Grid, List, Sparkles, Box, Gem, Crown, Star, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Camera, Heart, Calendar, Image, Grid, List, Sparkles, Box, Gem, Crown, Star, MessageCircle, ChevronUp, X } from 'lucide-react'
 import EasterEgg from '../../../components/EasterEgg'
 import { useAuth } from '../../../hooks/useAuth'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,6 +21,9 @@ export default function MemoriesPage() {
   const [viewMode, setViewMode] = useState('grid') // 'grid', 'timeline', or '3d'
   const [selectedMemory, setSelectedMemory] = useState(null)
   const [progressKey, setProgressKey] = useState(0)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const [visibleItems, setVisibleItems] = useState(new Set())
+  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
 
   // Default fallback memories
   const getDefaultMemories = () => [
@@ -90,10 +94,58 @@ export default function MemoriesPage() {
     }
   }, [isAuthenticated, authLoading, fetchMemories])
 
+  // Scroll detection for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Intersection Observer for timeline animations
+  useEffect(() => {
+    if (viewMode !== 'timeline' || !isLoaded) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const itemId = entry.target.getAttribute('data-memory-id')
+            if (itemId) {
+              setVisibleItems(prev => new Set([...prev, itemId]))
+            }
+          }
+        })
+      },
+      { 
+        threshold: 0.1,
+        rootMargin: '50px'
+      }
+    )
+
+    // Observe all timeline items
+    const timelineItems = document.querySelectorAll('[data-memory-id]')
+    timelineItems.forEach(item => observer.observe(item))
+
+    return () => {
+      timelineItems.forEach(item => observer.unobserve(item))
+    }
+  }, [viewMode, isLoaded, memories])
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }
+
   // Enhanced loading screen with memories theme
   if (authLoading || (showLoadingScreen && !isLoaded)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
         {/* Floating memory elements */}
         <div className="absolute inset-0">
           {/* Memory icons */}
@@ -123,7 +175,7 @@ export default function MemoriesPage() {
             {/* Central memory with glow */}
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl animate-love-pulse transform rotate-12"></div>
-              <div className="absolute inset-3 bg-white rounded-xl flex items-center justify-center">
+              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl flex items-center justify-center`}>
                 <Camera className="w-8 h-8 text-purple-500 animate-love-spin" />
               </div>
               {/* Orbiting memory elements */}
@@ -163,15 +215,15 @@ export default function MemoriesPage() {
             </div>
 
             {/* Progress indicator */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
               <div className="flex items-center justify-center gap-3 mb-3">
                 <div className="w-3 h-3 bg-purple-500 rounded-full animate-gentle-pulse"></div>
-                <span className="text-sm font-medium text-gray-700">Loading Sweet Memories</span>
+                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Loading Sweet Memories</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
                 <div className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full animate-love-progress"></div>
               </div>
-              <p className="text-xs text-gray-500">Get ready to relive our beautiful moments!</p>
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get ready to relive our beautiful moments!</p>
             </div>
           </div>
         </div>
@@ -410,7 +462,7 @@ export default function MemoriesPage() {
 
   if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
         {/* Floating memory icons */}
         <div className="absolute inset-0">
           <div className="absolute top-16 left-12 text-pink-300 opacity-60">
@@ -433,14 +485,14 @@ export default function MemoriesPage() {
         <div className="text-center z-10">
           {/* Memory photo loading animation */}
           <div className="relative mb-8">
-            <div className="w-32 h-24 mx-auto bg-white rounded-lg shadow-lg relative overflow-hidden">
+            <div className={`w-32 h-24 mx-auto ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg relative overflow-hidden`}>
               {/* Photo frame */}
               <div className="absolute inset-2 bg-gradient-to-br from-purple-200 to-pink-200 rounded flex items-center justify-center">
                 <Camera className="w-8 h-8 text-purple-500 animate-pulse" />
               </div>
               
               {/* Loading bars */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-200">
+              <div className={`absolute bottom-0 left-0 right-0 h-1 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
                 <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 animate-loading-bar"></div>
               </div>
             </div>
@@ -465,7 +517,7 @@ export default function MemoriesPage() {
               Loading Memories
             </span>
           </div>
-          <div className="text-purple-600 mb-6">
+          <div className={`${isDarkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>
             Gathering your special moments...
           </div>
 
@@ -526,19 +578,19 @@ export default function MemoriesPage() {
 
   if (memories.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
         <div className="container mx-auto px-4 py-8">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors mb-6"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300' : 'text-purple-600 hover:text-purple-800'} transition-colors mb-6`}
           >
             <ArrowLeft size={20} className="mr-2" />
             Back to Birthday Hub
           </Link>
           <div className="text-center mt-12">
             <Camera className="text-purple-300 w-16 h-16 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">No memories yet</h2>
-            <p className="text-gray-500">Memories will appear here when they&apos;re added to the database.</p>
+            <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>No memories yet</h2>
+            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Memories will appear here when they&apos;re added to the database.</p>
           </div>
         </div>
       </div>
@@ -546,7 +598,7 @@ export default function MemoriesPage() {
   }
 
   return (
-    <div className="center-container bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-float-slow">
@@ -568,7 +620,7 @@ export default function MemoriesPage() {
         <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-gray-800/50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
           >
             <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
@@ -582,10 +634,10 @@ export default function MemoriesPage() {
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                Our Beautiful Memories, Jerzen
+                Our Beautiful Memories
               </span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-700">
+            <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Every moment captured with love 📸
             </p>
           </div>
@@ -593,13 +645,13 @@ export default function MemoriesPage() {
 
         {/* View Mode Toggle */}
         <div className="flex justify-center items-center gap-4 card-spacing">
-          <div className="bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-lg">
+          <div className={`${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm rounded-full p-1 shadow-lg`}>
             <button
               onClick={() => setViewMode('grid')}
               className={`px-6 py-3 rounded-full transition-all min-h-[44px] ${
                 viewMode === 'grid'
                   ? 'bg-purple-500 text-white shadow-md'
-                  : 'text-purple-600 hover:bg-purple-100'
+                  : `${isDarkMode ? 'text-purple-400 hover:bg-gray-700' : 'text-purple-600 hover:bg-purple-100'}`
               }`}
             >
               <Grid size={18} className="inline mr-2" />
@@ -610,7 +662,7 @@ export default function MemoriesPage() {
               className={`px-6 py-3 rounded-full transition-all min-h-[44px] ${
                 viewMode === 'timeline'
                   ? 'bg-purple-500 text-white shadow-md'
-                  : 'text-purple-600 hover:bg-purple-100'
+                  : `${isDarkMode ? 'text-purple-400 hover:bg-gray-700' : 'text-purple-600 hover:bg-purple-100'}`
               }`}
             >
               <List size={18} className="inline mr-2" />
@@ -630,7 +682,7 @@ export default function MemoriesPage() {
                 style={{ animationDelay: `${index * 100}ms` }}
                 onClick={() => setSelectedMemory(memory)}
               >
-                <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant overflow-hidden hover:shadow-floating transition-elegant border border-white/20">
+                <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant overflow-hidden hover:shadow-floating transition-elegant`}>
                   {/* Photo placeholder */}
                   <div className="aspect-[4/3] bg-gradient-to-br from-purple-200 to-pink-200 relative overflow-hidden">
                     {memory.photo_url ? (
@@ -650,11 +702,11 @@ export default function MemoriesPage() {
                   {/* Content */}
                   <div className="p-4 sm:p-6">
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+                      <h3 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-gray-200 group-hover:text-purple-400' : 'text-gray-800 group-hover:text-purple-600'} transition-colors`}>
                         {memory.title}
                       </h3>
                       {memory.date_taken && (
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className={`flex items-center text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           <Calendar size={14} className="mr-1" />
                           {new Date(memory.date_taken).toLocaleDateString('en-US', {
                             month: 'short',
@@ -664,7 +716,7 @@ export default function MemoriesPage() {
                         </div>
                       )}
                     </div>
-                    <p className="text-gray-600 text-sm leading-relaxed">
+                    <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm leading-relaxed`}>
                       {memory.description}
                     </p>
                   </div>
@@ -682,13 +734,16 @@ export default function MemoriesPage() {
               {memories.map((memory, index) => (
                 <div
                   key={memory.id}
-                  className={`relative mb-12 animate-slide-up ${
-                    index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'
-                  }`}
-                  style={{ animationDelay: `${index * 200}ms` }}
+                  data-memory-id={memory.id}
+                  className={`relative mb-12 transition-all duration-700 transform ${
+                    visibleItems.has(memory.id) 
+                      ? 'translate-y-0 opacity-100' 
+                      : 'translate-y-8 opacity-0'
+                  } ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
                   {/* Timeline dot */}
-                  <div className="absolute left-1/2 top-6 transform -translate-x-1/2 w-4 h-4 bg-purple-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                  <div className={`absolute left-1/2 top-6 transform -translate-x-1/2 w-4 h-4 bg-purple-500 rounded-full border-4 ${isDarkMode ? 'border-gray-800' : 'border-white'} shadow-lg z-10`}></div>
                   
                   {/* Content card */}
                   <div 
@@ -697,7 +752,7 @@ export default function MemoriesPage() {
                     }`}
                     onClick={() => setSelectedMemory(memory)}
                   >
-                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden group-hover:shadow-2xl transform transition-all duration-300 group-hover:scale-[1.02]">
+                    <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden group-hover:shadow-2xl transform transition-all duration-300 group-hover:scale-[1.02]`}>
                       {/* Photo */}
                       <div className="aspect-[16/9] bg-gradient-to-br from-purple-200 to-pink-200 relative overflow-hidden">
                         {memory.photo_url ? (
@@ -705,6 +760,7 @@ export default function MemoriesPage() {
                             src={memory.photo_url} 
                             alt={memory.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -714,13 +770,13 @@ export default function MemoriesPage() {
                       </div>
                       
                       {/* Content */}
-                      <div className="p-4 sm:p-6">
+                      <div className="p-4 sm:p-6 text-left">
                         <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-bold text-gray-800 group-hover:text-purple-600 transition-colors">
+                          <h3 className={`text-lg font-bold ${isDarkMode ? 'text-gray-200 group-hover:text-purple-400' : 'text-gray-800 group-hover:text-purple-600'} transition-colors`}>
                             {memory.title}
                           </h3>
                           {memory.date_taken && (
-                            <div className="flex items-center text-sm text-purple-600">
+                            <div className={`flex items-center text-sm ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
                               <Calendar size={14} className="mr-1" />
                               {new Date(memory.date_taken).toLocaleDateString('en-US', {
                                 month: 'long',
@@ -730,7 +786,7 @@ export default function MemoriesPage() {
                             </div>
                           )}
                         </div>
-                        <p className="text-gray-600 text-sm leading-relaxed">
+                        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} text-sm leading-relaxed`}>
                           {memory.description}
                         </p>
                       </div>
@@ -743,12 +799,12 @@ export default function MemoriesPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+        <div className={`text-center mt-12 mb-8 ${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto`}>
           <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className="text-gray-600 font-medium">
+          <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
             Every photo tells our story, every memory holds our love
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-2`}>
             Creating precious moments, one memory at a time 📷✨
           </p>
         </div>
@@ -761,7 +817,7 @@ export default function MemoriesPage() {
           onClick={() => setSelectedMemory(null)}
         >
           <div 
-            className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in"
+            className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Photo */}
@@ -779,18 +835,19 @@ export default function MemoriesPage() {
               )}
               <button
                 onClick={() => setSelectedMemory(null)}
-                className="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'bg-gray-800/90 hover:bg-gray-700 text-gray-300 hover:text-white' : 'bg-white/90 hover:bg-gray-100 text-gray-600 hover:text-gray-800'} backdrop-blur-sm`}
+                aria-label="Close memory detail"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
             
             {/* Content */}
             <div className="p-6 sm:p-8">
               <div className="flex items-start justify-between mb-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{selectedMemory.title}</h2>
+                <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{selectedMemory.title}</h2>
                 {selectedMemory.date_taken && (
-                  <div className="flex items-center text-purple-600">
+                  <div className={`flex items-center ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>
                     <Calendar size={16} className="mr-2" />
                     {new Date(selectedMemory.date_taken).toLocaleDateString('en-US', {
                       weekday: 'long',
@@ -801,7 +858,7 @@ export default function MemoriesPage() {
                   </div>
                 )}
               </div>
-              <p className="text-gray-700 leading-relaxed text-base sm:text-lg">
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} leading-relaxed text-base sm:text-lg`}>
                 {selectedMemory.description}
               </p>
             </div>
@@ -830,6 +887,17 @@ export default function MemoriesPage() {
         size="medium"
       />
 
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 left-8 z-40 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-full shadow-2xl hover:shadow-purple-500/50 transform transition-all duration-300 hover:scale-110 animate-bounce-gentle"
+          aria-label="Scroll to top"
+        >
+          <ChevronUp size={24} />
+        </button>
+      )}
+
       <style jsx global>{`
         @keyframes float-slow {
           0%, 100% { transform: translateY(0px) rotate(0deg); }
@@ -856,6 +924,12 @@ export default function MemoriesPage() {
         .animate-fade-in { animation: fade-in 0.6s ease-out; }
         .animate-slide-up { animation: slide-up 0.8s ease-out; }
         .animate-scale-in { animation: scale-in 0.4s ease-out; }
+        .animate-bounce-gentle { animation: bounce-gentle 2s ease-in-out infinite; }
+        @keyframes bounce-gentle {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-4px); }
+          60% { transform: translateY(-2px); }
+        }
       `}</style>
     </div>
   )

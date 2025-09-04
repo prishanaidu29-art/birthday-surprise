@@ -2,10 +2,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Gamepad2, Heart, Zap, Brain, Trophy, Star, Play, RotateCcw, Crown, Gift, Sparkles } from 'lucide-react'
+import { ArrowLeft, Gamepad2, Heart, Zap, Brain, Trophy, Star, Play, RotateCcw, Crown, Gift, Sparkles, X } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import { useGameStats } from '../../../hooks/useGameStats'
 import GameCard from '../../../components/GameCard'
+import EasterEgg from '../../../components/EasterEgg'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +20,7 @@ export default function GamesPage() {
   // Use custom hooks for authentication and game stats
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const { gameStats, refreshStats } = useGameStats()
+  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
 
   // Memoize game selection handler to prevent unnecessary re-renders
   const handleGameSelect = useCallback((gameId) => {
@@ -74,7 +77,7 @@ export default function GamesPage() {
 
   if (authLoading || (showLoadingScreen && !isLoaded)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
         {/* Animated background particles */}
         <div className="absolute inset-0">
           <div className="absolute top-10 left-10 text-pink-300 opacity-70">
@@ -131,15 +134,15 @@ export default function GamesPage() {
           </div>
 
           {/* Progress indicator */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg mb-6 max-w-sm mx-auto">
+          <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg mb-6 max-w-sm mx-auto`}>
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="w-3 h-3 bg-purple-500 rounded-full animate-gentle-pulse"></div>
-              <span className="text-sm font-medium text-gray-700">Loading Fun Games</span>
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Loading Fun Games</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+            <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-games-progress"></div>
             </div>
-            <p className="text-xs text-gray-500">Get ready for some amazing games!</p>
+            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get ready for some amazing games!</p>
           </div>
 
           {/* Progress dots */}
@@ -250,19 +253,19 @@ export default function GamesPage() {
 
   if (activeGame) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
         <div className="container center-content mx-auto px-4 py-8">
           <div className="flex items-center justify-between mb-8">
             <button 
               onClick={handleBackToGames}
-              className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
+              className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-gray-800/50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
             >
               <ArrowLeft size={20} className="mr-3" />
               Back to Games
             </button>
             <Link 
               href="/birthday"
-              className="inline-flex items-center text-gray-600 hover:text-gray-800 transition-colors px-4 py-3 rounded-xl hover:bg-white/50"
+              className={`inline-flex items-center ${isDarkMode ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50' : 'text-gray-600 hover:text-gray-800 hover:bg-white/50'} transition-colors px-4 py-3 rounded-xl`}
             >
               Birthday Hub
             </Link>
@@ -280,7 +283,7 @@ export default function GamesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-gentle-float-slow">
@@ -302,7 +305,7 @@ export default function GamesPage() {
         <div className="text-center mb-12">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium mb-8"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-gray-800/50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium mb-8`}
           >
             <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
@@ -316,10 +319,10 @@ export default function GamesPage() {
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Fun & Games, Jerzen
+              Fun & Games
             </span>
           </h1>
-          <p className="text-lg text-gray-700">
+          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             Quick games to make your birthday extra special! 🎮
           </p>
         </div>
@@ -338,33 +341,42 @@ export default function GamesPage() {
         </div>
 
         {/* Game Statistics */}
-        {(gameStats.quickHearts > 0 || gameStats.memoryMatch > 0 || gameStats.heartsDistance > 0) && (
-          <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-4xl mx-auto border border-white/20">
+        {(gameStats.quickHearts > 0 || gameStats.memoryMatch > 0 || gameStats.heartsDistance > 0 || gameStats.heartsDistanceTime > 0) && (
+          <div className={`text-center mt-12 mb-8 ${isDarkMode ? 'bg-gray-800/95 border-gray-700/20' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-4xl mx-auto`}>
             <Trophy className="text-yellow-500 mx-auto mb-4 w-8 h-8" />
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Your Best Scores 🏆</h3>
+            <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Your Best Scores 🏆</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-2xl mx-auto">
               {gameStats.quickHearts > 0 && (
-                <div className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+                <div className={`${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl p-4`}>
                   <Zap className="w-6 h-6 text-yellow-600 mx-auto mb-2" />
-                  <div className="font-bold text-yellow-800">Quick Hearts</div>
-                  <div className="text-2xl font-bold text-yellow-600">{gameStats.quickHearts}</div>
-                  <div className="text-xs text-yellow-700">points</div>
+                  <div className={`font-bold ${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'}`}>Quick Hearts</div>
+                  <div className={`text-2xl font-bold ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>{gameStats.quickHearts}</div>
+                  <div className={`text-xs ${isDarkMode ? 'text-yellow-300' : 'text-yellow-700'}`}>points</div>
                 </div>
               )}
               {gameStats.memoryMatch > 0 && (
-                <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                <div className={`${isDarkMode ? 'bg-purple-900/30 border-purple-700' : 'bg-purple-50 border-purple-200'} rounded-xl p-4`}>
                   <Brain className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-                  <div className="font-bold text-purple-800">Memory Match</div>
-                  <div className="text-2xl font-bold text-purple-600">{gameStats.memoryMatch}</div>
-                  <div className="text-xs text-purple-700">moves</div>
+                  <div className={`font-bold ${isDarkMode ? 'text-purple-200' : 'text-purple-800'}`}>Memory Match</div>
+                  <div className={`text-2xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>{gameStats.memoryMatch}</div>
+                  <div className={`text-xs ${isDarkMode ? 'text-purple-300' : 'text-purple-700'}`}>moves</div>
                 </div>
               )}
-              {gameStats.heartsDistance > 0 && (
-                <div className="bg-pink-50 rounded-xl p-4 border border-pink-200">
+              {(gameStats.heartsDistance > 0 || gameStats.heartsDistanceTime > 0) && (
+                <div className={`${isDarkMode ? 'bg-pink-900/30 border-pink-700' : 'bg-pink-50 border-pink-200'} rounded-xl p-4`}>
                   <Heart className="w-6 h-6 text-pink-600 mx-auto mb-2" fill="currentColor" />
-                  <div className="font-bold text-pink-800">Hearts Distance</div>
-                  <div className="text-2xl font-bold text-pink-600">{gameStats.heartsDistance}</div>
-                  <div className="text-xs text-pink-700">hearts</div>
+                  <div className={`font-bold ${isDarkMode ? 'text-pink-200' : 'text-pink-800'}`}>Hearts Distance</div>
+                  {gameStats.heartsDistanceTime > 0 ? (
+                    <>
+                      <div className={`text-2xl font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'}`}>⏱️ {gameStats.heartsDistanceTime}s</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-pink-300' : 'text-pink-700'}`}>to collect 30 hearts</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={`text-2xl font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'}`}>{gameStats.heartsDistance}</div>
+                      <div className={`text-xs ${isDarkMode ? 'text-pink-300' : 'text-pink-700'}`}>hearts</div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -372,12 +384,12 @@ export default function GamesPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+        <div className={`text-center mt-8 ${isDarkMode ? 'bg-gray-800/95 border-gray-700/20' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto`}>
           <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className="text-gray-600 font-medium">
+          <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>
             Made with love for the most amazing person in my world
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mt-2`}>
             Every game is a new way to celebrate you! 🎉
           </p>
         </div>
@@ -416,6 +428,7 @@ export default function GamesPage() {
 
 // Mini-game components will be implemented here
 function MemoryMatchGame() {
+  const { isDarkMode } = useDarkMode()
   const [cards, setCards] = useState([])
   const [flippedCards, setFlippedCards] = useState([])
   const [matchedCards, setMatchedCards] = useState([])
@@ -518,14 +531,14 @@ function MemoryMatchGame() {
 
   if (!gameStarted) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <Brain className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-gentle-glow" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Memory Match</h2>
-        <p className="text-gray-600 mb-6">Match pairs of love-themed cards! Test your memory skills! 💕</p>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Memory Match</h2>
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>Match pairs of love-themed cards! Test your memory skills! 💕</p>
         
-        <div className="bg-pink-50 rounded-2xl p-4 mb-6">
-          <h3 className="font-bold text-pink-800 mb-2">How to Play:</h3>
-          <div className="text-sm text-pink-700 space-y-1">
+        <div className={`${isDarkMode ? 'bg-pink-900/30' : 'bg-pink-50'} rounded-2xl p-4 mb-6`}>
+          <h3 className={`font-bold ${isDarkMode ? 'text-pink-200' : 'text-pink-800'} mb-2`}>How to Play:</h3>
+          <div className={`text-sm ${isDarkMode ? 'text-pink-300' : 'text-pink-700'} space-y-1`}>
             <p>• Click cards to flip them over</p>
             <p>• Find matching pairs of identical cards</p>
             <p>• Match all pairs with the fewest moves!</p>
@@ -534,8 +547,8 @@ function MemoryMatchGame() {
         </div>
 
         {bestScore && (
-          <div className="mb-4 p-3 bg-purple-50 rounded-xl border border-purple-200">
-            <p className="text-purple-800 font-semibold">🏆 Best Score: {bestScore} moves</p>
+          <div className={`mb-4 p-3 ${isDarkMode ? 'bg-purple-900/30 border-purple-700' : 'bg-purple-50 border-purple-200'} rounded-xl`}>
+            <p className={`${isDarkMode ? 'text-purple-200' : 'text-purple-800'} font-semibold`}>🏆 Best Score: {bestScore} {bestScore === 1 ? 'move' : 'moves'}</p>
           </div>
         )}
         
@@ -552,35 +565,49 @@ function MemoryMatchGame() {
 
   if (gameWon) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Congratulations!</h2>
-        <div className="text-3xl font-bold text-purple-600 mb-2">{moves} Moves</div>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Congratulations!</h2>
+        <div className={`text-3xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'} mb-2`}>{moves} Moves</div>
         
         {moves === bestScore && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-            <p className="text-yellow-800 font-bold">🎉 New Best Score!</p>
+          <div className={`${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl p-4 mb-4`}>
+            <p className={`${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'} font-bold`}>🎉 New Best Score!</p>
           </div>
         )}
 
-        {/* Video placeholder */}
+        {/* Victory Video - Memory Match */}
         <div className="flex justify-center mb-4">
           <div className="bg-black rounded-xl overflow-hidden shadow-lg max-w-sm w-full">
-          <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
+            <video 
+              controls 
+              className="w-full h-full rounded-xl"
+              style={{ aspectRatio: '16/9' }}
+              preload="metadata"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            >
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            {/* Fallback placeholder when video fails */}
+            <div className="aspect-video items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white hidden">
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold mb-1">🎉 Victory Video</p>
+                <p className="text-xs text-gray-300">Video temporarily unavailable</p>
               </div>
-              <p className="text-sm font-semibold mb-1">🎉 Victory Video</p>
-              <p className="text-xs text-gray-300">Your message plays here!</p>
             </div>
-          </div>
           </div>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
           {moves <= 8 ? "Perfect memory! You're amazing! 🧠💕" :
            moves <= 12 ? "Great job, my smart cookie! 🌟" :
            moves <= 16 ? "Well done! Your memory is impressive! 💖" :
@@ -608,7 +635,7 @@ function MemoryMatchGame() {
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+    <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden`}>
       {/* Game Header */}
       <div className="bg-gradient-to-r from-purple-400 to-pink-500 p-4 text-white">
         <div className="flex justify-between items-center">
@@ -647,8 +674,8 @@ function MemoryMatchGame() {
                   </div>
                   
                   {/* Card Front */}
-                  <div className={`absolute inset-0 rounded-xl bg-white border-2 ${
-                    isMatched ? 'border-yellow-300 bg-yellow-50' : 'border-gray-200'
+                  <div className={`absolute inset-0 rounded-xl ${isDarkMode ? 'bg-gray-700' : 'bg-white'} border-2 ${
+                    isMatched ? (isDarkMode ? 'border-yellow-600 bg-yellow-800/30' : 'border-yellow-300 bg-yellow-50') : (isDarkMode ? 'border-gray-600' : 'border-gray-200')
                   } flex items-center justify-center transform rotate-y-180 ${
                     isFlipped ? 'opacity-100' : 'opacity-0'
                   }`}>
@@ -666,8 +693,8 @@ function MemoryMatchGame() {
 
       {/* Instructions */}
       <div className="text-center pb-6 py-4">
-        <div className="bg-purple-50 rounded-xl px-4 py-4 inline-block">
-          <p className="text-sm font-medium text-purple-700">
+        <div className={`${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'} rounded-xl px-4 py-4 inline-block`}>
+          <p className={`text-sm font-medium ${isDarkMode ? 'text-purple-200' : 'text-purple-700'}`}>
             Find all matching pairs! Click cards to flip them over 💕
           </p>
         </div>
@@ -683,6 +710,7 @@ function MemoryMatchGame() {
 }
 
 function HeartsDistanceGame() {
+  const { isDarkMode } = useDarkMode()
   const [gameStarted, setGameStarted] = useState(false)
   const [gameWon, setGameWon] = useState(false)
   const [gameOver, setGameOver] = useState(false)
@@ -696,17 +724,22 @@ function HeartsDistanceGame() {
   const [timeLeft, setTimeLeft] = useState(60)
   const [score, setScore] = useState(0)
   const [highScore, setHighScore] = useState(0)
+  const [completionTime, setCompletionTime] = useState(0)
+  const [bestTime, setBestTime] = useState(0)
   const gameAreaRef = useRef(null)
   const keysPressed = useRef({})
   const playerPositionRef = useRef({ x: 50, y: 50 })
   const monsterRef = useRef({ x: 10, y: 10 })
   const animationFrameRef = useRef(null)
 
-  // Load high score
+  // Load high score and best time
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('heartsDistance_highScore')
       if (saved) setHighScore(parseInt(saved))
+      
+      const savedTime = localStorage.getItem('heartsDistance_bestTime')
+      if (savedTime) setBestTime(parseInt(savedTime))
     }
   }, [])
 
@@ -958,14 +991,26 @@ function HeartsDistanceGame() {
     if (collectedHearts.length >= 30) {
       setGameStarted(false)
       setGameWon(true)
+      
+      // Calculate completion time (60 - timeLeft)
+      const finalCompletionTime = 60 - timeLeft
+      setCompletionTime(finalCompletionTime)
+      
       setTimeout(() => setShowVictoryModal(true), 1000)
-      // Save high score
+      
+      // Save completion time if it's a new best time (faster = better)
       if (typeof window !== 'undefined') {
         localStorage.setItem('heartsDistance_highScore', collectedHearts.length.toString())
         setHighScore(collectedHearts.length)
+        
+        // Save best time (lower is better, or first completion)
+        if (finalCompletionTime < bestTime || bestTime === 0) {
+          localStorage.setItem('heartsDistance_bestTime', finalCompletionTime.toString())
+          setBestTime(finalCompletionTime)
+        }
       }
     }
-  }, [collectedHearts.length])
+  }, [collectedHearts.length, timeLeft, bestTime])
 
   const startGame = () => {
     // Reset all game state
@@ -976,6 +1021,7 @@ function HeartsDistanceGame() {
     setCollectedHearts([])
     setScore(0)
     setTimeLeft(60)
+    setCompletionTime(0)
     setShowVictoryModal(false)
     
     // Reset positions
@@ -1009,6 +1055,7 @@ function HeartsDistanceGame() {
     setObstacles([])
     setScore(0)
     setTimeLeft(60)
+    setCompletionTime(0)
     playerPositionRef.current = { x: 50, y: 50 }
     monsterRef.current = { x: 10, y: 10 }
     
@@ -1018,14 +1065,14 @@ function HeartsDistanceGame() {
 
   if (!gameStarted && !gameOver && !gameWon) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
-        <Heart className="w-16 h-16 text-pink-500 mx-auto mb-4 animate-gentle-glow" fill="currentColor" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Hearts Across Distance</h2>
-        <p className="text-gray-600 mb-6">Navigate through space and collect all the hearts! A 3D adventure of love! 💕</p>
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
+        <Heart className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" fill="currentColor" />
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Hearts Across Distance</h2>
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>Navigate through space and collect all the hearts! A 3D adventure of love! 💕</p>
         
-        <div className="bg-pink-50 rounded-2xl p-4 mb-6">
-          <h3 className="font-bold text-pink-800 mb-2">How to Play:</h3>
-          <div className="text-sm text-pink-700 space-y-1">
+        <div className={`${isDarkMode ? 'bg-pink-900/30' : 'bg-pink-50'} rounded-2xl p-4 mb-6`}>
+          <h3 className={`font-bold ${isDarkMode ? 'text-pink-200' : 'text-pink-800'} mb-2`}>How to Play:</h3>
+          <div className={`text-sm ${isDarkMode ? 'text-pink-300' : 'text-pink-700'} space-y-1`}>
             <p>• Use WASD or Arrow keys to move</p>
             <p>• Hearts are magnetically attracted to you! 🧲✨</p>
             <p>• Collect all 30 hearts floating in space</p>
@@ -1036,8 +1083,8 @@ function HeartsDistanceGame() {
         </div>
 
         {highScore > 0 && (
-          <div className="mb-4 p-3 bg-pink-50 rounded-xl border border-pink-200">
-            <p className="text-pink-800 font-semibold">🏆 Best Score: {highScore} hearts</p>
+          <div className={`mb-4 p-3 ${isDarkMode ? 'bg-pink-900/30 border-pink-700' : 'bg-pink-50 border-pink-200'} rounded-xl`}>
+            <p className={`${isDarkMode ? 'text-pink-200' : 'text-pink-800'} font-semibold`}>🏆 Best Score: {highScore} {highScore === 1 ? 'heart' : 'hearts'}</p>
           </div>
         )}
         
@@ -1054,18 +1101,18 @@ function HeartsDistanceGame() {
 
   if (gameOver) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Time's Up!</h2>
-        <div className="text-3xl font-bold text-pink-600 mb-2">{collectedHearts.length} Hearts</div>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Time's Up!</h2>
+        <div className={`text-3xl font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'} mb-2`}>{collectedHearts.length} Hearts</div>
         
         {collectedHearts.length === highScore && collectedHearts.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-            <p className="text-yellow-800 font-bold">🎉 New Best Score!</p>
+          <div className={`${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl p-4 mb-4`}>
+            <p className={`${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'} font-bold`}>🎉 New Best Score!</p>
           </div>
         )}
 
-        <p className="text-gray-600 mb-6">
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
           {collectedHearts.length >= 30 ? "Perfect! All hearts collected! 💕" :
            collectedHearts.length >= 20 ? "Amazing! Most hearts collected! 🌟" :
            collectedHearts.length >= 10 ? "Good effort! Keep trying! 💖" :
@@ -1094,7 +1141,7 @@ function HeartsDistanceGame() {
 
   if (gameWon) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <div className="relative mb-6">
           <Heart className="w-16 h-16 text-pink-500 mx-auto animate-gentle-glow" fill="currentColor" />
           <div className="absolute inset-0 animate-gentle-pulse">
@@ -1102,23 +1149,37 @@ function HeartsDistanceGame() {
           </div>
         </div>
         
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Victory! 🎉</h2>
-        <div className="text-3xl font-bold text-pink-600 mb-4">All Hearts Collected!</div>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Victory! 🎉</h2>
+        <div className={`text-3xl font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'} mb-4`}>All Hearts Collected!</div>
         
-        {/* Video placeholder */}
+        {/* Victory Video - Hearts Across Distance Main Victory */}
         <div className="flex justify-center mb-4">
           <div className="bg-black rounded-xl overflow-hidden shadow-lg max-w-sm w-full">
-          <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
+            <video 
+              controls 
+              className="w-full h-full rounded-xl"
+              style={{ aspectRatio: '16/9' }}
+              preload="metadata"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            >
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            {/* Fallback placeholder when video fails */}
+            <div className="aspect-video items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white hidden">
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold mb-1">🎉 Victory Video</p>
+                <p className="text-xs text-gray-300">Video temporarily unavailable</p>
               </div>
-              <p className="text-sm font-semibold mb-1">🎉 Victory Video</p>
-              <p className="text-xs text-gray-300">Your message plays here!</p>
             </div>
-          </div>
           </div>
         </div>
         
@@ -1197,7 +1258,7 @@ function HeartsDistanceGame() {
               <div className="w-full h-full border border-yellow-300 rounded-full bg-yellow-200/20"></div>
             </div>
             
-            {/* Player initial "J" for Jerzen */}
+            {/* Player initial */}
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-white font-bold text-sm">J</span>
             </div>
@@ -1387,17 +1448,17 @@ function HeartsDistanceGame() {
 
           {/* Game Status */}
           <div className="absolute top-4 left-4 right-4 flex justify-between items-center z-30">
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
-              <div className="text-sm font-bold text-gray-800">Hearts: {collectedHearts.length}/30</div>
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg`}>
+              <div className={`text-sm font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Hearts: {collectedHearts.length}/30</div>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg">
-              <div className="text-sm font-bold text-gray-800">Time: {timeLeft}s</div>
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg`}>
+              <div className={`text-sm font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Time: {timeLeft}s</div>
             </div>
             <button 
               onClick={() => setGamePaused(prev => !prev)}
-              className="bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg hover:bg-white/100 transition-all"
+              className={`${isDarkMode ? 'bg-gray-800/90 hover:bg-gray-800/100' : 'bg-white/90 hover:bg-white/100'} backdrop-blur-sm rounded-xl px-4 py-2 shadow-lg transition-all`}
             >
-              <div className="text-sm font-bold text-gray-800">
+              <div className={`text-sm font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
                 {gamePaused ? '▶️' : '⏸️'}
               </div>
             </button>
@@ -1405,8 +1466,8 @@ function HeartsDistanceGame() {
 
           {/* Instructions */}
           <div className="absolute bottom-4 left-4 right-4 text-center">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-3 inline-block shadow-lg">
-              <p className="text-sm font-medium text-gray-700">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-6 py-3 inline-block shadow-lg`}>
+              <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 Use WASD or Arrow keys • Hearts are magnetically attracted! 🧲 • Avoid obstacles & monster • Space/Esc to pause!
               </p>
             </div>
@@ -1416,11 +1477,11 @@ function HeartsDistanceGame() {
         {/* Pause Overlay */}
         {gamePaused && gameStarted && (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white/95 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center max-w-md mx-4">
+            <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-md rounded-3xl p-8 shadow-2xl text-center max-w-md mx-4`}>
               <div className="text-6xl mb-4">⏸️</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Game Paused</h2>
-              <p className="text-gray-600 mb-6">
-                Press <kbd className="px-2 py-1 bg-gray-200 rounded text-sm">Space</kbd> or <kbd className="px-2 py-1 bg-gray-200 rounded text-sm">Esc</kbd> to resume
+              <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Game Paused</h2>
+              <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
+                Press <kbd className={`px-2 py-1 ${isDarkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200'} rounded text-sm`}>Space</kbd> or <kbd className={`px-2 py-1 ${isDarkMode ? 'bg-gray-600 text-gray-200' : 'bg-gray-200'} rounded text-sm`}>Esc</kbd> to resume
               </p>
               <button 
                 onClick={() => setGamePaused(false)}
@@ -1435,38 +1496,79 @@ function HeartsDistanceGame() {
         {/* Victory Modal */}
         {showVictoryModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center animate-scale-in">
+            <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center animate-scale-in relative`}>
+              {/* Close button */}
+              <button
+                onClick={() => setShowVictoryModal(false)}
+                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+                aria-label="Close victory modal"
+              >
+                <X size={20} />
+              </button>
               <div className="mb-6">
                 <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">Congratulations!</h2>
-                <p className="text-gray-600 mb-6">
-                  You found and collected every single heart! Just like how you've captured my heart completely. 💕
+                <h2 className={`text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2`}>Congratulations!</h2>
+                
+                {/* Completion Stats */}
+                <div className={`${isDarkMode ? 'bg-gray-700 border-yellow-600' : 'bg-white border-yellow-200'} rounded-xl p-4 mb-4`}>
+                  <div className={`text-2xl font-bold ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'} mb-2`}>⏱️ {completionTime}s</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Completion Time</div>
+                  
+                  {completionTime === bestTime && (
+                    <div className={`mt-2 ${isDarkMode ? 'bg-yellow-900/30 text-yellow-200' : 'bg-yellow-50 text-yellow-800'} px-3 py-1 rounded-full text-xs font-bold`}>
+                      🎉 New Best Time!
+                    </div>
+                  )}
+                  
+                  {bestTime > 0 && completionTime !== bestTime && (
+                    <div className={`mt-2 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Best: {bestTime}s
+                    </div>
+                  )}
+                </div>
+                
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
+                  You found and collected every single heart in {completionTime} seconds! Just like how you've captured my heart completely. 💕
                 </p>
               </div>
               
               {/* Video message section */}
-              <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl p-8 mb-6">
+              <div className={`${isDarkMode ? 'bg-gradient-to-br from-purple-900/30 to-pink-900/30' : 'bg-gradient-to-br from-purple-100 to-pink-100'} rounded-2xl p-8 mb-6`}>
                 <Heart className="w-12 h-12 text-yellow-500 mx-auto mb-4 animate-gentle-glow" fill="currentColor" />
                 
-                {/* Video placeholder */}
+                {/* Victory Video - Hearts Across Distance */}
                 <div className="bg-black rounded-xl mb-4 overflow-hidden shadow-lg max-w-sm mx-auto">
-                  <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-                    <div className="text-center">
+                  <video 
+                    controls 
+                    className="w-full h-full rounded-xl"
+                    style={{ aspectRatio: '16/9' }}
+                    preload="metadata"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  >
+                    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  {/* Fallback placeholder when video fails */}
+                  <div className="aspect-video items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white hidden">
+                    <div className="text-center p-4">
                       <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <p className="text-sm font-semibold mb-1">🎥 Personal Video Message</p>
-                      <p className="text-xs text-gray-300">Your special message plays here!</p>
+                      <p className="text-xs text-gray-300">Video temporarily unavailable</p>
                     </div>
                   </div>
                 </div>
                 
-                <p className="text-gray-700 italic text-lg leading-relaxed">
-                  "My dearest Jerzen, you've just completed a journey to collect hearts, 
-                  just like how you've traveled across distance to capture mine. Every heart in this game 
-                  represents a reason why I love you. Happy Birthday, my cutie ganda! 
+                <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} italic text-lg leading-relaxed`}>
+                  "You've just completed a journey to collect hearts! 
+                  Every heart in this game represents something special. 
+                  Congratulations on completing this adventure! Happy Birthday! 
                   Even miles apart, my love for you knows no bounds. 💜"
                 </p>
               </div>
@@ -1548,7 +1650,7 @@ function HeartsDistanceGame() {
 
       {highScore > 0 && (
         <div className="mb-4 p-3 bg-pink-50 rounded-xl border border-pink-200">
-          <p className="text-pink-800 font-semibold">🏆 Best Score: {highScore} hearts</p>
+          <p className="text-pink-800 font-semibold">🏆 Best Score: {highScore} {highScore === 1 ? 'heart' : 'hearts'}</p>
         </div>
       )}
       
@@ -1682,7 +1784,7 @@ function WordAssociationGameOriginal() {
     const finalScore = gameFinished ? score : 0
 
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         {gameFinished ? (
           <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
         ) : (
@@ -1698,12 +1800,12 @@ function WordAssociationGameOriginal() {
             <div className="text-3xl font-bold text-pink-600 mb-2">{finalScore} / {questions.length}</div>
             
             {finalScore === bestScore && finalScore > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-                <p className="text-yellow-800 font-bold">🎉 New Best Score!</p>
+              <div className={`${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl p-4 mb-4`}>
+                <p className={`${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'} font-bold`}>🎉 New Best Score!</p>
               </div>
             )}
 
-            <p className="text-gray-600 mb-6">
+            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
               {finalScore === questions.length ? "Perfect! You understand love beautifully! 💕" :
                finalScore >= questions.length - 1 ? "Amazing! You really get relationships! 🌟" :
                finalScore >= Math.floor(questions.length / 2) ? "Great job! Love is in your heart! 💖" :
@@ -1729,7 +1831,7 @@ function WordAssociationGameOriginal() {
           </>
         ) : (
           <>
-            <p className="text-gray-600 mb-6">Test your knowledge about love and relationships! Answer questions about what makes love special! 💝</p>
+            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>Test your knowledge about love and relationships! Answer questions about what makes love special! 💝</p>
             
             <div className="bg-blue-50 rounded-2xl p-4 mb-6">
               <h3 className="font-bold text-blue-800 mb-2">How to Play:</h3>
@@ -1763,7 +1865,7 @@ function WordAssociationGameOriginal() {
   const question = questions[currentQuestion]
   
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+    <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-pink-400 to-purple-500 p-4 text-white">
         <div className="flex justify-between items-center">
@@ -1838,6 +1940,7 @@ function WordAssociationGameOriginal() {
 }
 
 function ReflexGame() {
+  const { isDarkMode } = useDarkMode()
   const [gameStarted, setGameStarted] = useState(false)
   const [score, setScore] = useState(0)
   const [timeLeft, setTimeLeft] = useState(20)
@@ -1951,14 +2054,14 @@ function ReflexGame() {
 
   if (!gameStarted && !gameOver) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <Zap className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Hearts</h2>
-        <p className="text-gray-600 mb-6">Catch the falling hearts as fast as you can! Golden hearts are worth 50 points! 💛</p>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Quick Hearts</h2>
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>Catch the falling hearts as fast as you can! Golden hearts are worth 50 points! 💛</p>
         
-        <div className="bg-purple-50 rounded-2xl p-4 mb-6">
-          <h3 className="font-bold text-purple-800 mb-2">How to Play:</h3>
-          <div className="text-sm text-purple-700 space-y-1">
+        <div className={`${isDarkMode ? 'bg-purple-900/30' : 'bg-purple-50'} rounded-2xl p-4 mb-6`}>
+          <h3 className={`font-bold ${isDarkMode ? 'text-purple-200' : 'text-purple-800'} mb-2`}>How to Play:</h3>
+          <div className={`text-sm ${isDarkMode ? 'text-purple-300' : 'text-purple-700'} space-y-1`}>
             <p>• Click hearts before they disappear (2.5 seconds)</p>
             <p>• Normal hearts: 10 points 💖</p>
             <p>• Golden hearts: 50 points 💛</p>
@@ -1967,8 +2070,8 @@ function ReflexGame() {
         </div>
 
         {highScore > 0 && (
-          <div className="mb-4 p-3 bg-yellow-50 rounded-xl border border-yellow-200">
-            <p className="text-yellow-800 font-semibold">🏆 High Score: {highScore}</p>
+          <div className={`mb-4 p-3 ${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl`}>
+            <p className={`${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'} font-semibold`}>🏆 High Score: {highScore}</p>
           </div>
         )}
         
@@ -1985,35 +2088,49 @@ function ReflexGame() {
 
   if (gameOver) {
     return (
-      <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center">
+      <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 text-center`}>
         <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4 animate-gentle-glow" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Game Over!</h2>
-        <div className="text-3xl font-bold text-purple-600 mb-2">{score} Points</div>
+        <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Game Over!</h2>
+        <div className={`text-3xl font-bold ${isDarkMode ? 'text-purple-400' : 'text-purple-600'} mb-2`}>{score} Points</div>
         
         {score === highScore && score > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
-            <p className="text-yellow-800 font-bold">🎉 New High Score!</p>
+          <div className={`${isDarkMode ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} rounded-xl p-4 mb-4`}>
+            <p className={`${isDarkMode ? 'text-yellow-200' : 'text-yellow-800'} font-bold`}>🎉 New High Score!</p>
           </div>
         )}
 
-        {/* Video placeholder */}
+        {/* Victory Video - Quick Hearts */}
         <div className="flex justify-center mb-4">
           <div className="bg-black rounded-xl overflow-hidden shadow-lg max-w-sm w-full">
-          <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-                </svg>
+            <video 
+              controls 
+              className="w-full h-full rounded-xl"
+              style={{ aspectRatio: '16/9' }}
+              preload="metadata"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            >
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            {/* Fallback placeholder when video fails */}
+            <div className="aspect-video items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900 text-white hidden">
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold mb-1">⚡ Victory Video</p>
+                <p className="text-xs text-gray-300">Video temporarily unavailable</p>
               </div>
-              <p className="text-sm font-semibold mb-1">⚡ Victory Video</p>
-              <p className="text-xs text-gray-300">Your message plays here!</p>
             </div>
-          </div>
           </div>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
           {score >= 200 ? "Amazing reflexes! You're incredible! 💕" :
            score >= 150 ? "Great job, my love! 🌟" :
            score >= 100 ? "Not bad! Practice makes perfect! 💖" :
@@ -2042,7 +2159,7 @@ function ReflexGame() {
   }
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden">
+    <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden`}>
       {/* Game Header */}
       <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-4 text-white">
         <div className="flex justify-between items-center">
@@ -2057,7 +2174,7 @@ function ReflexGame() {
       {/* Game Area */}
       <div 
         ref={gameAreaRef}
-        className="relative bg-gradient-to-br from-pink-50 to-purple-50 h-96 overflow-hidden cursor-pointer select-none"
+        className={`relative ${isDarkMode ? 'bg-gradient-to-br from-gray-700 to-gray-800' : 'bg-gradient-to-br from-pink-50 to-purple-50'} h-96 overflow-hidden cursor-pointer select-none`}
       >
         {hearts.map(heart => (
           <div
@@ -2092,13 +2209,22 @@ function ReflexGame() {
 
         {/* Game Instructions */}
         <div className="absolute bottom-4 left-4 right-4 text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-2 inline-block shadow-md">
-            <p className="text-sm font-medium text-gray-700">
+          <div className={`${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm rounded-xl px-4 py-2 inline-block shadow-md`}>
+            <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
               Click the hearts before they disappear! Golden hearts = 50 pts! 💛
             </p>
           </div>
         </div>
       </div>
+
+      {/* Hidden Easter Egg */}
+      <EasterEgg 
+        id="egg-7"
+        bottom="25%"
+        left="12%"
+        message="Ready to play some birthday games? 🎮🎂"
+        size="medium"
+      />
     </div>
   )
 }

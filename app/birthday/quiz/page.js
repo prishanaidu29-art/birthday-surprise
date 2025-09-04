@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '../../../lib/supabase'
 import { ArrowLeft, Brain, Heart, CheckCircle, XCircle, Trophy, RotateCcw, Sparkles, Star, HelpCircle, Lightbulb } from 'lucide-react'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 export default function QuizPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function QuizPage() {
   const [showResults, setShowResults] = useState(false)
   const [score, setScore] = useState(0)
   const [quizStarted, setQuizStarted] = useState(false)
+  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
 
   // Check authentication
   useEffect(() => {
@@ -37,44 +39,44 @@ export default function QuizPage() {
     {
       id: 1,
       question: "When did we first meet?",
-      options: ["Adeng & Jecel's wedding", "Gatorade run", "SM North Edsa", "Melbourne"],
+      options: ["At a wedding", "At a coffee shop", "At a mall", "At the airport"],
       correct: 0,
-      explanation: "Pagkita mo palang sa akin type mo na ako! hahaha jk ✨"
+      explanation: "It was love at first sight! ✨"
     },
     {
       id: 2,
-      question: "What's your first pasalubong sa akin?",
-      options: ["Katinko", "White flower", "Nvidia GeForce RTX 4090 GPU", "Cereal treat from Baguio"],
+      question: "What was the first gift you gave me?",
+      options: ["Flowers", "Chocolate", "A book", "A special treat"],
       correct: 3,
-      explanation: "Taray ang pogi ko naman may pasalubong yung chix! 💫"
+      explanation: "It was such a thoughtful surprise! 💫"
     },
     {
       id: 3,
       question: "First movie that we watched together?",
-      options: ["American Pie", "Get Out", "Inside Out 2", "Twister"],
+      options: ["A comedy", "A thriller", "An animated movie", "An action movie"],
       correct: 2,
-      explanation: "Jan din tayo nag first share ng pop corn! 😄"
+      explanation: "We shared popcorn for the first time! 😄"
     },
     {
       id: 4,
       question: "First flower that I gave you?",
       options: ["Pink Roses", "Sunflower", "White flower", "Yellow Tulips"],
       correct: 3,
-      explanation: "Yan yung may paparazzi pa sa EastWest bank! 💛"
+      explanation: "Such a sweet moment we shared! 💛"
     },
     {
       id: 5,
-      question: "Saan kami kumain when I first met your family?",
-      options: ["Kenny Rogers", "Manam", "Max's Restaurant", "Mesa"],
+      question: "Where did we eat when I first met your family?",
+      options: ["A chicken restaurant", "A Filipino restaurant", "A steakhouse", "A casual dining place"],
       correct: 1,
-      explanation: "Ang galing nga pinatugtog din yung Dilaw doon so napakwento tuloy ako haha! 🍽️"
+      explanation: "It was such a memorable dinner together! 🍽️"
     },
     {
       id: 6,
       question: "What am I most grateful for?",
       options: ["My career", "My health", "Finding you", "My dreams coming true"],
       correct: 2,
-      explanation: "Finding you changed everything. You're my greatest blessing and my favorite person. 💕💛"
+      explanation: "Finding you changed everything. You're my greatest blessing! 💕💛"
     }
   ]
 
@@ -143,12 +145,12 @@ export default function QuizPage() {
   // Enhanced loading screen with quiz/brain theme
   if (showLoadingScreen && !isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-100'} overflow-hidden relative`}>
         <div className="text-center z-10 max-w-lg mx-auto px-6">
           <div className="relative mb-8">
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full animate-brain-pulse"></div>
-              <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-full flex items-center justify-center`}>
                 <Brain className="w-8 h-8 text-blue-500 animate-brain-bounce" />
               </div>
             </div>
@@ -162,11 +164,11 @@ export default function QuizPage() {
                 Preparing fun questions for you...
               </p>
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
               <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
                 <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-quiz-progress"></div>
               </div>
-              <p className="text-xs text-gray-500">Get ready to test your knowledge!</p>
+              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get ready to test your knowledge!</p>
             </div>
           </div>
         </div>
@@ -191,7 +193,7 @@ export default function QuizPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
         {/* Floating quiz elements */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-16 text-purple-400 opacity-60">
@@ -216,7 +218,7 @@ export default function QuizPage() {
           <div className="relative mb-8">
             <div className="w-24 h-32 mx-auto bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg shadow-xl relative transform rotate-12 animate-book-flip">
               {/* Book pages */}
-              <div className="absolute inset-2 bg-white rounded flex flex-col justify-center items-center">
+              <div className={`absolute inset-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded flex flex-col justify-center items-center`}>
                 <div className="w-12 h-1 bg-purple-300 rounded mb-1"></div>
                 <div className="w-8 h-1 bg-pink-300 rounded mb-1"></div>
                 <div className="w-10 h-1 bg-blue-300 rounded"></div>
@@ -307,7 +309,7 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="center-container bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
       {/* Animated background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-bounce">
@@ -329,7 +331,7 @@ export default function QuizPage() {
         <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-purple-600 hover:text-purple-800 transition-colors px-4 py-3 rounded-xl hover:bg-purple-50 font-medium"
+            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-900/20' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
           >
             <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
@@ -343,11 +345,11 @@ export default function QuizPage() {
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                How Well Do You Know Jerzen?
+                How Well Do You Know Me?
               </span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-700">
-              A fun quiz to test your knowledge about your cutie ganda! 🧠💕
+            <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              A fun quiz to test your knowledge! 🧠💕
             </p>
           </div>
         </div>
@@ -355,18 +357,18 @@ export default function QuizPage() {
         {!quizStarted ? (
           // Quiz intro
           <div className="max-w-2xl mx-auto px-2 sm:px-0">
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 text-center animate-scale-in border border-white/20">
+            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 text-center animate-scale-in`}>
               <div className="icon-container-xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg inline-block mb-6">
                 <Trophy className="text-white w-8 h-8" />
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Ready for the Challenge?</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Ready for the Challenge?</h2>
+              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-6 leading-relaxed`}>
                 I&apos;ve prepared {questions.length} questions about myself. Let&apos;s see how much you&apos;ve been paying attention! 
                 Each question has one correct answer, and I&apos;ll share little secrets about myself along the way.
               </p>
-              <div className="bg-purple-50 rounded-2xl p-6 mb-8">
-                <h3 className="font-semibold text-purple-800 mb-2">Quiz Rules:</h3>
-                <ul className="text-purple-700 text-sm space-y-1">
+              <div className={`${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50'} rounded-2xl p-6 mb-8`}>
+                <h3 className={`font-semibold ${isDarkMode ? 'text-purple-300' : 'text-purple-800'} mb-2`}>Quiz Rules:</h3>
+                <ul className={`${isDarkMode ? 'text-purple-400' : 'text-purple-700'} text-sm space-y-1`}>
                   <li>• {questions.length} multiple choice questions</li>
                   <li>• Take your time - no rush!</li>
                   <li>• You can go back and change answers</li>
@@ -405,8 +407,8 @@ export default function QuizPage() {
             </div>
 
             {/* Question card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 animate-fade-in border border-white/20 w-full">
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 quiz-question text-center mb-8 min-h-[4rem] flex items-center justify-center">
+            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 animate-fade-in w-full`}>
+              <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} quiz-question text-center mb-8 min-h-[4rem] flex items-center justify-center`}>
                 {questions[currentQuestion].question}
               </h2>
 
@@ -417,8 +419,8 @@ export default function QuizPage() {
                     onClick={() => handleAnswerSelect(currentQuestion, index)}
                     className={`w-full p-4 text-left rounded-2xl border-2 transition-all transform hover:scale-[1.02] ${
                       selectedAnswers[currentQuestion] === index
-                        ? 'border-purple-500 bg-purple-50 shadow-lg'
-                        : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-25'
+                        ? `border-purple-500 ${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50'} shadow-lg`
+                        : `${isDarkMode ? 'border-gray-600 bg-gray-800/50 hover:border-purple-400 hover:bg-purple-900/10' : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-25'}`
                     }`}
                   >
                     <div className="flex items-center">
@@ -428,13 +430,13 @@ export default function QuizPage() {
                           : 'border-gray-300'
                       }`}>
                         {selectedAnswers[currentQuestion] === index && (
-                          <div className="w-2 h-2 bg-white rounded-full"></div>
+                          <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-200' : 'bg-white'} rounded-full`}></div>
                         )}
                       </div>
                       <span className={`font-medium ml-3 ${
                         selectedAnswers[currentQuestion] === index
                           ? 'text-purple-700'
-                          : 'text-gray-700'
+                          : isDarkMode ? 'text-gray-300' : 'text-gray-700'
                       }`}>
                         {option}
                       </span>
@@ -448,7 +450,7 @@ export default function QuizPage() {
                 <button
                   onClick={prevQuestion}
                   disabled={currentQuestion === 0}
-                  className="px-6 py-3 bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md hover:shadow-lg"
+                  className={`px-6 py-3 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'} rounded-xl transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md hover:shadow-lg`}
                 >
                   ← Previous
                 </button>
@@ -466,14 +468,14 @@ export default function QuizPage() {
           // Results
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Score card */}
-            <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-floating p-6 sm:p-8 md:p-10 text-center mb-8 animate-scale-in border border-white/20 mx-4 sm:mx-0">
+            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-6 sm:p-8 md:p-10 text-center mb-8 animate-scale-in mx-4 sm:mx-0`}>
               <Trophy className={`w-16 h-16 mx-auto mb-6 ${
                 score === questions.length ? 'text-yellow-500' : 
                 score >= questions.length * 0.8 ? 'text-blue-500' : 
                 score >= questions.length * 0.6 ? 'text-green-500' : 'text-purple-500'
               }`} />
               
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">Quiz Complete! 🎉</h2>
+              <h2 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Quiz Complete! 🎉</h2>
               
               <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-6 mb-6">
                 <div className="text-4xl font-bold mb-2">{score}/{questions.length}</div>
@@ -495,10 +497,10 @@ export default function QuizPage() {
 
             {/* Answer explanations */}
             <div className="space-y-6 mx-4 sm:mx-0">
-              <h3 className="text-2xl font-bold text-center text-gray-800 mb-8">Let me explain my answers! 💭</h3>
+              <h3 className={`text-2xl font-bold text-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-8`}>Let me explain my answers! 💭</h3>
               
               {questions.map((question, index) => (
-                <div key={question.id} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 animate-fade-in">
+                <div key={question.id} className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 animate-fade-in`}>
                   <div className="flex items-start gap-4">
                     <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                       selectedAnswers[index] === question.correct
@@ -513,7 +515,7 @@ export default function QuizPage() {
                     </div>
                     
                     <div className="flex-1 pl-2">
-                      <h4 className="font-bold text-gray-800 mb-4">{question.question}</h4>
+                      <h4 className={`font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>{question.question}</h4>
                       <div className="mb-4 space-y-2">
                         <div>
                           <span className="text-sm text-gray-600">Correct answer: </span>
@@ -540,13 +542,13 @@ export default function QuizPage() {
         )}
 
         {/* Footer */}
-        <div className="text-center mt-12 mb-8 bg-white/95 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto border border-white/20">
+        <div className={`text-center mt-12 mb-8 ${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto`}>
           <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className="text-gray-600 font-medium">
+          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
             Every question reveals a little more of my heart
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Thanks for taking the time to know me better, My Looove! 💕
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>
+            Thanks for taking the time to know me better! 💕
           </p>
         </div>
       </div>

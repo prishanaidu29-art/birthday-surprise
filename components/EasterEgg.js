@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback, memo } from 'react'
-import { Heart, Gift, Sparkles, Star, Crown, Gem } from 'lucide-react'
+import { Heart, Gift, Sparkles, Star, Crown, Gem, X } from 'lucide-react'
+import { useDarkMode } from '../hooks/useDarkMode'
 
 const EasterEgg = memo(function EasterEgg({ 
   id, 
@@ -14,6 +15,7 @@ const EasterEgg = memo(function EasterEgg({
   specialMessage = "",
   size = 'small'
 }) {
+  const { isDarkMode } = useDarkMode()
   const [isFound, setIsFound] = useState(false)
   
   // Check localStorage after component mounts (client-side only)
@@ -99,19 +101,28 @@ const EasterEgg = memo(function EasterEgg({
           className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
           style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
         >
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-md mx-4 text-center animate-scale-in pointer-events-auto">
+          <div className={`${isDarkMode ? 'bg-gray-800/95 border border-gray-700' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-md mx-4 text-center animate-scale-in pointer-events-auto relative`}>
+            {/* Close button */}
+            <button
+              onClick={() => setShowMessage(false)}
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-gray-200' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'}`}
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
+
             <div className="flex justify-center mb-4">
               <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-bounce">
                 <IconComponent size={32} className="text-white" fill="currentColor" />
               </div>
             </div>
             
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Easter Egg Found!</h3>
-            <p className="text-gray-600 mb-4">{message}</p>
+            <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2`}>Easter Egg Found!</h3>
+            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>{message}</p>
             
             {specialMessage && (
-              <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-2xl p-4 mb-4">
-                <p className="text-purple-800 font-medium italic">{specialMessage}</p>
+              <div className={`${isDarkMode ? 'bg-gradient-to-r from-purple-900/30 to-pink-900/30' : 'bg-gradient-to-r from-purple-100 to-pink-100'} rounded-2xl p-4 mb-4`}>
+                <p className={`${isDarkMode ? 'text-purple-300' : 'text-purple-800'} font-medium italic`}>{specialMessage}</p>
               </div>
             )}
 

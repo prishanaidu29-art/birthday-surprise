@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Dark mode CSS variables */
+:root {
+  --scroll-bg: #f1f1f1;
+  --scroll-thumb: linear-gradient(to bottom, #ec4899, #a855f7);
+  --scroll-thumb-hover: linear-gradient(to bottom, #d946aa, #9333ea);
+}
+
+.dark {
+  --scroll-bg: #1f2937;
+  --scroll-thumb: linear-gradient(to bottom, #ec4899, #a855f7);
+  --scroll-thumb-hover: linear-gradient(to bottom, #d946aa, #9333ea);
+}
+
 /* Custom global styles */
 /* More specific reset to avoid conflicting with Tailwind */
 html, body, div, span, applet, object, iframe,
@@ -32,22 +45,22 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar with dark mode support */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--scroll-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #ec4899, #a855f7);
+  background: var(--scroll-thumb);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #d946aa, #9333ea);
+  background: var(--scroll-thumb-hover);
 }
 
 /* Selection color */

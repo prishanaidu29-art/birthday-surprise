@@ -57,7 +57,7 @@ export default function Enhanced3DViewer({ memories, onSelectMemory }) {
       
       {/* Status message */}
       <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2">
-        <p className="text-purple-600">Enhanced Gallery: {memories.length} memories</p>
+        <p className="text-purple-600">Enhanced Gallery: {memories.length} {memories.length === 1 ? 'memory' : 'memories'}</p>
         <p className="text-xs text-gray-500">CSS 3D perspective view</p>
       </div>
     </div>

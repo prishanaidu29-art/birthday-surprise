@@ -3,10 +3,13 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Globe, Plane, Heart, Clock, MapPin } from 'lucide-react'
+import EasterEgg from '../../../components/EasterEgg'
+import { useDarkMode } from '../../../hooks/useDarkMode'
 
 export const dynamic = 'force-dynamic'
 
 export default function JourneyPage() {
+  const { isDarkMode } = useDarkMode()
   const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
   const [showLoadingScreen, setShowLoadingScreen] = useState(false)
@@ -37,11 +40,11 @@ export default function JourneyPage() {
     const calculateCountdowns = () => {
       const now = new Date()
       
-      // Departure: Dec 21, 2025, 12:45 PM Manila time (UTC+8)
-      const departure = new Date('2025-12-21T12:45:00+08:00')
+      // Departure: June 15, 2025, 8:30 AM Manila time (UTC+8)
+      const departure = new Date('2025-06-15T08:30:00+08:00')
       
-      // Return: Jan 11, 2026, 7:00 AM Manila time (UTC+8)
-      const returnFlight = new Date('2026-01-11T07:00:00+08:00')
+      // Return: June 30, 2025, 11:15 PM Manila time (UTC+8)
+      const returnFlight = new Date('2025-06-30T23:15:00+08:00')
       
       // Time until departure
       const diffToDeparture = departure - now
@@ -51,25 +54,25 @@ export default function JourneyPage() {
         const hours = Math.floor((diffToDeparture % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
         const minutes = Math.floor((diffToDeparture % (1000 * 60 * 60)) / (1000 * 60))
         
-        setCountdown(`${days} days, ${hours} hours, ${minutes} minutes`)
+        setCountdown(`${days} ${days === 1 ? 'day' : 'days'}, ${hours} ${hours === 1 ? 'hour' : 'hours'}, ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`)
       } else if (now < returnFlight) {
         setCountdown("We're together! ✈️💕")
       } else {
         setCountdown("Until our next adventure...")
       }
       
-      // Time together (21 days)
-      const arrival = new Date('2025-12-22T00:05:00+11:00') // Melbourne time
+      // Time together (15 days)
+      const arrival = new Date('2025-06-15T20:30:00+10:00') // Melbourne time
       const timeTogetherMs = returnFlight - arrival
       const daysTogether = Math.floor(timeTogetherMs / (1000 * 60 * 60 * 24))
       
       if (now < departure) {
-        setTogetherCountdown(`${daysTogether} days together waiting for us!`)
+        setTogetherCountdown(`${daysTogether} ${daysTogether === 1 ? 'day' : 'days'} together waiting for us!`)
       } else if (now >= departure && now < returnFlight) {
         const remainingTogether = Math.floor((returnFlight - now) / (1000 * 60 * 60 * 24))
-        setTogetherCountdown(`${remainingTogether} days left together!`)
+        setTogetherCountdown(`${remainingTogether} ${remainingTogether === 1 ? 'day' : 'days'} left together!`)
       } else {
-        setTogetherCountdown(`${daysTogether} beautiful days we had together 💕`)
+        setTogetherCountdown(`${daysTogether} beautiful ${daysTogether === 1 ? 'day' : 'days'} we had together 💕`)
       }
     }
 
@@ -473,7 +476,7 @@ export default function JourneyPage() {
   // Enhanced loading screen with journey theme
   if (showLoadingScreen && !isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-blue-50 to-purple-100 overflow-hidden relative">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900' : 'bg-gradient-to-br from-indigo-100 via-blue-50 to-purple-100'} overflow-hidden relative`}>
         {/* Floating travel elements */}
         <div className="absolute inset-0">
           {/* Airplanes and travel symbols */}
@@ -514,7 +517,7 @@ export default function JourneyPage() {
             {/* Central globe with glow */}
             <div className="relative w-24 h-24 mx-auto mb-6">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-full animate-globe-pulse"></div>
-              <div className="absolute inset-3 bg-white rounded-full flex items-center justify-center">
+              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-full flex items-center justify-center`}>
                 <div className="text-2xl animate-globe-bounce">🌏</div>
               </div>
               {/* Orbiting travel elements */}
@@ -541,16 +544,16 @@ export default function JourneyPage() {
                   Plotting Our Journey ✈️
                 </span>
               </h1>
-              <p className="text-indigo-600 text-lg animate-gentle-pulse mb-4">
+              <p className={`${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'} text-lg animate-gentle-pulse mb-4`}>
                 Mapping the path to your heart across the globe...
               </p>
             </div>
             
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg">
-              <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
+              <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-indigo-200'} rounded-full h-2 mb-2`}>
                 <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full animate-journey-progress"></div>
               </div>
-              <p className="text-xs text-indigo-500">Loading flight path: Manila → Melbourne</p>
+              <p className={`text-xs ${isDarkMode ? 'text-indigo-400' : 'text-indigo-500'}`}>Loading flight path: Manila → Melbourne</p>
             </div>
           </div>
         </div>
@@ -645,23 +648,23 @@ export default function JourneyPage() {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
         <div className="text-center">
           <Globe className="w-16 h-16 text-purple-500 mx-auto mb-4 animate-pulse" />
-          <div className="text-purple-600">Loading our journey...</div>
+          <div className={`${isDarkMode ? 'text-purple-400' : 'text-purple-600'}`}>Loading our journey...</div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-blue-50 to-purple-100 relative overflow-hidden">
+    <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900' : 'bg-gradient-to-br from-indigo-100 via-blue-50 to-purple-100'} relative overflow-hidden`}>
       {/* Animated background stars */}
       <div className="fixed inset-0 pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
+            className={`absolute w-1 h-1 ${isDarkMode ? 'bg-gray-400' : 'bg-white'} rounded-full animate-pulse`}
             style={{
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
@@ -677,7 +680,7 @@ export default function JourneyPage() {
         <div className="header-section">
           <Link 
             href="/birthday" 
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors px-4 py-3 rounded-xl hover:bg-indigo-50 font-medium"
+            className={`inline-flex items-center ${isDarkMode ? 'text-indigo-400 hover:text-indigo-300 hover:bg-gray-800/50' : 'text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
           >
             <ArrowLeft size={20} className="mr-3" />
             Back to Birthday Hub
@@ -696,37 +699,37 @@ export default function JourneyPage() {
               Journey to You
             </span>
           </h1>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} max-w-2xl mx-auto`}>
             An interactive experience showing our path to reunion across the globe 🌏✈️💕
           </p>
         </div>
 
         {/* Journey Information Container */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 max-w-6xl mx-auto">
+        <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 max-w-6xl mx-auto`}>
           {/* Top Row - Countdown Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-indigo-50 rounded-2xl p-6 text-center border border-indigo-100">
+            <div className={`${isDarkMode ? 'bg-indigo-900/30 border-indigo-700' : 'bg-indigo-50 border-indigo-100'} rounded-2xl p-6 text-center`}>
               <Clock className="w-8 h-8 text-indigo-500 mx-auto mb-3" />
-              <h3 className="text-lg font-bold text-gray-800 mb-2">Until We're Together</h3>
-              <div className="text-2xl font-bold text-indigo-600 mb-2">{countdown}</div>
-              <div className="text-sm text-gray-600">
-                Cebu Pacific 5J 49 • Dec 21, 2025 • 12:45 PM
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2`}>Until We're Together</h3>
+              <div className={`text-2xl font-bold ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'} mb-2`}>{countdown}</div>
+              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                Philippine Airlines PR 123 • June 15, 2025 • 8:30 AM
               </div>
             </div>
             
-            <div className="bg-pink-50 rounded-2xl p-6 text-center border border-pink-100">
+            <div className={`${isDarkMode ? 'bg-pink-900/30 border-pink-700' : 'bg-pink-50 border-pink-100'} rounded-2xl p-6 text-center`}>
               <Heart className="w-8 h-8 text-yellow-500 mx-auto mb-3" fill="currentColor" />
-              <h3 className="text-lg font-bold text-gray-800 mb-2">Time Together</h3>
-              <div className="text-2xl font-bold text-pink-600 mb-2">{togetherCountdown}</div>
-              <div className="text-sm text-gray-600">
-                21 precious days in Melbourne
+              <h3 className={`text-lg font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-2`}>Time Together</h3>
+              <div className={`text-2xl font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'} mb-2`}>{togetherCountdown}</div>
+              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                15 precious days in Melbourne
               </div>
             </div>
           </div>
 
           {/* Bottom Row - Flight Details (Full Width) */}
-          <div className="bg-gradient-to-r from-indigo-50 to-pink-50 rounded-2xl p-6 border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-800 mb-6 text-center flex items-center justify-center gap-2">
+          <div className={`${isDarkMode ? 'bg-gradient-to-r from-indigo-900/30 to-pink-900/30 border-gray-700' : 'bg-gradient-to-r from-indigo-50 to-pink-50 border-gray-100'} rounded-2xl p-6`}>
+            <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6 text-center flex items-center justify-center gap-2`}>
               <Plane className="w-6 h-6 text-indigo-500" />
               Flight Details
               <Plane className="w-6 h-6 text-pink-500 transform rotate-180" />
@@ -734,30 +737,30 @@ export default function JourneyPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Outbound */}
-              <div className="bg-white/80 rounded-xl p-4 border-l-4 border-indigo-500">
+              <div className={`${isDarkMode ? 'bg-gray-700/80' : 'bg-white/80'} rounded-xl p-4 border-l-4 border-indigo-500`}>
                 <div className="flex items-center mb-3">
                   <Plane className="w-6 h-6 text-indigo-500 mr-3" />
-                  <span className="font-bold text-indigo-600 text-lg">MNL → MEL</span>
+                  <span className={`font-bold ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'} text-lg`}>MNL → MEL</span>
                 </div>
                 <div className="space-y-2">
-                  <div className="font-semibold text-gray-800">Cebu Pacific 5J 49</div>
-                  <div className="text-sm text-gray-700">📅 December 21, 2025</div>
-                  <div className="text-sm text-gray-700">🛫 12:45 PM - NAIA Terminal 3</div>
-                  <div className="text-sm text-gray-700">🛬 12:05 AM+1 - Melbourne Tullamarine T2</div>
+                  <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Philippine Airlines PR 123</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>📅 June 15, 2025</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>🛫 8:30 AM - NAIA Terminal 1</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>🛬 8:30 PM - Melbourne Tullamarine T1</div>
                 </div>
               </div>
               
               {/* Return */}
-              <div className="bg-white/80 rounded-xl p-4 border-l-4 border-pink-500">
+              <div className={`${isDarkMode ? 'bg-gray-700/80' : 'bg-white/80'} rounded-xl p-4 border-l-4 border-pink-500`}>
                 <div className="flex items-center mb-3">
                   <Plane className="w-6 h-6 text-pink-500 mr-3 transform rotate-180" />
-                  <span className="font-bold text-pink-600 text-lg">MEL → MNL</span>
+                  <span className={`font-bold ${isDarkMode ? 'text-pink-400' : 'text-pink-600'} text-lg`}>MEL → MNL</span>
                 </div>
                 <div className="space-y-2">
-                  <div className="font-semibold text-gray-800">Cebu Pacific 5J 50</div>
-                  <div className="text-sm text-gray-700">📅 January 11, 2026</div>
-                  <div className="text-sm text-gray-700">🛫 1:25 AM - Melbourne Tullamarine T2</div>
-                  <div className="text-sm text-gray-700">🛬 7:00 AM - NAIA Terminal 3</div>
+                  <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>Philippine Airlines PR 456</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>📅 June 30, 2025</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>🛫 11:15 PM - Melbourne Tullamarine T1</div>
+                  <div className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>🛬 5:45 AM+1 - NAIA Terminal 1</div>
                 </div>
               </div>
             </div>
@@ -765,8 +768,8 @@ export default function JourneyPage() {
         </div>
 
         {/* Interactive Globe */}
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-6xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        <div className={`${isDarkMode ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-3xl shadow-2xl p-8 max-w-6xl mx-auto`}>
+          <h3 className={`text-2xl font-bold text-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6`}>
             Our Flight Path Across The World 🌏
           </h3>
           
@@ -779,41 +782,50 @@ export default function JourneyPage() {
           </div>
           
           {/* Interactive Instructions */}
-          <div className="mt-4 bg-indigo-50 rounded-xl p-4 text-center">
-            <div className="text-sm text-indigo-700 font-medium mb-2">
+          <div className={`mt-4 ${isDarkMode ? 'bg-indigo-900/30' : 'bg-indigo-50'} rounded-xl p-4 text-center`}>
+            <div className={`text-sm ${isDarkMode ? 'text-indigo-300' : 'text-indigo-700'} font-medium mb-2`}>
               🖱️ <strong>Interactive Globe:</strong> Drag to rotate • Explore our path across the world!
             </div>
-            <div className="text-xs text-indigo-600">
+            <div className={`text-xs ${isDarkMode ? 'text-indigo-400' : 'text-indigo-600'}`}>
               Red marker: Manila 🇵🇭 • Green marker: Melbourne 🇦🇺 • Golden line: Your flight path ✈️
             </div>
           </div>
           
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-center">
-            <div className="bg-red-50 rounded-xl p-4">
+            <div className={`${isDarkMode ? 'bg-red-900/30' : 'bg-red-50'} rounded-xl p-4`}>
               <MapPin className="w-6 h-6 text-red-500 mx-auto mb-2" />
-              <div className="font-bold text-red-600">Manila, Philippines</div>
-              <div className="text-sm text-red-700">Where our hearts began</div>
+              <div className={`font-bold ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>Manila, Philippines</div>
+              <div className={`text-sm ${isDarkMode ? 'text-red-300' : 'text-red-700'}`}>Where our hearts began</div>
             </div>
-            <div className="bg-teal-50 rounded-xl p-4">
+            <div className={`${isDarkMode ? 'bg-teal-900/30' : 'bg-teal-50'} rounded-xl p-4`}>
               <MapPin className="w-6 h-6 text-teal-500 mx-auto mb-2" />
-              <div className="font-bold text-teal-600">Melbourne, Australia</div>
-              <div className="text-sm text-teal-700">Where we'll be reunited</div>
+              <div className={`font-bold ${isDarkMode ? 'text-teal-400' : 'text-teal-600'}`}>Melbourne, Australia</div>
+              <div className={`text-sm ${isDarkMode ? 'text-teal-300' : 'text-teal-700'}`}>Where we'll be reunited</div>
             </div>
           </div>
         </div>
 
         {/* Love Message */}
-        <div className="text-center mt-12 bg-gradient-to-r from-purple-100 to-pink-100 rounded-3xl p-8 mb-4 max-w-4xl mx-auto">
+        <div className={`text-center mt-12 ${isDarkMode ? 'bg-gradient-to-r from-purple-900/30 to-pink-900/30' : 'bg-gradient-to-r from-purple-100 to-pink-100'} rounded-3xl p-8 mb-4 max-w-4xl mx-auto`}>
           <Heart className="w-12 h-12 text-yellow-500 mx-auto mb-4 animate-pulse" fill="currentColor" />
-          <p className="text-lg text-gray-700 italic leading-relaxed">
-            "My Looove I know you're sad kasi di ka nakauwi agad! I made this page nalang para mas mamonitor natin kung kailan tayo mag sasama ulit!
-            I know uuwi ka pa naman pero ang nilagay ko nalang ay yung flight details ko sa December kasi mas sure hahaha! Can't wait to see you soon My Looove! 💕"
+          <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} italic leading-relaxed`}>
+            "I know you're excited about traveling together! I made this page so we can visualize our journey and plan for when we'll be together again.
+            This shows some sample travel details - you can customize it with your own plans. Can't wait to see you soon! 💕"
           </p>
-          <div className="mt-4 text-purple-600 font-semibold">
+          <div className={`mt-4 ${isDarkMode ? 'text-purple-400' : 'text-purple-600'} font-semibold`}>
             13,026 kilometers of love connecting our hearts ✈️💝
           </div>
         </div>
       </div>
+
+      {/* Hidden Easter Egg */}
+      <EasterEgg 
+        id="egg-6"
+        top="30%"
+        right="15%"
+        message="Look who's planning our reunion! 🌍✈️"
+        size="small"
+      />
     </div>
   )
 }

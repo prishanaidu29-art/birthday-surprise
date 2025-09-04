@@ -9,7 +9,8 @@ export function useGameStats() {
   const [gameStats, setGameStats] = useState({
     quickHearts: 0,
     memoryMatch: 0,
-    heartsDistance: 0
+    heartsDistance: 0,
+    heartsDistanceTime: 0
   })
 
   // Load stats from localStorage
@@ -18,11 +19,13 @@ export function useGameStats() {
       const quickHeartsScore = localStorage.getItem('quickHearts_highScore')
       const memoryMatchScore = localStorage.getItem('memoryMatch_bestScore')
       const heartsDistanceScore = localStorage.getItem('heartsDistance_highScore')
+      const heartsDistanceTime = localStorage.getItem('heartsDistance_bestTime')
       
       setGameStats({
         quickHearts: quickHeartsScore ? parseInt(quickHeartsScore) : 0,
         memoryMatch: memoryMatchScore ? parseInt(memoryMatchScore) : 0,
-        heartsDistance: heartsDistanceScore ? parseInt(heartsDistanceScore) : 0
+        heartsDistance: heartsDistanceScore ? parseInt(heartsDistanceScore) : 0,
+        heartsDistanceTime: heartsDistanceTime ? parseInt(heartsDistanceTime) : 0
       })
     }
   }, [])
@@ -40,7 +43,7 @@ export function useGameStats() {
   // Listen for storage changes (when user switches tabs)
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key && e.key.includes('Score')) {
+      if (e.key && (e.key.includes('Score') || e.key.includes('Time'))) {
         loadStats()
       }
     }
@@ -66,6 +69,7 @@ export function useGameStats() {
     // Individual game scores for easy access
     quickHeartsScore: gameStats.quickHearts,
     memoryMatchScore: gameStats.memoryMatch,
-    heartsDistanceScore: gameStats.heartsDistance
+    heartsDistanceScore: gameStats.heartsDistance,
+    heartsDistanceTime: gameStats.heartsDistanceTime
   }
 }
