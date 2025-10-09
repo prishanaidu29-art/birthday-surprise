@@ -492,6 +492,7 @@ export default function LandingPage() {
             <div className="relative login-input-group">
               <input
                 type="password"
+                value="demo123"
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter our special word..."
                 className={`w-full px-5 py-4 rounded-xl border-2 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:border-purple-500' : 'border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-purple-400'} focus:outline-none transition-colors min-h-[48px]`}
