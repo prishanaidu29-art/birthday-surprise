@@ -10,7 +10,7 @@ import { useDarkMode } from '../hooks/useDarkMode'
 
 
 export default function LandingPage() {
-  const [password, setPassword] = useState('demo123')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [showSuccessLoading, setShowSuccessLoading] = useState(false)
@@ -36,7 +36,7 @@ export default function LandingPage() {
 
     // The password - you can change this!
     // Using a demo password
-    const SECRET_PASSWORD = 'demo123' // Change this to your desired password
+    const SECRET_PASSWORD = 'gay' // Change this to your desired password
 
     if (password === SECRET_PASSWORD) {
       // Log access to Supabase
@@ -480,10 +480,10 @@ export default function LandingPage() {
               </div>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent mb-3">
-              Special Day Incoming! 🎉
+              YOUR NOT SUPPOSED TO SEE THIS CLAR.
             </h1>
             <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-6`}>
-              Enter the magic password to unlock your surprise
+              Enter the password to unlock your memories 
             </p>
           </div>
 
@@ -492,9 +492,9 @@ export default function LandingPage() {
             <div className="relative login-input-group">
               <input
                 type="password"
-                value="demo123"
+                value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter our special word..."
+                placeholder="enter da acess code"
                 className={`w-full px-5 py-4 rounded-xl border-2 ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400 focus:border-purple-500' : 'border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:border-purple-400'} focus:outline-none transition-colors min-h-[48px]`}
                 disabled={isLoading}
               />
@@ -512,7 +512,7 @@ export default function LandingPage() {
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px]"
               >
-                {isLoading ? 'Unlocking magic...' : 'Unlock Birthday Surprise 🎂'}
+                {isLoading ? 'Unlocking magic...' : 'ENTER THE ARCHIVE->'}
               </button>
             </div>
           </form>
@@ -527,14 +527,14 @@ export default function LandingPage() {
             </button>
             {hint && (
               <p className={`mt-4 text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} animate-fade-in`}>
-                Think about the demo password... 🎵💛
+                its gay asf 
               </p>
             )}
           </div>
 
           {/* Footer */}
           <div className={`text-center text-sm ${isDarkMode ? 'text-gray-400 border-gray-700' : 'text-gray-500 border-gray-200'} pt-6 mt-8 border-t`}>
-            Made with <Heart className="inline text-yellow-500 animate-pulse" size={14} fill="currentColor" /> for Birthday Person
+            Made exclusively for Clar 
           </div>
         </div>
 
