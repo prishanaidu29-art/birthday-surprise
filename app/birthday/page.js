@@ -1,1418 +1,1448 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-
-import {
-  ArrowUpRight,
-  ChevronRight,
-  Disc3,
-  Gamepad2,
-  LockKeyhole,
-  Power,
-  ScanLine,
-  Terminal,
-  Zap,
-} from 'lucide-react'
+import { Orbitron, Space_Mono, Press_Start_2P } from 'next/font/google'
 
 export const dynamic = 'force-dynamic'
 
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-orbitron',
+})
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-space-mono',
+})
+
+const pressStart = Press_Start_2P({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-pixel',
+})
+
+const sections = [
+  {
+    number: '01',
+    code: 'MEM_01',
+    title: 'THE MEMORIES',
+    subtitle: 'PHOTOS / PLACES / RANDOM SHIT',
+    description: 'the evidence archive',
+    icon: '◉',
+    type: 'VHS',
+    href: '/birthday/memories',
+  },
+  {
+    number: '02',
+    code: 'MSG_02',
+    title: 'THE MESSAGES',
+    subtitle: 'THINGS PEOPLE WANTED YOU TO KNOW',
+    description: 'incoming transmissions',
+    icon: '✉',
+    type: 'TXT',
+    href: '/birthday/messages',
+  },
+  {
+    number: '03',
+    code: 'SND_03',
+    title: 'THE SOUNDTRACK',
+    subtitle: 'SONGS ABOUT YOU',
+    description: 'insert disc / press play',
+    icon: '♫',
+    type: 'CD',
+    href: '/birthday/playlist',
+  },
+  {
+    number: '04',
+    code: 'CHA_04',
+    title: 'THE CHAOS',
+    subtitle: 'SHITS & GIGGLES',
+    description: 'do not open at work',
+    icon: '⚠',
+    type: 'ERR',
+    href: '/birthday/games',
+  },
+  {
+    number: '05',
+    code: 'QUI_05',
+    title: 'THE QUIZ',
+    subtitle: 'HOW WELL DO YOU ACTUALLY KNOW US?',
+    description: 'test your memory',
+    icon: '?',
+    type: 'GAME',
+    href: '/birthday/quiz',
+  },
+  {
+    number: '06',
+    code: 'JRN_06',
+    title: 'THE JOURNEY',
+    subtitle: 'EVERYWHERE, SOMEHOW',
+    description: 'save file: 2004 → now',
+    icon: '⌁',
+    type: 'MAP',
+    href: '/birthday/journey',
+  },
+]
+
 export default function BirthdayPage() {
   const router = useRouter()
-  const [booted, setBooted] = useState(false)
-  const [hovered, setHovered] = useState(null)
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('birthday_authenticated')
 
     if (authenticated !== 'true') {
-      router.push('/')
-      return
+      router.replace('/')
     }
-
-    const timer = setTimeout(() => setBooted(true), 500)
-
-    return () => clearTimeout(timer)
   }, [router])
 
-  const sections = [
-    {
-      number: '01',
-      title: 'MEMORIES',
-      subtitle: 'PHOTO DATABASE',
-      description: 'photos, places & evidence',
-      link: '/birthday/memories',
-      icon: '◉',
-    },
-    {
-      number: '02',
-      title: 'MESSAGES',
-      subtitle: 'INCOMING DATA',
-      description: 'things people wanted you to know',
-      link: '/birthday/messages',
-      icon: '✦',
-    },
-    {
-      number: '03',
-      title: 'SOUNDTRACK',
-      subtitle: 'AUDIO FILES',
-      description: 'songs that became us',
-      link: '/birthday/playlist',
-      icon: '♫',
-    },
-    {
-      number: '04',
-      title: 'CHAOS',
-      subtitle: 'UNSTABLE FILES',
-      description: 'shit, giggles & questionable decisions',
-      link: '/birthday/games',
-      icon: '⚠',
-    },
-    {
-      number: '05',
-      title: 'THE QUIZ',
-      subtitle: 'KNOWLEDGE TEST',
-      description: 'prove you actually know us',
-      link: '/birthday/quiz',
-      icon: '?',
-    },
-    {
-      number: '06',
-      title: 'THE JOURNEY',
-      subtitle: 'LOCATION DATA',
-      description: 'everywhere somehow led here',
-      link: '/birthday/journey',
-      icon: '⌁',
-    },
-  ]
-
-  const handleLogout = () => {
+  const logout = () => {
     sessionStorage.removeItem('birthday_authenticated')
     router.push('/')
   }
 
-  if (!booted) {
-    return (
-      <main className="min-h-screen bg-[#050609] text-[#e9faff] flex items-center justify-center overflow-hidden">
-        <div className="scanlines" />
-
-        <div className="boot-screen">
-          <div className="boot-logo">DVA://CLAR</div>
-
-          <div className="boot-line">
-            <span>INITIALISING MEMORY CORE</span>
-            <span>OK</span>
-          </div>
-
-          <div className="boot-line">
-            <span>LOADING BIRTHDAY_DATA</span>
-            <span>OK</span>
-          </div>
-
-          <div className="boot-line">
-            <span>ACCESSING ARCHIVE_001</span>
-            <span>OK</span>
-          </div>
-
-          <div className="boot-progress">
-            <div />
-          </div>
-
-          <p className="blink">PRESSING START...</p>
-        </div>
-
-        <style jsx>{`
-          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-          * {
-            box-sizing: border-box;
-          }
-
-          .scanlines {
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 20;
-            opacity: 0.12;
-            background: repeating-linear-gradient(
-              to bottom,
-              transparent 0px,
-              transparent 3px,
-              rgba(255,255,255,0.08) 4px
-            );
-          }
-
-          .boot-screen {
-            width: min(520px, 90vw);
-            font-family: 'IBM Plex Mono', monospace;
-          }
-
-          .boot-logo {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 64px;
-            letter-spacing: 0.08em;
-            color: #ff285c;
-            text-shadow:
-              3px 0 #00eaff,
-              -3px 0 rgba(255, 0, 110, 0.5);
-            margin-bottom: 40px;
-          }
-
-          .boot-line {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            color: #73808c;
-            font-size: 10px;
-            letter-spacing: 0.12em;
-          }
-
-          .boot-line span:last-child {
-            color: #00f0ff;
-          }
-
-          .boot-progress {
-            margin-top: 25px;
-            height: 3px;
-            background: #141a20;
-            overflow: hidden;
-          }
-
-          .boot-progress div {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(
-              90deg,
-              #ff285c,
-              #ff285c,
-              #00eaff
-            );
-            animation: boot 0.5s ease-out;
-          }
-
-          .blink {
-            margin-top: 30px;
-            color: #ff285c;
-            font-size: 10px;
-            letter-spacing: 0.2em;
-            animation: blink 0.7s infinite;
-          }
-
-          @keyframes boot {
-            from { width: 0; }
-            to { width: 100%; }
-          }
-
-          @keyframes blink {
-            50% { opacity: 0; }
-          }
-        `}</style>
-      </main>
-    )
-  }
-
   return (
-    <main className="cyber-page">
-
-      {/* CRT EFFECT */}
+    <main
+      className={`
+        ${orbitron.variable}
+        ${spaceMono.variable}
+        ${pressStart.variable}
+        birthday-page
+      `}
+    >
+      {/* CRT overlay */}
+      <div className="crt-overlay" />
       <div className="scanlines" />
-      <div className="noise" />
 
-      {/* CYBER HUD */}
-      <div className="hud-corner top-left" />
-      <div className="hud-corner top-right" />
-      <div className="hud-corner bottom-left" />
-      <div className="hud-corner bottom-right" />
+      {/* background grid */}
+      <div className="grid-bg" />
 
-      {/* TOP SYSTEM BAR */}
+      {/* TOP STATUS BAR */}
       <header className="topbar">
-
-        <div className="system-id">
-          <span className="status-dot" />
-          <span>ARCHIVE://001</span>
+        <div className="topbar-left">
+          <span className="rec-dot" />
+          <span>REC</span>
+          <span className="separator">/</span>
+          <span>CLAR_ARCHIVE</span>
         </div>
 
-        <div className="system-center">
-          <span>PRIVATE NETWORK</span>
-          <span className="separator">///</span>
-          <span>CONNECTED</span>
+        <div className="topbar-center">
+          2004 — 2026
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="exit-button"
-        >
-          <Power size={13} />
-          DISCONNECT
+        <button onClick={logout} className="logout">
+          EJECT ×
         </button>
-
       </header>
 
-      {/* HERO */}
-      <section className="hero">
+      <div className="page-shell">
 
-        <div className="hero-meta">
+        {/* HERO */}
+        <section className="hero">
 
-          <div className="meta-line">
-            <span>SUBJECT</span>
-            <span>CLAR</span>
+          <div className="hero-meta">
+            <span>ARCHIVE_DISC // 001</span>
+            <span>FORMAT: VHS-CDROM</span>
           </div>
 
-          <div className="meta-line">
-            <span>DOB</span>
-            <span>19.11.04</span>
-          </div>
+          <div className="hero-main">
 
-          <div className="meta-line">
-            <span>STATUS</span>
-            <span className="online">ONLINE</span>
-          </div>
+            <div className="hero-title-wrap">
 
-        </div>
-
-        <div className="hero-main">
-
-          <div className="hero-title-wrap">
-
-            <div className="glitch-label">
-              <Terminal size={12} />
-              <span>USER PROFILE FOUND</span>
-              <span className="red">[ACCESS GRANTED]</span>
-            </div>
-
-            <h1
-              className="hero-title"
-              data-text="CLAR"
-            >
-              CLAR
-            </h1>
-
-            <div className="hero-subtitle">
-              <span>LEVEL 22</span>
-              <span>//</span>
-              <span>PLAYER ONE</span>
-              <span>//</span>
-              <span>EST. 2004</span>
-            </div>
-
-            <p className="hero-copy">
-              You made it this far.
-              <br />
-              Unfortunately, there is no turning back now.
-            </p>
-
-          </div>
-
-          {/* PHOTO / PROFILE FRAME */}
-          <div className="profile-frame">
-
-            <div className="profile-top">
-              <span>CAM_001</span>
-              <span>REC ●</span>
-            </div>
-
-            <div className="profile-photo">
-
-              <div className="crosshair crosshair-one" />
-              <div className="crosshair crosshair-two" />
-
-              <div className="photo-placeholder">
-                <ScanLine size={35} />
-                <span>IMAGE DATA</span>
-                <small>AWAITING UPLOAD</small>
+              <div className="tiny-label">
+                <span className="blink">●</span> SYSTEM ONLINE
               </div>
 
-              <div className="photo-glitch" />
+              <h1 className="glitch-title" data-text="CLAR">
+                CLAR
+              </h1>
 
-            </div>
-
-            <div className="profile-bottom">
-              <span>19:11:04</span>
-              <span>ISO 800</span>
-              <span>RAW</span>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* HERO FOOTER */}
-        <div className="hero-footer">
-
-          <div className="scroll-indicator">
-            <span>SCROLL TO ACCESS ARCHIVE</span>
-            <div className="scroll-line" />
-          </div>
-
-          <div className="coordinates">
-            03.4821
-            <br />
-            101.7617
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* DIVIDER */}
-      <div className="cyber-divider">
-        <span />
-        <Zap size={13} />
-        <span />
-      </div>
-
-      {/* INTRO */}
-      <section className="intro">
-
-        <div className="intro-tag">
-          <LockKeyhole size={12} />
-          CLASSIFIED DATA
-        </div>
-
-        <h2>
-          A SMALL
-          <br />
-          <span>DIGITAL TIME CAPSULE.</span>
-        </h2>
-
-        <p>
-          A collection of memories, questionable decisions,
-          unnecessarily dramatic moments and people who
-          somehow decided you were worth keeping around.
-        </p>
-
-        <div className="intro-warning">
-          <span>⚠</span>
-          SOME FILES MAY CONTAIN EMBARRASSING EVIDENCE
-        </div>
-
-      </section>
-
-      {/* ARCHIVE */}
-      <section className="archive">
-
-        <div className="archive-header">
-
-          <div>
-            <div className="section-code">
-              // DIRECTORY_001
-            </div>
-
-            <h2>SELECT FILE</h2>
-          </div>
-
-          <div className="archive-count">
-            <span>FILES</span>
-            <strong>06</strong>
-          </div>
-
-        </div>
-
-        <div className="file-grid">
-
-          {sections.map((section, index) => (
-
-            <Link
-              key={section.number}
-              href={section.link}
-              className={`file-card ${hovered === index ? 'active' : ''}`}
-              onMouseEnter={() => setHovered(index)}
-              onMouseLeave={() => setHovered(null)}
-            >
-
-              <div className="card-glow" />
-
-              <div className="file-card-top">
-                <span>{section.number}</span>
-
-                <span className="file-icon">
-                  {section.icon}
-                </span>
+              <div className="exe-line">
+                <span>CLAR.EXE</span>
+                <span>v.22.0</span>
               </div>
 
-              <div className="file-card-body">
+            </div>
 
-                <div className="file-type">
-                  {section.subtitle}
+            {/* CD graphic */}
+            <div className="cd-wrap">
+              <div className="cd">
+                <div className="cd-label">
+                  <span>DVA</span>
+                  <small>ARCHIVE</small>
+                </div>
+                <div className="cd-hole" />
+                <div className="cd-shine" />
+              </div>
+
+              <div className="cd-caption">
+                DISC 01<br />
+                <span>DO NOT SCRATCH</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* VHS PLAYER */}
+          <div className="vhs-player">
+
+            <div className="vhs-left">
+              <div className="vhs-label">
+                BIRTHDAY TAPE
+              </div>
+
+              <div className="vhs-stripes">
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
+
+            <div className="vhs-screen">
+              <div className="screen-noise" />
+
+              <div className="timestamp">
+                <span>PLAY</span>
+                <span>00:22:04</span>
+              </div>
+
+              <div className="screen-text">
+                HAPPY BIRTHDAY
+              </div>
+
+              <div className="screen-sub">
+                PRESS ENTER TO CONTINUE_
+              </div>
+            </div>
+
+            <div className="vhs-controls">
+              <span>◀◀</span>
+              <span>▶</span>
+              <span>▶▶</span>
+              <span>■</span>
+              <span>●</span>
+            </div>
+
+          </div>
+
+          {/* INTRO */}
+          <div className="intro-grid">
+            <div className="intro-number">
+              22
+            </div>
+
+            <div className="intro-copy">
+              <p className="label">PLAYER // CLAR</p>
+
+              <p>
+                A small collection of things that somehow
+                became your life.
+              </p>
+
+              <p className="muted">
+                photos / messages / songs / chaos / memories
+              </p>
+            </div>
+
+            <div className="date-stamp">
+              <div>DATE RECORDED</div>
+              <strong>29·05·04</strong>
+              <span>KL / MY</span>
+            </div>
+          </div>
+
+        </section>
+
+        {/* MENU */}
+        <section className="archive-section">
+
+          <div className="section-heading">
+
+            <div>
+              <span className="section-label">
+                DIRECTORY
+              </span>
+
+              <h2>
+                SELECT FILE<span className="cursor">_</span>
+              </h2>
+            </div>
+
+            <div className="directory-status">
+              <span>06 FILES</span>
+              <span>STATUS: OK</span>
+            </div>
+
+          </div>
+
+          <div className="file-grid">
+
+            {sections.map((section) => (
+              <Link
+                href={section.href}
+                key={section.number}
+                className={`file-card type-${section.type.toLowerCase()}`}
+              >
+
+                <div className="card-top">
+
+                  <span className="file-number">
+                    {section.number}
+                  </span>
+
+                  <span className="file-code">
+                    {section.code}
+                  </span>
+
+                  <span className="file-type">
+                    [{section.type}]
+                  </span>
+
                 </div>
 
-                <h3>
-                  {section.title}
-                </h3>
+                <div className="card-middle">
 
-                <p>
-                  {section.description}
-                </p>
+                  <div className="file-icon">
+                    {section.icon}
+                  </div>
 
-              </div>
+                  <div>
+                    <h3>
+                      {section.title}
+                    </h3>
 
-              <div className="file-card-bottom">
+                    <p>
+                      {section.subtitle}
+                    </p>
+                  </div>
 
-                <span>
-                  FILE_{section.number}.DAT
-                </span>
+                </div>
 
-                <ChevronRight
-                  size={17}
-                  className="arrow"
-                />
+                <div className="card-bottom">
 
-              </div>
+                  <span>
+                    {section.description}
+                  </span>
 
-            </Link>
+                  <span className="open">
+                    OPEN →
+                  </span>
 
-          ))}
+                </div>
 
-        </div>
+                <div className="hover-line" />
 
-      </section>
+              </Link>
+            ))}
 
-      {/* FINAL MESSAGE */}
-      <section className="final-message">
-
-        <div className="message-terminal">
-
-          <div className="terminal-bar">
-            <span>
-              <span className="terminal-dot red-dot" />
-              <span className="terminal-dot yellow-dot" />
-              <span className="terminal-dot green-dot" />
-            </span>
-
-            <span>MESSAGE.exe</span>
-
-            <span>●</span>
           </div>
 
-          <div className="terminal-content">
+        </section>
 
-            <div className="terminal-command">
-              <span>root@birthday:~$</span>
-              <span> cat /message/clar.txt</span>
+        {/* BOTTOM MEDIA AREA */}
+        <section className="media-deck">
+
+          <div className="cassette">
+
+            <div className="cassette-label">
+              <span>MIXTAPE</span>
+              <strong>CLAR // 22</strong>
             </div>
 
-            <h2>
-              HAPPY
-              <br />
-              BIRTHDAY,
-              <br />
-              <span>CLAR.</span>
-            </h2>
+            <div className="cassette-window">
+              <div className="reel left">
+                <span />
+              </div>
 
-            <p>
-              Somehow you became a massive part of
-              my life and now you have an entire website
-              dedicated to you.
-            </p>
+              <div className="tape-line" />
 
-            <p className="terminal-small">
-              No refunds. No returns.
-              <br />
-              You're stuck with us.
-            </p>
+              <div className="reel right">
+                <span />
+              </div>
+            </div>
 
-            <div className="cursor-line">
-              <span>root@birthday:~$</span>
-              <span className="cursor">█</span>
+            <div className="cassette-bottom">
+              SIDE A
+              <span>────────</span>
+              SIDE B
             </div>
 
           </div>
 
-        </div>
+          <div className="terminal">
 
-      </section>
+            <div className="terminal-header">
+              <span>CLAR_TERMINAL</span>
+              <span>—</span>
+              <span>×</span>
+            </div>
 
-      {/* FOOTER */}
-      <footer>
+            <div className="terminal-body">
 
-        <div>
-          DVA://CLAR
-        </div>
+              <p>
+                <span>&gt;</span> loading birthday_archive...
+              </p>
 
-        <div>
-          <Disc3 size={12} className="spin" />
-          ARCHIVE RUNNING
-        </div>
+              <p>
+                <span>&gt;</span> finding memories...
+                <b> OK</b>
+              </p>
 
-        <div>
-          19 • 11 • 04
-        </div>
+              <p>
+                <span>&gt;</span> locating embarrassing photos...
+                <b> OK</b>
+              </p>
 
-      </footer>
+              <p>
+                <span>&gt;</span> emotional damage...
+                <b> 100%</b>
+              </p>
+
+              <p className="terminal-final">
+                <span>&gt;</span> archive ready
+                <i>_</i>
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* FOOTER */}
+        <footer>
+
+          <div className="footer-left">
+            <span>© DVA</span>
+            <span>CLAR_ARCHIVE</span>
+          </div>
+
+          <div className="footer-center">
+            PLEASE REWIND AFTER USE
+          </div>
+
+          <div className="footer-right">
+            TRACK 01 / 06
+          </div>
+
+        </footer>
+
+      </div>
 
       <style jsx global>{`
-
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-
-        :root {
-          --bg: #050609;
-          --panel: #090c11;
-          --panel2: #0d1117;
-          --white: #eafaff;
-          --muted: #6d7782;
-          --cyan: #00eaff;
-          --cyan-dim: #006c78;
-          --red: #ff285c;
-          --red-dark: #74152b;
-          --line: rgba(0,234,255,0.18);
-        }
 
         * {
           box-sizing: border-box;
         }
 
-        html {
-          scroll-behavior: smooth;
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+          background: #171717;
         }
 
         body {
-          margin: 0;
-          background: var(--bg);
+          font-family: var(--font-space-mono), monospace;
         }
 
-        .cyber-page {
+        .birthday-page {
           min-height: 100vh;
           background:
             radial-gradient(
-              circle at 75% 15%,
-              rgba(255, 40, 92, 0.09),
-              transparent 25%
+              circle at 20% 10%,
+              rgba(165,184,92,.08),
+              transparent 30%
             ),
             radial-gradient(
-              circle at 15% 40%,
-              rgba(0, 234, 255, 0.06),
-              transparent 25%
+              circle at 85% 70%,
+              rgba(179,75,67,.07),
+              transparent 30%
             ),
-            #050609;
-          color: var(--white);
-          overflow-x: hidden;
-          font-family: 'Space Grotesk', sans-serif;
+            #171717;
+          color: #d8d5c8;
           position: relative;
+          overflow-x: hidden;
         }
 
-        /* CRT */
+        /* -------------------------
+           CRT
+        ------------------------- */
 
-        .scanlines {
+        .crt-overlay {
+          pointer-events: none;
           position: fixed;
           inset: 0;
-          z-index: 100;
+          z-index: 50;
+          background:
+            radial-gradient(
+              ellipse at center,
+              transparent 55%,
+              rgba(0,0,0,.42) 100%
+            );
+          mix-blend-mode: multiply;
+        }
+
+        .scanlines {
           pointer-events: none;
-          background: repeating-linear-gradient(
+          position: fixed;
+          inset: 0;
+          z-index: 49;
+          opacity: .11;
+          background:
+            repeating-linear-gradient(
+              to bottom,
+              transparent 0px,
+              transparent 3px,
+              rgba(255,255,255,.08) 4px
+            );
+        }
+
+        .grid-bg {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          opacity: .08;
+          background-image:
+            linear-gradient(#d8d5c8 1px, transparent 1px),
+            linear-gradient(90deg, #d8d5c8 1px, transparent 1px);
+          background-size: 50px 50px;
+          mask-image: linear-gradient(
             to bottom,
-            transparent 0px,
-            transparent 3px,
-            rgba(255,255,255,0.025) 4px
+            black,
+            transparent 80%
           );
         }
 
-        .noise {
-          position: fixed;
-          inset: 0;
-          z-index: 99;
-          pointer-events: none;
-          opacity: 0.04;
-          background-image: url("https://grainy-gradients.vercel.app/noise.svg");
-          mix-blend-mode: screen;
-        }
-
-        /* HUD */
-
-        .hud-corner {
-          position: fixed;
-          width: 35px;
-          height: 35px;
-          z-index: 50;
-          pointer-events: none;
-          opacity: 0.5;
-        }
-
-        .top-left {
-          top: 15px;
-          left: 15px;
-          border-top: 1px solid var(--cyan);
-          border-left: 1px solid var(--cyan);
-        }
-
-        .top-right {
-          top: 15px;
-          right: 15px;
-          border-top: 1px solid var(--cyan);
-          border-right: 1px solid var(--cyan);
-        }
-
-        .bottom-left {
-          bottom: 15px;
-          left: 15px;
-          border-bottom: 1px solid var(--cyan);
-          border-left: 1px solid var(--cyan);
-        }
-
-        .bottom-right {
-          bottom: 15px;
-          right: 15px;
-          border-bottom: 1px solid var(--cyan);
-          border-right: 1px solid var(--cyan);
-        }
-
-        /* TOP BAR */
+        /* -------------------------
+           TOP BAR
+        ------------------------- */
 
         .topbar {
-          height: 60px;
-          padding: 0 5vw;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
+          height: 42px;
+          border-bottom: 1px solid #55524b;
           display: flex;
+          align-items: center;
           justify-content: space-between;
-          align-items: center;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 9px;
-          letter-spacing: 0.16em;
-          color: var(--muted);
+          padding: 0 24px;
+          font-size: 10px;
+          letter-spacing: .15em;
+          position: relative;
+          z-index: 5;
+          background: rgba(23,23,23,.9);
         }
 
-        .system-id,
-        .system-center,
-        .exit-button {
+        .topbar-left {
           display: flex;
           align-items: center;
-          gap: 9px;
+          gap: 10px;
         }
 
-        .status-dot {
-          width: 6px;
-          height: 6px;
-          background: var(--cyan);
+        .rec-dot {
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
-          box-shadow: 0 0 10px var(--cyan);
-          animation: pulse 1.5s infinite;
-        }
-
-        .system-center {
-          color: #414a54;
+          background: #b34b43;
+          box-shadow: 0 0 8px rgba(179,75,67,.6);
+          animation: blink 1.2s infinite;
         }
 
         .separator {
-          color: var(--red);
+          color: #66625a;
         }
 
-        .exit-button {
+        .topbar-center {
+          color: #77736a;
+          font-size: 9px;
+        }
+
+        .logout {
+          background: transparent;
+          color: #aaa69b;
           border: 0;
-          background: none;
-          color: #5e6872;
+          font-family: inherit;
+          font-size: 9px;
+          letter-spacing: .12em;
           cursor: pointer;
-          font: inherit;
-          transition: 0.2s;
         }
 
-        .exit-button:hover {
-          color: var(--red);
+        .logout:hover {
+          color: #d8d5c8;
         }
 
-        /* HERO */
+        /* -------------------------
+           SHELL
+        ------------------------- */
+
+        .page-shell {
+          width: min(1180px, calc(100% - 32px));
+          margin: 0 auto;
+          position: relative;
+          z-index: 2;
+        }
+
+        /* -------------------------
+           HERO
+        ------------------------- */
 
         .hero {
-          max-width: 1300px;
-          margin: auto;
-          padding: 80px 5vw 50px;
-          min-height: 720px;
-          position: relative;
+          padding: 48px 0 70px;
         }
 
         .hero-meta {
-          width: 180px;
-          position: absolute;
-          right: 5vw;
-          top: 80px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 8px;
-          color: #56616b;
-        }
-
-        .meta-line {
           display: flex;
           justify-content: space-between;
-          padding: 8px 0;
-          border-bottom: 1px solid rgba(255,255,255,0.07);
-        }
-
-        .meta-line .online {
-          color: var(--cyan);
+          font-size: 9px;
+          letter-spacing: .18em;
+          color: #77736a;
+          margin-bottom: 28px;
         }
 
         .hero-main {
           display: grid;
-          grid-template-columns: 1fr 310px;
-          gap: 80px;
+          grid-template-columns: 1fr 300px;
+          gap: 50px;
           align-items: center;
-          padding-top: 70px;
         }
 
-        .glitch-label {
-          display: flex;
-          gap: 9px;
-          align-items: center;
-          font-family: 'IBM Plex Mono', monospace;
+        .tiny-label {
+          font-family: var(--font-pixel);
           font-size: 9px;
-          letter-spacing: 0.12em;
-          color: var(--cyan);
-          margin-bottom: 20px;
+          color: #a5b85c;
+          margin-bottom: 18px;
+          letter-spacing: .05em;
         }
 
-        .glitch-label .red {
-          color: var(--red);
+        .blink {
+          animation: blink 1s infinite;
         }
 
-        .hero-title {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(120px, 18vw, 270px);
-          line-height: 0.7;
-          letter-spacing: -0.02em;
+        .glitch-title {
+          font-family: var(--font-orbitron);
+          font-weight: 900;
+          font-size: clamp(90px, 18vw, 230px);
+          line-height: .72;
+          letter-spacing: -.08em;
           margin: 0;
-          color: #e9faff;
+          color: #d8d5c8;
           position: relative;
           text-shadow:
-            5px 0 var(--red),
-            -5px 0 var(--cyan);
-          animation: titleGlitch 5s infinite;
+            4px 0 #b34b43,
+            -3px 0 #77736a;
+          animation: titleJitter 5s infinite;
         }
 
-        .hero-subtitle {
-          margin-top: 35px;
+        .glitch-title::before,
+        .glitch-title::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0;
+        }
+
+        .glitch-title::before {
+          color: #a5b85c;
+          transform: translate(3px, -2px);
+          clip-path: inset(20% 0 62% 0);
+          animation: glitchA 4s infinite;
+        }
+
+        .glitch-title::after {
+          color: #b34b43;
+          transform: translate(-3px, 2px);
+          clip-path: inset(65% 0 12% 0);
+          animation: glitchB 3.5s infinite;
+        }
+
+        .exe-line {
+          margin-top: 28px;
           display: flex;
-          gap: 12px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 9px;
-          color: #65717c;
-          letter-spacing: 0.14em;
+          gap: 24px;
+          font-family: var(--font-pixel);
+          font-size: 8px;
+          color: #77736a;
         }
 
-        .hero-subtitle span:nth-child(1) {
-          color: var(--red);
+        .exe-line span:first-child {
+          color: #a5b85c;
         }
 
-        .hero-copy {
-          margin-top: 35px;
-          color: #89939d;
-          line-height: 1.9;
-          font-size: 14px;
-          max-width: 440px;
+        /* -------------------------
+           CD
+        ------------------------- */
+
+        .cd-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 18px;
         }
 
-        /* PROFILE */
-
-        .profile-frame {
-          background: #080b10;
-          border: 1px solid #27313a;
-          padding: 10px;
-          transform: rotate(2deg);
+        .cd {
+          width: 270px;
+          height: 270px;
+          border-radius: 50%;
+          position: relative;
+          background:
+            conic-gradient(
+              from 20deg,
+              #5d5c58,
+              #b8b5aa,
+              #686762,
+              #d5d1c4,
+              #77756d,
+              #c7c3b7,
+              #5d5c58
+            );
           box-shadow:
-            12px 12px 0 rgba(255,40,92,0.12),
-            -8px -8px 0 rgba(0,234,255,0.06);
+            0 0 0 1px #aaa69b,
+            0 25px 50px rgba(0,0,0,.45);
+          animation: spin 18s linear infinite;
         }
 
-        .profile-top,
-        .profile-bottom {
+        .cd::before {
+          content: "";
+          position: absolute;
+          inset: 14px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,.5);
+        }
+
+        .cd::after {
+          content: "";
+          position: absolute;
+          inset: 35px;
+          border-radius: 50%;
+          border: 1px solid rgba(0,0,0,.25);
+        }
+
+        .cd-label {
+          position: absolute;
+          inset: 50%;
+          transform: translate(-50%, -50%);
+          width: 105px;
+          height: 105px;
+          border-radius: 50%;
+          background: #b34b43;
+          color: #171717;
           display: flex;
-          justify-content: space-between;
-          font-family: 'IBM Plex Mono', monospace;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          z-index: 2;
+          font-family: var(--font-pixel);
+          font-size: 10px;
+        }
+
+        .cd-label small {
+          font-family: var(--font-space-mono);
           font-size: 7px;
-          color: #63707b;
-          padding: 5px 2px;
-          letter-spacing: 0.12em;
+          margin-top: 7px;
         }
 
-        .profile-top span:last-child {
-          color: var(--red);
+        .cd-hole {
+          position: absolute;
+          z-index: 3;
+          width: 14px;
+          height: 14px;
+          background: #171717;
+          border: 2px solid #aaa69b;
+          border-radius: 50%;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
         }
 
-        .profile-photo {
-          aspect-ratio: 4 / 5;
+        .cd-shine {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background: linear-gradient(
+            120deg,
+            transparent 30%,
+            rgba(255,255,255,.5) 48%,
+            transparent 58%
+          );
+          opacity: .45;
+        }
+
+        .cd-caption {
+          font-family: var(--font-pixel);
+          font-size: 7px;
+          text-align: center;
+          color: #77736a;
+          line-height: 1.8;
+        }
+
+        .cd-caption span {
+          color: #b34b43;
+        }
+
+        /* -------------------------
+           VHS PLAYER
+        ------------------------- */
+
+        .vhs-player {
+          margin-top: 55px;
+          border: 1px solid #55524b;
+          background: #252525;
+          min-height: 145px;
+          display: grid;
+          grid-template-columns: 170px 1fr 180px;
+          box-shadow: 8px 8px 0 rgba(0,0,0,.25);
+        }
+
+        .vhs-left {
+          padding: 22px;
+          border-right: 1px solid #55524b;
+        }
+
+        .vhs-label {
+          font-family: var(--font-pixel);
+          font-size: 8px;
+          color: #171717;
+          background: #d8d5c8;
+          padding: 10px 8px;
+          transform: rotate(-2deg);
+        }
+
+        .vhs-stripes {
+          margin-top: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .vhs-stripes span {
+          height: 5px;
+          background: #55524b;
+        }
+
+        .vhs-stripes span:nth-child(2) {
+          width: 70%;
+          background: #a5b85c;
+        }
+
+        .vhs-stripes span:nth-child(3) {
+          width: 85%;
+          background: #b34b43;
+        }
+
+        .vhs-stripes span:nth-child(4) {
+          width: 50%;
+        }
+
+        .vhs-screen {
+          position: relative;
+          min-height: 145px;
+          overflow: hidden;
           background:
             linear-gradient(
-              135deg,
-              #111820,
-              #050609
-            );
-          position: relative;
-          overflow: hidden;
+              rgba(165,184,92,.08),
+              rgba(165,184,92,.02)
+            ),
+            #101410;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
         }
 
-        .profile-photo::before {
-          content: '';
+        .screen-noise {
           position: absolute;
           inset: 0;
+          opacity: .18;
           background:
-            linear-gradient(
-              120deg,
-              transparent 30%,
-              rgba(0,234,255,0.08),
-              transparent 70%
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 2px,
+              #a5b85c 3px
             );
-          animation: scan 4s linear infinite;
+          animation: tracking 2s infinite;
         }
 
-        .photo-placeholder {
+        .timestamp {
+          position: absolute;
+          top: 12px;
+          left: 15px;
+          right: 15px;
+          display: flex;
+          justify-content: space-between;
+          color: #a5b85c;
+          font-size: 9px;
+        }
+
+        .screen-text {
+          font-family: var(--font-pixel);
+          font-size: clamp(10px, 1.8vw, 18px);
+          color: #a5b85c;
+          text-shadow: 0 0 7px rgba(165,184,92,.4);
+          animation: screenFlicker 4s infinite;
+          z-index: 2;
+        }
+
+        .screen-sub {
+          margin-top: 18px;
+          font-size: 9px;
+          color: #77736a;
+          z-index: 2;
+        }
+
+        .vhs-controls {
+          border-left: 1px solid #55524b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 13px;
+          color: #77736a;
+          font-size: 11px;
+        }
+
+        .vhs-controls span:nth-child(2) {
+          color: #b34b43;
+        }
+
+        /* -------------------------
+           INTRO
+        ------------------------- */
+
+        .intro-grid {
+          margin-top: 55px;
+          display: grid;
+          grid-template-columns: 130px 1fr 180px;
+          border-top: 1px solid #55524b;
+          border-bottom: 1px solid #55524b;
+        }
+
+        .intro-number {
+          font-family: var(--font-orbitron);
+          font-size: 72px;
+          font-weight: 800;
+          color: #a5b85c;
+          padding: 24px 20px;
+          border-right: 1px solid #55524b;
+        }
+
+        .intro-copy {
+          padding: 25px 30px;
+        }
+
+        .intro-copy p {
+          margin: 0 0 10px;
+          font-size: 13px;
+          line-height: 1.6;
+          max-width: 550px;
+        }
+
+        .intro-copy .label {
+          font-family: var(--font-pixel);
+          color: #b34b43;
+          font-size: 8px;
+          margin-bottom: 16px;
+        }
+
+        .intro-copy .muted {
+          color: #77736a;
+          font-size: 10px;
+        }
+
+        .date-stamp {
+          padding: 25px 20px;
+          border-left: 1px solid #55524b;
           display: flex;
           flex-direction: column;
-          align-items: center;
-          gap: 10px;
-          color: #3d4b57;
-          font-family: 'IBM Plex Mono', monospace;
+          justify-content: center;
           font-size: 8px;
-          letter-spacing: 0.2em;
-        }
-
-        .photo-placeholder svg {
-          color: var(--cyan);
-          opacity: 0.5;
-        }
-
-        .photo-placeholder small {
-          color: var(--red);
-          font-size: 6px;
-        }
-
-        .crosshair {
-          position: absolute;
-          width: 25px;
-          height: 25px;
-          border-color: var(--cyan);
-          opacity: 0.6;
-        }
-
-        .crosshair-one {
-          top: 15px;
-          left: 15px;
-          border-top: 1px solid;
-          border-left: 1px solid;
-        }
-
-        .crosshair-two {
-          bottom: 15px;
-          right: 15px;
-          border-bottom: 1px solid;
-          border-right: 1px solid;
-        }
-
-        /* HERO FOOTER */
-
-        .hero-footer {
-          display: flex;
-          justify-content: space-between;
-          align-items: end;
-          margin-top: 70px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 8px;
-          color: #4f5963;
-        }
-
-        .scroll-indicator {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .scroll-line {
-          width: 80px;
-          height: 1px;
-          background: linear-gradient(
-            90deg,
-            var(--cyan),
-            transparent
-          );
-        }
-
-        .coordinates {
-          text-align: right;
-          line-height: 1.8;
-          color: #303a43;
-        }
-
-        /* DIVIDER */
-
-        .cyber-divider {
-          max-width: 1300px;
-          margin: auto;
-          padding: 0 5vw;
-          display: flex;
-          align-items: center;
-          gap: 15px;
-          color: var(--red);
-        }
-
-        .cyber-divider span {
-          height: 1px;
-          flex: 1;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            var(--line)
-          );
-        }
-
-        .cyber-divider span:last-child {
-          background: linear-gradient(
-            90deg,
-            var(--line),
-            transparent
-          );
-        }
-
-        /* INTRO */
-
-        .intro {
-          max-width: 800px;
-          margin: auto;
-          padding: 130px 5vw 100px;
-          text-align: center;
-        }
-
-        .intro-tag {
-          display: inline-flex;
-          align-items: center;
+          color: #77736a;
           gap: 8px;
-          color: var(--red);
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 8px;
-          letter-spacing: 0.2em;
-          border: 1px solid rgba(255,40,92,0.3);
-          padding: 8px 13px;
-          background: rgba(255,40,92,0.04);
         }
 
-        .intro h2 {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(60px, 9vw, 105px);
-          line-height: 0.85;
-          letter-spacing: 0.01em;
-          margin: 30px 0;
+        .date-stamp strong {
+          font-family: var(--font-pixel);
+          font-size: 10px;
+          color: #d8d5c8;
         }
 
-        .intro h2 span {
-          color: transparent;
-          -webkit-text-stroke: 1px #64727d;
+        /* -------------------------
+           DIRECTORY
+        ------------------------- */
+
+        .archive-section {
+          padding: 35px 0 80px;
         }
 
-        .intro p {
-          max-width: 570px;
-          margin: auto;
-          color: #747f89;
-          line-height: 1.8;
-          font-size: 13px;
-        }
-
-        .intro-warning {
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          margin-top: 35px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 7px;
-          color: #525d67;
-          letter-spacing: 0.12em;
-        }
-
-        .intro-warning span {
-          color: var(--red);
-        }
-
-        /* ARCHIVE */
-
-        .archive {
-          max-width: 1300px;
-          margin: auto;
-          padding: 0 5vw 130px;
-        }
-
-        .archive-header {
+        .section-heading {
           display: flex;
+          align-items: flex-end;
           justify-content: space-between;
-          align-items: end;
-          margin-bottom: 35px;
+          margin-bottom: 24px;
         }
 
-        .section-code {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 8px;
-          color: var(--cyan);
-          letter-spacing: 0.15em;
-          margin-bottom: 10px;
-        }
-
-        .archive-header h2 {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 60px;
-          line-height: 0.8;
-          margin: 0;
-        }
-
-        .archive-count {
-          display: flex;
-          align-items: end;
-          gap: 8px;
-          font-family: 'IBM Plex Mono', monospace;
-        }
-
-        .archive-count span {
-          color: #505b65;
+        .section-label {
+          font-family: var(--font-pixel);
+          color: #77736a;
           font-size: 7px;
         }
 
-        .archive-count strong {
-          color: var(--cyan);
-          font-size: 20px;
-          font-weight: 400;
+        .section-heading h2 {
+          font-family: var(--font-orbitron);
+          font-size: clamp(24px, 4vw, 42px);
+          margin: 10px 0 0;
+          letter-spacing: -.04em;
+        }
+
+        .cursor {
+          color: #a5b85c;
+          animation: blink .8s infinite;
+        }
+
+        .directory-status {
+          display: flex;
+          gap: 18px;
+          font-size: 8px;
+          color: #77736a;
         }
 
         .file-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 2px;
-          background: #1c252d;
-          border: 1px solid #1c252d;
+          gap: 12px;
         }
 
         .file-card {
-          min-height: 280px;
-          background:
-            linear-gradient(
-              135deg,
-              #090c11,
-              #07090d
-            );
-          padding: 25px;
+          min-height: 205px;
+          padding: 17px;
           position: relative;
           overflow: hidden;
           text-decoration: none;
-          color: inherit;
+          color: #d8d5c8;
+          background: #252525;
+          border: 1px solid #55524b;
           transition:
-            transform 0.25s,
-            background 0.25s;
+            transform .15s ease,
+            border-color .15s ease,
+            background .15s ease;
         }
 
         .file-card:hover {
-          background:
-            linear-gradient(
-              135deg,
-              #0c141a,
-              #090c11
-            );
-          transform: translate(-2px, -2px);
-          z-index: 2;
+          transform: translate(-3px, -3px);
+          border-color: #a5b85c;
+          background: #292929;
+          box-shadow: 7px 7px 0 #111;
         }
 
-        .file-card-top,
-        .file-card-bottom {
+        .card-top {
           display: flex;
+          align-items: center;
           justify-content: space-between;
-          font-family: 'IBM Plex Mono', monospace;
           font-size: 8px;
-          color: #4f5b65;
-          letter-spacing: 0.1em;
+          color: #77736a;
         }
 
-        .file-card:hover .file-card-top > span:first-child {
-          color: var(--cyan);
-        }
-
-        .file-icon {
-          color: var(--red);
-          font-size: 17px;
-        }
-
-        .file-card-body {
-          margin-top: 50px;
+        .file-number {
+          font-family: var(--font-pixel);
+          color: #d8d5c8;
         }
 
         .file-type {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 7px;
-          letter-spacing: 0.16em;
-          color: var(--cyan);
-          margin-bottom: 10px;
+          color: #a5b85c;
         }
 
-        .file-card h3 {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 55px;
-          line-height: 0.85;
-          letter-spacing: 0.02em;
+        .card-middle {
+          margin-top: 40px;
+          display: flex;
+          align-items: center;
+          gap: 22px;
+        }
+
+        .file-icon {
+          width: 56px;
+          height: 56px;
+          border: 1px solid #77736a;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 23px;
+          color: #a5b85c;
+          font-family: var(--font-orbitron);
+        }
+
+        .card-middle h3 {
+          font-family: var(--font-orbitron);
+          font-size: 19px;
+          margin: 0 0 8px;
+          letter-spacing: -.02em;
+        }
+
+        .card-middle p {
+          font-size: 8px;
+          color: #77736a;
           margin: 0;
-          color: #e9faff;
-          transition: 0.2s;
-        }
-
-        .file-card:hover h3 {
-          color: var(--red);
-          text-shadow: 2px 0 var(--cyan);
-        }
-
-        .file-card p {
-          margin-top: 16px;
-          color: #68737e;
-          font-size: 11px;
+          letter-spacing: .04em;
           line-height: 1.5;
-          max-width: 300px;
         }
 
-        .file-card-bottom {
+        .card-bottom {
           position: absolute;
-          bottom: 20px;
-          left: 25px;
-          right: 25px;
-        }
-
-        .arrow {
-          color: #56616c;
-          transition: 0.2s;
-        }
-
-        .file-card:hover .arrow {
-          color: var(--cyan);
-          transform: translateX(5px);
-        }
-
-        .card-glow {
-          position: absolute;
-          width: 200px;
-          height: 200px;
-          right: -100px;
-          bottom: -100px;
-          background: var(--cyan);
-          filter: blur(100px);
-          opacity: 0;
-          transition: 0.3s;
-        }
-
-        .file-card:hover .card-glow {
-          opacity: 0.08;
-        }
-
-        /* FINAL MESSAGE */
-
-        .final-message {
-          max-width: 900px;
-          margin: auto;
-          padding: 20px 5vw 150px;
-        }
-
-        .message-terminal {
-          border: 1px solid #29333c;
-          background: #07090d;
-          box-shadow: 15px 15px 0 rgba(0,234,255,0.03);
-        }
-
-        .terminal-bar {
-          height: 38px;
-          border-bottom: 1px solid #202a32;
+          bottom: 15px;
+          left: 17px;
+          right: 17px;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0 14px;
-          color: #56616b;
-          font-family: 'IBM Plex Mono', monospace;
+          font-size: 8px;
+          color: #77736a;
+        }
+
+        .open {
+          color: #d8d5c8;
+        }
+
+        .hover-line {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 3px;
+          background: #a5b85c;
+          transition: width .3s ease;
+        }
+
+        .file-card:hover .hover-line {
+          width: 100%;
+        }
+
+        .type-err .file-icon {
+          color: #b34b43;
+          border-color: #b34b43;
+        }
+
+        .type-cd .file-icon {
+          color: #d8d5c8;
+        }
+
+        .type-game .file-icon {
+          color: #a5b85c;
+        }
+
+        /* -------------------------
+           MEDIA DECK
+        ------------------------- */
+
+        .media-deck {
+          display: grid;
+          grid-template-columns: 330px 1fr;
+          gap: 25px;
+          padding-bottom: 80px;
+        }
+
+        .cassette {
+          background: #77736a;
+          padding: 20px;
+          min-height: 220px;
+          transform: rotate(-1deg);
+          box-shadow: 8px 8px 0 #101010;
+        }
+
+        .cassette-label {
+          background: #d8d5c8;
+          color: #171717;
+          padding: 13px;
+          display: flex;
+          justify-content: space-between;
+          font-family: var(--font-pixel);
+          font-size: 7px;
+        }
+
+        .cassette-label strong {
+          color: #b34b43;
+        }
+
+        .cassette-window {
+          height: 72px;
+          background: #171717;
+          margin-top: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .reel {
+          width: 45px;
+          height: 45px;
+          border: 4px dotted #77736a;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .reel span {
+          width: 12px;
+          height: 12px;
+          background: #77736a;
+          border-radius: 50%;
+        }
+
+        .tape-line {
+          position: absolute;
+          height: 8px;
+          left: 45px;
+          right: 45px;
+          background: #55524b;
+        }
+
+        .cassette-bottom {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 15px;
+          font-size: 8px;
+          color: #171717;
+        }
+
+        .terminal {
+          background: #101410;
+          border: 1px solid #55524b;
+          min-height: 220px;
+          box-shadow: 8px 8px 0 #101010;
+        }
+
+        .terminal-header {
+          height: 30px;
+          border-bottom: 1px solid #55524b;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 12px;
+          color: #77736a;
           font-size: 8px;
         }
 
-        .terminal-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          display: inline-block;
-          margin-right: 5px;
+        .terminal-body {
+          padding: 22px;
+          color: #a5b85c;
+          font-size: 10px;
+          line-height: 2;
         }
 
-        .red-dot {
-          background: var(--red);
-        }
-
-        .yellow-dot {
-          background: #f2c94c;
-        }
-
-        .green-dot {
-          background: #2fe88d;
-        }
-
-        .terminal-content {
-          padding: 45px;
-        }
-
-        .terminal-command {
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 9px;
-          color: #596570;
-          margin-bottom: 35px;
-        }
-
-        .terminal-command span:first-child {
-          color: var(--cyan);
-        }
-
-        .terminal-content h2 {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(70px, 11vw, 125px);
-          line-height: 0.72;
+        .terminal-body p {
           margin: 0;
-          letter-spacing: 0.02em;
         }
 
-        .terminal-content h2 span {
-          color: var(--red);
-          text-shadow: 3px 0 var(--cyan);
+        .terminal-body b {
+          color: #d8d5c8;
+          font-weight: 400;
         }
 
-        .terminal-content p {
-          margin-top: 35px;
-          max-width: 530px;
-          color: #75818b;
-          line-height: 1.8;
-          font-size: 13px;
+        .terminal-final {
+          margin-top: 12px !important;
+          color: #d8d5c8;
         }
 
-        .terminal-content .terminal-small {
-          font-family: 'IBM Plex Mono', monospace;
-          color: #4e5a65;
-          font-size: 9px;
+        .terminal-final i {
+          color: #a5b85c;
+          font-style: normal;
+          animation: blink .8s infinite;
         }
 
-        .cursor-line {
-          margin-top: 50px;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 9px;
-          color: var(--cyan);
-        }
-
-        .cursor {
-          color: var(--red);
-          animation: blink 0.8s infinite;
-        }
-
-        /* FOOTER */
+        /* -------------------------
+           FOOTER
+        ------------------------- */
 
         footer {
-          border-top: 1px solid #182027;
-          max-width: 1300px;
-          margin: auto;
-          padding: 25px 5vw 40px;
+          border-top: 1px solid #55524b;
+          padding: 25px 0 35px;
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          color: #3d4852;
-          font-family: 'IBM Plex Mono', monospace;
-          font-size: 7px;
-          letter-spacing: 0.15em;
+          font-size: 8px;
+          color: #77736a;
         }
 
-        footer div:nth-child(2) {
+        .footer-left {
           display: flex;
-          gap: 8px;
-          align-items: center;
-          color: #56616c;
+          gap: 20px;
         }
 
-        .spin {
-          color: var(--cyan);
-          animation: spin 3s linear infinite;
+        .footer-center {
+          font-family: var(--font-pixel);
+          font-size: 6px;
         }
 
-        /* ANIMATIONS */
+        /* -------------------------
+           ANIMATIONS
+        ------------------------- */
 
-        @keyframes pulse {
-          0%, 100% {
-            opacity: 1;
-            box-shadow: 0 0 10px var(--cyan);
-          }
-          50% {
-            opacity: 0.4;
-            box-shadow: 0 0 3px var(--cyan);
-          }
-        }
-
-        @keyframes scan {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
+        @keyframes blink {
+          0%, 45% { opacity: 1; }
+          46%, 100% { opacity: .25; }
         }
 
         @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          to {
+            transform: rotate(360deg);
+          }
         }
 
-        @keyframes blink {
-          50% { opacity: 0; }
-        }
-
-        @keyframes titleGlitch {
-          0%, 93%, 100% {
+        @keyframes titleJitter {
+          0%, 94%, 100% {
             transform: translate(0);
           }
-          94% {
-            transform: translate(-4px, 1px);
-          }
           95% {
-            transform: translate(4px, -1px);
+            transform: translate(-2px, 1px);
           }
           96% {
-            transform: translate(-2px, 0);
+            transform: translate(3px, -1px);
+          }
+          97% {
+            transform: translate(0);
           }
         }
 
-        /* MOBILE */
+        @keyframes glitchA {
+          0%, 88%, 100% {
+            opacity: 0;
+          }
+          89% {
+            opacity: .7;
+            clip-path: inset(20% 0 62% 0);
+          }
+          91% {
+            opacity: 0;
+          }
+        }
 
-        @media (max-width: 768px) {
+        @keyframes glitchB {
+          0%, 78%, 100% {
+            opacity: 0;
+          }
+          79% {
+            opacity: .6;
+            clip-path: inset(65% 0 12% 0);
+          }
+          81% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes tracking {
+          0%, 80%, 100% {
+            transform: translateY(0);
+          }
+          82% {
+            transform: translateY(7px);
+          }
+          84% {
+            transform: translateY(-4px);
+          }
+        }
+
+        @keyframes screenFlicker {
+          0%, 96%, 100% {
+            opacity: 1;
+          }
+          97% {
+            opacity: .3;
+          }
+          98% {
+            opacity: .9;
+          }
+        }
+
+        /* -------------------------
+           MOBILE
+        ------------------------- */
+
+        @media (max-width: 800px) {
 
           .topbar {
-            padding: 0 20px;
+            padding: 0 14px;
           }
 
-          .system-center {
+          .topbar-center {
             display: none;
           }
 
+          .page-shell {
+            width: min(100% - 24px, 600px);
+          }
+
           .hero {
-            padding: 55px 20px 40px;
+            padding-top: 35px;
           }
 
           .hero-meta {
-            position: static;
-            width: 100%;
-            margin-bottom: 60px;
+            font-size: 7px;
           }
 
           .hero-main {
             grid-template-columns: 1fr;
-            gap: 55px;
-            padding-top: 0;
+            gap: 50px;
           }
 
-          .hero-title {
-            font-size: 32vw;
+          .glitch-title {
+            font-size: clamp(82px, 26vw, 150px);
           }
 
-          .hero-subtitle {
-            flex-wrap: wrap;
-            gap: 8px;
+          .cd {
+            width: 210px;
+            height: 210px;
           }
 
-          .profile-frame {
-            width: min(75vw, 300px);
-            margin-left: auto;
+          .cd-label {
+            width: 82px;
+            height: 82px;
           }
 
-          .hero-footer {
-            margin-top: 55px;
+          .vhs-player {
+            grid-template-columns: 1fr;
           }
 
-          .intro {
-            padding-top: 90px;
+          .vhs-left {
+            display: none;
+          }
+
+          .vhs-controls {
+            border-left: 0;
+            border-top: 1px solid #55524b;
+            padding: 12px;
+          }
+
+          .intro-grid {
+            grid-template-columns: 80px 1fr;
+          }
+
+          .intro-number {
+            font-size: 45px;
+            padding: 20px 12px;
+          }
+
+          .intro-copy {
+            padding: 20px;
+          }
+
+          .date-stamp {
+            grid-column: 1 / -1;
+            border-left: 0;
+            border-top: 1px solid #55524b;
+            padding: 15px;
+          }
+
+          .section-heading {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 18px;
+          }
+
+          .directory-status {
+            font-size: 7px;
           }
 
           .file-grid {
@@ -1420,30 +1450,25 @@ export default function BirthdayPage() {
           }
 
           .file-card {
-            min-height: 250px;
+            min-height: 190px;
           }
 
-          .archive-header h2 {
-            font-size: 50px;
-          }
-
-          .terminal-content {
-            padding: 30px 22px;
+          .media-deck {
+            grid-template-columns: 1fr;
           }
 
           footer {
-            padding-left: 20px;
-            padding-right: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
           }
 
-          footer div:nth-child(2) {
-            display: none;
+          .footer-center {
+            order: 3;
+            width: 100%;
           }
-
         }
 
       `}</style>
-
     </main>
   )
 }
