@@ -1,334 +1,250 @@
 'use client'
-import { useEffect, useState } from 'react'
 
-export const dynamic = 'force-dynamic'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Heart, Camera, MessageCircle, Gamepad2, Music, Calendar, Sparkles, Gift, Crown, Star, Brain, Joystick, Globe, Plane } from 'lucide-react'
-import EasterEgg from '../../components/EasterEgg'
-import { useDarkMode } from '../../hooks/useDarkMode'
+
+export const dynamic = 'force-dynamic'
 
 export default function BirthdayPage() {
   const router = useRouter()
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
-  const [timeUntil, setTimeUntil] = useState('')
-  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
+
+  useEffect(() => {
+    const authenticated = sessionStorage.getItem('birthday_authenticated')
+
+    if (authenticated !== 'true') {
+      router.push('/')
+    }
+  }, [router])
+
+  const sections = [
+    {
+      number: '01',
+      title: 'THE MEMORIES',
+      description: 'photos & places ',
+      link: '/birthday/memories',
+    },
+    {
+      number: '02',
+      title: 'THE MESSAGES',
+      description: 'things people wanted you to know',
+      link: '/birthday/messages',
+    },
+    {
+      number: '03',
+      title: 'THE SOUNDTRACK',
+      description: 'songs about you ',
+      link: '/birthday/playlist',
+    },
+    {
+      number: '04',
+      title: 'THE CHAOS',
+      description: 'shits and giggles ',
+      link: '/birthday/games',
+    },
+    {
+      number: '05',
+      title: 'THE QUIZ',
+      description: 'let's see how well you actually know us',
+      link: '/birthday/quiz',
+    },
+    {
+      number: '06',
+      title: 'THE JOURNEY',
+      description: 'everywhere, somehow, led to here',
+      link: '/birthday/journey',
+    },
+  ]
 
   const handleLogout = () => {
     sessionStorage.removeItem('birthday_authenticated')
     router.push('/')
   }
 
-
-  // Check authentication and show loading screen
-  useEffect(() => {
-    const authenticated = sessionStorage.getItem('birthday_authenticated')
-    if (authenticated !== 'true') {
-      router.push('/')
-    } else {
-      setShowLoadingScreen(true)
-      
-      // Show loading screen for 1.5 seconds
-      setTimeout(() => {
-        setIsLoaded(true)
-      }, 1500)
-    }
-  }, [router])
-
-  // Countdown timer
-  useEffect(() => {
-    const calculateTime = () => {
-      // Get current year and set birthday to current or next year
-      const now = new Date()
-      const currentYear = now.getFullYear()
-      let birthday = new Date(`${currentYear}-09-03T00:00:00+10:00`) // Melbourne time
-      
-      // If birthday has passed this year, use next year
-      if (birthday < now) {
-        birthday = new Date(`${currentYear + 1}-09-03T00:00:00+10:00`)
-      }
-      
-      const diff = birthday - now
-
-      if (diff > 0) {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-        
-        if (days > 0) {
-          setTimeUntil(`${days} ${days === 1 ? 'day' : 'days'} and ${hours} ${hours === 1 ? 'hour' : 'hours'} until your special day!`)
-        } else if (hours > 0) {
-          setTimeUntil(`${hours} ${hours === 1 ? 'hour' : 'hours'} and ${minutes} ${minutes === 1 ? 'minute' : 'minutes'} until your birthday! 🎉`)
-        } else {
-          setTimeUntil(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'} until your birthday! 🎂✨`)
-        }
-      } else {
-        setTimeUntil("IT'S YOUR BIRTHDAY TODAY! 🎉🎂🎈")
-      }
-    }
-
-    calculateTime()
-    const timer = setInterval(calculateTime, 1000 * 60) // Update every minute
-    return () => clearInterval(timer)
-  }, [])
-
-  const features = [
-    {
-      title: 'Our Memories',
-      description: 'A collection of our favorite moments together',
-      icon: Camera,
-      link: '/birthday/memories',
-      gradient: 'from-pink-400 to-rose-600',
-      delay: '0ms'
-    },
-    {
-      title: 'Love Quiz',
-      description: 'How well do I know you? Test time!',
-      icon: Brain,
-      link: '/birthday/quiz',
-      gradient: 'from-orange-400 to-red-600',
-      delay: '100ms'
-    },
-    {
-      title: 'Birthday Messages',
-      description: 'Heartfelt messages from the ones who love you',
-      icon: MessageCircle,
-      link: '/birthday/messages',
-      gradient: 'from-blue-400 to-cyan-600',
-      delay: '200ms'
-    },
-    {
-      title: 'Our Playlist',
-      description: 'Songs that remind me of you',
-      icon: Music,
-      link: '/birthday/playlist',
-      gradient: 'from-green-400 to-emerald-600',
-      delay: '300ms'
-    },
-    {
-      title: 'Mini Games',
-      description: 'Fun little games, each one tailored from my love for you',
-      icon: Gamepad2,
-      link: '/birthday/games',
-      gradient: 'from-violet-400 to-purple-600',
-      delay: '400ms'
-    },
-    {
-      title: 'Journey to You',
-      description: 'Interactive 3D globe showing our path to reunion',
-      icon: Globe,
-      link: '/birthday/journey',
-      gradient: 'from-indigo-400 to-blue-600',
-      delay: '500ms'
-    }
-  ]
-
-  if (darkModeLoading || (showLoadingScreen && !isLoaded)) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-pink-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
-        {/* Animated background particles */}
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 text-pink-300 opacity-70">
-            <Heart size={15} fill="currentColor" className="animate-gentle-float" />
-          </div>
-          <div className="absolute top-20 right-16 text-purple-400 opacity-60">
-            <Calendar size={18} className="animate-gentle-float-alt" />
-          </div>
-          <div className="absolute bottom-32 left-16 text-yellow-400 opacity-50">
-            <Star size={14} fill="currentColor" className="animate-gentle-pulse" />
-          </div>
-          <div className="absolute top-1/3 left-1/4 text-blue-300 opacity-40">
-            <Gift size={16} className="animate-gentle-spin" />
-          </div>
-          <div className="absolute bottom-40 right-20 text-pink-400 opacity-60">
-            <Sparkles size={12} className="animate-gentle-bounce" />
-          </div>
-          <div className="absolute top-1/2 right-1/3 text-purple-300 opacity-50">
-            <Crown size={20} className="animate-gentle-float-slow" />
-          </div>
-        </div>
-
-        <div className="text-center z-10">
-          {/* Main loading animation */}
-          <div className="relative mb-8">
-            {/* Outer rotating ring */}
-            <div className="w-24 h-24 mx-auto relative">
-              <div className={`absolute inset-0 border-4 ${isDarkMode ? 'border-gray-600' : 'border-purple-200'} rounded-full`}></div>
-              <div className="absolute inset-0 border-4 border-transparent border-t-purple-500 border-r-pink-500 rounded-full animate-spin"></div>
-              
-              {/* Inner pulsing circle */}
-              <div className="absolute inset-3 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full animate-gentle-pulse flex items-center justify-center">
-                <Heart className="w-8 h-8 text-white animate-gentle-float" fill="currentColor" />
-              </div>
-              
-              {/* Orbiting dots */}
-              <div className="absolute inset-0 animate-gentle-spin">
-                <div className="absolute -top-2 left-1/2 w-4 h-4 bg-yellow-400 rounded-full transform -translate-x-1/2 animate-gentle-pulse"></div>
-                <div className="absolute -right-2 top-1/2 w-3 h-3 bg-pink-400 rounded-full transform -translate-y-1/2 animate-gentle-pulse" style={{ animationDelay: '0.3s' }}></div>
-                <div className="absolute -bottom-2 left-1/2 w-4 h-4 bg-blue-400 rounded-full transform -translate-x-1/2 animate-gentle-pulse" style={{ animationDelay: '0.7s' }}></div>
-                <div className="absolute -left-2 top-1/2 w-3 h-3 bg-purple-400 rounded-full transform -translate-y-1/2 animate-gentle-pulse" style={{ animationDelay: '1s' }}></div>
-              </div>
-            </div>
-          </div>
-
-          {/* Loading text with animated gradient */}
-          <div className="text-2xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent animate-birthday-glow">
-              Loading Birthday Magic
-            </span>
-          </div>
-          
-          {/* Progress indicator */}
-          <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="w-3 h-3 bg-pink-500 rounded-full animate-gentle-pulse"></div>
-              <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preparing Your Special Day</span>
-            </div>
-            <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
-              <div className="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full animate-progress-fill"></div>
-            </div>
-            <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Almost ready...</p>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes birthday-glow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.2) drop-shadow(0 0 10px rgba(147, 51, 234, 0.5)); }
-          }
-          .animate-birthday-glow { animation: birthday-glow 2s ease-in-out infinite; }
-        `}</style>
-      </div>
-    )
-  }
-
   return (
-    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
-      {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-pink-300 rounded-full opacity-20 animate-blob"></div>
-        <div className="absolute top-20 right-10 w-32 h-32 bg-purple-300 rounded-full opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-10 left-20 w-36 h-36 bg-blue-300 rounded-full opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <main className="min-h-screen bg-[#111111] text-[#e8e3d9] overflow-x-hidden">
 
-      {/* Top Navigation */}
-      <div className="fixed top-4 left-4 right-4 flex justify-between items-center z-50">
-        <button onClick={handleLogout} className={`fixed top-4 right-4 z-50 ${isDarkMode ? 'bg-gray-800/90 border-gray-700/50 text-gray-300 hover:bg-red-900/20 hover:text-red-400' : 'bg-white/90 border-white/20 text-gray-600 hover:bg-red-50 hover:text-red-600'} backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-medium cursor-pointer transition-all duration-300`}>
-          ← Back to Login
-        </button>
-        
-      </div>
+      {/* subtle grain */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.04] z-50"
+        style={{
+          backgroundImage:
+            'url("https://grainy-gradients.vercel.app/noise.svg")',
+        }}
+      />
 
-      <div className="center-content relative z-10">
-        {/* Header */}
-        <div className="text-center header-section animate-fade-in max-w-4xl mx-auto w-full">
-          <div className="inline-flex items-center justify-center mb-4">
-            <Sparkles className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
-            <Gift className="text-purple-500 mx-3 w-8 h-8 sm:w-10 sm:h-10" />
-            <Sparkles className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
-          </div>
-          
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 px-2">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Happy Birthday!
-            </span>
-          </h1>
-          
-          <p className={`text-lg sm:text-xl ${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-4 px-2`}>
-            Welcome to your special surprise! 💕
-          </p>
-          
-          <div className={`inline-flex items-center gap-2 px-4 py-4 ${isDarkMode ? 'bg-gray-800/80' : 'bg-white/80'} backdrop-blur-sm rounded-full shadow-md`}>
-            <Calendar className="text-purple-500 w-4 h-4 sm:w-5 sm:h-5" />
-            <p className={`text-xs sm:text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{timeUntil}</p>
-          </div>
+      {/* top bar */}
+      <header className="px-6 sm:px-10 pt-6 flex justify-between items-center">
+        <div className="text-[10px] sm:text-xs tracking-[0.3em] text-[#8d8880]">
+          PRIVATE ARCHIVE
         </div>
 
-        {/* Feature Cards - Full Width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 section-spacing max-w-5xl mx-auto w-full">
-          {features.map((feature, index) => (
+        <button
+          onClick={handleLogout}
+          className="text-[10px] sm:text-xs tracking-[0.2em] text-[#77736d] hover:text-[#e8e3d9] transition-colors"
+        >
+          EXIT ↗
+        </button>
+      </header>
+
+      {/* hero */}
+      <section className="px-6 sm:px-10 pt-20 sm:pt-28 pb-20 max-w-6xl mx-auto">
+
+        <div className="flex items-center gap-3 mb-8">
+          <span className="h-px w-10 bg-[#7d252d]" />
+          <span className="text-[10px] tracking-[0.35em] text-[#9b9590]">
+            ARCHIVE 001
+          </span>
+        </div>
+
+        <div className="grid md:grid-cols-[1fr_260px] gap-12 items-end">
+
+          <div>
+            <p className="text-xs tracking-[0.25em] text-[#77736d] mb-5">
+              19 / 11 / 04
+            </p>
+
+            <h1 className="text-6xl sm:text-8xl md:text-[9rem] leading-[0.8] tracking-[-0.07em] font-serif">
+              CLAR
+            </h1>
+
+            <p className="mt-8 max-w-xl text-sm sm:text-base leading-7 text-[#9d9890]">
+              You made it this far.
+              <br />
+              Unfortunately, there is no turning back now.
+            </p>
+          </div>
+
+          <div className="border border-[#373532] p-5 rotate-2 bg-[#171717]">
+            <div className="aspect-[4/5] bg-[#292826] flex items-center justify-center">
+              <span className="text-[9px] tracking-[0.25em] text-[#68645e] text-center px-5">
+                PHOTO
+                <br />
+                COMING
+                <br />
+                SOON
+              </span>
+            </div>
+
+            <p className="mt-4 text-[9px] tracking-[0.2em] text-[#77736d]">
+              FIG. 001 — CLAR
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* intro note */}
+      <section className="px-6 sm:px-10 pb-24 max-w-6xl mx-auto">
+
+        <div className="border-y border-[#302f2c] py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-[#7d252d] mb-3">
+              CLASSIFIED
+            </p>
+
+            <p className="font-serif italic text-xl sm:text-2xl text-[#d6d0c5]">
+              a collection of memories, bad decisions
+              <br className="hidden sm:block" />
+              & things we probably shouldn't publish.
+            </p>
+          </div>
+
+          <div className="text-[9px] tracking-[0.2em] text-[#66625d]">
+            DO NOT DISTRIBUTE
+          </div>
+
+        </div>
+      </section>
+
+      {/* navigation */}
+      <section className="px-6 sm:px-10 pb-24 max-w-6xl mx-auto">
+
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <p className="text-[10px] tracking-[0.3em] text-[#77736d] mb-2">
+              CONTENTS
+            </p>
+
+            <h2 className="font-serif text-3xl sm:text-4xl">
+              Open the archive.
+            </h2>
+          </div>
+
+          <span className="hidden sm:block text-[9px] tracking-[0.2em] text-[#55524d]">
+            06 FILES
+          </span>
+        </div>
+
+        <div className="border-t border-[#373532]">
+
+          {sections.map((section) => (
             <Link
-              key={index}
-              href={feature.link}
-              className="group block animate-slide-up-smooth"
-              style={{ 
-                animationDelay: feature.delay,
-                willChange: 'transform, opacity'
-              }}
+              key={section.number}
+              href={section.link}
+              className="group border-b border-[#373532] py-7 flex items-center gap-5 sm:gap-8 hover:bg-[#181817] transition-all duration-300 px-2"
             >
-              <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant overflow-hidden hover:shadow-floating h-full transform transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:-translate-y-1`}>
-                <div className={`h-2 bg-gradient-to-r ${feature.gradient}`}></div>
-                <div className="p-6 sm:p-7 md:p-8">
-                  <div className="flex items-start gap-3 sm:gap-4">
-                    <div className={`p-3 sm:p-4 bg-gradient-to-br ${feature.gradient} rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300 ease-out flex-shrink-0`}>
-                      <feature.icon className="text-white w-5 h-5 sm:w-6 sm:h-6" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`text-lg sm:text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-1`}>
-                        {feature.title}
-                      </h3>
-                      <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} text-xs sm:text-sm`}>
-                        {feature.description}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+
+              <span className="text-[10px] tracking-[0.2em] text-[#625e59] w-8">
+                {section.number}
+              </span>
+
+              <div className="flex-1">
+
+                <h3 className="text-lg sm:text-2xl tracking-[0.04em] group-hover:text-[#a63b45] transition-colors">
+                  {section.title}
+                </h3>
+
+                <p className="text-xs sm:text-sm text-[#706c66] mt-1">
+                  {section.description}
+                </p>
+
               </div>
+
+              <span className="text-[#625e59] group-hover:text-[#a63b45] group-hover:translate-x-1 transition-all text-lg">
+                →
+              </span>
+
             </Link>
           ))}
-        </div>
 
-        {/* Special Message - Full Width */}
-        <div className={`text-center ${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 animate-slide-up-smooth max-w-5xl mx-auto section-spacing`} style={{ animationDelay: '500ms' }}>
-          <div className="relative mb-6">
-            <Heart className="text-yellow-500 mx-auto w-10 h-10 sm:w-12 sm:h-12 animate-gentle-glow" fill="currentColor" />
-            <div className="absolute inset-0 animate-gentle-pulse">
-              <Heart className="text-yellow-300 mx-auto w-10 h-10 sm:w-12 sm:h-12 opacity-20" fill="currentColor" />
-            </div>
+        </div>
+      </section>
+
+      {/* bottom message */}
+      <section className="px-6 sm:px-10 pb-20 max-w-6xl mx-auto">
+
+        <div className="bg-[#171716] border border-[#302f2c] p-8 sm:p-12 relative overflow-hidden">
+
+          <div className="absolute top-0 right-0 text-[7rem] sm:text-[10rem] font-serif text-[#201f1d] leading-none select-none">
+            ♡
           </div>
-          <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>
-            A Special Message For You
-          </h2>
-          <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} leading-relaxed max-w-2xl mx-auto px-2 sm:px-0`}>
-            Even though we&apos;re miles apart on your special day, my love for you knows no distance. 
-            This little corner of the internet is my way of being there with you, celebrating you, 
-            and reminding you how incredibly special you are. Every pixel here was placed with love, 
-            every feature built while thinking of your beautiful smile. Happy Birthday! 🎂💛
+
+          <p className="relative text-[9px] tracking-[0.3em] text-[#7d252d] mb-5">
+            FILE NOTE // 19.11
           </p>
+
+          <p className="relative font-serif text-2xl sm:text-4xl leading-tight max-w-3xl">
+            Happy birthday to the person who somehow managed to become
+            such a massive part of my life.
+          </p>
+
+          <p className="relative mt-6 text-xs sm:text-sm text-[#77736d] max-w-xl leading-6">
+            This website is basically an unnecessarily elaborate way of saying
+            that you're loved. So... enjoy.
+          </p>
+
         </div>
+      </section>
 
-        {/* Hidden Easter Eggs */}
-        <EasterEgg 
-          id="egg-1"
-          top="10%"
-          left="5%"
-          icon={Crown}
-          message="You found the birthday crown! 👑"
-          specialMessage="You're the queen of my heart, today and always!"
-          size="medium"
-        />
-        
-        <EasterEgg 
-          id="egg-2"
-          bottom="15%"
-          right="8%"
-          icon={Star}
-          message="A shining star, just like you! ⭐"
-          specialMessage="You light up my world in ways you can't even imagine"
-          size="medium"
-        />
+      {/* footer */}
+      <footer className="px-6 sm:px-10 pb-8 max-w-6xl mx-auto flex justify-between text-[8px] tracking-[0.25em] text-[#504d48]">
+        <span>DVA / CLAR</span>
+        <span>19 • 11 • 04</span>
+        <span>ARCHIVE CLOSED</span>
+      </footer>
 
-        <EasterEgg 
-          id="egg-3"
-          top="50%"
-          left="2%"
-          icon={Gift}
-          message="A special gift waiting to be unwrapped! 🎁"
-          specialMessage="The best gift you've given me is your love"
-          size="large"
-        />
-      </div>
-    </div>
+    </main>
   )
 }
