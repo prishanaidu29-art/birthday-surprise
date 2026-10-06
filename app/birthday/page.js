@@ -45,7 +45,7 @@ export default function BirthdayPage() {
     {
       number: '05',
       title: 'THE QUIZ',
-      description: 'let's see how well you actually know us',
+      description: "let's see how well you actually know us",
       link: '/birthday/quiz',
     },
     {
