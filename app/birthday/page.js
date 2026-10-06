@@ -3,103 +3,87 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Bodoni_Moda, Space_Mono, Inter } from 'next/font/google'
+
+import {
+  ArrowUpRight,
+  ChevronRight,
+  Disc3,
+  Gamepad2,
+  LockKeyhole,
+  Power,
+  ScanLine,
+  Terminal,
+  Zap,
+} from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
-const bodoni = Bodoni_Moda({
-  subsets: ['latin'],
-  variable: '--font-bodoni',
-  display: 'swap',
-})
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-space',
-  display: 'swap',
-})
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
 export default function BirthdayPage() {
   const router = useRouter()
-  const [time, setTime] = useState('')
+  const [booted, setBooted] = useState(false)
+  const [hovered, setHovered] = useState(null)
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('birthday_authenticated')
 
     if (authenticated !== 'true') {
       router.push('/')
+      return
     }
+
+    const timer = setTimeout(() => setBooted(true), 500)
+
+    return () => clearTimeout(timer)
   }, [router])
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date()
-
-      setTime(
-        now.toLocaleTimeString('en-GB', {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        })
-      )
-    }
-
-    updateTime()
-
-    const interval = setInterval(updateTime, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
 
   const sections = [
     {
       number: '01',
-      title: 'THE MEMORIES',
-      description: 'photos / places / evidence',
-      meta: 'FILE_001',
+      title: 'MEMORIES',
+      subtitle: 'PHOTO DATABASE',
+      description: 'photos, places & evidence',
       link: '/birthday/memories',
+      icon: '◉',
     },
     {
       number: '02',
-      title: 'THE MESSAGES',
+      title: 'MESSAGES',
+      subtitle: 'INCOMING DATA',
       description: 'things people wanted you to know',
-      meta: 'FILE_002',
       link: '/birthday/messages',
+      icon: '✦',
     },
     {
       number: '03',
-      title: 'THE SOUNDTRACK',
-      description: 'songs that somehow became us',
-      meta: 'FILE_003',
+      title: 'SOUNDTRACK',
+      subtitle: 'AUDIO FILES',
+      description: 'songs that became us',
       link: '/birthday/playlist',
+      icon: '♫',
     },
     {
       number: '04',
-      title: 'THE CHAOS',
-      description: 'shits / giggles / questionable decisions',
-      meta: 'FILE_004',
+      title: 'CHAOS',
+      subtitle: 'UNSTABLE FILES',
+      description: 'shit, giggles & questionable decisions',
       link: '/birthday/games',
+      icon: '⚠',
     },
     {
       number: '05',
       title: 'THE QUIZ',
+      subtitle: 'KNOWLEDGE TEST',
       description: 'prove you actually know us',
-      meta: 'FILE_005',
       link: '/birthday/quiz',
+      icon: '?',
     },
     {
       number: '06',
       title: 'THE JOURNEY',
-      description: 'everywhere somehow led to here',
-      meta: 'FILE_006',
+      subtitle: 'LOCATION DATA',
+      description: 'everywhere somehow led here',
       link: '/birthday/journey',
+      icon: '⌁',
     },
   ]
 
@@ -108,228 +92,349 @@ export default function BirthdayPage() {
     router.push('/')
   }
 
+  if (!booted) {
+    return (
+      <main className="min-h-screen bg-[#050609] text-[#e9faff] flex items-center justify-center overflow-hidden">
+        <div className="scanlines" />
+
+        <div className="boot-screen">
+          <div className="boot-logo">DVA://CLAR</div>
+
+          <div className="boot-line">
+            <span>INITIALISING MEMORY CORE</span>
+            <span>OK</span>
+          </div>
+
+          <div className="boot-line">
+            <span>LOADING BIRTHDAY_DATA</span>
+            <span>OK</span>
+          </div>
+
+          <div className="boot-line">
+            <span>ACCESSING ARCHIVE_001</span>
+            <span>OK</span>
+          </div>
+
+          <div className="boot-progress">
+            <div />
+          </div>
+
+          <p className="blink">PRESSING START...</p>
+        </div>
+
+        <style jsx>{`
+          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+          * {
+            box-sizing: border-box;
+          }
+
+          .scanlines {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0.12;
+            background: repeating-linear-gradient(
+              to bottom,
+              transparent 0px,
+              transparent 3px,
+              rgba(255,255,255,0.08) 4px
+            );
+          }
+
+          .boot-screen {
+            width: min(520px, 90vw);
+            font-family: 'IBM Plex Mono', monospace;
+          }
+
+          .boot-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 64px;
+            letter-spacing: 0.08em;
+            color: #ff285c;
+            text-shadow:
+              3px 0 #00eaff,
+              -3px 0 rgba(255, 0, 110, 0.5);
+            margin-bottom: 40px;
+          }
+
+          .boot-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            color: #73808c;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+          }
+
+          .boot-line span:last-child {
+            color: #00f0ff;
+          }
+
+          .boot-progress {
+            margin-top: 25px;
+            height: 3px;
+            background: #141a20;
+            overflow: hidden;
+          }
+
+          .boot-progress div {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(
+              90deg,
+              #ff285c,
+              #ff285c,
+              #00eaff
+            );
+            animation: boot 0.5s ease-out;
+          }
+
+          .blink {
+            margin-top: 30px;
+            color: #ff285c;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            animation: blink 0.7s infinite;
+          }
+
+          @keyframes boot {
+            from { width: 0; }
+            to { width: 100%; }
+          }
+
+          @keyframes blink {
+            50% { opacity: 0; }
+          }
+        `}</style>
+      </main>
+    )
+  }
+
   return (
-    <main
-      className={`${bodoni.variable} ${spaceMono.variable} ${inter.variable} archive-page`}
-    >
+    <main className="cyber-page">
 
-      {/* GRAIN */}
-      <div className="grain" />
-
-      {/* Y2K SCANLINES */}
+      {/* CRT EFFECT */}
       <div className="scanlines" />
+      <div className="noise" />
 
-      {/* TOP NAV */}
+      {/* CYBER HUD */}
+      <div className="hud-corner top-left" />
+      <div className="hud-corner top-right" />
+      <div className="hud-corner bottom-left" />
+      <div className="hud-corner bottom-right" />
+
+      {/* TOP SYSTEM BAR */}
       <header className="topbar">
 
         <div className="system-id">
           <span className="status-dot" />
-          PRIVATE ARCHIVE
-          <span className="muted"> // 001</span>
+          <span>ARCHIVE://001</span>
         </div>
 
-        <div className="top-right">
-
-          <span className="clock">
-            {time}
-          </span>
-
-          <span className="separator">|</span>
-
-          <button
-            onClick={handleLogout}
-            className="exit-button"
-          >
-            EXIT ↗
-          </button>
-
+        <div className="system-center">
+          <span>PRIVATE NETWORK</span>
+          <span className="separator">///</span>
+          <span>CONNECTED</span>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="exit-button"
+        >
+          <Power size={13} />
+          DISCONNECT
+        </button>
 
       </header>
 
       {/* HERO */}
       <section className="hero">
 
-        {/* SMALL ARCHIVE LABEL */}
-        <div className="archive-label">
-          <span className="red-line" />
-          <span>ARCHIVE_001</span>
-          <span className="label-divider">/</span>
-          <span>CLASSIFIED</span>
+        <div className="hero-meta">
+
+          <div className="meta-line">
+            <span>SUBJECT</span>
+            <span>CLAR</span>
+          </div>
+
+          <div className="meta-line">
+            <span>DOB</span>
+            <span>19.11.04</span>
+          </div>
+
+          <div className="meta-line">
+            <span>STATUS</span>
+            <span className="online">ONLINE</span>
+          </div>
+
         </div>
 
-        <div className="hero-grid">
+        <div className="hero-main">
 
-          {/* LEFT */}
-          <div className="hero-copy">
+          <div className="hero-title-wrap">
 
-            <div className="date-code">
-              19 / 11 / 04
+            <div className="glitch-label">
+              <Terminal size={12} />
+              <span>USER PROFILE FOUND</span>
+              <span className="red">[ACCESS GRANTED]</span>
             </div>
 
-            <h1>
+            <h1
+              className="hero-title"
+              data-text="CLAR"
+            >
               CLAR
             </h1>
 
             <div className="hero-subtitle">
-              <span>AN UNNECESSARY ARCHIVE</span>
-              <span>OF ONE VERY IMPORTANT PERSON.</span>
+              <span>LEVEL 22</span>
+              <span>//</span>
+              <span>PLAYER ONE</span>
+              <span>//</span>
+              <span>EST. 2004</span>
             </div>
 
-            <div className="hero-description">
+            <p className="hero-copy">
               You made it this far.
               <br />
               Unfortunately, there is no turning back now.
-            </div>
-
-            <div className="system-message">
-              <span className="bracket">[</span>
-              ACCESS GRANTED
-              <span className="bracket">]</span>
-              <span className="cursor">_</span>
-            </div>
+            </p>
 
           </div>
 
-          {/* PHOTO */}
-          <div className="photo-wrapper">
+          {/* PHOTO / PROFILE FRAME */}
+          <div className="profile-frame">
 
-            <div className="photo-frame">
+            <div className="profile-top">
+              <span>CAM_001</span>
+              <span>REC ●</span>
+            </div>
 
-              <div className="photo-inner">
+            <div className="profile-photo">
 
-                <div className="photo-cross">
-                  <span />
-                  <span />
-                </div>
+              <div className="crosshair crosshair-one" />
+              <div className="crosshair crosshair-two" />
 
-                <div className="photo-placeholder">
-                  <span className="photo-number">IMG_001</span>
-
-                  <div className="photo-icon">
-                    ◉
-                  </div>
-
-                  <span>
-                    PHOTO
-                    <br />
-                    PLACEHOLDER
-                  </span>
-                </div>
-
-                <div className="flash">
-                  FLASH
-                </div>
-
+              <div className="photo-placeholder">
+                <ScanLine size={35} />
+                <span>IMAGE DATA</span>
+                <small>AWAITING UPLOAD</small>
               </div>
 
-              <div className="photo-caption">
-                FIG. 001 — CLAR / ORIGINAL FILE
-              </div>
+              <div className="photo-glitch" />
 
             </div>
 
-            <div className="photo-note">
-              <span>NO PHOTO YET</span>
-              <span>↑ INSERT LATER</span>
+            <div className="profile-bottom">
+              <span>19:11:04</span>
+              <span>ISO 800</span>
+              <span>RAW</span>
             </div>
 
           </div>
 
         </div>
 
-        {/* SCROLL */}
-        <div className="scroll-indicator">
+        {/* HERO FOOTER */}
+        <div className="hero-footer">
 
-          <span>SCROLL TO ACCESS</span>
-
-          <div className="scroll-line">
-            <span />
+          <div className="scroll-indicator">
+            <span>SCROLL TO ACCESS ARCHIVE</span>
+            <div className="scroll-line" />
           </div>
 
-          <span>↓</span>
+          <div className="coordinates">
+            03.4821
+            <br />
+            101.7617
+          </div>
 
         </div>
 
       </section>
 
-      {/* CLASSIFIED NOTE */}
-      <section className="classified-section">
+      {/* DIVIDER */}
+      <div className="cyber-divider">
+        <span />
+        <Zap size={13} />
+        <span />
+      </div>
 
-        <div className="classified-left">
+      {/* INTRO */}
+      <section className="intro">
 
-          <div className="tiny-label">
-            CLASSIFIED // FILE NOTE
-          </div>
-
-          <p className="classified-title">
-            A collection of memories,
-            <br />
-            bad decisions & things
-            <br />
-            we probably shouldn't publish.
-          </p>
-
+        <div className="intro-tag">
+          <LockKeyhole size={12} />
+          CLASSIFIED DATA
         </div>
 
-        <div className="classified-right">
+        <h2>
+          A SMALL
+          <br />
+          <span>DIGITAL TIME CAPSULE.</span>
+        </h2>
 
-          <div className="stamp">
-            PRIVATE
-            <br />
-            PROPERTY
-          </div>
+        <p>
+          A collection of memories, questionable decisions,
+          unnecessarily dramatic moments and people who
+          somehow decided you were worth keeping around.
+        </p>
 
-          <span>
-            DO NOT
-            <br />
-            DISTRIBUTE
-          </span>
-
+        <div className="intro-warning">
+          <span>⚠</span>
+          SOME FILES MAY CONTAIN EMBARRASSING EVIDENCE
         </div>
 
       </section>
 
-      {/* CONTENTS */}
-      <section className="contents">
+      {/* ARCHIVE */}
+      <section className="archive">
 
-        <div className="contents-header">
+        <div className="archive-header">
 
           <div>
-            <div className="tiny-label">
-              DIRECTORY / 06 FILES
+            <div className="section-code">
+              // DIRECTORY_001
             </div>
 
-            <h2>
-              Open the archive.
-            </h2>
+            <h2>SELECT FILE</h2>
           </div>
 
-          <div className="directory-status">
-            <span className="status-dot" />
-            SYSTEM ONLINE
+          <div className="archive-count">
+            <span>FILES</span>
+            <strong>06</strong>
           </div>
 
         </div>
 
-        <div className="file-list">
+        <div className="file-grid">
 
-          {sections.map((section) => (
+          {sections.map((section, index) => (
 
             <Link
               key={section.number}
               href={section.link}
-              className="file-row"
+              className={`file-card ${hovered === index ? 'active' : ''}`}
+              onMouseEnter={() => setHovered(index)}
+              onMouseLeave={() => setHovered(null)}
             >
 
-              <div className="file-number">
-                {section.number}
+              <div className="card-glow" />
+
+              <div className="file-card-top">
+                <span>{section.number}</span>
+
+                <span className="file-icon">
+                  {section.icon}
+                </span>
               </div>
 
-              <div className="file-main">
+              <div className="file-card-body">
 
-                <div className="file-meta">
-                  {section.meta}
+                <div className="file-type">
+                  {section.subtitle}
                 </div>
 
                 <h3>
@@ -342,8 +447,17 @@ export default function BirthdayPage() {
 
               </div>
 
-              <div className="file-arrow">
-                ↗
+              <div className="file-card-bottom">
+
+                <span>
+                  FILE_{section.number}.DAT
+                </span>
+
+                <ChevronRight
+                  size={17}
+                  className="arrow"
+                />
+
               </div>
 
             </Link>
@@ -354,71 +468,57 @@ export default function BirthdayPage() {
 
       </section>
 
-      {/* BIG QUOTE */}
-      <section className="statement">
-
-        <div className="statement-code">
-          NOTE_19.11 // PERSONAL
-        </div>
-
-        <h2>
-          SOME PEOPLE COME INTO
-          <br />
-          YOUR LIFE.
-          <br />
-          <em>
-            OTHERS SOMEHOW TAKE OVER
-            <br />
-            THE ENTIRE CAMERA ROLL.
-          </em>
-        </h2>
-
-        <div className="statement-bottom">
-
-          <span>
-            THIS WEBSITE IS AN
-            <br />
-            UNNECESSARILY ELABORATE
-            <br />
-            WAY OF SAYING:
-          </span>
-
-          <strong>
-            YOU ARE LOVED.
-          </strong>
-
-        </div>
-
-      </section>
-
       {/* FINAL MESSAGE */}
-      <section className="final-card">
+      <section className="final-message">
 
-        <div className="final-number">
-          001
-        </div>
+        <div className="message-terminal">
 
-        <div>
+          <div className="terminal-bar">
+            <span>
+              <span className="terminal-dot red-dot" />
+              <span className="terminal-dot yellow-dot" />
+              <span className="terminal-dot green-dot" />
+            </span>
 
-          <div className="tiny-label">
-            FINAL FILE / OPEN
+            <span>MESSAGE.exe</span>
+
+            <span>●</span>
           </div>
 
-          <p>
-            Happy birthday to the person who somehow managed to become such
-            a massive part of my life.
-          </p>
+          <div className="terminal-content">
 
-          <span className="final-small">
-            There is considerably more nonsense inside.
-            <br />
-            Proceed at your own risk.
-          </span>
+            <div className="terminal-command">
+              <span>root@birthday:~$</span>
+              <span> cat /message/clar.txt</span>
+            </div>
 
-        </div>
+            <h2>
+              HAPPY
+              <br />
+              BIRTHDAY,
+              <br />
+              <span>CLAR.</span>
+            </h2>
 
-        <div className="heart">
-          ♡
+            <p>
+              Somehow you became a massive part of
+              my life and now you have an entire website
+              dedicated to you.
+            </p>
+
+            <p className="terminal-small">
+              No refunds. No returns.
+              <br />
+              You're stuck with us.
+            </p>
+
+            <div className="cursor-line">
+              <span>root@birthday:~$</span>
+              <span className="cursor">█</span>
+            </div>
+
+          </div>
+
         </div>
 
       </section>
@@ -426,792 +526,917 @@ export default function BirthdayPage() {
       {/* FOOTER */}
       <footer>
 
-        <span>
-          DVA / CLAR
-        </span>
+        <div>
+          DVA://CLAR
+        </div>
 
-        <span>
+        <div>
+          <Disc3 size={12} className="spin" />
+          ARCHIVE RUNNING
+        </div>
+
+        <div>
           19 • 11 • 04
-        </span>
-
-        <span>
-          ARCHIVE CLOSED //
-        </span>
+        </div>
 
       </footer>
 
-
-      {/* STYLES */}
       <style jsx global>{`
 
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
         :root {
-          --black: #0b0b0b;
-          --dark: #111111;
-          --panel: #151515;
-          --line: #292929;
-          --cream: #e7e1d5;
-          --muted: #77736c;
-          --faint: #46433f;
-          --red: #8f2631;
-          --bright-red: #a93643;
+          --bg: #050609;
+          --panel: #090c11;
+          --panel2: #0d1117;
+          --white: #eafaff;
+          --muted: #6d7782;
+          --cyan: #00eaff;
+          --cyan-dim: #006c78;
+          --red: #ff285c;
+          --red-dark: #74152b;
+          --line: rgba(0,234,255,0.18);
         }
 
         * {
           box-sizing: border-box;
         }
 
-        body {
-          margin: 0;
-          background: var(--black);
+        html {
+          scroll-behavior: smooth;
         }
 
-        .archive-page {
+        body {
+          margin: 0;
+          background: var(--bg);
+        }
+
+        .cyber-page {
           min-height: 100vh;
           background:
             radial-gradient(
-              circle at 80% 20%,
-              rgba(143, 38, 49, 0.06),
-              transparent 30%
+              circle at 75% 15%,
+              rgba(255, 40, 92, 0.09),
+              transparent 25%
             ),
-            var(--black);
-          color: var(--cream);
-          font-family: var(--font-inter), sans-serif;
+            radial-gradient(
+              circle at 15% 40%,
+              rgba(0, 234, 255, 0.06),
+              transparent 25%
+            ),
+            #050609;
+          color: var(--white);
           overflow-x: hidden;
+          font-family: 'Space Grotesk', sans-serif;
+          position: relative;
         }
 
-        /* GRAIN */
-
-        .grain {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          z-index: 100;
-          opacity: 0.055;
-          background-image:
-            url("https://grainy-gradients.vercel.app/noise.svg");
-          mix-blend-mode: screen;
-        }
-
-        /* SCANLINES */
+        /* CRT */
 
         .scanlines {
           position: fixed;
           inset: 0;
+          z-index: 100;
           pointer-events: none;
+          background: repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 3px,
+            rgba(255,255,255,0.025) 4px
+          );
+        }
+
+        .noise {
+          position: fixed;
+          inset: 0;
           z-index: 99;
-          opacity: 0.025;
-          background-image:
-            repeating-linear-gradient(
-              to bottom,
-              transparent,
-              transparent 3px,
-              rgba(255,255,255,0.3) 4px
-            );
+          pointer-events: none;
+          opacity: 0.04;
+          background-image: url("https://grainy-gradients.vercel.app/noise.svg");
+          mix-blend-mode: screen;
+        }
+
+        /* HUD */
+
+        .hud-corner {
+          position: fixed;
+          width: 35px;
+          height: 35px;
+          z-index: 50;
+          pointer-events: none;
+          opacity: 0.5;
+        }
+
+        .top-left {
+          top: 15px;
+          left: 15px;
+          border-top: 1px solid var(--cyan);
+          border-left: 1px solid var(--cyan);
+        }
+
+        .top-right {
+          top: 15px;
+          right: 15px;
+          border-top: 1px solid var(--cyan);
+          border-right: 1px solid var(--cyan);
+        }
+
+        .bottom-left {
+          bottom: 15px;
+          left: 15px;
+          border-bottom: 1px solid var(--cyan);
+          border-left: 1px solid var(--cyan);
+        }
+
+        .bottom-right {
+          bottom: 15px;
+          right: 15px;
+          border-bottom: 1px solid var(--cyan);
+          border-right: 1px solid var(--cyan);
         }
 
         /* TOP BAR */
 
         .topbar {
-          padding: 22px 5vw;
+          height: 60px;
+          padding: 0 5vw;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
           display: flex;
-          align-items: center;
           justify-content: space-between;
-          border-bottom: 1px solid var(--line);
-          font-family: var(--font-space), monospace;
+          align-items: center;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 9px;
-          letter-spacing: 0.18em;
+          letter-spacing: 0.16em;
+          color: var(--muted);
         }
 
-        .system-id {
+        .system-id,
+        .system-center,
+        .exit-button {
           display: flex;
           align-items: center;
           gap: 9px;
-          color: #aaa59d;
-        }
-
-        .muted {
-          color: #4d4a46;
         }
 
         .status-dot {
-          width: 5px;
-          height: 5px;
-          background: var(--red);
+          width: 6px;
+          height: 6px;
+          background: var(--cyan);
           border-radius: 50%;
-          display: inline-block;
-          box-shadow: 0 0 8px rgba(143,38,49,0.8);
-          animation: blink 2s infinite;
+          box-shadow: 0 0 10px var(--cyan);
+          animation: pulse 1.5s infinite;
         }
 
-        .top-right {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          color: var(--muted);
-        }
-
-        .exit-button {
-          background: none;
-          border: none;
-          color: var(--muted);
-          font-family: var(--font-space), monospace;
-          font-size: 9px;
-          letter-spacing: 0.18em;
-          cursor: pointer;
-          transition: color 0.3s ease;
-        }
-
-        .exit-button:hover {
-          color: var(--cream);
+        .system-center {
+          color: #414a54;
         }
 
         .separator {
-          color: #303030;
+          color: var(--red);
+        }
+
+        .exit-button {
+          border: 0;
+          background: none;
+          color: #5e6872;
+          cursor: pointer;
+          font: inherit;
+          transition: 0.2s;
+        }
+
+        .exit-button:hover {
+          color: var(--red);
         }
 
         /* HERO */
 
         .hero {
-          max-width: 1250px;
+          max-width: 1300px;
           margin: auto;
-          padding: 90px 5vw 100px;
+          padding: 80px 5vw 50px;
+          min-height: 720px;
+          position: relative;
         }
 
-        .archive-label {
+        .hero-meta {
+          width: 180px;
+          position: absolute;
+          right: 5vw;
+          top: 80px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 8px;
+          color: #56616b;
+        }
+
+        .meta-line {
           display: flex;
-          align-items: center;
-          gap: 12px;
-          font-family: var(--font-space), monospace;
-          font-size: 9px;
-          letter-spacing: 0.22em;
-          color: var(--muted);
-          margin-bottom: 65px;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.07);
         }
 
-        .red-line {
-          width: 35px;
-          height: 1px;
-          background: var(--red);
+        .meta-line .online {
+          color: var(--cyan);
         }
 
-        .label-divider {
-          color: #3b3936;
-        }
-
-        .hero-grid {
+        .hero-main {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 330px;
-          gap: 100px;
-          align-items: end;
+          grid-template-columns: 1fr 310px;
+          gap: 80px;
+          align-items: center;
+          padding-top: 70px;
         }
 
-        .date-code {
-          font-family: var(--font-space), monospace;
-          font-size: 10px;
-          letter-spacing: 0.28em;
+        .glitch-label {
+          display: flex;
+          gap: 9px;
+          align-items: center;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 9px;
+          letter-spacing: 0.12em;
+          color: var(--cyan);
+          margin-bottom: 20px;
+        }
+
+        .glitch-label .red {
           color: var(--red);
-          margin-bottom: 22px;
         }
 
-        h1 {
-          font-family: var(--font-bodoni), serif;
-          font-size: clamp(6rem, 15vw, 13rem);
-          line-height: 0.72;
-          font-weight: 400;
-          letter-spacing: -0.075em;
+        .hero-title {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(120px, 18vw, 270px);
+          line-height: 0.7;
+          letter-spacing: -0.02em;
           margin: 0;
+          color: #e9faff;
+          position: relative;
+          text-shadow:
+            5px 0 var(--red),
+            -5px 0 var(--cyan);
+          animation: titleGlitch 5s infinite;
         }
 
         .hero-subtitle {
+          margin-top: 35px;
           display: flex;
-          flex-direction: column;
-          margin-top: 38px;
-          font-family: var(--font-space), monospace;
+          gap: 12px;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 9px;
-          letter-spacing: 0.2em;
+          color: #65717c;
+          letter-spacing: 0.14em;
+        }
+
+        .hero-subtitle span:nth-child(1) {
+          color: var(--red);
+        }
+
+        .hero-copy {
+          margin-top: 35px;
+          color: #89939d;
           line-height: 1.9;
-          color: #8d8880;
+          font-size: 14px;
+          max-width: 440px;
         }
 
-        .hero-description {
-          margin-top: 35px;
-          color: #716d67;
-          font-size: 13px;
-          line-height: 1.8;
-          max-width: 400px;
+        /* PROFILE */
+
+        .profile-frame {
+          background: #080b10;
+          border: 1px solid #27313a;
+          padding: 10px;
+          transform: rotate(2deg);
+          box-shadow:
+            12px 12px 0 rgba(255,40,92,0.12),
+            -8px -8px 0 rgba(0,234,255,0.06);
         }
 
-        .system-message {
-          margin-top: 35px;
-          display: inline-block;
-          font-family: var(--font-space), monospace;
-          font-size: 9px;
-          letter-spacing: 0.16em;
-          color: #aaa49b;
-          border: 1px solid #292929;
-          padding: 10px 14px;
-          background: rgba(255,255,255,0.015);
+        .profile-top,
+        .profile-bottom {
+          display: flex;
+          justify-content: space-between;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 7px;
+          color: #63707b;
+          padding: 5px 2px;
+          letter-spacing: 0.12em;
         }
 
-        .bracket {
+        .profile-top span:last-child {
           color: var(--red);
         }
 
-        .cursor {
-          color: var(--red);
-          animation: cursorBlink 1s infinite;
-        }
-
-        /* PHOTO */
-
-        .photo-wrapper {
-          position: relative;
-        }
-
-        .photo-frame {
-          background: #161616;
-          border: 1px solid #343331;
-          padding: 14px;
-          transform: rotate(2.5deg);
-          transition: transform 0.5s ease;
-        }
-
-        .photo-frame:hover {
-          transform: rotate(0deg) translateY(-5px);
-        }
-
-        .photo-inner {
-          position: relative;
+        .profile-photo {
           aspect-ratio: 4 / 5;
           background:
             linear-gradient(
               135deg,
-              #262522,
-              #171717 60%,
-              #292723
+              #111820,
+              #050609
             );
+          position: relative;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
         }
 
-        .photo-inner::after {
-          content: "";
+        .profile-photo::before {
+          content: '';
           position: absolute;
           inset: 0;
           background:
-            radial-gradient(
-              ellipse at center,
-              transparent 20%,
-              rgba(0,0,0,0.5)
+            linear-gradient(
+              120deg,
+              transparent 30%,
+              rgba(0,234,255,0.08),
+              transparent 70%
             );
-        }
-
-        .photo-cross {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0.12;
-        }
-
-        .photo-cross span:first-child {
-          width: 100%;
-          height: 1px;
-          background: white;
-        }
-
-        .photo-cross span:last-child {
-          position: absolute;
-          width: 1px;
-          height: 100%;
-          background: white;
+          animation: scan 4s linear infinite;
         }
 
         .photo-placeholder {
-          position: relative;
-          z-index: 2;
-          text-align: center;
-          font-family: var(--font-space), monospace;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          color: #3d4b57;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 8px;
-          letter-spacing: 0.25em;
-          line-height: 1.8;
-          color: #66625c;
+          letter-spacing: 0.2em;
         }
 
-        .photo-icon {
-          font-family: var(--font-inter);
-          font-size: 34px;
-          color: #494641;
-          margin: 10px 0;
+        .photo-placeholder svg {
+          color: var(--cyan);
+          opacity: 0.5;
         }
 
-        .photo-number {
-          display: block;
+        .photo-placeholder small {
           color: var(--red);
-          margin-bottom: 10px;
+          font-size: 6px;
         }
 
-        .flash {
+        .crosshair {
           position: absolute;
-          bottom: 10px;
-          right: 10px;
-          z-index: 3;
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          letter-spacing: 0.15em;
-          color: #66625c;
+          width: 25px;
+          height: 25px;
+          border-color: var(--cyan);
+          opacity: 0.6;
         }
 
-        .photo-caption {
-          padding-top: 13px;
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          letter-spacing: 0.18em;
-          color: #66625c;
+        .crosshair-one {
+          top: 15px;
+          left: 15px;
+          border-top: 1px solid;
+          border-left: 1px solid;
         }
 
-        .photo-note {
+        .crosshair-two {
+          bottom: 15px;
+          right: 15px;
+          border-bottom: 1px solid;
+          border-right: 1px solid;
+        }
+
+        /* HERO FOOTER */
+
+        .hero-footer {
           display: flex;
           justify-content: space-between;
-          margin-top: 22px;
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          letter-spacing: 0.15em;
-          color: #4c4945;
+          align-items: end;
+          margin-top: 70px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 8px;
+          color: #4f5963;
         }
-
-        .photo-note span:last-child {
-          color: var(--red);
-        }
-
-        /* SCROLL */
 
         .scroll-indicator {
-          margin-top: 100px;
           display: flex;
           align-items: center;
           gap: 15px;
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          letter-spacing: 0.2em;
-          color: #4d4a45;
         }
 
         .scroll-line {
-          width: 70px;
+          width: 80px;
           height: 1px;
-          background: #292929;
-          position: relative;
-          overflow: hidden;
+          background: linear-gradient(
+            90deg,
+            var(--cyan),
+            transparent
+          );
         }
 
-        .scroll-line span {
-          position: absolute;
-          width: 25px;
-          height: 1px;
-          background: var(--red);
-          animation: scrollLine 2s infinite;
-        }
-
-        /* CLASSIFIED */
-
-        .classified-section {
-          max-width: 1250px;
-          margin: auto;
-          padding: 50px 5vw;
-          border-top: 1px solid var(--line);
-          border-bottom: 1px solid var(--line);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          gap: 50px;
-        }
-
-        .tiny-label {
-          font-family: var(--font-space), monospace;
-          font-size: 8px;
-          letter-spacing: 0.23em;
-          color: var(--red);
-          margin-bottom: 18px;
-        }
-
-        .classified-title {
-          font-family: var(--font-bodoni), serif;
-          font-style: italic;
-          font-size: clamp(1.7rem, 3vw, 2.7rem);
-          line-height: 1.15;
-          margin: 0;
-          color: #c9c3b8;
-        }
-
-        .classified-right {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          line-height: 1.7;
-          letter-spacing: 0.16em;
-          color: #55514c;
+        .coordinates {
           text-align: right;
+          line-height: 1.8;
+          color: #303a43;
         }
 
-        .stamp {
-          border: 1px solid #633038;
-          color: #74303a;
-          padding: 10px;
-          transform: rotate(-8deg);
-          font-size: 8px;
-        }
+        /* DIVIDER */
 
-        /* CONTENTS */
-
-        .contents {
-          max-width: 1250px;
+        .cyber-divider {
+          max-width: 1300px;
           margin: auto;
-          padding: 110px 5vw;
-        }
-
-        .contents-header {
+          padding: 0 5vw;
           display: flex;
-          justify-content: space-between;
-          align-items: end;
-          margin-bottom: 40px;
+          align-items: center;
+          gap: 15px;
+          color: var(--red);
         }
 
-        .contents h2 {
-          font-family: var(--font-bodoni), serif;
-          font-size: clamp(2.5rem, 5vw, 4.5rem);
-          font-weight: 400;
-          letter-spacing: -0.04em;
-          margin: 0;
+        .cyber-divider span {
+          height: 1px;
+          flex: 1;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            var(--line)
+          );
         }
 
-        .directory-status {
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          letter-spacing: 0.16em;
-          color: #57534e;
-          display: flex;
+        .cyber-divider span:last-child {
+          background: linear-gradient(
+            90deg,
+            var(--line),
+            transparent
+          );
+        }
+
+        /* INTRO */
+
+        .intro {
+          max-width: 800px;
+          margin: auto;
+          padding: 130px 5vw 100px;
+          text-align: center;
+        }
+
+        .intro-tag {
+          display: inline-flex;
           align-items: center;
           gap: 8px;
+          color: var(--red);
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 8px;
+          letter-spacing: 0.2em;
+          border: 1px solid rgba(255,40,92,0.3);
+          padding: 8px 13px;
+          background: rgba(255,40,92,0.04);
         }
 
-        .file-list {
-          border-top: 1px solid #30302e;
+        .intro h2 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(60px, 9vw, 105px);
+          line-height: 0.85;
+          letter-spacing: 0.01em;
+          margin: 30px 0;
         }
 
-        .file-row {
-          display: grid;
-          grid-template-columns: 65px 1fr 40px;
-          gap: 20px;
+        .intro h2 span {
+          color: transparent;
+          -webkit-text-stroke: 1px #64727d;
+        }
+
+        .intro p {
+          max-width: 570px;
+          margin: auto;
+          color: #747f89;
+          line-height: 1.8;
+          font-size: 13px;
+        }
+
+        .intro-warning {
+          display: inline-flex;
           align-items: center;
-          padding: 28px 12px;
-          border-bottom: 1px solid #292929;
-          text-decoration: none;
-          color: inherit;
-          transition:
-            background 0.35s ease,
-            padding 0.35s ease;
-        }
-
-        .file-row:hover {
-          background: #141414;
-          padding-left: 25px;
-          padding-right: 25px;
-        }
-
-        .file-number {
-          font-family: var(--font-space), monospace;
-          font-size: 9px;
-          color: #55514c;
+          gap: 10px;
+          margin-top: 35px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 7px;
+          color: #525d67;
           letter-spacing: 0.12em;
         }
 
-        .file-meta {
-          font-family: var(--font-space), monospace;
-          font-size: 7px;
-          color: #55514c;
-          letter-spacing: 0.2em;
-          margin-bottom: 7px;
-        }
-
-        .file-main h3 {
-          margin: 0;
-          font-family: var(--font-inter), sans-serif;
-          font-size: clamp(1rem, 2vw, 1.45rem);
-          font-weight: 500;
-          letter-spacing: 0.04em;
-          transition: color 0.3s ease;
-        }
-
-        .file-row:hover h3 {
-          color: var(--bright-red);
-        }
-
-        .file-main p {
-          margin: 6px 0 0;
-          font-size: 11px;
-          color: #66625d;
-        }
-
-        .file-arrow {
-          font-size: 18px;
-          color: #4d4944;
-          transition:
-            color 0.3s ease,
-            transform 0.3s ease;
-        }
-
-        .file-row:hover .file-arrow {
-          color: var(--bright-red);
-          transform: translate(3px, -3px);
-        }
-
-        /* STATEMENT */
-
-        .statement {
-          max-width: 1250px;
-          margin: auto;
-          padding: 70px 5vw 130px;
-          border-top: 1px solid var(--line);
-        }
-
-        .statement-code {
-          font-family: var(--font-space), monospace;
-          font-size: 8px;
-          letter-spacing: 0.2em;
+        .intro-warning span {
           color: var(--red);
+        }
+
+        /* ARCHIVE */
+
+        .archive {
+          max-width: 1300px;
+          margin: auto;
+          padding: 0 5vw 130px;
+        }
+
+        .archive-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
           margin-bottom: 35px;
         }
 
-        .statement h2 {
-          font-family: var(--font-bodoni), serif;
-          font-size: clamp(3rem, 7vw, 7rem);
-          line-height: 0.94;
-          font-weight: 400;
-          letter-spacing: -0.055em;
+        .section-code {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 8px;
+          color: var(--cyan);
+          letter-spacing: 0.15em;
+          margin-bottom: 10px;
+        }
+
+        .archive-header h2 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 60px;
+          line-height: 0.8;
           margin: 0;
         }
 
-        .statement h2 em {
-          color: #706b64;
+        .archive-count {
+          display: flex;
+          align-items: end;
+          gap: 8px;
+          font-family: 'IBM Plex Mono', monospace;
         }
 
-        .statement-bottom {
-          margin-top: 60px;
+        .archive-count span {
+          color: #505b65;
+          font-size: 7px;
+        }
+
+        .archive-count strong {
+          color: var(--cyan);
+          font-size: 20px;
+          font-weight: 400;
+        }
+
+        .file-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 2px;
+          background: #1c252d;
+          border: 1px solid #1c252d;
+        }
+
+        .file-card {
+          min-height: 280px;
+          background:
+            linear-gradient(
+              135deg,
+              #090c11,
+              #07090d
+            );
+          padding: 25px;
+          position: relative;
+          overflow: hidden;
+          text-decoration: none;
+          color: inherit;
+          transition:
+            transform 0.25s,
+            background 0.25s;
+        }
+
+        .file-card:hover {
+          background:
+            linear-gradient(
+              135deg,
+              #0c141a,
+              #090c11
+            );
+          transform: translate(-2px, -2px);
+          z-index: 2;
+        }
+
+        .file-card-top,
+        .file-card-bottom {
           display: flex;
           justify-content: space-between;
-          align-items: end;
-          gap: 30px;
-          font-family: var(--font-space), monospace;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 8px;
-          letter-spacing: 0.16em;
-          line-height: 1.8;
-          color: #59554f;
+          color: #4f5b65;
+          letter-spacing: 0.1em;
         }
 
-        .statement-bottom strong {
-          font-family: var(--font-bodoni), serif;
-          font-size: 2.2rem;
-          font-weight: 400;
-          font-style: italic;
-          color: var(--cream);
-          letter-spacing: 0;
+        .file-card:hover .file-card-top > span:first-child {
+          color: var(--cyan);
         }
 
-        /* FINAL */
-
-        .final-card {
-          max-width: 1250px;
-          margin: auto;
-          padding: 55px 5vw;
-          background: #141414;
-          border-top: 1px solid #30302d;
-          border-bottom: 1px solid #30302d;
-          display: grid;
-          grid-template-columns: 80px 1fr 100px;
-          gap: 35px;
-          align-items: start;
-        }
-
-        .final-number {
-          font-family: var(--font-space), monospace;
-          font-size: 10px;
+        .file-icon {
           color: var(--red);
+          font-size: 17px;
         }
 
-        .final-card p {
-          font-family: var(--font-bodoni), serif;
-          font-size: clamp(1.7rem, 3.5vw, 3.3rem);
-          line-height: 1.05;
+        .file-card-body {
+          margin-top: 50px;
+        }
+
+        .file-type {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 7px;
+          letter-spacing: 0.16em;
+          color: var(--cyan);
+          margin-bottom: 10px;
+        }
+
+        .file-card h3 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 55px;
+          line-height: 0.85;
+          letter-spacing: 0.02em;
           margin: 0;
-          max-width: 850px;
+          color: #e9faff;
+          transition: 0.2s;
         }
 
-        .final-small {
-          display: block;
-          margin-top: 25px;
-          font-family: var(--font-space), monospace;
+        .file-card:hover h3 {
+          color: var(--red);
+          text-shadow: 2px 0 var(--cyan);
+        }
+
+        .file-card p {
+          margin-top: 16px;
+          color: #68737e;
+          font-size: 11px;
+          line-height: 1.5;
+          max-width: 300px;
+        }
+
+        .file-card-bottom {
+          position: absolute;
+          bottom: 20px;
+          left: 25px;
+          right: 25px;
+        }
+
+        .arrow {
+          color: #56616c;
+          transition: 0.2s;
+        }
+
+        .file-card:hover .arrow {
+          color: var(--cyan);
+          transform: translateX(5px);
+        }
+
+        .card-glow {
+          position: absolute;
+          width: 200px;
+          height: 200px;
+          right: -100px;
+          bottom: -100px;
+          background: var(--cyan);
+          filter: blur(100px);
+          opacity: 0;
+          transition: 0.3s;
+        }
+
+        .file-card:hover .card-glow {
+          opacity: 0.08;
+        }
+
+        /* FINAL MESSAGE */
+
+        .final-message {
+          max-width: 900px;
+          margin: auto;
+          padding: 20px 5vw 150px;
+        }
+
+        .message-terminal {
+          border: 1px solid #29333c;
+          background: #07090d;
+          box-shadow: 15px 15px 0 rgba(0,234,255,0.03);
+        }
+
+        .terminal-bar {
+          height: 38px;
+          border-bottom: 1px solid #202a32;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0 14px;
+          color: #56616b;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 8px;
-          line-height: 1.8;
-          letter-spacing: 0.12em;
-          color: #5f5b55;
         }
 
-        .heart {
-          font-family: var(--font-bodoni), serif;
-          font-size: 5rem;
-          color: #4b2026;
-          text-align: right;
+        .terminal-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
+          margin-right: 5px;
+        }
+
+        .red-dot {
+          background: var(--red);
+        }
+
+        .yellow-dot {
+          background: #f2c94c;
+        }
+
+        .green-dot {
+          background: #2fe88d;
+        }
+
+        .terminal-content {
+          padding: 45px;
+        }
+
+        .terminal-command {
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 9px;
+          color: #596570;
+          margin-bottom: 35px;
+        }
+
+        .terminal-command span:first-child {
+          color: var(--cyan);
+        }
+
+        .terminal-content h2 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(70px, 11vw, 125px);
+          line-height: 0.72;
+          margin: 0;
+          letter-spacing: 0.02em;
+        }
+
+        .terminal-content h2 span {
+          color: var(--red);
+          text-shadow: 3px 0 var(--cyan);
+        }
+
+        .terminal-content p {
+          margin-top: 35px;
+          max-width: 530px;
+          color: #75818b;
+          line-height: 1.8;
+          font-size: 13px;
+        }
+
+        .terminal-content .terminal-small {
+          font-family: 'IBM Plex Mono', monospace;
+          color: #4e5a65;
+          font-size: 9px;
+        }
+
+        .cursor-line {
+          margin-top: 50px;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 9px;
+          color: var(--cyan);
+        }
+
+        .cursor {
+          color: var(--red);
+          animation: blink 0.8s infinite;
         }
 
         /* FOOTER */
 
         footer {
-          max-width: 1250px;
+          border-top: 1px solid #182027;
+          max-width: 1300px;
           margin: auto;
-          padding: 25px 5vw 35px;
+          padding: 25px 5vw 40px;
           display: flex;
           justify-content: space-between;
-          font-family: var(--font-space), monospace;
+          align-items: center;
+          color: #3d4852;
+          font-family: 'IBM Plex Mono', monospace;
           font-size: 7px;
-          letter-spacing: 0.2em;
-          color: #45423e;
+          letter-spacing: 0.15em;
+        }
+
+        footer div:nth-child(2) {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          color: #56616c;
+        }
+
+        .spin {
+          color: var(--cyan);
+          animation: spin 3s linear infinite;
         }
 
         /* ANIMATIONS */
 
-        @keyframes blink {
-          0%, 45% { opacity: 1; }
-          50%, 100% { opacity: 0.25; }
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            box-shadow: 0 0 10px var(--cyan);
+          }
+          50% {
+            opacity: 0.4;
+            box-shadow: 0 0 3px var(--cyan);
+          }
         }
 
-        @keyframes cursorBlink {
-          0%, 45% { opacity: 1; }
-          50%, 100% { opacity: 0; }
-        }
-
-        @keyframes scrollLine {
+        @keyframes scan {
           0% {
-            left: -30px;
+            transform: translateX(-100%);
           }
           100% {
-            left: 70px;
+            transform: translateX(100%);
+          }
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes blink {
+          50% { opacity: 0; }
+        }
+
+        @keyframes titleGlitch {
+          0%, 93%, 100% {
+            transform: translate(0);
+          }
+          94% {
+            transform: translate(-4px, 1px);
+          }
+          95% {
+            transform: translate(4px, -1px);
+          }
+          96% {
+            transform: translate(-2px, 0);
           }
         }
 
         /* MOBILE */
 
-        @media (max-width: 700px) {
+        @media (max-width: 768px) {
 
           .topbar {
-            padding: 18px 20px;
+            padding: 0 20px;
           }
 
-          .clock,
-          .separator {
+          .system-center {
             display: none;
           }
 
           .hero {
-            padding: 65px 20px 70px;
+            padding: 55px 20px 40px;
           }
 
-          .archive-label {
-            margin-bottom: 45px;
-          }
-
-          .hero-grid {
-            grid-template-columns: 1fr;
-            gap: 60px;
-          }
-
-          .hero-description {
-            font-size: 12px;
-          }
-
-          .photo-wrapper {
-            width: 72%;
-            margin-left: auto;
-            margin-right: 8%;
-          }
-
-          .scroll-indicator {
-            margin-top: 70px;
-          }
-
-          .classified-section {
-            padding: 40px 20px;
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .classified-right {
+          .hero-meta {
+            position: static;
             width: 100%;
-            justify-content: space-between;
-            text-align: left;
+            margin-bottom: 60px;
           }
 
-          .contents {
-            padding: 80px 20px;
+          .hero-main {
+            grid-template-columns: 1fr;
+            gap: 55px;
+            padding-top: 0;
           }
 
-          .contents-header {
-            align-items: flex-start;
-            gap: 20px;
-            flex-direction: column;
+          .hero-title {
+            font-size: 32vw;
           }
 
-          .directory-status {
-            display: none;
+          .hero-subtitle {
+            flex-wrap: wrap;
+            gap: 8px;
           }
 
-          .file-row {
-            grid-template-columns: 35px 1fr 25px;
-            gap: 10px;
-            padding: 25px 5px;
+          .profile-frame {
+            width: min(75vw, 300px);
+            margin-left: auto;
           }
 
-          .file-row:hover {
-            padding-left: 10px;
-            padding-right: 10px;
+          .hero-footer {
+            margin-top: 55px;
           }
 
-          .file-main p {
-            font-size: 10px;
-            line-height: 1.5;
+          .intro {
+            padding-top: 90px;
           }
 
-          .statement {
-            padding: 65px 20px 90px;
+          .file-grid {
+            grid-template-columns: 1fr;
           }
 
-          .statement-bottom {
-            flex-direction: column;
-            align-items: flex-start;
+          .file-card {
+            min-height: 250px;
           }
 
-          .final-card {
-            grid-template-columns: 35px 1fr;
-            gap: 15px;
-            padding: 40px 20px;
+          .archive-header h2 {
+            font-size: 50px;
           }
 
-          .heart {
-            display: none;
+          .terminal-content {
+            padding: 30px 22px;
           }
 
           footer {
             padding-left: 20px;
             padding-right: 20px;
-            gap: 15px;
           }
 
-          footer span:nth-child(2) {
+          footer div:nth-child(2) {
             display: none;
           }
 
