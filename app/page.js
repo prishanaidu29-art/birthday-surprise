@@ -1,1514 +1,1220 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-
-export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
   const router = useRouter()
-  const audioRef = useRef(null)
 
   const [password, setPassword] = useState('')
+  const [booted, setBooted] = useState(false)
   const [error, setError] = useState('')
   const [glitch, setGlitch] = useState(false)
-  const [isBooting, setIsBooting] = useState(false)
-  const [time, setTime] = useState('00:00:00')
+  const [time, setTime] = useState('')
 
-  /*
-    CHANGE THIS
-    --------------------------------
-    Put the password you want here.
-  */
-  const CORRECT_PASSWORD = 'clar'
+  const CORRECT_PASSWORD = '191104'
 
   useEffect(() => {
-    const updateClock = () => {
-      const now = new Date()
+    const bootTimer = setTimeout(() => {
+      setBooted(true)
+    }, 1400)
 
-      setTime(
-        now.toLocaleTimeString('en-GB', {
-          hour12: false,
-        })
-      )
-    }
-
-    updateClock()
-
-    const interval = setInterval(updateClock, 1000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  /*
-    Random glitch effect
-  */
-  useEffect(() => {
-    const glitchInterval = setInterval(() => {
+    const glitchTimer = setInterval(() => {
       setGlitch(true)
-
-      setTimeout(() => {
-        setGlitch(false)
-      }, 180)
+      setTimeout(() => setGlitch(false), 140)
     }, 4200)
 
-    return () => clearInterval(glitchInterval)
+    const clockTimer = setInterval(() => {
+      setTime(
+        new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        })
+      )
+    }, 1000)
+
+    return () => {
+      clearTimeout(bootTimer)
+      clearInterval(glitchTimer)
+      clearInterval(clockTimer)
+    }
   }, [])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (password.toLowerCase().trim() !== CORRECT_PASSWORD) {
-      setError('ACCESS DENIED')
-
-      setGlitch(true)
+    if (password === CORRECT_PASSWORD) {
+      sessionStorage.setItem('birthday_authenticated', 'true')
+      router.push('/birthday')
+    } else {
+      setError('ACCESS DENIED // TRY AGAIN')
 
       setTimeout(() => {
-        setGlitch(false)
-      }, 500)
-
-      return
+        setError('')
+      }, 1800)
     }
+  }
 
-    setError('')
-    setIsBooting(true)
+  if (!booted) {
+    return (
+      <main className="boot-screen">
+        <div className="boot-content">
+          <div className="boot-logo">CLAR_OS</div>
 
-    /*
-      Music starts after the user's interaction.
-      This avoids browser autoplay restrictions.
-    */
-    if (audioRef.current) {
-      try {
-        audioRef.current.currentTime = 0
-        await audioRef.current.play()
-      } catch (err) {
-        console.log('Audio could not autoplay:', err)
-      }
-    }
+          <div className="boot-line">
+            PERSONAL ARCHIVE SYSTEM
+          </div>
 
-    sessionStorage.setItem('birthday_authenticated', 'true')
+          <div className="boot-line">
+            MEMORY CHECK ............ OK
+          </div>
 
-    setTimeout(() => {
-      router.push('/birthday')
-    }, 1800)
+          <div className="boot-line">
+            VHS DRIVER .............. OK
+          </div>
+
+          <div className="boot-line">
+            CD-ROM .................. OK
+          </div>
+
+          <div className="boot-line">
+            USER MEMORY ............. FOUND
+          </div>
+
+          <div className="boot-progress">
+            <span />
+          </div>
+
+          <div className="boot-warning">
+            PLEASE WAIT...
+          </div>
+        </div>
+      </main>
+    )
   }
 
   return (
-    <main className="retro-desktop">
+    <main className="desktop">
 
-      {/* =====================================================
-          MUSIC
-      ====================================================== */}
-
-      <audio
-        ref={audioRef}
-        src="/music/birthday-song.mp3"
-        loop
-        preload="auto"
-      />
-
-      {/* =====================================================
-          CRT / VHS OVERLAYS
-      ====================================================== */}
-
+      {/* CRT EFFECTS */}
+      <div className="crt" />
       <div className="scanlines" />
-      <div className="noise" />
-      <div className="screen-vignette" />
+      <div className="vignette" />
 
-      {/* =====================================================
-          TOP SYSTEM BAR
-      ====================================================== */}
+      {/* VHS TIMESTAMP */}
+      <div className="vhs-time">
+        REC&nbsp;&nbsp; 19.11.04
+        <span className="rec-dot">●</span>
+      </div>
 
-      <header className="system-bar">
+      <div className="vhs-counter">
+        SP&nbsp; 00:19:04:22
+      </div>
 
-        <div className="system-left">
-          <span className="system-dot red" />
-          <span className="system-dot yellow" />
-          <span className="system-dot green" />
+      {/* TOP SYSTEM BAR */}
+      <div className="system-bar">
+        <div>
+          CLAR_OS // PERSONAL COMPUTER
+        </div>
 
-          <span className="system-title">
-            CLAR_OS
+        <div>
+          SYSTEM&nbsp; {time || '00:00:00'}
+        </div>
+      </div>
+
+      {/* DESKTOP ICONS */}
+      <div className="desktop-icons">
+
+        <DesktopIcon
+          icon="📁"
+          label="FEETGANG"
+          onClick={() => {}}
+        />
+
+        <DesktopIcon
+          icon="📁"
+          label="EGGS"
+          onClick={() => {}}
+        />
+
+        <DesktopIcon
+          icon="📁"
+          label="GRADUATION"
+          onClick={() => {}}
+        />
+
+        <DesktopIcon
+          icon="📁"
+          label="LORE"
+          onClick={() => {}}
+        />
+
+        <DesktopIcon
+          icon="💿"
+          label="CLAR_CD"
+          onClick={() => {}}
+        />
+
+        <DesktopIcon
+          icon="📼"
+          label="VHS_2004"
+          onClick={() => {}}
+        />
+
+      </div>
+
+      {/* RANDOM BACKGROUND WINDOW */}
+      <FakeWindow
+        title="untitled.txt"
+        className="window-notes"
+      >
+        <div className="notes">
+          <div>things that should probably stay offline</div>
+          <div>-----------------------------------</div>
+          <div>01 // embarrassing photos</div>
+          <div>02 // feetgang evidence</div>
+          <div>03 // eggs</div>
+          <div>04 // classified lore</div>
+          <div>05 // absolutely nothing incriminating</div>
+        </div>
+      </FakeWindow>
+
+      {/* PHOTO WINDOW */}
+      <FakeWindow
+        title="IMG_0194.JPG"
+        className="window-photo"
+      >
+        <div className="photo-placeholder">
+          <div className="photo-noise">
+            IMAGE FILE
+          </div>
+
+          <div className="photo-caption">
+            MEMORY_001.JPG
+          </div>
+        </div>
+      </FakeWindow>
+
+      {/* CD PLAYER */}
+      <div className="cd-player">
+        <div className="window-title">
+          <span>CD PLAYER</span>
+          <span>_ □ ×</span>
+        </div>
+
+        <div className="cd-body">
+
+          <div className="cd-disc">
+            <div className="cd-hole" />
+            <div className="cd-label">
+              CLAR
+            </div>
+          </div>
+
+          <div className="cd-info">
+            <div className="track-title">
+              TRACK 01
+            </div>
+
+            <div className="track-name">
+              SOMEHOW WE GOT HERE
+            </div>
+
+            <div className="progress">
+              <span />
+            </div>
+
+            <div className="player-time">
+              02:14&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;04:19
+            </div>
+
+            <div className="player-buttons">
+              <button>◀</button>
+              <button>▶</button>
+              <button>▮▮</button>
+              <button>■</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* CENTRAL PASSWORD WINDOW */}
+      <div className={`access-window ${glitch ? 'glitch-active' : ''}`}>
+
+        <div className="window-title main-title">
+          <span>CLAR_OS.EXE</span>
+
+          <span className="window-controls">
+            _
+            □
+            ×
           </span>
         </div>
 
-        <div className="system-right">
-          <span>REC ●</span>
-          <span>{time}</span>
-          <span>V.19.11.04</span>
-        </div>
+        <div className="access-content">
 
-      </header>
-
-      {/* =====================================================
-          VHS LABEL
-      ====================================================== */}
-
-      <div className="vhs-label">
-        <span>VHS-001</span>
-        <span>PRIVATE</span>
-        <span>DO NOT DUPLICATE</span>
-      </div>
-
-      {/* =====================================================
-          DECORATIVE CD
-      ====================================================== */}
-
-      <div className="cd cd-one">
-        <div className="cd-hole" />
-        <div className="cd-label">
-          CLAR
-        </div>
-      </div>
-
-      <div className="cd cd-two">
-        <div className="cd-hole" />
-      </div>
-
-      {/* =====================================================
-          DESKTOP
-      ====================================================== */}
-
-      <section className="desktop">
-
-        {/* ---------------------------------------------------
-            FOLDER 01
-        ---------------------------------------------------- */}
-
-        <button
-          className="folder folder-one"
-          onClick={() => setGlitch(true)}
-        >
-          <div className="folder-icon">
-            📁
+          <div className="system-mark">
+            CLAR_OS
           </div>
 
-          <div className="folder-name">
-            FEETGANG
-          </div>
-        </button>
-
-        {/* ---------------------------------------------------
-            FOLDER 02
-        ---------------------------------------------------- */}
-
-        <button
-          className="folder folder-two"
-          onClick={() => setGlitch(true)}
-        >
-          <div className="folder-icon">
-            📁
+          <div className="corrupted">
+            PERSONAL ARCHIVE
           </div>
 
-          <div className="folder-name">
-            EGGS
-          </div>
-        </button>
-
-        {/* ---------------------------------------------------
-            FOLDER 03
-        ---------------------------------------------------- */}
-
-        <button
-          className="folder folder-three"
-          onClick={() => setGlitch(true)}
-        >
-          <div className="folder-icon">
-            📁
+          <div className="access-title">
+            ACCESS REQUIRED
           </div>
 
-          <div className="folder-name">
-            GRADUATION
-          </div>
-        </button>
-
-        {/* ---------------------------------------------------
-            FOLDER 04
-        ---------------------------------------------------- */}
-
-        <button
-          className="folder folder-four"
-          onClick={() => setGlitch(true)}
-        >
-          <div className="folder-icon">
-            📁
+          <div className="access-subtitle">
+            MEMORY SYSTEM // CLASSIFIED
           </div>
 
-          <div className="folder-name">
-            CHAOS
-          </div>
-        </button>
+          <form onSubmit={handleSubmit}>
 
-        {/* ---------------------------------------------------
-            FOLDER 05
-        ---------------------------------------------------- */}
-
-        <button
-          className="folder folder-five"
-          onClick={() => setGlitch(true)}
-        >
-          <div className="folder-icon">
-            📁
-          </div>
-
-          <div className="folder-name">
-            2004_∞
-          </div>
-        </button>
-
-        {/* ---------------------------------------------------
-            PHOTO WINDOW
-        ---------------------------------------------------- */}
-
-        <div className="photo-window photo-one">
-
-          <div className="window-header">
-            <span>
-              IMG_0001.JPG
-            </span>
-
-            <span>
-              ×
-            </span>
-          </div>
-
-          <div className="photo-frame">
-            <img
-              src="/photos/photo1.jpg"
-              alt="Memory"
-            />
-          </div>
-
-          <div className="window-footer">
-            JPEG // 04.11.2004
-          </div>
-
-        </div>
-
-        {/* ---------------------------------------------------
-            SECOND PHOTO
-        ---------------------------------------------------- */}
-
-        <div className="photo-window photo-two">
-
-          <div className="window-header">
-            <span>
-              IMG_019.JPG
-            </span>
-
-            <span>
-              ×
-            </span>
-          </div>
-
-          <div className="photo-frame">
-            <img
-              src="/photos/photo2.jpg"
-              alt="Memory"
-            />
-          </div>
-
-        </div>
-
-        {/* =================================================
-            CENTRAL LOGIN WINDOW
-        ================================================== */}
-
-        <div
-          className={`login-window ${
-            glitch ? 'glitch-active' : ''
-          }`}
-        >
-
-          <div className="window-title">
-
-            <span>
-              SYSTEM MESSAGE
-            </span>
-
-            <div className="window-controls">
-              − □ ×
+            <div className="password-label">
+              ENTER PASSWORD
             </div>
 
-          </div>
+            <div className="password-row">
 
-          <div className="login-content">
-
-            <div className="boot-text">
-
-              <span className="tiny-label">
-                PRIVATE ARCHIVE
+              <span className="prompt">
+                &gt;_
               </span>
 
-              <h1
-                className={`glitch-title ${
-                  glitch ? 'glitching' : ''
-                }`}
-                data-text="CLAR"
-              >
-                CLAR
-              </h1>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+                autoComplete="off"
+                spellCheck="false"
+              />
 
-              <p className="subtitle">
-                BIRTHDAY ARCHIVE // 19.11
-              </p>
-
-            </div>
-
-            <div className="divider" />
-
-            {!isBooting ? (
-
-              <form onSubmit={handleSubmit}>
-
-                <label>
-                  ENTER ACCESS CODE
-                </label>
-
-                <div className="password-row">
-
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                      setError('')
-                    }}
-                    autoFocus
-                    autoComplete="off"
-                    spellCheck="false"
-                  />
-
-                  <button type="submit">
-                    ENTER
-                  </button>
-
-                </div>
-
-                <div className="status-line">
-
-                  <span>
-                    {error || 'SYSTEM READY'}
-                  </span>
-
-                  <span>
-                    ● ONLINE
-                  </span>
-
-                </div>
-
-              </form>
-
-            ) : (
-
-              <div className="booting">
-
-                <div className="boot-message">
-                  ACCESS GRANTED
-                </div>
-
-                <div className="loading-bar">
-                  <div />
-                </div>
-
-                <div className="boot-small">
-                  LOADING MEMORIES...
-                </div>
-
-              </div>
-
-            )}
-
-          </div>
-
-        </div>
-
-        {/* =================================================
-            MINI VHS WINDOW
-        ================================================== */}
-
-        <div className="vhs-window">
-
-          <div className="vhs-header">
-            VHS PLAYER
-          </div>
-
-          <div className="vhs-screen">
-
-            <div className="tracking-lines" />
-
-            <span>
-              PLAY ▶
-            </span>
-
-            <strong>
-              00:19:11
-            </strong>
-
-          </div>
-
-          <div className="vhs-buttons">
-            ◀◀　▶　▶▶　■
-          </div>
-
-        </div>
-
-        {/* =================================================
-            CD PLAYER WINDOW
-        ================================================== */}
-
-        <div className="cd-player">
-
-          <div className="cd-player-header">
-            CD PLAYER
-          </div>
-
-          <div className="cd-player-body">
-
-            <div className="mini-cd">
-              <div />
-            </div>
-
-            <div>
-
-              <div className="song-title">
-                HAPPY BIRTHDAY.EXE
-              </div>
-
-              <div className="song-artist">
-                CLAR // ARCHIVE 001
-              </div>
-
-              <div className="equalizer">
-                ▂▅▂▇▃▆▂▇▅
-              </div>
+              <button type="submit">
+                ENTER
+              </button>
 
             </div>
 
+          </form>
+
+          <div className={`error-message ${error ? 'visible' : ''}`}>
+            {error || ' '}
+          </div>
+
+          <div className="access-footer">
+            USER: UNKNOWN
+            <span />
+            STATUS: LOCKED
           </div>
 
         </div>
 
-        {/* =================================================
-            SMALL SYSTEM TEXT
-        ================================================== */}
+      </div>
 
-        <div className="system-note">
-          <span>USER: DVA</span>
-          <span>FILE: CLAR_BDAY</span>
-          <span>STATUS: LOCKED</span>
+      {/* SMALL SYSTEM POPUP */}
+      <div className="system-popup">
+        <div className="window-title">
+          <span>SYSTEM</span>
+          <span>×</span>
         </div>
 
-      </section>
+        <div className="popup-content">
+          <span className="warning-symbol">!</span>
 
-      {/* =====================================================
-          BOTTOM BAR
-      ====================================================== */}
+          <span>
+            this computer contains
+            <br />
+            questionable memories.
+          </span>
+        </div>
+      </div>
 
-      <footer className="bottom-bar">
+      {/* BOTTOM TASKBAR */}
+      <div className="taskbar">
 
-        <div>
-          START ◉
+        <button className="start-button">
+          ◈ START
+        </button>
+
+        <div className="task">
+          CLAR_OS.EXE
         </div>
 
-        <div className="bottom-center">
-          © 2004–2026 // PERSONAL ARCHIVE
+        <div className="task">
+          CD PLAYER
         </div>
 
-        <div>
-          MEMORY 64MB
+        <div className="taskbar-spacer" />
+
+        <div className="task-clock">
+          {time || '00:00'}
         </div>
 
-      </footer>
-
-      {/* =====================================================
-          STYLES
-      ====================================================== */}
+      </div>
 
       <style jsx global>{`
 
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Orbitron:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Silkscreen:wght@400;700&display=swap');
 
         * {
           box-sizing: border-box;
         }
 
+        html,
         body {
           margin: 0;
-          background: #c9c7c1;
+          padding: 0;
+          background: #727b98;
+          overflow-x: hidden;
+        }
+
+        body {
+          font-family: 'Share Tech Mono', monospace;
         }
 
         button,
         input {
-          font: inherit;
+          font-family: inherit;
         }
 
-        .retro-desktop {
-          min-height: 100vh;
-          background:
-            radial-gradient(
-              circle at 30% 20%,
-              rgba(184, 170, 221, .55),
-              transparent 28%
-            ),
-            radial-gradient(
-              circle at 80% 75%,
-              rgba(126, 154, 177, .4),
-              transparent 30%
-            ),
-            linear-gradient(
-              135deg,
-              #d8d6d0,
-              #aaa9a4
-            );
+        /* =========================
+           BOOT
+        ========================= */
 
-          color: #202124;
-          overflow: hidden;
-          position: relative;
-          font-family: 'Space Grotesk', sans-serif;
-        }
-
-        /* ================================================
-           CRT EFFECT
-        ================================================= */
-
-        .scanlines {
-          position: fixed;
-          inset: 0;
-          z-index: 90;
-          pointer-events: none;
-
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              rgba(0,0,0,.035) 0px,
-              rgba(0,0,0,.035) 1px,
-              transparent 1px,
-              transparent 4px
-            );
-
-          mix-blend-mode: multiply;
-        }
-
-        .noise {
-          position: fixed;
-          inset: 0;
-          z-index: 91;
-          pointer-events: none;
-          opacity: .09;
-
-          background-image:
-            url("https://grainy-gradients.vercel.app/noise.svg");
-        }
-
-        .screen-vignette {
-          position: fixed;
-          inset: 0;
-          z-index: 89;
-          pointer-events: none;
-
-          box-shadow:
-            inset 0 0 180px rgba(0,0,0,.22);
-        }
-
-        /* ================================================
-           SYSTEM BAR
-        ================================================= */
-
-        .system-bar {
-          position: relative;
-          z-index: 10;
-
-          height: 46px;
-          padding: 0 18px;
-
+        .boot-screen {
+          width: 100vw;
+          height: 100vh;
+          background: #11141b;
+          color: #b9c7dd;
           display: flex;
           align-items: center;
-          justify-content: space-between;
-
-          background: rgba(225,223,218,.88);
-
-          border-bottom: 2px solid #676660;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 10px;
-
-          box-shadow:
-            0 2px 0 rgba(255,255,255,.7);
-        }
-
-        .system-left,
-        .system-right {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .system-dot {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          display: inline-block;
-          border: 1px solid #555;
-        }
-
-        .red {
-          background: #a75d63;
-        }
-
-        .yellow {
-          background: #b2a069;
-        }
-
-        .green {
-          background: #718c7a;
-        }
-
-        .system-title {
-          margin-left: 4px;
-          letter-spacing: .16em;
-        }
-
-        .system-right {
-          color: #66645e;
+          justify-content: center;
+          font-family: 'VT323', monospace;
           letter-spacing: .08em;
         }
 
-        /* ================================================
-           VHS LABEL
-        ================================================= */
-
-        .vhs-label {
-          position: absolute;
-          top: 76px;
-          right: 35px;
-
-          display: flex;
-          flex-direction: column;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 8px;
-
-          letter-spacing: .18em;
-
-          color: #57534e;
-
-          transform: rotate(3deg);
+        .boot-content {
+          width: min(600px, 85vw);
+          font-size: 18px;
         }
 
-        /* ================================================
+        .boot-logo {
+          font-family: 'Silkscreen', monospace;
+          font-size: clamp(22px, 4vw, 38px);
+          margin-bottom: 28px;
+          color: #d2d9ea;
+        }
+
+        .boot-line {
+          margin: 7px 0;
+          opacity: .8;
+        }
+
+        .boot-progress {
+          margin-top: 30px;
+          height: 10px;
+          border: 1px solid #77829c;
+        }
+
+        .boot-progress span {
+          display: block;
+          width: 100%;
+          height: 100%;
+          background: #aebbd2;
+          animation: bootProgress 1.3s linear;
+        }
+
+        .boot-warning {
+          margin-top: 20px;
+          animation: blink 700ms steps(2) infinite;
+        }
+
+        /* =========================
            DESKTOP
-        ================================================= */
+        ========================= */
 
         .desktop {
           position: relative;
-          min-height: calc(100vh - 86px);
-          width: 100%;
-        }
-
-        /* ================================================
-           FOLDERS
-        ================================================= */
-
-        .folder {
-          position: absolute;
-
-          width: 92px;
-
-          border: 0;
-          background: transparent;
-
-          color: #272727;
-
-          cursor: pointer;
-
-          text-align: center;
-
-          transition:
-            transform .2s ease,
-            filter .2s ease;
-        }
-
-        .folder:hover {
-          transform: translateY(-5px) rotate(-2deg);
-          filter: drop-shadow(0 8px 5px rgba(0,0,0,.18));
-        }
-
-        .folder-icon {
-          font-size: 48px;
-          line-height: 1;
-          filter:
-            drop-shadow(1px 1px 0 white)
-            drop-shadow(2px 2px 0 rgba(0,0,0,.2));
-        }
-
-        .folder-name {
-          margin-top: 5px;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 9px;
-
-          background: rgba(238,237,232,.72);
-          border: 1px solid rgba(70,70,70,.3);
-
-          padding: 3px 4px;
-
-          letter-spacing: .04em;
-        }
-
-        .folder-one {
-          left: 7%;
-          top: 10%;
-          transform: rotate(-5deg);
-        }
-
-        .folder-two {
-          left: 17%;
-          top: 31%;
-          transform: rotate(3deg);
-        }
-
-        .folder-three {
-          right: 12%;
-          top: 17%;
-          transform: rotate(-4deg);
-        }
-
-        .folder-four {
-          right: 5%;
-          bottom: 23%;
-          transform: rotate(5deg);
-        }
-
-        .folder-five {
-          left: 7%;
-          bottom: 15%;
-          transform: rotate(-3deg);
-        }
-
-        /* ================================================
-           LOGIN WINDOW
-        ================================================= */
-
-        .login-window {
-          position: absolute;
-
-          left: 50%;
-          top: 48%;
-
-          transform: translate(-50%, -50%);
-
-          width: min(520px, 88vw);
-
-          background: #dddcd7;
-
-          border:
-            2px solid #4d4c49;
-
-          box-shadow:
-            10px 12px 0 rgba(44,43,40,.22),
-            inset 1px 1px 0 white;
-
-          z-index: 20;
-        }
-
-        .window-title,
-        .window-header,
-        .vhs-header,
-        .cd-player-header {
-          height: 30px;
-
-          padding: 0 9px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          background:
-            linear-gradient(
-              90deg,
-              #6b647e,
-              #8d82a4 60%,
-              #5f5c69
-            );
-
-          color: white;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 10px;
-
-          letter-spacing: .05em;
-
-          border-bottom: 2px solid #4c4a52;
-        }
-
-        .window-controls {
-          letter-spacing: 4px;
-          font-size: 12px;
-        }
-
-        .login-content {
-          padding: 34px 34px 27px;
-        }
-
-        .tiny-label {
-          font-family: 'DM Mono', monospace;
-          font-size: 9px;
-          letter-spacing: .3em;
-          color: #77736d;
-        }
-
-        .glitch-title {
-          position: relative;
-
-          font-family: 'Orbitron', sans-serif;
-
-          font-size: clamp(42px, 9vw, 76px);
-
-          font-weight: 500;
-
-          letter-spacing: .13em;
-
-          margin: 7px 0 3px;
-
-          color: #292733;
-
-          width: fit-content;
-        }
-
-        .glitch-title.glitching {
-          animation:
-            glitch-main .16s infinite;
-        }
-
-        .glitch-title.glitching::before,
-        .glitch-title.glitching::after {
-          content: attr(data-text);
-
-          position: absolute;
-
-          left: 0;
-          top: 0;
-
-          width: 100%;
-
+          min-height: 100vh;
+          width: 100vw;
           overflow: hidden;
 
-          pointer-events: none;
-        }
-
-        .glitch-title.glitching::before {
-          color: #7467a2;
-          transform: translate(4px, -2px);
-          clip-path: inset(0 0 55% 0);
-        }
-
-        .glitch-title.glitching::after {
-          color: #9a555e;
-          transform: translate(-4px, 2px);
-          clip-path: inset(55% 0 0 0);
-        }
-
-        .subtitle {
-          font-family: 'DM Mono', monospace;
-          font-size: 9px;
-          letter-spacing: .2em;
-          color: #77736f;
-        }
-
-        .divider {
-          height: 1px;
-          background: #aaa7a0;
-          margin: 25px 0;
-        }
-
-        form label {
-          display: block;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 9px;
-
-          letter-spacing: .15em;
-
-          margin-bottom: 8px;
-
-          color: #5f5c57;
-        }
-
-        .password-row {
-          display: flex;
-          gap: 6px;
-        }
-
-        .password-row input {
-          flex: 1;
-
-          min-width: 0;
-
-          height: 42px;
-
-          border:
-            2px inset #aaa8a2;
-
-          background: #efeee9;
-
-          outline: none;
-
-          padding: 0 12px;
-
-          font-family: 'DM Mono', monospace;
-
-          font-size: 14px;
-
-          letter-spacing: .16em;
-
-          color: #28272a;
-        }
-
-        .password-row input:focus {
-          box-shadow:
-            0 0 0 2px rgba(117,103,162,.25);
-        }
-
-        .password-row button {
-          width: 92px;
-
-          border:
-            2px outset #d4d2cd;
-
-          background: #c6c3bd;
-
-          cursor: pointer;
-
-          font-family: 'DM Mono', monospace;
-
-          font-size: 10px;
-
-          letter-spacing: .1em;
-        }
-
-        .password-row button:active {
-          border-style: inset;
-        }
-
-        .status-line {
-          display: flex;
-          justify-content: space-between;
-
-          margin-top: 9px;
-
-          font-family: 'DM Mono', monospace;
-
-          font-size: 8px;
-
-          color: #77736e;
-
-          letter-spacing: .08em;
-        }
-
-        /* ================================================
-           BOOTING
-        ================================================= */
-
-        .booting {
-          font-family: 'DM Mono', monospace;
-        }
-
-        .boot-message {
-          font-size: 13px;
-          letter-spacing: .15em;
-          margin-bottom: 15px;
-
-          animation:
-            text-flicker 1s infinite;
-        }
-
-        .loading-bar {
-          height: 15px;
-          border: 2px inset #aaa8a2;
-          background: #ecebe7;
-          padding: 2px;
-        }
-
-        .loading-bar div {
-          height: 100%;
-          width: 0%;
           background:
-            repeating-linear-gradient(
-              90deg,
-              #71679b 0px,
-              #71679b 12px,
-              #a69bc9 12px,
-              #a69bc9 16px
+            radial-gradient(
+              ellipse at 50% 45%,
+              rgba(193, 196, 221, .45),
+              transparent 65%
+            ),
+            linear-gradient(
+              135deg,
+              #697895,
+              #8d91b0 45%,
+              #737f9d
             );
 
-          animation:
-            loading 1.6s steps(8) forwards;
+          color: #202536;
         }
 
-        .boot-small {
-          margin-top: 8px;
-          font-size: 8px;
-          color: #77736d;
-        }
+        /* subtle old monitor texture */
 
-        /* ================================================
-           PHOTO WINDOWS
-        ================================================= */
-
-        .photo-window {
-          position: absolute;
-
-          width: 150px;
-
-          background: #d5d4cf;
-
-          border: 2px solid #55534f;
-
-          box-shadow:
-            7px 8px 0 rgba(0,0,0,.18);
-
-          z-index: 7;
-        }
-
-        .photo-frame {
-          padding: 5px;
-          background: #232323;
-        }
-
-        .photo-frame img {
-          display: block;
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          object-fit: cover;
-
-          filter:
-            saturate(.75)
-            contrast(1.08);
-        }
-
-        .window-footer {
-          padding: 5px;
-
-          font-family: 'DM Mono', monospace;
-          font-size: 7px;
-          color: #666;
-        }
-
-        .photo-one {
-          right: 26%;
-          bottom: 9%;
-          transform: rotate(4deg);
-        }
-
-        .photo-two {
-          left: 28%;
-          top: 9%;
-          transform: rotate(-4deg);
-        }
-
-        /* ================================================
-           VHS PLAYER
-        ================================================= */
-
-        .vhs-window {
-          position: absolute;
-
-          right: 4%;
-          bottom: 8%;
-
-          width: 175px;
-
-          background: #bbb9b3;
-
-          border: 2px solid #55534f;
-
-          box-shadow:
-            7px 8px 0 rgba(0,0,0,.17);
-
-          z-index: 8;
-        }
-
-        .vhs-screen {
-          height: 80px;
+        .crt {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 100;
 
           background:
             repeating-linear-gradient(
               0deg,
-              #272733 0px,
-              #272733 2px,
-              #333341 2px,
-              #333341 4px
+              rgba(255,255,255,.025) 0px,
+              rgba(255,255,255,.025) 1px,
+              rgba(0,0,0,.04) 2px,
+              rgba(0,0,0,.04) 4px
             );
 
-          color: #c4bddf;
+          mix-blend-mode: overlay;
+        }
+
+        .scanlines {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 101;
+
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent 0px,
+              transparent 3px,
+              rgba(20,20,30,.13) 4px
+            );
+
+          opacity: .55;
+        }
+
+        .vignette {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 102;
+
+          box-shadow:
+            inset 0 0 150px rgba(20,24,40,.4);
+        }
+
+        /* =========================
+           VHS
+        ========================= */
+
+        .vhs-time {
+          position: fixed;
+          top: 55px;
+          left: 30px;
+          z-index: 20;
+
+          font-family: 'VT323', monospace;
+          font-size: 21px;
+          color: rgba(237,240,247,.7);
+          text-shadow: 1px 0 #8b5463;
+        }
+
+        .rec-dot {
+          color: #b34d58;
+          margin-left: 7px;
+          animation: blink 1s steps(2) infinite;
+        }
+
+        .vhs-counter {
+          position: fixed;
+          right: 30px;
+          top: 55px;
+          z-index: 20;
+
+          font-family: 'VT323', monospace;
+          font-size: 19px;
+          color: rgba(236,239,247,.55);
+        }
+
+        /* =========================
+           SYSTEM BAR
+        ========================= */
+
+        .system-bar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 30px;
+
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          padding: 0 12px;
+
+          background: rgba(38,43,59,.65);
+          border-bottom: 1px solid rgba(220,225,240,.25);
+
+          color: #d7dbea;
+          font-family: 'VT323', monospace;
+          font-size: 15px;
+
+          z-index: 30;
+        }
+
+        /* =========================
+           ICONS
+        ========================= */
+
+        .desktop-icons {
+          position: absolute;
+          top: 90px;
+          left: 25px;
+
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+
+          z-index: 5;
+        }
+
+        .desktop-icon {
+          width: 85px;
+          text-align: center;
+          color: #e3e6ee;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+
+          text-shadow:
+            1px 1px rgba(30,35,50,.8);
+        }
+
+        .desktop-icon .icon {
+          font-size: 33px;
+          display: block;
+          margin-bottom: 3px;
+
+          filter:
+            grayscale(.15)
+            drop-shadow(2px 2px rgba(35,40,55,.35));
+        }
+
+        .desktop-icon button {
+          all: unset;
+          cursor: pointer;
+        }
+
+        .desktop-icon:hover {
+          filter: brightness(1.3);
+          transform: translateX(2px);
+        }
+
+        /* =========================
+           WINDOWS
+        ========================= */
+
+        .fake-window,
+        .cd-player,
+        .access-window,
+        .system-popup {
+
+          position: absolute;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(207,213,228,.94),
+              rgba(165,173,198,.94)
+            );
+
+          border:
+            2px solid #454d64;
+
+          box-shadow:
+            4px 5px 0 rgba(36,40,57,.25),
+            inset 1px 1px rgba(255,255,255,.7);
+
+          z-index: 8;
+        }
+
+        .window-title {
+          height: 25px;
+
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+
+          padding: 0 7px;
+
+          background:
+            linear-gradient(
+              90deg,
+              #343b53,
+              #68728e,
+              #454d67
+            );
+
+          color: #eef1f7;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+
+          border-bottom: 1px solid #343b4d;
+        }
+
+        .window-notes {
+          top: 110px;
+          right: 7%;
+          width: 280px;
+          transform: rotate(-2deg);
+          opacity: .8;
+        }
+
+        .notes {
+          padding: 18px;
+          min-height: 180px;
+
+          background: #c5c4b9;
+          color: #363846;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+          line-height: 1.5;
+        }
+
+        .window-photo {
+          bottom: 100px;
+          left: 7%;
+          width: 245px;
+          transform: rotate(3deg);
+          opacity: .82;
+        }
+
+        .photo-placeholder {
+          height: 210px;
+
+          background:
+            radial-gradient(
+              circle at 45% 40%,
+              #b9b7ac,
+              #767a88
+            );
 
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
 
-          font-family: 'DM Mono', monospace;
-
-          font-size: 9px;
-
+          color: #333849;
           position: relative;
-
-          overflow: hidden;
         }
 
-        .vhs-screen strong {
-          font-size: 17px;
-          margin-top: 7px;
+        .photo-noise {
+          font-family: 'VT323', monospace;
+          font-size: 22px;
+          opacity: .7;
         }
 
-        .tracking-lines {
+        .photo-caption {
           position: absolute;
-          left: 0;
-          right: 0;
-          top: 50%;
+          bottom: 8px;
+          left: 10px;
 
-          height: 3px;
-
-          background: white;
-
-          opacity: .25;
-
-          animation:
-            tracking 2s linear infinite;
+          font-family: 'VT323', monospace;
+          font-size: 14px;
         }
 
-        .vhs-buttons {
-          padding: 7px;
-
-          text-align: center;
-
-          font-family: 'DM Mono', monospace;
-
-          font-size: 10px;
-        }
-
-        /* ================================================
+        /* =========================
            CD PLAYER
-        ================================================= */
+        ========================= */
 
         .cd-player {
-          position: absolute;
+          right: 5%;
+          bottom: 120px;
+          width: 340px;
 
-          left: 3%;
-          bottom: 5%;
-
-          width: 225px;
-
-          background: #d8d6d1;
-
-          border: 2px solid #575550;
-
-          box-shadow:
-            7px 8px 0 rgba(0,0,0,.15);
-
-          z-index: 9;
+          transform: rotate(1deg);
         }
 
-        .cd-player-body {
+        .cd-body {
+          padding: 18px;
+
           display: flex;
-          align-items: center;
-
-          gap: 12px;
-
-          padding: 12px;
+          gap: 18px;
         }
 
-        .mini-cd {
-          width: 54px;
-          height: 54px;
+        .cd-disc {
+          width: 115px;
+          height: 115px;
+          flex-shrink: 0;
 
           border-radius: 50%;
 
           background:
             conic-gradient(
-              #9b8ab9,
-              #d7d0df,
-              #75849e,
-              #b19dc9,
-              #d9d8d1,
-              #9b8ab9
+              #bfc5d5,
+              #777f9a,
+              #d7d8df,
+              #858ca2,
+              #c7ccd8,
+              #737c96,
+              #c5cad7
             );
+
+          border: 1px solid #555d73;
 
           display: flex;
           align-items: center;
           justify-content: center;
 
           box-shadow:
-            inset 0 0 0 1px rgba(255,255,255,.7);
-        }
+            inset 0 0 20px rgba(255,255,255,.5),
+            2px 2px 5px rgba(20,25,40,.25);
 
-        .mini-cd div {
-          width: 12px;
-          height: 12px;
-
-          border-radius: 50%;
-
-          background: #d5d3ce;
-
-          border: 1px solid #777;
-        }
-
-        .song-title {
-          font-family: 'DM Mono', monospace;
-          font-size: 9px;
-          letter-spacing: .05em;
-        }
-
-        .song-artist {
-          font-family: 'DM Mono', monospace;
-          font-size: 7px;
-          color: #77736d;
-          margin-top: 5px;
-        }
-
-        .equalizer {
-          color: #75699a;
-          font-size: 12px;
-          margin-top: 7px;
-          letter-spacing: -2px;
-        }
-
-        /* ================================================
-           CD DECORATION
-        ================================================= */
-
-        .cd {
-          position: absolute;
-
-          width: 155px;
-          height: 155px;
-
-          border-radius: 50%;
-
-          background:
-            conic-gradient(
-              from 30deg,
-              #a6a3b9,
-              #dedbd0,
-              #8b9aad,
-              #c4abc8,
-              #dad6c8,
-              #7f8da1,
-              #a6a3b9
-            );
-
-          opacity: .72;
-
-          box-shadow:
-            inset 0 0 0 2px rgba(255,255,255,.6),
-            0 12px 25px rgba(0,0,0,.15);
-
-          z-index: 1;
-        }
-
-        .cd::before {
-          content: '';
-
-          position: absolute;
-
-          inset: 15px;
-
-          border-radius: 50%;
-
-          border:
-            1px solid rgba(255,255,255,.65);
-        }
-
-        .cd::after {
-          content: '';
-
-          position: absolute;
-
-          inset: 35px;
-
-          border-radius: 50%;
-
-          border:
-            1px solid rgba(255,255,255,.55);
+          animation: discSpin 8s linear infinite;
         }
 
         .cd-hole {
-          position: absolute;
-
-          left: 50%;
-          top: 50%;
-
           width: 17px;
           height: 17px;
-
-          transform: translate(-50%, -50%);
-
           border-radius: 50%;
-
-          background: #aaa9a3;
-
-          border: 2px solid #777;
+          background: #788098;
+          border: 3px solid #b7bccb;
         }
 
         .cd-label {
           position: absolute;
 
-          left: 50%;
-          top: 50%;
+          width: 42px;
+          height: 42px;
 
-          transform: translate(-50%, -50%);
+          border-radius: 50%;
 
-          font-family: 'Orbitron', sans-serif;
-
-          font-size: 12px;
-
-          color: #5e536d;
-
-          letter-spacing: .1em;
-        }
-
-        .cd-one {
-          left: -45px;
-          top: 17%;
-          transform: rotate(-18deg);
-        }
-
-        .cd-two {
-          right: -35px;
-          top: 45%;
-          transform: rotate(25deg);
-        }
-
-        /* ================================================
-           SYSTEM NOTE
-        ================================================= */
-
-        .system-note {
-          position: absolute;
-
-          left: 50%;
-          bottom: 3%;
-
-          transform: translateX(-50%);
+          background: #8e7895;
 
           display: flex;
-          gap: 25px;
+          align-items: center;
+          justify-content: center;
 
-          font-family: 'DM Mono', monospace;
+          font-family: 'Silkscreen', monospace;
+          font-size: 6px;
 
-          font-size: 7px;
-
-          color: #696661;
-
-          letter-spacing: .1em;
-
-          white-space: nowrap;
+          color: #e2e0e7;
         }
 
-        /* ================================================
-           BOTTOM BAR
-        ================================================= */
+        .cd-info {
+          flex: 1;
+          font-family: 'VT323', monospace;
+        }
 
-        .bottom-bar {
+        .track-title {
+          font-size: 14px;
+          color: #555d70;
+        }
+
+        .track-name {
+          font-size: 18px;
+          margin: 4px 0 15px;
+        }
+
+        .progress {
+          height: 5px;
+          background: #777f92;
+          margin-bottom: 7px;
+        }
+
+        .progress span {
+          display: block;
+          width: 52%;
+          height: 100%;
+          background: #3f475e;
+        }
+
+        .player-time {
+          font-size: 14px;
+          color: #565d70;
+        }
+
+        .player-buttons {
+          display: flex;
+          gap: 4px;
+          margin-top: 12px;
+        }
+
+        .player-buttons button {
+          width: 27px;
+          height: 23px;
+
+          border: 1px solid #596177;
+          background: #b9bfd0;
+          color: #3e4559;
+
+          cursor: pointer;
+        }
+
+        /* =========================
+           MAIN ACCESS WINDOW
+        ========================= */
+
+        .access-window {
+          top: 50%;
+          left: 50%;
+
+          width: min(520px, 82vw);
+
+          transform:
+            translate(-50%, -50%)
+            rotate(-.5deg);
+
+          z-index: 15;
+        }
+
+        .access-window.glitch-active {
+          animation: glitchWindow .14s steps(2);
+        }
+
+        .main-title {
+          height: 29px;
+          font-size: 17px;
+        }
+
+        .window-controls {
+          letter-spacing: 5px;
+        }
+
+        .access-content {
+          padding: 35px 38px 28px;
+
+          background:
+            linear-gradient(
+              135deg,
+              rgba(195,200,215,.96),
+              rgba(173,181,204,.96)
+            );
+        }
+
+        .system-mark {
+          font-family: 'Silkscreen', monospace;
+          font-size: clamp(18px, 4vw, 30px);
+
+          color: #30374b;
+
+          letter-spacing: .05em;
+
+          margin-bottom: 5px;
+
+          position: relative;
+        }
+
+        .corrupted {
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          color: #697188;
+          letter-spacing: .15em;
+          margin-bottom: 28px;
+        }
+
+        .access-title {
+          font-family: 'Silkscreen', monospace;
+          font-size: clamp(15px, 3vw, 23px);
+
+          color: #282f43;
+
+          letter-spacing: .06em;
+
+          margin-bottom: 7px;
+        }
+
+        .access-subtitle {
+          font-family: 'VT323', monospace;
+          color: #687086;
+          font-size: 16px;
+
+          margin-bottom: 30px;
+        }
+
+        .password-label {
+          font-family: 'VT323', monospace;
+          color: #454d62;
+          font-size: 16px;
+          margin-bottom: 6px;
+        }
+
+        .password-row {
+          display: flex;
+          align-items: center;
+
+          border:
+            1px solid #596278;
+
+          background: rgba(225,227,234,.5);
+
+          height: 43px;
+        }
+
+        .prompt {
+          padding-left: 10px;
+          font-family: 'VT323', monospace;
+          color: #4a5266;
+          font-size: 21px;
+        }
+
+        .password-row input {
+          flex: 1;
+          min-width: 0;
+
+          border: 0;
+          outline: 0;
+
+          background: transparent;
+
+          padding: 0 9px;
+
+          color: #2d3345;
+
+          font-family: 'VT323', monospace;
+          font-size: 21px;
+
+          letter-spacing: .15em;
+        }
+
+        .password-row button {
+          height: 100%;
+          padding: 0 16px;
+
+          border: 0;
+          border-left: 1px solid #596278;
+
+          background: #59627b;
+          color: #e7e9ef;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+
+          cursor: pointer;
+        }
+
+        .password-row button:hover {
+          background: #444c63;
+        }
+
+        .error-message {
+          height: 24px;
+
+          margin-top: 8px;
+
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+
+          color: #863f4d;
+
+          opacity: 0;
+        }
+
+        .error-message.visible {
+          opacity: 1;
+          animation: errorGlitch .18s steps(2) infinite;
+        }
+
+        .access-footer {
+          margin-top: 18px;
+
+          display: flex;
+          justify-content: space-between;
+
+          font-family: 'VT323', monospace;
+          font-size: 13px;
+
+          color: #697187;
+        }
+
+        .access-footer span {
+          flex: 1;
+        }
+
+        /* =========================
+           POPUP
+        ========================= */
+
+        .system-popup {
+          left: 30%;
+          bottom: 120px;
+          width: 245px;
+
+          transform: rotate(-2deg);
+
+          opacity: .72;
+          z-index: 7;
+        }
+
+        .popup-content {
+          padding: 15px;
+
+          display: flex;
+          gap: 13px;
+          align-items: center;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+
+          color: #3d4457;
+        }
+
+        .warning-symbol {
+          width: 25px;
+          height: 25px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          background: #737c94;
+          color: #e7e9ef;
+
+          font-family: 'Silkscreen', monospace;
+        }
+
+        /* =========================
+           TASKBAR
+        ========================= */
+
+        .taskbar {
           position: fixed;
-
           bottom: 0;
           left: 0;
           right: 0;
 
-          height: 40px;
-
-          background: rgba(211,209,204,.95);
-
-          border-top: 2px solid #696762;
+          height: 38px;
 
           display: flex;
-
           align-items: center;
+          gap: 4px;
 
-          justify-content: space-between;
+          padding: 4px;
 
-          padding: 0 15px;
+          background: #454d65;
+          border-top: 1px solid #aeb5c8;
 
-          z-index: 30;
-
-          font-family: 'DM Mono', monospace;
-
-          font-size: 8px;
-
-          color: #5e5b56;
-
-          letter-spacing: .08em;
+          z-index: 40;
         }
 
-        .bottom-center {
-          opacity: .7;
+        .start-button,
+        .task {
+          height: 29px;
+
+          border:
+            1px solid #22293b;
+
+          background:
+            linear-gradient(
+              #737c94,
+              #555e76
+            );
+
+          color: #e4e7ee;
+
+          font-family: 'VT323', monospace;
+          font-size: 15px;
+
+          padding: 0 12px;
+
+          box-shadow:
+            inset 1px 1px rgba(255,255,255,.25);
         }
 
-        /* ================================================
+        .start-button {
+          font-family: 'Silkscreen', monospace;
+          font-size: 9px;
+          cursor: pointer;
+        }
+
+        .taskbar-spacer {
+          flex: 1;
+        }
+
+        .task-clock {
+          padding: 0 12px;
+
+          color: #dfe3ed;
+
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+        }
+
+        /* =========================
            GLITCH
-        ================================================= */
+        ========================= */
 
-        @keyframes glitch-main {
+        @keyframes glitchWindow {
 
           0% {
-            transform: translate(0);
-            opacity: 1;
+            transform:
+              translate(-50%, -50%)
+              rotate(-.5deg);
           }
 
-          20% {
-            transform: translate(-3px, 1px);
-            opacity: .7;
+          25% {
+            transform:
+              translate(calc(-50% + 5px), -50%)
+              skewX(4deg);
+            filter:
+              hue-rotate(25deg)
+              contrast(1.3);
           }
 
-          40% {
-            transform: translate(3px, -1px);
-            opacity: 1;
+          50% {
+            transform:
+              translate(calc(-50% - 4px), -50%)
+              skewX(-3deg);
+            filter:
+              hue-rotate(-30deg)
+              contrast(1.5);
           }
 
-          60% {
-            transform: translate(-1px, 2px);
-            opacity: .35;
-          }
-
-          80% {
-            transform: translate(2px, 0);
-            opacity: 1;
+          75% {
+            opacity: .55;
           }
 
           100% {
-            transform: translate(0);
+            transform:
+              translate(-50%, -50%)
+              rotate(-.5deg);
             opacity: 1;
+            filter: none;
           }
         }
 
-        @keyframes text-flicker {
-
-          0%, 100% {
-            opacity: 1;
+        @keyframes errorGlitch {
+          0% {
+            transform: translateX(0);
           }
 
-          10% {
-            opacity: .2;
+          50% {
+            transform: translateX(3px);
           }
 
-          12% {
-            opacity: 1;
-          }
-
-          55% {
-            opacity: .5;
-          }
-
-          57% {
-            opacity: 1;
+          100% {
+            transform: translateX(-2px);
           }
         }
 
-        @keyframes loading {
+        @keyframes blink {
+          0%, 45% {
+            opacity: 1;
+          }
+
+          46%, 100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes bootProgress {
           from {
-            width: 0%;
+            width: 0;
           }
 
           to {
@@ -1516,113 +1222,111 @@ export default function HomePage() {
           }
         }
 
-        @keyframes tracking {
-
-          0% {
-            transform: translateY(-50px);
+        @keyframes discSpin {
+          from {
+            transform: rotate(0deg);
           }
 
-          100% {
-            transform: translateY(80px);
+          to {
+            transform: rotate(360deg);
           }
-
         }
 
-        /* ================================================
-           MOBILE
-        ================================================= */
+        /* =========================
+           RESPONSIVE
+        ========================= */
 
         @media (max-width: 700px) {
 
-          .system-right span:nth-child(2) {
+          .desktop-icons {
+            top: 60px;
+            left: 10px;
+
+            display: grid;
+            grid-template-columns: repeat(3, 70px);
+            gap: 10px;
+          }
+
+          .desktop-icon {
+            width: 70px;
+            font-size: 13px;
+          }
+
+          .desktop-icon .icon {
+            font-size: 27px;
+          }
+
+          .window-notes {
             display: none;
           }
 
-          .system-right {
-            gap: 5px;
-            font-size: 7px;
-          }
-
-          .folder {
-            transform: scale(.78);
-          }
-
-          .folder-one {
-            left: 2%;
-            top: 7%;
-          }
-
-          .folder-two {
-            left: 2%;
-            top: 29%;
-          }
-
-          .folder-three {
-            right: 0%;
-            top: 7%;
-          }
-
-          .folder-four {
-            right: 0%;
-            bottom: 20%;
-          }
-
-          .folder-five {
-            left: 2%;
-            bottom: 11%;
-          }
-
-          .photo-one {
-            display: none;
-          }
-
-          .photo-two {
-            display: none;
+          .window-photo {
+            left: -30px;
+            bottom: 90px;
+            opacity: .45;
+            transform: scale(.75) rotate(3deg);
           }
 
           .cd-player {
-            left: 2%;
-            bottom: 7%;
-            transform: scale(.78);
-            transform-origin: bottom left;
+            right: -45px;
+            bottom: 80px;
+            transform: scale(.7) rotate(1deg);
+            transform-origin: right bottom;
+            opacity: .7;
           }
 
-          .vhs-window {
-            right: 2%;
-            bottom: 7%;
-            transform: scale(.72);
-            transform-origin: bottom right;
-          }
-
-          .login-window {
-            top: 47%;
-          }
-
-          .login-content {
-            padding: 25px 22px;
-          }
-
-          .system-note {
+          .system-popup {
             display: none;
           }
 
-          .bottom-center {
+          .access-window {
+            width: 88vw;
+          }
+
+          .access-content {
+            padding: 25px 20px 20px;
+          }
+
+          .vhs-time {
+            top: 125px;
+            left: 10px;
+          }
+
+          .vhs-counter {
+            top: 125px;
+            right: 10px;
+          }
+
+          .task {
             display: none;
           }
-
-          .bottom-bar {
-            font-size: 7px;
-          }
-
-          .vhs-label {
-            right: 15px;
-            top: 65px;
-          }
-
         }
 
       `}</style>
-
     </main>
+  )
+}
+
+function DesktopIcon({ icon, label }) {
+  return (
+    <div className="desktop-icon">
+      <button type="button">
+        <span className="icon">{icon}</span>
+        <span>{label}</span>
+      </button>
+    </div>
+  )
+}
+
+function FakeWindow({ title, className, children }) {
+  return (
+    <div className={`fake-window ${className}`}>
+      <div className="window-title">
+        <span>{title}</span>
+        <span>_ □ ×</span>
+      </div>
+
+      {children}
+    </div>
   )
 }
