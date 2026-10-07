@@ -3,7 +3,11 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Orbitron, Space_Mono, Press_Start_2P } from 'next/font/google'
+import {
+  Orbitron,
+  Space_Mono,
+  Press_Start_2P,
+} from 'next/font/google'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,10 +20,10 @@ const orbitron = Orbitron({
 const spaceMono = Space_Mono({
   subsets: ['latin'],
   weight: ['400', '700'],
-  variable: '--font-space-mono',
+  variable: '--font-space',
 })
 
-const pressStart = Press_Start_2P({
+const pixel = Press_Start_2P({
   subsets: ['latin'],
   weight: '400',
   variable: '--font-pixel',
@@ -27,64 +31,58 @@ const pressStart = Press_Start_2P({
 
 const sections = [
   {
-    number: '01',
-    code: 'MEM_01',
-    title: 'THE MEMORIES',
-    subtitle: 'PHOTOS / PLACES / RANDOM SHIT',
-    description: 'the evidence archive',
+    no: '01',
+    title: 'MEMORIES',
+    subtitle: 'photos / places / evidence',
+    code: 'IMG_ARCHIVE',
     icon: '◉',
-    type: 'VHS',
     href: '/birthday/memories',
+    className: 'memory-window',
   },
   {
-    number: '02',
-    code: 'MSG_02',
-    title: 'THE MESSAGES',
-    subtitle: 'THINGS PEOPLE WANTED YOU TO KNOW',
-    description: 'incoming transmissions',
+    no: '02',
+    title: 'MESSAGES',
+    subtitle: 'things people wanted to say',
+    code: 'TXT_ARCHIVE',
     icon: '✉',
-    type: 'TXT',
     href: '/birthday/messages',
+    className: 'message-window',
   },
   {
-    number: '03',
-    code: 'SND_03',
-    title: 'THE SOUNDTRACK',
-    subtitle: 'SONGS ABOUT YOU',
-    description: 'insert disc / press play',
+    no: '03',
+    title: 'SOUNDTRACK',
+    subtitle: 'songs about you',
+    code: 'AUDIO_DISC',
     icon: '♫',
-    type: 'CD',
     href: '/birthday/playlist',
+    className: 'music-window',
   },
   {
-    number: '04',
-    code: 'CHA_04',
-    title: 'THE CHAOS',
-    subtitle: 'SHITS & GIGGLES',
-    description: 'do not open at work',
-    icon: '⚠',
-    type: 'ERR',
+    no: '04',
+    title: 'CHAOS',
+    subtitle: 'shits & giggles',
+    code: 'ERROR_LOG',
+    icon: '!',
     href: '/birthday/games',
+    className: 'chaos-window',
   },
   {
-    number: '05',
-    code: 'QUI_05',
-    title: 'THE QUIZ',
-    subtitle: 'HOW WELL DO YOU ACTUALLY KNOW US?',
-    description: 'test your memory',
+    no: '05',
+    title: 'QUIZ',
+    subtitle: 'prove you actually know us',
+    code: 'GAME.EXE',
     icon: '?',
-    type: 'GAME',
     href: '/birthday/quiz',
+    className: 'quiz-window',
   },
   {
-    number: '06',
-    code: 'JRN_06',
-    title: 'THE JOURNEY',
-    subtitle: 'EVERYWHERE, SOMEHOW',
-    description: 'save file: 2004 → now',
+    no: '06',
+    title: 'JOURNEY',
+    subtitle: 'everywhere somehow led here',
+    code: 'SAVE_FILE',
     icon: '⌁',
-    type: 'MAP',
     href: '/birthday/journey',
+    className: 'journey-window',
   },
 ]
 
@@ -92,7 +90,9 @@ export default function BirthdayPage() {
   const router = useRouter()
 
   useEffect(() => {
-    const authenticated = sessionStorage.getItem('birthday_authenticated')
+    const authenticated = sessionStorage.getItem(
+      'birthday_authenticated'
+    )
 
     if (authenticated !== 'true') {
       router.replace('/')
@@ -109,329 +109,555 @@ export default function BirthdayPage() {
       className={`
         ${orbitron.variable}
         ${spaceMono.variable}
-        ${pressStart.variable}
+        ${pixel.variable}
         birthday-page
       `}
     >
-      {/* CRT overlay */}
-      <div className="crt-overlay" />
+
+      {/* GLOBAL GLITCH / CRT LAYERS */}
+      <div className="noise" />
       <div className="scanlines" />
+      <div className="screen-vignette" />
 
-      {/* background grid */}
-      <div className="grid-bg" />
+      {/* TOP COMPUTER BAR */}
 
-      {/* TOP STATUS BAR */}
-      <header className="topbar">
-        <div className="topbar-left">
-          <span className="rec-dot" />
-          <span>REC</span>
-          <span className="separator">/</span>
-          <span>CLAR_ARCHIVE</span>
+      <div className="system-bar">
+
+        <div className="system-left">
+          <span className="windows-logo">
+            ◈
+          </span>
+
+          <span>
+            CLAR_OS
+          </span>
+
+          <span className="system-divider">
+            /
+          </span>
+
+          <span className="glitch-text small-glitch">
+            CONNECTED
+          </span>
         </div>
 
-        <div className="topbar-center">
-          2004 — 2026
+        <div className="system-right">
+          <span>
+            29.05.2004
+          </span>
+
+          <span className="system-divider">
+            |
+          </span>
+
+          <button
+            onClick={logout}
+            className="eject-button"
+          >
+            EJECT
+          </button>
         </div>
 
-        <button onClick={logout} className="logout">
-          EJECT ×
-        </button>
-      </header>
+      </div>
 
-      <div className="page-shell">
+      <div className="desktop">
 
-        {/* HERO */}
-        <section className="hero">
+        {/* BACKGROUND METADATA */}
 
-          <div className="hero-meta">
-            <span>ARCHIVE_DISC // 001</span>
-            <span>FORMAT: VHS-CDROM</span>
+        <div className="coordinates">
+          <div>
+            // FILE: CLAR_22
+          </div>
+          <div>
+            // STATUS: OPEN
+          </div>
+          <div>
+            // FORMAT: CD-ROM
+          </div>
+        </div>
+
+        <div className="barcode">
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <span />
+          <small>
+            2205290401
+          </small>
+        </div>
+
+
+        {/* MAIN HERO WINDOW */}
+
+        <section className="hero-window">
+
+          <div className="window-titlebar">
+
+            <div className="window-title">
+              <span className="window-icon">
+                ★
+              </span>
+
+              untitled - CLAR.exe
+            </div>
+
+            <div className="window-controls">
+              <span>_</span>
+              <span>□</span>
+              <span>×</span>
+            </div>
+
           </div>
 
-          <div className="hero-main">
+          <div className="hero-content">
 
-            <div className="hero-title-wrap">
+            <div className="hero-copy">
 
-              <div className="tiny-label">
-                <span className="blink">●</span> SYSTEM ONLINE
+              <div className="micro-copy">
+                // PERSONAL ARCHIVE
               </div>
 
-              <h1 className="glitch-title" data-text="CLAR">
-                CLAR
-              </h1>
+              <div className="hero-name-wrap">
 
-              <div className="exe-line">
-                <span>CLAR.EXE</span>
-                <span>v.22.0</span>
+                <span className="hero-prefix">
+                  HAPPY BIRTHDAY,
+                </span>
+
+                <h1
+                  className="glitch-name"
+                  data-text="CLAR"
+                >
+                  CLAR
+                </h1>
+
+              </div>
+
+              <p className="hero-description">
+                a badly organised digital archive
+                of a person who has somehow made it
+                this far
+              </p>
+
+              <div className="hero-buttons">
+
+                <span className="fake-button">
+                  ▶ PLAY
+                </span>
+
+                <span className="fake-button secondary">
+                  OPEN FILE
+                </span>
+
               </div>
 
             </div>
 
-            {/* CD graphic */}
-            <div className="cd-wrap">
-              <div className="cd">
-                <div className="cd-label">
-                  <span>DVA</span>
-                  <small>ARCHIVE</small>
+
+            {/* FAKE IMAGE WINDOW */}
+
+            <div className="paint-window">
+
+              <div className="paint-titlebar">
+                <span>
+                  untitled - Paint
+                </span>
+
+                <span>
+                  _ □ ×
+                </span>
+              </div>
+
+              <div className="paint-toolbar">
+
+                <span>✎</span>
+                <span>▣</span>
+                <span>⌕</span>
+                <span>◯</span>
+                <span>╱</span>
+
+              </div>
+
+              <div className="fake-image">
+
+                <div className="fake-sun">
+                  ☼
                 </div>
-                <div className="cd-hole" />
-                <div className="cd-shine" />
+
+                <div className="fake-orbit">
+                  ◯
+                </div>
+
+                <div className="fake-star">
+                  ✦
+                </div>
+
+                <div className="fake-image-text">
+                  <span>
+                    ARCHIVE
+                  </span>
+
+                  <strong>
+                    22
+                  </strong>
+                </div>
+
               </div>
 
-              <div className="cd-caption">
-                DISC 01<br />
-                <span>DO NOT SCRATCH</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* VHS PLAYER */}
-          <div className="vhs-player">
-
-            <div className="vhs-left">
-              <div className="vhs-label">
-                BIRTHDAY TAPE
+              <div className="paint-palette">
+                {Array.from({ length: 18 }).map(
+                  (_, i) => (
+                    <span key={i} />
+                  )
+                )}
               </div>
 
-              <div className="vhs-stripes">
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
             </div>
 
-            <div className="vhs-screen">
-              <div className="screen-noise" />
-
-              <div className="timestamp">
-                <span>PLAY</span>
-                <span>00:22:04</span>
-              </div>
-
-              <div className="screen-text">
-                HAPPY BIRTHDAY
-              </div>
-
-              <div className="screen-sub">
-                PRESS ENTER TO CONTINUE_
-              </div>
-            </div>
-
-            <div className="vhs-controls">
-              <span>◀◀</span>
-              <span>▶</span>
-              <span>▶▶</span>
-              <span>■</span>
-              <span>●</span>
-            </div>
-
-          </div>
-
-          {/* INTRO */}
-          <div className="intro-grid">
-            <div className="intro-number">
-              22
-            </div>
-
-            <div className="intro-copy">
-              <p className="label">PLAYER // CLAR</p>
-
-              <p>
-                A small collection of things that somehow
-                became your life.
-              </p>
-
-              <p className="muted">
-                photos / messages / songs / chaos / memories
-              </p>
-            </div>
-
-            <div className="date-stamp">
-              <div>DATE RECORDED</div>
-              <strong>29·05·04</strong>
-              <span>KL / MY</span>
-            </div>
           </div>
 
         </section>
 
-        {/* MENU */}
-        <section className="archive-section">
 
-          <div className="section-heading">
+        {/* CD */}
 
-            <div>
-              <span className="section-label">
-                DIRECTORY
+        <div className="floating-cd">
+
+          <div className="cd-disc">
+
+            <div className="cd-rainbow" />
+
+            <div className="cd-centre">
+              <span>
+                CLAR
               </span>
-
-              <h2>
-                SELECT FILE<span className="cursor">_</span>
-              </h2>
-            </div>
-
-            <div className="directory-status">
-              <span>06 FILES</span>
-              <span>STATUS: OK</span>
+              <small>
+                MIX 01
+              </small>
             </div>
 
           </div>
 
-          <div className="file-grid">
+          <div className="cd-label">
+            TRACK 01 / 06
+          </div>
 
-            {sections.map((section) => (
+        </div>
+
+
+        {/* MINI MEDIA PLAYER */}
+
+        <div className="music-player">
+
+          <div className="player-header">
+            <span>
+              ◉ CD PLAYER
+            </span>
+
+            <span>
+              _ □ ×
+            </span>
+          </div>
+
+          <div className="player-body">
+
+            <div className="album-placeholder">
+              <span>
+                ♪
+              </span>
+            </div>
+
+            <div className="track-info">
+
+              <span className="player-label">
+                NOW PLAYING
+              </span>
+
+              <strong className="glitch-text">
+                BIRTHDAY.EXE
+              </strong>
+
+              <span>
+                CLAR / TRACK 01
+              </span>
+
+            </div>
+
+          </div>
+
+          <div className="player-progress">
+            <span />
+          </div>
+
+          <div className="player-controls">
+            <span>◀◀</span>
+            <span>▶</span>
+            <span>▶▶</span>
+            <span>↻</span>
+          </div>
+
+        </div>
+
+
+        {/* MESSAGE POPUP */}
+
+        <div className="message-popup">
+
+          <div className="popup-titlebar">
+            <span>
+              System Message
+            </span>
+
+            <span>
+              ×
+            </span>
+          </div>
+
+          <div className="popup-body">
+
+            <div className="popup-warning">
+              !
+            </div>
+
+            <div>
+              <p>
+                Dear Player,
+              </p>
+
+              <p>
+                Are you sure you want
+                to continue being 22?
+              </p>
+
+              <div className="popup-buttons">
+                <button>
+                  OK
+                </button>
+
+                <button>
+                  CANCEL
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* MAIN DIRECTORY */}
+
+        <section className="directory">
+
+          <div className="directory-heading">
+
+            <div>
+
+              <span className="directory-kicker">
+                MY COMPUTER / CLAR_ARCHIVE
+              </span>
+
+              <h2 className="glitch-text">
+                FILES
+              </h2>
+
+            </div>
+
+            <div className="directory-meta">
+              6 OBJECTS
+              <br />
+              1.42 GB
+            </div>
+
+          </div>
+
+
+          <div className="file-layout">
+
+            {sections.map((section, index) => (
+
               <Link
+                key={section.no}
                 href={section.href}
-                key={section.number}
-                className={`file-card type-${section.type.toLowerCase()}`}
+                className={`desktop-window ${section.className}`}
               >
 
-                <div className="card-top">
+                <div className="window-titlebar">
 
-                  <span className="file-number">
-                    {section.number}
-                  </span>
+                  <div className="window-title">
 
-                  <span className="file-code">
+                    <span className="window-icon">
+                      {section.icon}
+                    </span>
+
                     {section.code}
-                  </span>
 
-                  <span className="file-type">
-                    [{section.type}]
-                  </span>
+                  </div>
+
+                  <div className="window-controls">
+                    <span>_</span>
+                    <span>□</span>
+                    <span>×</span>
+                  </div>
 
                 </div>
 
-                <div className="card-middle">
 
-                  <div className="file-icon">
+                <div className="file-content">
+
+                  <div className="file-number">
+                    {section.no}
+                  </div>
+
+                  <div className="file-symbol">
                     {section.icon}
                   </div>
 
-                  <div>
-                    <h3>
+                  <div className="file-text">
+
+                    <h3
+                      className={
+                        index === 2 || index === 4
+                          ? 'glitch-text'
+                          : ''
+                      }
+                    >
                       {section.title}
                     </h3>
 
                     <p>
                       {section.subtitle}
                     </p>
+
                   </div>
 
-                </div>
-
-                <div className="card-bottom">
-
-                  <span>
-                    {section.description}
-                  </span>
-
-                  <span className="open">
-                    OPEN →
+                  <span className="file-arrow">
+                    ↗
                   </span>
 
                 </div>
 
-                <div className="hover-line" />
+                <div className="window-footer">
+                  double click to open
+                </div>
 
               </Link>
+
             ))}
 
           </div>
 
         </section>
 
-        {/* BOTTOM MEDIA AREA */}
-        <section className="media-deck">
+
+        {/* BOTTOM COLLAGE */}
+
+        <section className="bottom-collage">
+
+          {/* CASSETTE */}
 
           <div className="cassette">
 
-            <div className="cassette-label">
-              <span>MIXTAPE</span>
-              <strong>CLAR // 22</strong>
+            <div className="cassette-top">
+              MIXTAPE
             </div>
 
             <div className="cassette-window">
-              <div className="reel left">
+
+              <div className="cassette-reel">
                 <span />
               </div>
 
-              <div className="tape-line" />
+              <div className="cassette-tape" />
 
-              <div className="reel right">
+              <div className="cassette-reel">
                 <span />
               </div>
+
             </div>
 
-            <div className="cassette-bottom">
-              SIDE A
-              <span>────────</span>
-              SIDE B
+            <div className="cassette-text">
+              CLAR // SIDE A
             </div>
 
           </div>
 
-          <div className="terminal">
 
-            <div className="terminal-header">
-              <span>CLAR_TERMINAL</span>
-              <span>—</span>
-              <span>×</span>
-            </div>
+          {/* LOADING WINDOW */}
 
-            <div className="terminal-body">
+          <div className="loading-window">
 
-              <p>
-                <span>&gt;</span> loading birthday_archive...
-              </p>
+            <div className="window-titlebar">
 
-              <p>
-                <span>&gt;</span> finding memories...
-                <b> OK</b>
-              </p>
+              <span>
+                Processing...
+              </span>
 
-              <p>
-                <span>&gt;</span> locating embarrassing photos...
-                <b> OK</b>
-              </p>
-
-              <p>
-                <span>&gt;</span> emotional damage...
-                <b> 100%</b>
-              </p>
-
-              <p className="terminal-final">
-                <span>&gt;</span> archive ready
-                <i>_</i>
-              </p>
+              <span>
+                ×
+              </span>
 
             </div>
 
+            <div className="loading-body">
+
+              <p>
+                Loading birthday memories...
+              </p>
+
+              <div className="loading-bar">
+                <span />
+              </div>
+
+              <small>
+                Please wait...
+              </small>
+
+            </div>
+
+          </div>
+
+
+          {/* RANDOM STICKERS */}
+
+          <div className="sticker sticker-one">
+            555
+          </div>
+
+          <div className="sticker sticker-two">
+            ✦
+          </div>
+
+          <div className="sticker sticker-three">
+            ERROR
           </div>
 
         </section>
 
+
         {/* FOOTER */}
+
         <footer>
 
-          <div className="footer-left">
-            <span>© DVA</span>
-            <span>CLAR_ARCHIVE</span>
-          </div>
+          <span>
+            CLAR_ARCHIVE © 2004—2026
+          </span>
 
-          <div className="footer-center">
-            PLEASE REWIND AFTER USE
-          </div>
+          <span>
+            MADE WITH QUESTIONABLE DECISIONS
+          </span>
 
-          <div className="footer-right">
-            TRACK 01 / 06
-          </div>
+          <span>
+            [ SYSTEM READY ]
+          </span>
 
         </footer>
 
       </div>
+
 
       <style jsx global>{`
 
@@ -443,1032 +669,1342 @@ export default function BirthdayPage() {
         body {
           margin: 0;
           padding: 0;
-          background: #171717;
+          background: #242329;
         }
 
         body {
-          font-family: var(--font-space-mono), monospace;
+          font-family: var(--font-space), monospace;
         }
+
+        a {
+          color: inherit;
+        }
+
+
+        /* =========================
+           BASE
+        ========================= */
 
         .birthday-page {
           min-height: 100vh;
+          color: #eee9df;
           background:
             radial-gradient(
-              circle at 20% 10%,
-              rgba(165,184,92,.08),
-              transparent 30%
+              circle at 18% 15%,
+              rgba(133,119,190,.17),
+              transparent 25%
             ),
             radial-gradient(
-              circle at 85% 70%,
-              rgba(179,75,67,.07),
+              circle at 85% 60%,
+              rgba(82,103,150,.13),
               transparent 30%
             ),
-            #171717;
-          color: #d8d5c8;
-          position: relative;
+            #242329;
           overflow-x: hidden;
+          position: relative;
         }
 
-        /* -------------------------
-           CRT
-        ------------------------- */
 
-        .crt-overlay {
-          pointer-events: none;
+        /* =========================
+           CRT
+        ========================= */
+
+        .noise {
           position: fixed;
           inset: 0;
-          z-index: 50;
+          z-index: 100;
+          pointer-events: none;
+          opacity: .06;
+          background-image:
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+        }
+
+        .scanlines {
+          position: fixed;
+          inset: 0;
+          z-index: 99;
+          pointer-events: none;
+          opacity: .08;
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent 0px,
+              transparent 3px,
+              rgba(255,255,255,.16) 4px
+            );
+        }
+
+        .screen-vignette {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: 98;
           background:
             radial-gradient(
               ellipse at center,
               transparent 55%,
-              rgba(0,0,0,.42) 100%
-            );
-          mix-blend-mode: multiply;
-        }
-
-        .scanlines {
-          pointer-events: none;
-          position: fixed;
-          inset: 0;
-          z-index: 49;
-          opacity: .11;
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              transparent 0px,
-              transparent 3px,
-              rgba(255,255,255,.08) 4px
+              rgba(0,0,0,.4)
             );
         }
 
-        .grid-bg {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          opacity: .08;
-          background-image:
-            linear-gradient(#d8d5c8 1px, transparent 1px),
-            linear-gradient(90deg, #d8d5c8 1px, transparent 1px);
-          background-size: 50px 50px;
-          mask-image: linear-gradient(
-            to bottom,
-            black,
-            transparent 80%
-          );
-        }
 
-        /* -------------------------
-           TOP BAR
-        ------------------------- */
-
-        .topbar {
-          height: 42px;
-          border-bottom: 1px solid #55524b;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 24px;
-          font-size: 10px;
-          letter-spacing: .15em;
-          position: relative;
-          z-index: 5;
-          background: rgba(23,23,23,.9);
-        }
-
-        .topbar-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .rec-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #b34b43;
-          box-shadow: 0 0 8px rgba(179,75,67,.6);
-          animation: blink 1.2s infinite;
-        }
-
-        .separator {
-          color: #66625a;
-        }
-
-        .topbar-center {
-          color: #77736a;
-          font-size: 9px;
-        }
-
-        .logout {
-          background: transparent;
-          color: #aaa69b;
-          border: 0;
-          font-family: inherit;
-          font-size: 9px;
-          letter-spacing: .12em;
-          cursor: pointer;
-        }
-
-        .logout:hover {
-          color: #d8d5c8;
-        }
-
-        /* -------------------------
-           SHELL
-        ------------------------- */
-
-        .page-shell {
-          width: min(1180px, calc(100% - 32px));
-          margin: 0 auto;
-          position: relative;
-          z-index: 2;
-        }
-
-        /* -------------------------
-           HERO
-        ------------------------- */
-
-        .hero {
-          padding: 48px 0 70px;
-        }
-
-        .hero-meta {
-          display: flex;
-          justify-content: space-between;
-          font-size: 9px;
-          letter-spacing: .18em;
-          color: #77736a;
-          margin-bottom: 28px;
-        }
-
-        .hero-main {
-          display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: 50px;
-          align-items: center;
-        }
-
-        .tiny-label {
-          font-family: var(--font-pixel);
-          font-size: 9px;
-          color: #a5b85c;
-          margin-bottom: 18px;
-          letter-spacing: .05em;
-        }
-
-        .blink {
-          animation: blink 1s infinite;
-        }
-
-        .glitch-title {
-          font-family: var(--font-orbitron);
-          font-weight: 900;
-          font-size: clamp(90px, 18vw, 230px);
-          line-height: .72;
-          letter-spacing: -.08em;
-          margin: 0;
-          color: #d8d5c8;
-          position: relative;
-          text-shadow:
-            4px 0 #b34b43,
-            -3px 0 #77736a;
-          animation: titleJitter 5s infinite;
-        }
-
-        .glitch-title::before,
-        .glitch-title::after {
-          content: attr(data-text);
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          opacity: 0;
-        }
-
-        .glitch-title::before {
-          color: #a5b85c;
-          transform: translate(3px, -2px);
-          clip-path: inset(20% 0 62% 0);
-          animation: glitchA 4s infinite;
-        }
-
-        .glitch-title::after {
-          color: #b34b43;
-          transform: translate(-3px, 2px);
-          clip-path: inset(65% 0 12% 0);
-          animation: glitchB 3.5s infinite;
-        }
-
-        .exe-line {
-          margin-top: 28px;
-          display: flex;
-          gap: 24px;
-          font-family: var(--font-pixel);
-          font-size: 8px;
-          color: #77736a;
-        }
-
-        .exe-line span:first-child {
-          color: #a5b85c;
-        }
-
-        /* -------------------------
-           CD
-        ------------------------- */
-
-        .cd-wrap {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 18px;
-        }
-
-        .cd {
-          width: 270px;
-          height: 270px;
-          border-radius: 50%;
-          position: relative;
-          background:
-            conic-gradient(
-              from 20deg,
-              #5d5c58,
-              #b8b5aa,
-              #686762,
-              #d5d1c4,
-              #77756d,
-              #c7c3b7,
-              #5d5c58
-            );
-          box-shadow:
-            0 0 0 1px #aaa69b,
-            0 25px 50px rgba(0,0,0,.45);
-          animation: spin 18s linear infinite;
-        }
-
-        .cd::before {
-          content: "";
-          position: absolute;
-          inset: 14px;
-          border-radius: 50%;
-          border: 1px solid rgba(255,255,255,.5);
-        }
-
-        .cd::after {
-          content: "";
-          position: absolute;
-          inset: 35px;
-          border-radius: 50%;
-          border: 1px solid rgba(0,0,0,.25);
-        }
-
-        .cd-label {
-          position: absolute;
-          inset: 50%;
-          transform: translate(-50%, -50%);
-          width: 105px;
-          height: 105px;
-          border-radius: 50%;
-          background: #b34b43;
-          color: #171717;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          z-index: 2;
-          font-family: var(--font-pixel);
-          font-size: 10px;
-        }
-
-        .cd-label small {
-          font-family: var(--font-space-mono);
-          font-size: 7px;
-          margin-top: 7px;
-        }
-
-        .cd-hole {
-          position: absolute;
-          z-index: 3;
-          width: 14px;
-          height: 14px;
-          background: #171717;
-          border: 2px solid #aaa69b;
-          border-radius: 50%;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-        }
-
-        .cd-shine {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background: linear-gradient(
-            120deg,
-            transparent 30%,
-            rgba(255,255,255,.5) 48%,
-            transparent 58%
-          );
-          opacity: .45;
-        }
-
-        .cd-caption {
-          font-family: var(--font-pixel);
-          font-size: 7px;
-          text-align: center;
-          color: #77736a;
-          line-height: 1.8;
-        }
-
-        .cd-caption span {
-          color: #b34b43;
-        }
-
-        /* -------------------------
-           VHS PLAYER
-        ------------------------- */
-
-        .vhs-player {
-          margin-top: 55px;
-          border: 1px solid #55524b;
-          background: #252525;
-          min-height: 145px;
-          display: grid;
-          grid-template-columns: 170px 1fr 180px;
-          box-shadow: 8px 8px 0 rgba(0,0,0,.25);
-        }
-
-        .vhs-left {
-          padding: 22px;
-          border-right: 1px solid #55524b;
-        }
-
-        .vhs-label {
-          font-family: var(--font-pixel);
-          font-size: 8px;
-          color: #171717;
-          background: #d8d5c8;
-          padding: 10px 8px;
-          transform: rotate(-2deg);
-        }
-
-        .vhs-stripes {
-          margin-top: 25px;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .vhs-stripes span {
-          height: 5px;
-          background: #55524b;
-        }
-
-        .vhs-stripes span:nth-child(2) {
-          width: 70%;
-          background: #a5b85c;
-        }
-
-        .vhs-stripes span:nth-child(3) {
-          width: 85%;
-          background: #b34b43;
-        }
-
-        .vhs-stripes span:nth-child(4) {
-          width: 50%;
-        }
-
-        .vhs-screen {
-          position: relative;
-          min-height: 145px;
-          overflow: hidden;
-          background:
-            linear-gradient(
-              rgba(165,184,92,.08),
-              rgba(165,184,92,.02)
-            ),
-            #101410;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .screen-noise {
-          position: absolute;
-          inset: 0;
-          opacity: .18;
-          background:
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 2px,
-              #a5b85c 3px
-            );
-          animation: tracking 2s infinite;
-        }
-
-        .timestamp {
-          position: absolute;
-          top: 12px;
-          left: 15px;
-          right: 15px;
-          display: flex;
-          justify-content: space-between;
-          color: #a5b85c;
-          font-size: 9px;
-        }
-
-        .screen-text {
-          font-family: var(--font-pixel);
-          font-size: clamp(10px, 1.8vw, 18px);
-          color: #a5b85c;
-          text-shadow: 0 0 7px rgba(165,184,92,.4);
-          animation: screenFlicker 4s infinite;
-          z-index: 2;
-        }
-
-        .screen-sub {
-          margin-top: 18px;
-          font-size: 9px;
-          color: #77736a;
-          z-index: 2;
-        }
-
-        .vhs-controls {
-          border-left: 1px solid #55524b;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 13px;
-          color: #77736a;
-          font-size: 11px;
-        }
-
-        .vhs-controls span:nth-child(2) {
-          color: #b34b43;
-        }
-
-        /* -------------------------
-           INTRO
-        ------------------------- */
-
-        .intro-grid {
-          margin-top: 55px;
-          display: grid;
-          grid-template-columns: 130px 1fr 180px;
-          border-top: 1px solid #55524b;
-          border-bottom: 1px solid #55524b;
-        }
-
-        .intro-number {
-          font-family: var(--font-orbitron);
-          font-size: 72px;
-          font-weight: 800;
-          color: #a5b85c;
-          padding: 24px 20px;
-          border-right: 1px solid #55524b;
-        }
-
-        .intro-copy {
-          padding: 25px 30px;
-        }
-
-        .intro-copy p {
-          margin: 0 0 10px;
-          font-size: 13px;
-          line-height: 1.6;
-          max-width: 550px;
-        }
-
-        .intro-copy .label {
-          font-family: var(--font-pixel);
-          color: #b34b43;
-          font-size: 8px;
-          margin-bottom: 16px;
-        }
-
-        .intro-copy .muted {
-          color: #77736a;
-          font-size: 10px;
-        }
-
-        .date-stamp {
-          padding: 25px 20px;
-          border-left: 1px solid #55524b;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          font-size: 8px;
-          color: #77736a;
-          gap: 8px;
-        }
-
-        .date-stamp strong {
-          font-family: var(--font-pixel);
-          font-size: 10px;
-          color: #d8d5c8;
-        }
-
-        /* -------------------------
-           DIRECTORY
-        ------------------------- */
-
-        .archive-section {
-          padding: 35px 0 80px;
-        }
-
-        .section-heading {
-          display: flex;
-          align-items: flex-end;
-          justify-content: space-between;
-          margin-bottom: 24px;
-        }
-
-        .section-label {
-          font-family: var(--font-pixel);
-          color: #77736a;
-          font-size: 7px;
-        }
-
-        .section-heading h2 {
-          font-family: var(--font-orbitron);
-          font-size: clamp(24px, 4vw, 42px);
-          margin: 10px 0 0;
-          letter-spacing: -.04em;
-        }
-
-        .cursor {
-          color: #a5b85c;
-          animation: blink .8s infinite;
-        }
-
-        .directory-status {
-          display: flex;
-          gap: 18px;
-          font-size: 8px;
-          color: #77736a;
-        }
-
-        .file-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
-        }
-
-        .file-card {
-          min-height: 205px;
-          padding: 17px;
-          position: relative;
-          overflow: hidden;
-          text-decoration: none;
-          color: #d8d5c8;
-          background: #252525;
-          border: 1px solid #55524b;
-          transition:
-            transform .15s ease,
-            border-color .15s ease,
-            background .15s ease;
-        }
-
-        .file-card:hover {
-          transform: translate(-3px, -3px);
-          border-color: #a5b85c;
-          background: #292929;
-          box-shadow: 7px 7px 0 #111;
-        }
-
-        .card-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          font-size: 8px;
-          color: #77736a;
-        }
-
-        .file-number {
-          font-family: var(--font-pixel);
-          color: #d8d5c8;
-        }
-
-        .file-type {
-          color: #a5b85c;
-        }
-
-        .card-middle {
-          margin-top: 40px;
-          display: flex;
-          align-items: center;
-          gap: 22px;
-        }
-
-        .file-icon {
-          width: 56px;
-          height: 56px;
-          border: 1px solid #77736a;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 23px;
-          color: #a5b85c;
-          font-family: var(--font-orbitron);
-        }
-
-        .card-middle h3 {
-          font-family: var(--font-orbitron);
-          font-size: 19px;
-          margin: 0 0 8px;
-          letter-spacing: -.02em;
-        }
-
-        .card-middle p {
-          font-size: 8px;
-          color: #77736a;
-          margin: 0;
-          letter-spacing: .04em;
-          line-height: 1.5;
-        }
-
-        .card-bottom {
-          position: absolute;
-          bottom: 15px;
-          left: 17px;
-          right: 17px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 8px;
-          color: #77736a;
-        }
-
-        .open {
-          color: #d8d5c8;
-        }
-
-        .hover-line {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          width: 0;
-          height: 3px;
-          background: #a5b85c;
-          transition: width .3s ease;
-        }
-
-        .file-card:hover .hover-line {
-          width: 100%;
-        }
-
-        .type-err .file-icon {
-          color: #b34b43;
-          border-color: #b34b43;
-        }
-
-        .type-cd .file-icon {
-          color: #d8d5c8;
-        }
-
-        .type-game .file-icon {
-          color: #a5b85c;
-        }
-
-        /* -------------------------
-           MEDIA DECK
-        ------------------------- */
-
-        .media-deck {
-          display: grid;
-          grid-template-columns: 330px 1fr;
-          gap: 25px;
-          padding-bottom: 80px;
-        }
-
-        .cassette {
-          background: #77736a;
-          padding: 20px;
-          min-height: 220px;
-          transform: rotate(-1deg);
-          box-shadow: 8px 8px 0 #101010;
-        }
-
-        .cassette-label {
-          background: #d8d5c8;
-          color: #171717;
-          padding: 13px;
-          display: flex;
-          justify-content: space-between;
-          font-family: var(--font-pixel);
-          font-size: 7px;
-        }
-
-        .cassette-label strong {
-          color: #b34b43;
-        }
-
-        .cassette-window {
-          height: 72px;
-          background: #171717;
-          margin-top: 20px;
-          display: flex;
-          align-items: center;
-          justify-content: space-around;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .reel {
-          width: 45px;
-          height: 45px;
-          border: 4px dotted #77736a;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .reel span {
-          width: 12px;
-          height: 12px;
-          background: #77736a;
-          border-radius: 50%;
-        }
-
-        .tape-line {
-          position: absolute;
-          height: 8px;
-          left: 45px;
-          right: 45px;
-          background: #55524b;
-        }
-
-        .cassette-bottom {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 15px;
-          font-size: 8px;
-          color: #171717;
-        }
-
-        .terminal {
-          background: #101410;
-          border: 1px solid #55524b;
-          min-height: 220px;
-          box-shadow: 8px 8px 0 #101010;
-        }
-
-        .terminal-header {
-          height: 30px;
-          border-bottom: 1px solid #55524b;
+        /* =========================
+           SYSTEM BAR
+        ========================= */
+
+        .system-bar {
+          height: 34px;
+          background: #55545c;
+          border-bottom: 2px solid #17171a;
+          color: #eee9df;
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0 12px;
-          color: #77736a;
-          font-size: 8px;
+          font-size: 9px;
+          position: relative;
+          z-index: 20;
+          box-shadow: 0 2px 0 rgba(255,255,255,.1);
         }
 
-        .terminal-body {
-          padding: 22px;
-          color: #a5b85c;
-          font-size: 10px;
-          line-height: 2;
-        }
-
-        .terminal-body p {
-          margin: 0;
-        }
-
-        .terminal-body b {
-          color: #d8d5c8;
-          font-weight: 400;
-        }
-
-        .terminal-final {
-          margin-top: 12px !important;
-          color: #d8d5c8;
-        }
-
-        .terminal-final i {
-          color: #a5b85c;
-          font-style: normal;
-          animation: blink .8s infinite;
-        }
-
-        /* -------------------------
-           FOOTER
-        ------------------------- */
-
-        footer {
-          border-top: 1px solid #55524b;
-          padding: 25px 0 35px;
+        .system-left,
+        .system-right {
           display: flex;
-          justify-content: space-between;
-          font-size: 8px;
-          color: #77736a;
+          align-items: center;
+          gap: 9px;
         }
 
-        .footer-left {
+        .windows-logo {
+          width: 17px;
+          height: 17px;
           display: flex;
-          gap: 20px;
+          align-items: center;
+          justify-content: center;
+          background: #8e82bd;
+          color: #242329;
+          font-weight: bold;
         }
 
-        .footer-center {
+        .system-divider {
+          opacity: .4;
+        }
+
+        .small-glitch {
+          color: #c3d17c;
+        }
+
+        .eject-button {
+          border: 0;
+          background: transparent;
+          color: #eee9df;
+          font-family: inherit;
+          font-size: 9px;
+          cursor: pointer;
+        }
+
+        .eject-button:hover {
+          color: #c7b8ef;
+        }
+
+
+        /* =========================
+           DESKTOP
+        ========================= */
+
+        .desktop {
+          width: min(1180px, calc(100% - 32px));
+          margin: 0 auto;
+          min-height: calc(100vh - 34px);
+          position: relative;
+          padding: 45px 0 30px;
+        }
+
+
+        .coordinates {
+          position: absolute;
+          top: 50px;
+          left: -20px;
+          color: #88858d;
           font-family: var(--font-pixel);
           font-size: 6px;
+          line-height: 2.1;
+          transform: rotate(-2deg);
+          opacity: .7;
         }
 
-        /* -------------------------
-           ANIMATIONS
-        ------------------------- */
-
-        @keyframes blink {
-          0%, 45% { opacity: 1; }
-          46%, 100% { opacity: .25; }
+        .barcode {
+          position: absolute;
+          top: 52px;
+          right: 15px;
+          width: 110px;
+          height: 30px;
+          display: flex;
+          align-items: stretch;
+          gap: 2px;
         }
 
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
+        .barcode span {
+          background: #d9d4ca;
+          width: 2px;
         }
 
-        @keyframes titleJitter {
-          0%, 94%, 100% {
+        .barcode span:nth-child(2) {
+          width: 5px;
+        }
+
+        .barcode span:nth-child(4) {
+          width: 3px;
+        }
+
+        .barcode span:nth-child(6) {
+          width: 5px;
+        }
+
+        .barcode small {
+          position: absolute;
+          top: 34px;
+          left: 0;
+          font-size: 6px;
+          color: #77747d;
+          letter-spacing: .1em;
+        }
+
+
+        /* =========================
+           WINDOWS
+        ========================= */
+
+        .hero-window,
+        .desktop-window,
+        .loading-window,
+        .message-popup,
+        .music-player {
+          border: 1px solid #17171a;
+          background: #d2d0d1;
+          color: #18181c;
+          box-shadow:
+            5px 6px 0 rgba(0,0,0,.32),
+            inset 1px 1px rgba(255,255,255,.7);
+        }
+
+        .window-titlebar,
+        .paint-titlebar,
+        .player-header,
+        .popup-titlebar {
+          height: 29px;
+          background:
+            linear-gradient(
+              90deg,
+              #4f4d88,
+              #71679d 65%,
+              #5b5886
+            );
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 7px;
+          font-size: 9px;
+          font-family: var(--font-space);
+          border-bottom: 2px solid #33324c;
+        }
+
+        .window-title {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          min-width: 0;
+        }
+
+        .window-icon {
+          width: 14px;
+          height: 14px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #eee9df;
+          color: #504b82;
+          font-size: 8px;
+          flex-shrink: 0;
+        }
+
+        .window-controls {
+          display: flex;
+          gap: 3px;
+          font-weight: bold;
+        }
+
+        .window-controls span {
+          width: 15px;
+          height: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #d0cfd1;
+          color: #26252a;
+          border: 1px solid #37363c;
+          font-size: 8px;
+        }
+
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero-window {
+          width: 82%;
+          margin: 45px auto 0;
+          position: relative;
+          transform: rotate(-.5deg);
+        }
+
+        .hero-content {
+          min-height: 420px;
+          padding: 30px;
+          display: grid;
+          grid-template-columns: 1fr 410px;
+          gap: 30px;
+          background:
+            linear-gradient(
+              135deg,
+              #29282e,
+              #35323c
+            );
+          color: #eee9df;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero-content::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(
+              rgba(255,255,255,.025) 1px,
+              transparent 1px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.025) 1px,
+              transparent 1px
+            );
+          background-size: 25px 25px;
+          pointer-events: none;
+        }
+
+        .hero-copy {
+          position: relative;
+          z-index: 2;
+          padding: 25px 10px;
+        }
+
+        .micro-copy {
+          font-family: var(--font-pixel);
+          font-size: 7px;
+          color: #a5a1aa;
+          margin-bottom: 30px;
+        }
+
+        .hero-prefix {
+          display: block;
+          font-family: var(--font-pixel);
+          font-size: 8px;
+          color: #aaa4c8;
+          margin-bottom: 12px;
+          letter-spacing: .12em;
+        }
+
+        .hero-name-wrap {
+          position: relative;
+        }
+
+        .glitch-name {
+          position: relative;
+          width: max-content;
+          max-width: 100%;
+          font-family: var(--font-orbitron);
+          font-size: clamp(55px, 8vw, 100px);
+          font-weight: 800;
+          letter-spacing: -.07em;
+          line-height: .9;
+          margin: 0;
+          color: #ddd8ee;
+          text-shadow:
+            3px 0 #8275ad,
+            -2px 0 #9b4c55;
+          animation: disappearGlitch 5.2s infinite;
+        }
+
+        .glitch-name::before,
+        .glitch-name::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+
+        .glitch-name::before {
+          color: #b8a7ee;
+          animation: glitchSliceOne 4.1s infinite;
+        }
+
+        .glitch-name::after {
+          color: #d2767d;
+          animation: glitchSliceTwo 3.3s infinite;
+        }
+
+        .hero-description {
+          width: min(330px, 100%);
+          margin-top: 28px;
+          color: #aaa7ad;
+          font-size: 11px;
+          line-height: 1.8;
+        }
+
+        .hero-buttons {
+          display: flex;
+          gap: 8px;
+          margin-top: 28px;
+        }
+
+        .fake-button {
+          background: #d7d3d0;
+          color: #27262a;
+          border: 2px outset #eee;
+          padding: 8px 13px;
+          font-family: var(--font-space);
+          font-size: 8px;
+        }
+
+        .fake-button.secondary {
+          background: #85809a;
+          color: white;
+        }
+
+
+        /* =========================
+           PAINT
+        ========================= */
+
+        .paint-window {
+          align-self: center;
+          background: #c8c7c9;
+          color: #16161a;
+          border: 2px outset #e8e8e8;
+          transform: rotate(1.5deg);
+          box-shadow: 7px 9px 0 rgba(0,0,0,.35);
+          position: relative;
+          z-index: 3;
+        }
+
+        .paint-toolbar {
+          width: 45px;
+          position: absolute;
+          top: 29px;
+          bottom: 27px;
+          left: 0;
+          background: #d4d3d5;
+          border-right: 1px solid #777;
+          display: grid;
+          grid-template-columns: 1fr;
+          padding: 5px;
+          gap: 4px;
+          z-index: 2;
+        }
+
+        .paint-toolbar span {
+          width: 28px;
+          height: 28px;
+          border: 1px solid #777;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          background: #e0dfe1;
+        }
+
+        .fake-image {
+          height: 300px;
+          margin-left: 45px;
+          position: relative;
+          overflow: hidden;
+          background:
+            radial-gradient(
+              circle at 70% 30%,
+              rgba(218,193,243,.9),
+              transparent 17%
+            ),
+            radial-gradient(
+              circle at 30% 70%,
+              rgba(115,130,184,.8),
+              transparent 35%
+            ),
+            linear-gradient(
+              135deg,
+              #534e7d,
+              #8b7ca8,
+              #525e88
+            );
+        }
+
+        .fake-image::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            repeating-linear-gradient(
+              90deg,
+              transparent,
+              transparent 8px,
+              rgba(255,255,255,.04) 9px
+            );
+        }
+
+        .fake-sun {
+          position: absolute;
+          font-size: 100px;
+          color: #e1d6ef;
+          left: 30px;
+          bottom: 25px;
+          opacity: .7;
+        }
+
+        .fake-orbit {
+          position: absolute;
+          font-size: 170px;
+          right: -25px;
+          top: -20px;
+          color: rgba(220,202,242,.35);
+        }
+
+        .fake-star {
+          position: absolute;
+          top: 50px;
+          right: 70px;
+          color: #eee6ff;
+          font-size: 35px;
+          animation: starFlicker 3s infinite;
+        }
+
+        .fake-image-text {
+          position: absolute;
+          left: 30px;
+          top: 25px;
+          display: flex;
+          flex-direction: column;
+          z-index: 2;
+          color: white;
+          font-family: var(--font-pixel);
+        }
+
+        .fake-image-text span {
+          font-size: 7px;
+        }
+
+        .fake-image-text strong {
+          font-family: var(--font-orbitron);
+          font-size: 60px;
+          opacity: .8;
+        }
+
+        .paint-palette {
+          margin-left: 45px;
+          height: 27px;
+          display: flex;
+          gap: 2px;
+          padding: 5px;
+          background: #d5d4d6;
+        }
+
+        .paint-palette span {
+          width: 17px;
+          height: 15px;
+          background: #71659d;
+          border: 1px solid #777;
+        }
+
+        .paint-palette span:nth-child(2n) {
+          background: #8d86b9;
+        }
+
+        .paint-palette span:nth-child(3n) {
+          background: #c6a8d9;
+        }
+
+
+        /* =========================
+           CD
+        ========================= */
+
+        .floating-cd {
+          position: absolute;
+          right: 2%;
+          top: 430px;
+          z-index: 8;
+          transform: rotate(14deg);
+        }
+
+        .cd-disc {
+          width: 185px;
+          height: 185px;
+          border-radius: 50%;
+          position: relative;
+          background:
+            conic-gradient(
+              #9c93c5,
+              #d9c9e7,
+              #6c7da8,
+              #bda5d1,
+              #8478ae,
+              #e3d4e9,
+              #9c93c5
+            );
+          box-shadow: 4px 8px 20px rgba(0,0,0,.4);
+        }
+
+        .cd-disc::before {
+          content: "";
+          position: absolute;
+          inset: 12px;
+          border-radius: 50%;
+          border: 1px solid rgba(255,255,255,.5);
+        }
+
+        .cd-disc::after {
+          content: "";
+          position: absolute;
+          inset: 45%;
+          border-radius: 50%;
+          background: #28272d;
+          border: 2px solid #bbb5bd;
+        }
+
+        .cd-rainbow {
+          position: absolute;
+          inset: 0;
+          border-radius: 50%;
+          background:
+            linear-gradient(
+              130deg,
+              transparent 35%,
+              rgba(255,255,255,.5) 46%,
+              transparent 55%
+            );
+        }
+
+        .cd-centre {
+          position: absolute;
+          inset: 50%;
+          transform: translate(-50%, -50%);
+          width: 90px;
+          height: 90px;
+          border-radius: 50%;
+          background: #74669d;
+          color: white;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 2;
+          font-family: var(--font-pixel);
+          font-size: 7px;
+        }
+
+        .cd-centre small {
+          margin-top: 8px;
+          font-family: var(--font-space);
+        }
+
+        .cd-label {
+          margin-top: 8px;
+          font-family: var(--font-pixel);
+          font-size: 6px;
+          color: #aaa5ad;
+          text-align: center;
+        }
+
+
+        /* =========================
+           MUSIC PLAYER
+        ========================= */
+
+        .music-player {
+          position: absolute;
+          left: -15px;
+          top: 620px;
+          width: 300px;
+          z-index: 10;
+          transform: rotate(-2deg);
+        }
+
+        .player-body {
+          padding: 13px;
+          display: flex;
+          gap: 12px;
+          background: #c9c8ca;
+        }
+
+        .album-placeholder {
+          width: 70px;
+          height: 70px;
+          background:
+            linear-gradient(
+              135deg,
+              #7067a0,
+              #c4a7d2
+            );
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 32px;
+          border: 1px solid #777;
+        }
+
+        .track-info {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 6px;
+          min-width: 0;
+        }
+
+        .player-label {
+          font-size: 6px;
+          color: #6e6a71;
+          font-family: var(--font-pixel);
+        }
+
+        .track-info strong {
+          font-size: 12px;
+          font-family: var(--font-orbitron);
+        }
+
+        .track-info span:last-child {
+          font-size: 7px;
+          color: #66636b;
+        }
+
+        .player-progress {
+          margin: 0 13px;
+          height: 7px;
+          background: #77747c;
+          border: 1px inset white;
+        }
+
+        .player-progress span {
+          display: block;
+          width: 48%;
+          height: 100%;
+          background: #62598e;
+        }
+
+        .player-controls {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          padding: 11px;
+          font-size: 10px;
+        }
+
+
+        /* =========================
+           POPUP
+        ========================= */
+
+        .message-popup {
+          position: absolute;
+          right: 0;
+          top: 730px;
+          width: 320px;
+          z-index: 12;
+          transform: rotate(1.2deg);
+        }
+
+        .popup-body {
+          padding: 20px;
+          display: flex;
+          gap: 15px;
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .popup-warning {
+          width: 35px;
+          height: 35px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #a5a0b8;
+          font-family: var(--font-pixel);
+          font-size: 17px;
+        }
+
+        .popup-body p {
+          margin: 0 0 8px;
+        }
+
+        .popup-buttons {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .popup-buttons button {
+          min-width: 65px;
+          padding: 5px 10px;
+          background: #d5d4d6;
+          border: 2px outset #eee;
+          font-family: inherit;
+          font-size: 8px;
+        }
+
+
+        /* =========================
+           DIRECTORY
+        ========================= */
+
+        .directory {
+          margin-top: 100px;
+          padding-top: 35px;
+        }
+
+        .directory-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          border-bottom: 1px solid #55525f;
+          padding-bottom: 15px;
+          margin-bottom: 25px;
+        }
+
+        .directory-kicker {
+          font-family: var(--font-pixel);
+          font-size: 7px;
+          color: #97919f;
+        }
+
+        .directory-heading h2 {
+          font-family: var(--font-orbitron);
+          font-size: clamp(30px, 5vw, 60px);
+          line-height: .9;
+          margin: 10px 0 0;
+          letter-spacing: -.08em;
+          color: #d6d0e3;
+        }
+
+        .directory-meta {
+          font-size: 8px;
+          color: #817d87;
+          line-height: 1.8;
+          text-align: right;
+        }
+
+        .file-layout {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 28px 25px;
+        }
+
+        .desktop-window {
+          text-decoration: none;
+          transition:
+            transform .18s ease,
+            filter .18s ease;
+        }
+
+        .desktop-window:nth-child(2) {
+          transform: rotate(1deg);
+        }
+
+        .desktop-window:nth-child(3) {
+          transform: rotate(-.7deg);
+        }
+
+        .desktop-window:nth-child(4) {
+          transform: rotate(1.4deg);
+        }
+
+        .desktop-window:nth-child(5) {
+          transform: rotate(-1deg);
+        }
+
+        .desktop-window:nth-child(6) {
+          transform: rotate(.7deg);
+        }
+
+        .desktop-window:hover {
+          transform:
+            translateY(-8px)
+            rotate(0deg)
+            scale(1.015);
+          filter: brightness(1.08);
+          z-index: 5;
+        }
+
+        .file-content {
+          min-height: 170px;
+          padding: 20px;
+          display: grid;
+          grid-template-columns: 35px 55px 1fr 25px;
+          gap: 15px;
+          align-items: center;
+          position: relative;
+          background: #d0ced0;
+        }
+
+        .file-number {
+          align-self: start;
+          font-family: var(--font-pixel);
+          font-size: 7px;
+          color: #79757b;
+        }
+
+        .file-symbol {
+          width: 55px;
+          height: 55px;
+          border: 1px solid #67636c;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #aaa6b5;
+          color: #4d4675;
+          font-size: 22px;
+        }
+
+        .file-text h3 {
+          margin: 0 0 8px;
+          font-family: var(--font-orbitron);
+          font-size: 18px;
+          letter-spacing: -.04em;
+          color: #34313a;
+        }
+
+        .file-text p {
+          margin: 0;
+          color: #68636d;
+          font-size: 8px;
+          line-height: 1.5;
+        }
+
+        .file-arrow {
+          font-size: 20px;
+          color: #5e577f;
+        }
+
+        .window-footer {
+          background: #b8b6ba;
+          border-top: 1px solid #777;
+          padding: 7px 10px;
+          font-size: 6px;
+          color: #68636d;
+          text-transform: uppercase;
+        }
+
+
+        /* =========================
+           BOTTOM
+        ========================= */
+
+        .bottom-collage {
+          min-height: 300px;
+          margin-top: 90px;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .cassette {
+          width: 290px;
+          height: 170px;
+          padding: 16px;
+          background: #76727c;
+          border: 2px solid #39373d;
+          box-shadow: 8px 10px 0 rgba(0,0,0,.35);
+          transform: rotate(-5deg);
+          position: absolute;
+          left: 12%;
+        }
+
+        .cassette-top {
+          background: #e0d7cc;
+          color: #403b45;
+          padding: 9px;
+          font-family: var(--font-pixel);
+          font-size: 7px;
+        }
+
+        .cassette-window {
+          height: 65px;
+          margin-top: 14px;
+          background: #27262a;
+          display: flex;
+          align-items: center;
+          justify-content: space-around;
+        }
+
+        .cassette-reel {
+          width: 43px;
+          height: 43px;
+          border: 5px dotted #aaa4ad;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .cassette-reel span {
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: #aaa4ad;
+        }
+
+        .cassette-tape {
+          width: 80px;
+          height: 7px;
+          background: #77727f;
+        }
+
+        .cassette-text {
+          margin-top: 9px;
+          font-size: 7px;
+          color: #302e34;
+        }
+
+        .loading-window {
+          width: 350px;
+          transform: rotate(2deg);
+          z-index: 2;
+        }
+
+        .loading-body {
+          padding: 25px;
+          font-size: 9px;
+        }
+
+        .loading-bar {
+          height: 20px;
+          margin: 18px 0 10px;
+          border: 2px inset #eee;
+          background: #aaa8aa;
+          padding: 2px;
+        }
+
+        .loading-bar span {
+          display: block;
+          height: 100%;
+          width: 67%;
+          background:
+            repeating-linear-gradient(
+              90deg,
+              #57517f 0 12px,
+              #8b81b1 12px 15px
+            );
+        }
+
+        .loading-body small {
+          font-size: 7px;
+          color: #66636a;
+        }
+
+        .sticker {
+          position: absolute;
+          font-family: var(--font-orbitron);
+          font-weight: 900;
+          z-index: 5;
+        }
+
+        .sticker-one {
+          right: 15%;
+          top: 20px;
+          font-size: 42px;
+          color: #8c82b5;
+          transform: rotate(-9deg);
+        }
+
+        .sticker-two {
+          right: 5%;
+          bottom: 30px;
+          font-size: 70px;
+          color: #c3a8d7;
+          transform: rotate(15deg);
+        }
+
+        .sticker-three {
+          left: 4%;
+          bottom: 20px;
+          color: #b65d64;
+          font-size: 11px;
+          border: 1px solid #b65d64;
+          padding: 8px;
+          transform: rotate(-8deg);
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+          margin-top: 60px;
+          padding: 20px 0 30px;
+          border-top: 1px solid #55525f;
+          display: flex;
+          justify-content: space-between;
+          gap: 20px;
+          color: #77737e;
+          font-size: 7px;
+          font-family: var(--font-pixel);
+        }
+
+
+        /* =========================
+           GLITCH
+        ========================= */
+
+        .glitch-text {
+          position: relative;
+          animation: disappearGlitch 5.7s infinite;
+        }
+
+        @keyframes disappearGlitch {
+
+          0%,
+          74%,
+          100% {
+            opacity: 1;
             transform: translate(0);
+            filter: none;
           }
-          95% {
-            transform: translate(-2px, 1px);
-          }
-          96% {
-            transform: translate(3px, -1px);
-          }
-          97% {
-            transform: translate(0);
-          }
-        }
 
-        @keyframes glitchA {
-          0%, 88%, 100% {
-            opacity: 0;
+          75% {
+            opacity: .15;
           }
-          89% {
-            opacity: .7;
-            clip-path: inset(20% 0 62% 0);
-          }
-          91% {
-            opacity: 0;
-          }
-        }
 
-        @keyframes glitchB {
-          0%, 78%, 100% {
+          76% {
             opacity: 0;
+            transform: translate(-5px, 2px);
           }
+
+          77% {
+            opacity: 1;
+            transform: translate(4px, -1px);
+            filter: blur(.5px);
+          }
+
+          78% {
+            opacity: .35;
+            transform: translate(-2px, 0);
+          }
+
           79% {
-            opacity: .6;
-            clip-path: inset(65% 0 12% 0);
+            opacity: 1;
+            transform: translate(0);
+            filter: none;
           }
+        }
+
+        @keyframes glitchSliceOne {
+
+          0%,
+          79%,
+          100% {
+            opacity: 0;
+            clip-path: inset(0 0 100% 0);
+          }
+
+          80% {
+            opacity: .8;
+            clip-path: inset(15% 0 60% 0);
+            transform: translate(-5px);
+          }
+
+          82% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes glitchSliceTwo {
+
+          0%,
+          68%,
+          100% {
+            opacity: 0;
+            clip-path: inset(100% 0 0 0);
+          }
+
+          69% {
+            opacity: .8;
+            clip-path: inset(65% 0 15% 0);
+            transform: translate(5px);
+          }
+
+          71% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes starFlicker {
+
+          0%,
+          80%,
+          100% {
+            opacity: 1;
+          }
+
           81% {
             opacity: 0;
           }
-        }
 
-        @keyframes tracking {
-          0%, 80%, 100% {
-            transform: translateY(0);
-          }
           82% {
-            transform: translateY(7px);
+            opacity: .2;
           }
-          84% {
-            transform: translateY(-4px);
-          }
-        }
 
-        @keyframes screenFlicker {
-          0%, 96%, 100% {
+          83% {
             opacity: 1;
           }
-          97% {
-            opacity: .3;
-          }
-          98% {
-            opacity: .9;
-          }
         }
 
-        /* -------------------------
+
+        /* =========================
            MOBILE
-        ------------------------- */
+        ========================= */
 
         @media (max-width: 800px) {
 
-          .topbar {
-            padding: 0 14px;
-          }
-
-          .topbar-center {
-            display: none;
-          }
-
-          .page-shell {
-            width: min(100% - 24px, 600px);
-          }
-
-          .hero {
-            padding-top: 35px;
-          }
-
-          .hero-meta {
+          .system-bar {
             font-size: 7px;
           }
 
-          .hero-main {
-            grid-template-columns: 1fr;
-            gap: 50px;
-          }
-
-          .glitch-title {
-            font-size: clamp(82px, 26vw, 150px);
-          }
-
-          .cd {
-            width: 210px;
-            height: 210px;
-          }
-
-          .cd-label {
-            width: 82px;
-            height: 82px;
-          }
-
-          .vhs-player {
-            grid-template-columns: 1fr;
-          }
-
-          .vhs-left {
+          .system-left span:nth-child(3),
+          .system-left span:nth-child(4) {
             display: none;
           }
 
-          .vhs-controls {
-            border-left: 0;
-            border-top: 1px solid #55524b;
-            padding: 12px;
+          .desktop {
+            width: calc(100% - 20px);
+            padding-top: 25px;
           }
 
-          .intro-grid {
-            grid-template-columns: 80px 1fr;
+          .coordinates,
+          .barcode {
+            display: none;
           }
 
-          .intro-number {
-            font-size: 45px;
-            padding: 20px 12px;
+          .hero-window {
+            width: 100%;
+            margin-top: 30px;
           }
 
-          .intro-copy {
+          .hero-content {
+            grid-template-columns: 1fr;
+            min-height: auto;
             padding: 20px;
           }
 
-          .date-stamp {
-            grid-column: 1 / -1;
-            border-left: 0;
-            border-top: 1px solid #55524b;
-            padding: 15px;
+          .hero-copy {
+            padding: 15px 5px;
           }
 
-          .section-heading {
+          .glitch-name {
+            font-size: clamp(55px, 18vw, 90px);
+          }
+
+          .paint-window {
+            width: 90%;
+            margin: 0 auto;
+          }
+
+          .fake-image {
+            height: 230px;
+          }
+
+          .floating-cd {
+            position: relative;
+            top: auto;
+            right: auto;
+            width: max-content;
+            margin: -20px 20px 0 auto;
+            transform: rotate(12deg) scale(.75);
+          }
+
+          .music-player {
+            position: relative;
+            top: auto;
+            left: auto;
+            width: 85%;
+            margin: 30px 0 0;
+          }
+
+          .message-popup {
+            position: relative;
+            top: auto;
+            right: auto;
+            width: 90%;
+            margin: 30px auto 0;
+          }
+
+          .directory {
+            margin-top: 70px;
+          }
+
+          .directory-heading {
             align-items: flex-start;
-            flex-direction: column;
-            gap: 18px;
           }
 
-          .directory-status {
-            font-size: 7px;
-          }
-
-          .file-grid {
+          .file-layout {
             grid-template-columns: 1fr;
           }
 
-          .file-card {
-            min-height: 190px;
+          .desktop-window:nth-child(n) {
+            transform: none;
           }
 
-          .media-deck {
-            grid-template-columns: 1fr;
+          .desktop-window:hover {
+            transform: translateY(-5px);
+          }
+
+          .file-content {
+            min-height: 150px;
+          }
+
+          .bottom-collage {
+            min-height: 420px;
+          }
+
+          .cassette {
+            left: 0;
+            top: 20px;
+          }
+
+          .loading-window {
+            width: 90%;
+            margin-top: 80px;
+          }
+
+          .sticker-one {
+            right: 0;
+            top: 10px;
+          }
+
+          .sticker-two {
+            right: 0;
+            bottom: 30px;
           }
 
           footer {
-            flex-wrap: wrap;
-            gap: 20px;
+            flex-direction: column;
           }
 
-          .footer-center {
-            order: 3;
-            width: 100%;
-          }
         }
 
       `}</style>
+
     </main>
   )
 }
