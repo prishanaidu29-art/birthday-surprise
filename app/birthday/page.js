@@ -1,663 +1,637 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  Orbitron,
-  Space_Mono,
-  Press_Start_2P,
-} from 'next/font/google'
+import { useRouter } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
-
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-orbitron',
-})
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-space',
-})
-
-const pixel = Press_Start_2P({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-pixel',
-})
-
-const sections = [
-  {
-    no: '01',
-    title: 'MEMORIES',
-    subtitle: 'photos / places / evidence',
-    code: 'IMG_ARCHIVE',
-    icon: '◉',
-    href: '/birthday/memories',
-    className: 'memory-window',
-  },
-  {
-    no: '02',
-    title: 'MESSAGES',
-    subtitle: 'things people wanted to say',
-    code: 'TXT_ARCHIVE',
-    icon: '✉',
-    href: '/birthday/messages',
-    className: 'message-window',
-  },
-  {
-    no: '03',
-    title: 'SOUNDTRACK',
-    subtitle: 'songs about you',
-    code: 'AUDIO_DISC',
-    icon: '♫',
-    href: '/birthday/playlist',
-    className: 'music-window',
-  },
-  {
-    no: '04',
-    title: 'CHAOS',
-    subtitle: 'shits & giggles',
-    code: 'ERROR_LOG',
-    icon: '!',
-    href: '/birthday/games',
-    className: 'chaos-window',
-  },
-  {
-    no: '05',
-    title: 'QUIZ',
-    subtitle: 'prove you actually know us',
-    code: 'GAME.EXE',
-    icon: '?',
-    href: '/birthday/quiz',
-    className: 'quiz-window',
-  },
-  {
-    no: '06',
-    title: 'JOURNEY',
-    subtitle: 'everywhere somehow led here',
-    code: 'SAVE_FILE',
-    icon: '⌁',
-    href: '/birthday/journey',
-    className: 'journey-window',
-  },
-]
 
 export default function BirthdayPage() {
   const router = useRouter()
 
+  const [windows, setWindows] = useState({
+    welcome: true,
+    archive: true,
+    system: true,
+    player: true,
+    files: true,
+  })
+
+  const [eggFound, setEggFound] = useState(null)
+  const [showEggPopup, setShowEggPopup] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [bootTime, setBootTime] = useState(0)
+
   useEffect(() => {
-    const authenticated = sessionStorage.getItem(
-      'birthday_authenticated'
-    )
+    const authenticated = sessionStorage.getItem('birthday_authenticated')
 
     if (authenticated !== 'true') {
-      router.replace('/')
+      router.push('/')
+      return
     }
+
+    setBootTime(Date.now())
+
+    const timer = setTimeout(() => {
+      setBootTime(Date.now())
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [router])
 
-  const logout = () => {
+  const sections = [
+    {
+      number: '01',
+      title: 'MEMORIES',
+      subtitle: 'photos / places / moments',
+      icon: '📸',
+      link: '/birthday/memories',
+      colour: 'purple',
+    },
+    {
+      number: '02',
+      title: 'MESSAGES',
+      subtitle: 'things people wanted you to know',
+      icon: '💌',
+      link: '/birthday/messages',
+      colour: 'pink',
+    },
+    {
+      number: '03',
+      title: 'SOUNDTRACK',
+      subtitle: 'songs that remind us of you',
+      icon: '💿',
+      link: '/birthday/playlist',
+      colour: 'blue',
+    },
+    {
+      number: '04',
+      title: 'THE CHAOS',
+      subtitle: 'shits / giggles / questionable decisions',
+      icon: '☢',
+      link: '/birthday/games',
+      colour: 'green',
+    },
+    {
+      number: '05',
+      title: 'THE QUIZ',
+      subtitle: 'let us see how well you actually know us',
+      icon: '❔',
+      link: '/birthday/quiz',
+      colour: 'yellow',
+    },
+    {
+      number: '06',
+      title: 'THE JOURNEY',
+      subtitle: 'everywhere somehow led to here',
+      icon: '✈',
+      link: '/birthday/journey',
+      colour: 'red',
+    },
+  ]
+
+  function toggleWindow(name) {
+    setWindows((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }))
+  }
+
+  function logout() {
     sessionStorage.removeItem('birthday_authenticated')
     router.push('/')
   }
 
+  function discoverEgg(number) {
+    setEggFound(number)
+    setShowEggPopup(true)
+  }
+
   return (
-    <main
-      className={`
-        ${orbitron.variable}
-        ${spaceMono.variable}
-        ${pixel.variable}
-        birthday-page
-      `}
-    >
+    <main className="desktop">
 
-      {/* GLOBAL GLITCH / CRT LAYERS */}
-      <div className="noise" />
+      {/* =====================================================
+          CRT / VHS BACKGROUND
+      ===================================================== */}
+
+      <div className="crt-noise" />
       <div className="scanlines" />
-      <div className="screen-vignette" />
+      <div className="vhs-bars" />
 
-      {/* TOP COMPUTER BAR */}
+      <div className="background-grid" />
 
-      <div className="system-bar">
+      {/* floating pixels */}
+      <div className="pixel p1" />
+      <div className="pixel p2" />
+      <div className="pixel p3" />
+      <div className="pixel p4" />
 
-        <div className="system-left">
-          <span className="windows-logo">
-            ◈
-          </span>
+      {/* =====================================================
+          TOP COMPUTER BAR
+      ===================================================== */}
 
-          <span>
-            CLAR_OS
-          </span>
+      <header className="computer-bar">
 
-          <span className="system-divider">
-            /
-          </span>
-
-          <span className="glitch-text small-glitch">
-            CONNECTED
-          </span>
+        <div className="computer-brand">
+          <span className="brand-dot" />
+          CLAR_OS
+          <span className="version">v2.22</span>
         </div>
 
-        <div className="system-right">
-          <span>
-            29.05.2004
-          </span>
-
-          <span className="system-divider">
-            |
-          </span>
-
-          <button
-            onClick={logout}
-            className="eject-button"
-          >
-            EJECT
-          </button>
+        <div className="computer-status">
+          MEMORY ARCHIVE // ONLINE
         </div>
 
-      </div>
+        <button
+          className="exit-button"
+          onClick={logout}
+        >
+          EXIT ↗
+        </button>
 
-      <div className="desktop">
-
-        {/* BACKGROUND METADATA */}
-
-        <div className="coordinates">
-          <div>
-            // FILE: CLAR_22
-          </div>
-          <div>
-            // STATUS: OPEN
-          </div>
-          <div>
-            // FORMAT: CD-ROM
-          </div>
-        </div>
-
-        <div className="barcode">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <small>
-            2205290401
-          </small>
-        </div>
+      </header>
 
 
-        {/* MAIN HERO WINDOW */}
+      {/* =====================================================
+          MAIN DESKTOP
+      ===================================================== */}
 
-        <section className="hero-window">
+      <section className="desktop-area">
 
-          <div className="window-titlebar">
+        {/* ===================================================
+            WELCOME WINDOW
+        =================================================== */}
 
-            <div className="window-title">
-              <span className="window-icon">
-                ★
-              </span>
+        {windows.welcome && (
+          <div className="window welcome-window">
 
-              untitled - CLAR.exe
-            </div>
+            <WindowHeader
+              title="WELCOME.TXT"
+              colour="purple"
+              onClose={() => toggleWindow('welcome')}
+            />
 
-            <div className="window-controls">
-              <span>_</span>
-              <span>□</span>
-              <span>×</span>
-            </div>
+            <div className="window-content">
 
-          </div>
-
-          <div className="hero-content">
-
-            <div className="hero-copy">
-
-              <div className="micro-copy">
-                // PERSONAL ARCHIVE
+              <div className="tiny-label">
+                USER DETECTED
               </div>
 
-              <div className="hero-name-wrap">
+              <h1 className="welcome-title glitch" data-text="WELCOME, CLAR">
+                WELCOME, CLAR
+              </h1>
 
-                <span className="hero-prefix">
-                  HAPPY BIRTHDAY,
-                </span>
-
-                <h1
-                  className="glitch-name"
-                  data-text="CLAR"
-                >
-                  CLAR
-                </h1>
-
-              </div>
-
-              <p className="hero-description">
-                a badly organised digital archive
-                of a person who has somehow made it
-                this far
+              <p className="welcome-subtitle">
+                SUBJECT: YOU
               </p>
 
-              <div className="hero-buttons">
+              <div className="terminal-message">
+                <span className="terminal-symbol">&gt;</span>
 
-                <span className="fake-button">
-                  ▶ PLAY
+                <span>
+                  congratulations.
+                  <br />
+                  you somehow made it into the archive.
+                  <br />
+                  please investigate responsibly.
                 </span>
 
-                <span className="fake-button secondary">
-                  OPEN FILE
-                </span>
+              </div>
 
+              <div className="blink-line">
+                █ SYSTEM READY █
               </div>
 
             </div>
 
+          </div>
+        )}
 
-            {/* FAKE IMAGE WINDOW */}
 
-            <div className="paint-window">
+        {/* ===================================================
+            ARCHIVE WINDOW
+        =================================================== */}
 
-              <div className="paint-titlebar">
-                <span>
-                  untitled - Paint
-                </span>
+        {windows.archive && (
+          <div className="window archive-window">
 
-                <span>
-                  _ □ ×
-                </span>
-              </div>
+            <WindowHeader
+              title="ARCHIVE.EXE"
+              colour="pink"
+              onClose={() => toggleWindow('archive')}
+            />
 
-              <div className="paint-toolbar">
+            <div className="window-content">
 
-                <span>✎</span>
-                <span>▣</span>
-                <span>⌕</span>
-                <span>◯</span>
-                <span>╱</span>
+              <div className="archive-heading">
 
-              </div>
-
-              <div className="fake-image">
-
-                <div className="fake-sun">
-                  ☼
-                </div>
-
-                <div className="fake-orbit">
-                  ◯
-                </div>
-
-                <div className="fake-star">
-                  ✦
-                </div>
-
-                <div className="fake-image-text">
-                  <span>
-                    ARCHIVE
+                <div>
+                  <span className="tiny-label">
+                    PRIVATE ARCHIVE
                   </span>
 
-                  <strong>
-                    22
-                  </strong>
+                  <h2 className="archive-title glitch" data-text="THE CLAR FILES">
+                    THE CLAR FILES
+                  </h2>
+                </div>
+
+                <div className="archive-counter">
+                  06 FILES
                 </div>
 
               </div>
 
-              <div className="paint-palette">
-                {Array.from({ length: 18 }).map(
-                  (_, i) => (
-                    <span key={i} />
-                  )
-                )}
+
+              <div className="section-grid">
+
+                {sections.map((section) => (
+
+                  <Link
+                    href={section.link}
+                    key={section.number}
+                    className={`archive-file ${section.colour}`}
+                  >
+
+                    <div className="file-number">
+                      {section.number}
+                    </div>
+
+                    <div className="file-icon">
+                      {section.icon}
+                    </div>
+
+                    <div className="file-info">
+
+                      <div className="file-name">
+                        {section.title}
+                      </div>
+
+                      <div className="file-description">
+                        {section.subtitle}
+                      </div>
+
+                    </div>
+
+                    <div className="file-arrow">
+                      ↗
+                    </div>
+
+                  </Link>
+
+                ))}
+
               </div>
 
             </div>
 
           </div>
-
-        </section>
-
-
-        {/* CD */}
-
-        <div className="floating-cd">
-
-          <div className="cd-disc">
-
-            <div className="cd-rainbow" />
-
-            <div className="cd-centre">
-              <span>
-                CLAR
-              </span>
-              <small>
-                MIX 01
-              </small>
-            </div>
-
-          </div>
-
-          <div className="cd-label">
-            TRACK 01 / 06
-          </div>
-
-        </div>
+        )}
 
 
-        {/* MINI MEDIA PLAYER */}
+        {/* ===================================================
+            SYSTEM MONITOR
+        =================================================== */}
 
-        <div className="music-player">
+        {windows.system && (
+          <div className="window system-window">
 
-          <div className="player-header">
-            <span>
-              ◉ CD PLAYER
-            </span>
+            <WindowHeader
+              title="SYSTEM_MONITOR"
+              colour="green"
+              onClose={() => toggleWindow('system')}
+            />
 
-            <span>
-              _ □ ×
-            </span>
-          </div>
+            <div className="system-content">
 
-          <div className="player-body">
-
-            <div className="album-placeholder">
-              <span>
-                ♪
-              </span>
-            </div>
-
-            <div className="track-info">
-
-              <span className="player-label">
-                NOW PLAYING
-              </span>
-
-              <strong className="glitch-text">
-                BIRTHDAY.EXE
-              </strong>
-
-              <span>
-                CLAR / TRACK 01
-              </span>
-
-            </div>
-
-          </div>
-
-          <div className="player-progress">
-            <span />
-          </div>
-
-          <div className="player-controls">
-            <span>◀◀</span>
-            <span>▶</span>
-            <span>▶▶</span>
-            <span>↻</span>
-          </div>
-
-        </div>
-
-
-        {/* MESSAGE POPUP */}
-
-        <div className="message-popup">
-
-          <div className="popup-titlebar">
-            <span>
-              System Message
-            </span>
-
-            <span>
-              ×
-            </span>
-          </div>
-
-          <div className="popup-body">
-
-            <div className="popup-warning">
-              !
-            </div>
-
-            <div>
-              <p>
-                Dear Player,
-              </p>
-
-              <p>
-                Are you sure you want
-                to continue being 22?
-              </p>
-
-              <div className="popup-buttons">
-                <button>
-                  OK
-                </button>
-
-                <button>
-                  CANCEL
-                </button>
+              <div className="system-line">
+                <span>ARCHIVE STATUS</span>
+                <b>ONLINE</b>
               </div>
+
+              <div className="system-line">
+                <span>MEMORIES</span>
+                <b>LOADED</b>
+              </div>
+
+              <div className="system-line">
+                <span>CHAOS LEVEL</span>
+                <b className="chaos">
+                  ████████░░
+                </b>
+              </div>
+
+              <div className="system-line">
+                <span>SECRETS</span>
+                <b className="danger">
+                  02 DETECTED
+                </b>
+              </div>
+
+              <div className="system-line">
+                <span>USER</span>
+                <b>CLAR</b>
+              </div>
+
             </div>
 
           </div>
+        )}
 
+
+        {/* ===================================================
+            CD / MUSIC WINDOW
+        =================================================== */}
+
+        {windows.player && (
+          <div className="window player-window">
+
+            <WindowHeader
+              title="CD_PLAYER.EXE"
+              colour="blue"
+              onClose={() => toggleWindow('player')}
+            />
+
+            <div className="player-content">
+
+              <div className="cd-area">
+
+                <div className="cd">
+                  <div className="cd-shine" />
+                  <div className="cd-hole" />
+                  <div className="cd-label">
+                    CLAR
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="song-info">
+
+                <span className="tiny-label">
+                  NOW PLAYING
+                </span>
+
+                <div className="song-title">
+                  birthday_archive.mp3
+                </div>
+
+                <div className="song-artist">
+                  &lt; insert song here &gt;
+                </div>
+
+                <div className="equalizer">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+
+                <audio
+                  id="archive-audio"
+                  controls
+                  className="audio-player"
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                >
+                  <source
+                    src="/audio/main-song.mp3"
+                    type="audio/mpeg"
+                  />
+                </audio>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+
+        {/* ===================================================
+            FILES WINDOW
+        =================================================== */}
+
+        {windows.files && (
+          <div className="window files-window">
+
+            <WindowHeader
+              title="MY_FILES"
+              colour="yellow"
+              onClose={() => toggleWindow('files')}
+            />
+
+            <div className="files-content">
+
+              <div className="mini-file">
+                <span>📁</span>
+                <small>FEETGANG</small>
+              </div>
+
+              <div className="mini-file">
+                <span>📁</span>
+                <small>EGGS</small>
+              </div>
+
+              <div className="mini-file">
+                <span>📁</span>
+                <small>GRADUATION</small>
+              </div>
+
+              <div className="mini-file">
+                <span>📁</span>
+                <small>DO_NOT_OPEN</small>
+              </div>
+
+              <div className="mini-file">
+                <span>💾</span>
+                <small>MEMORIES.DAT</small>
+              </div>
+
+              <div className="mini-file">
+                <span>📼</span>
+                <small>VIDEO_001</small>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+
+        {/* ===================================================
+            HIDDEN EASTER EGG #1
+        =================================================== */}
+
+        <button
+          className="hidden-secret secret-one"
+          onClick={() => discoverEgg(1)}
+          aria-label="Hidden Easter egg"
+        >
+          <span>→</span>
+        </button>
+
+
+        {/* ===================================================
+            HIDDEN EASTER EGG #2
+        =================================================== */}
+
+        <button
+          className="hidden-secret secret-two"
+          onClick={() => discoverEgg(2)}
+          aria-label="Hidden Easter egg"
+        >
+          <span>+</span>
+        </button>
+
+
+        {/* ===================================================
+            FLOATING GLITCH TEXT
+        =================================================== */}
+
+        <div className="floating-text floating-one glitch">
+          DO YOU REMEMBER?
+        </div>
+
+        <div className="floating-text floating-two">
+          [ SEARCHING... ]
+        </div>
+
+        <div className="floating-text floating-three glitch">
+          22 YEARS FOUND
+        </div>
+
+        <div className="floating-text floating-four">
+          // FILE CORRUPTED //
         </div>
 
 
-        {/* MAIN DIRECTORY */}
+        {/* ===================================================
+            DECORATIVE PHOTO POLAROIDS
+        =================================================== */}
 
-        <section className="directory">
+        <div className="polaroid polaroid-one">
+          <div className="photo-placeholder">
+            PHOTO_001
+          </div>
+          <span>???</span>
+        </div>
 
-          <div className="directory-heading">
+        <div className="polaroid polaroid-two">
+          <div className="photo-placeholder">
+            PHOTO_002
+          </div>
+          <span>ARCHIVE</span>
+        </div>
 
-            <div>
 
-              <span className="directory-kicker">
-                MY COMPUTER / CLAR_ARCHIVE
-              </span>
+        {/* ===================================================
+            BOTTOM STATUS
+        =================================================== */}
 
-              <h2 className="glitch-text">
-                FILES
+        <div className="bottom-console">
+
+          <span>
+            MEMORY SYSTEM ONLINE
+          </span>
+
+          <span className="console-middle">
+            ◉ ◉ ◉
+          </span>
+
+          <span>
+            {isPlaying ? 'PLAYING AUDIO' : 'STANDBY'}
+          </span>
+
+        </div>
+
+      </section>
+
+
+      {/* =====================================================
+          EASTER EGG POPUP
+      ===================================================== */}
+
+      {showEggPopup && (
+
+        <div className="egg-overlay">
+
+          <div className="egg-window">
+
+            <div className="egg-header">
+              SECRET_FILE.EXE
+
+              <button
+                onClick={() => setShowEggPopup(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="egg-body">
+
+              <div className="egg-icon">
+                ★
+              </div>
+
+              <div className="egg-glitch">
+                CONGRATS
+              </div>
+
+              <h2>
+                YOU FOUND YOUR{' '}
+                {eggFound === 1 ? 'FIRST' : 'SECOND'} EASTER EGG
               </h2>
 
-            </div>
-
-            <div className="directory-meta">
-              6 OBJECTS
-              <br />
-              1.42 GB
-            </div>
-
-          </div>
-
-
-          <div className="file-layout">
-
-            {sections.map((section, index) => (
-
-              <Link
-                key={section.no}
-                href={section.href}
-                className={`desktop-window ${section.className}`}
-              >
-
-                <div className="window-titlebar">
-
-                  <div className="window-title">
-
-                    <span className="window-icon">
-                      {section.icon}
-                    </span>
-
-                    {section.code}
-
-                  </div>
-
-                  <div className="window-controls">
-                    <span>_</span>
-                    <span>□</span>
-                    <span>×</span>
-                  </div>
-
-                </div>
-
-
-                <div className="file-content">
-
-                  <div className="file-number">
-                    {section.no}
-                  </div>
-
-                  <div className="file-symbol">
-                    {section.icon}
-                  </div>
-
-                  <div className="file-text">
-
-                    <h3
-                      className={
-                        index === 2 || index === 4
-                          ? 'glitch-text'
-                          : ''
-                      }
-                    >
-                      {section.title}
-                    </h3>
-
-                    <p>
-                      {section.subtitle}
-                    </p>
-
-                  </div>
-
-                  <span className="file-arrow">
-                    ↗
-                  </span>
-
-                </div>
-
-                <div className="window-footer">
-                  double click to open
-                </div>
-
-              </Link>
-
-            ))}
-
-          </div>
-
-        </section>
-
-
-        {/* BOTTOM COLLAGE */}
-
-        <section className="bottom-collage">
-
-          {/* CASSETTE */}
-
-          <div className="cassette">
-
-            <div className="cassette-top">
-              MIXTAPE
-            </div>
-
-            <div className="cassette-window">
-
-              <div className="cassette-reel">
-                <span />
-              </div>
-
-              <div className="cassette-tape" />
-
-              <div className="cassette-reel">
-                <span />
-              </div>
-
-            </div>
-
-            <div className="cassette-text">
-              CLAR // SIDE A
-            </div>
-
-          </div>
-
-
-          {/* LOADING WINDOW */}
-
-          <div className="loading-window">
-
-            <div className="window-titlebar">
-
-              <span>
-                Processing...
-              </span>
-
-              <span>
-                ×
-              </span>
-
-            </div>
-
-            <div className="loading-body">
-
               <p>
-                Loading birthday memories...
+                Apparently you actually pay attention.
               </p>
 
-              <div className="loading-bar">
-                <span />
-              </div>
+              <div className="egg-divider" />
 
-              <small>
-                Please wait...
-              </small>
+              <p className="play-question">
+                Play audio?
+              </p>
+
+              <audio
+                controls
+                autoPlay
+                className="egg-audio"
+              >
+                <source
+                  src={
+                    eggFound === 1
+                      ? '/audio/easter-egg-1.mp3'
+                      : '/audio/easter-egg-2.mp3'
+                  }
+                  type="audio/mpeg"
+                />
+              </audio>
+
+              <button
+                className="close-egg"
+                onClick={() => setShowEggPopup(false)}
+              >
+                CLOSE FILE
+              </button>
 
             </div>
 
           </div>
 
+        </div>
 
-          {/* RANDOM STICKERS */}
-
-          <div className="sticker sticker-one">
-            555
-          </div>
-
-          <div className="sticker sticker-two">
-            ✦
-          </div>
-
-          <div className="sticker sticker-three">
-            ERROR
-          </div>
-
-        </section>
+      )}
 
 
-        {/* FOOTER */}
-
-        <footer>
-
-          <span>
-            CLAR_ARCHIVE © 2004—2026
-          </span>
-
-          <span>
-            MADE WITH QUESTIONABLE DECISIONS
-          </span>
-
-          <span>
-            [ SYSTEM READY ]
-          </span>
-
-        </footer>
-
-      </div>
-
+      {/* =====================================================
+          GLOBAL STYLES
+      ===================================================== */}
 
       <style jsx global>{`
 
@@ -669,1342 +643,1237 @@ export default function BirthdayPage() {
         body {
           margin: 0;
           padding: 0;
-          background: #242329;
+          background: #09070d;
         }
 
         body {
-          font-family: var(--font-space), monospace;
-        }
-
-        a {
-          color: inherit;
+          overflow-x: hidden;
         }
 
 
-        /* =========================
-           BASE
-        ========================= */
+        /* ===================================================
+           DESKTOP
+        =================================================== */
 
-        .birthday-page {
+        .desktop {
           min-height: 100vh;
-          color: #eee9df;
           background:
             radial-gradient(
-              circle at 18% 15%,
-              rgba(133,119,190,.17),
-              transparent 25%
+              circle at 20% 20%,
+              rgba(110, 67, 180, .25),
+              transparent 28%
             ),
             radial-gradient(
-              circle at 85% 60%,
-              rgba(82,103,150,.13),
+              circle at 80% 70%,
+              rgba(91, 43, 130, .25),
               transparent 30%
             ),
-            #242329;
-          overflow-x: hidden;
+            linear-gradient(
+              135deg,
+              #110d19,
+              #191426 45%,
+              #0b0910
+            );
+
+          color: #eee7ff;
           position: relative;
+          overflow: hidden;
+          font-family:
+            "Courier New",
+            monospace;
         }
 
 
-        /* =========================
+        /* ===================================================
            CRT
-        ========================= */
+        =================================================== */
 
-        .noise {
+        .crt-noise {
           position: fixed;
           inset: 0;
-          z-index: 100;
           pointer-events: none;
-          opacity: .06;
+          z-index: 100;
+          opacity: .09;
+
           background-image:
-            url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.7'/%3E%3C/svg%3E");
+            repeating-radial-gradient(
+              circle at 0 0,
+              rgba(255,255,255,.4) 0,
+              rgba(255,255,255,.4) 1px,
+              transparent 1px,
+              transparent 3px
+            );
+
+          mix-blend-mode: screen;
         }
 
         .scanlines {
           position: fixed;
           inset: 0;
-          z-index: 99;
           pointer-events: none;
-          opacity: .08;
+          z-index: 101;
+
           background:
             repeating-linear-gradient(
-              0deg,
-              transparent 0px,
-              transparent 3px,
-              rgba(255,255,255,.16) 4px
+              to bottom,
+              rgba(255,255,255,.035) 0px,
+              rgba(255,255,255,.035) 1px,
+              transparent 1px,
+              transparent 4px
             );
         }
 
-        .screen-vignette {
+        .vhs-bars {
+          position: fixed;
+          left: 0;
+          right: 0;
+          top: 48%;
+          height: 2px;
+          background: #c76cff;
+          opacity: .08;
+          animation: vhsJump 5s infinite;
+          pointer-events: none;
+          z-index: 102;
+        }
+
+        @keyframes vhsJump {
+          0% { transform: translateY(0); }
+          20% { transform: translateY(-120px); }
+          21% { transform: translateY(0); }
+          65% { transform: translateY(90px); }
+          66% { transform: translateY(0); }
+          100% { transform: translateY(0); }
+        }
+
+
+        /* ===================================================
+           GRID
+        =================================================== */
+
+        .background-grid {
           position: fixed;
           inset: 0;
           pointer-events: none;
-          z-index: 98;
-          background:
-            radial-gradient(
-              ellipse at center,
-              transparent 55%,
-              rgba(0,0,0,.4)
-            );
-        }
+          opacity: .12;
 
-
-        /* =========================
-           SYSTEM BAR
-        ========================= */
-
-        .system-bar {
-          height: 34px;
-          background: #55545c;
-          border-bottom: 2px solid #17171a;
-          color: #eee9df;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 12px;
-          font-size: 9px;
-          position: relative;
-          z-index: 20;
-          box-shadow: 0 2px 0 rgba(255,255,255,.1);
-        }
-
-        .system-left,
-        .system-right {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-        }
-
-        .windows-logo {
-          width: 17px;
-          height: 17px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #8e82bd;
-          color: #242329;
-          font-weight: bold;
-        }
-
-        .system-divider {
-          opacity: .4;
-        }
-
-        .small-glitch {
-          color: #c3d17c;
-        }
-
-        .eject-button {
-          border: 0;
-          background: transparent;
-          color: #eee9df;
-          font-family: inherit;
-          font-size: 9px;
-          cursor: pointer;
-        }
-
-        .eject-button:hover {
-          color: #c7b8ef;
-        }
-
-
-        /* =========================
-           DESKTOP
-        ========================= */
-
-        .desktop {
-          width: min(1180px, calc(100% - 32px));
-          margin: 0 auto;
-          min-height: calc(100vh - 34px);
-          position: relative;
-          padding: 45px 0 30px;
-        }
-
-
-        .coordinates {
-          position: absolute;
-          top: 50px;
-          left: -20px;
-          color: #88858d;
-          font-family: var(--font-pixel);
-          font-size: 6px;
-          line-height: 2.1;
-          transform: rotate(-2deg);
-          opacity: .7;
-        }
-
-        .barcode {
-          position: absolute;
-          top: 52px;
-          right: 15px;
-          width: 110px;
-          height: 30px;
-          display: flex;
-          align-items: stretch;
-          gap: 2px;
-        }
-
-        .barcode span {
-          background: #d9d4ca;
-          width: 2px;
-        }
-
-        .barcode span:nth-child(2) {
-          width: 5px;
-        }
-
-        .barcode span:nth-child(4) {
-          width: 3px;
-        }
-
-        .barcode span:nth-child(6) {
-          width: 5px;
-        }
-
-        .barcode small {
-          position: absolute;
-          top: 34px;
-          left: 0;
-          font-size: 6px;
-          color: #77747d;
-          letter-spacing: .1em;
-        }
-
-
-        /* =========================
-           WINDOWS
-        ========================= */
-
-        .hero-window,
-        .desktop-window,
-        .loading-window,
-        .message-popup,
-        .music-player {
-          border: 1px solid #17171a;
-          background: #d2d0d1;
-          color: #18181c;
-          box-shadow:
-            5px 6px 0 rgba(0,0,0,.32),
-            inset 1px 1px rgba(255,255,255,.7);
-        }
-
-        .window-titlebar,
-        .paint-titlebar,
-        .player-header,
-        .popup-titlebar {
-          height: 29px;
-          background:
-            linear-gradient(
-              90deg,
-              #4f4d88,
-              #71679d 65%,
-              #5b5886
-            );
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 7px;
-          font-size: 9px;
-          font-family: var(--font-space);
-          border-bottom: 2px solid #33324c;
-        }
-
-        .window-title {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-          min-width: 0;
-        }
-
-        .window-icon {
-          width: 14px;
-          height: 14px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: #eee9df;
-          color: #504b82;
-          font-size: 8px;
-          flex-shrink: 0;
-        }
-
-        .window-controls {
-          display: flex;
-          gap: 3px;
-          font-weight: bold;
-        }
-
-        .window-controls span {
-          width: 15px;
-          height: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #d0cfd1;
-          color: #26252a;
-          border: 1px solid #37363c;
-          font-size: 8px;
-        }
-
-
-        /* =========================
-           HERO
-        ========================= */
-
-        .hero-window {
-          width: 82%;
-          margin: 45px auto 0;
-          position: relative;
-          transform: rotate(-.5deg);
-        }
-
-        .hero-content {
-          min-height: 420px;
-          padding: 30px;
-          display: grid;
-          grid-template-columns: 1fr 410px;
-          gap: 30px;
-          background:
-            linear-gradient(
-              135deg,
-              #29282e,
-              #35323c
-            );
-          color: #eee9df;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .hero-content::before {
-          content: "";
-          position: absolute;
-          inset: 0;
           background-image:
             linear-gradient(
-              rgba(255,255,255,.025) 1px,
+              rgba(180,120,255,.2) 1px,
               transparent 1px
             ),
             linear-gradient(
               90deg,
-              rgba(255,255,255,.025) 1px,
+              rgba(180,120,255,.2) 1px,
               transparent 1px
             );
-          background-size: 25px 25px;
+
+          background-size: 45px 45px;
+          transform: perspective(500px) rotateX(60deg)
+            scale(1.5) translateY(180px);
+          transform-origin: bottom;
+        }
+
+
+        /* ===================================================
+           PIXELS
+        =================================================== */
+
+        .pixel {
+          position: fixed;
+          width: 7px;
+          height: 7px;
+          background: #bf6cff;
+          box-shadow: 0 0 15px #bf6cff;
+          animation: pixelFloat 4s infinite ease-in-out;
           pointer-events: none;
         }
 
-        .hero-copy {
+        .p1 {
+          top: 22%;
+          left: 5%;
+        }
+
+        .p2 {
+          top: 75%;
+          right: 8%;
+          animation-delay: 1s;
+        }
+
+        .p3 {
+          top: 30%;
+          right: 4%;
+          animation-delay: 2s;
+        }
+
+        .p4 {
+          bottom: 8%;
+          left: 40%;
+          animation-delay: 3s;
+        }
+
+        @keyframes pixelFloat {
+          0%,100% {
+            transform: translate(0,0);
+            opacity: .25;
+          }
+
+          50% {
+            transform: translate(10px,-20px);
+            opacity: 1;
+          }
+        }
+
+
+        /* ===================================================
+           COMPUTER BAR
+        =================================================== */
+
+        .computer-bar {
+          height: 52px;
+          border-bottom: 1px solid rgba(183,111,255,.3);
+          background: rgba(12,9,18,.85);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 18px;
           position: relative;
-          z-index: 2;
-          padding: 25px 10px;
+          z-index: 20;
+          box-shadow: 0 0 30px rgba(160,70,255,.15);
         }
 
-        .micro-copy {
-          font-family: var(--font-pixel);
-          font-size: 7px;
-          color: #a5a1aa;
-          margin-bottom: 30px;
+        .computer-brand {
+          color: #d18cff;
+          font-size: 11px;
+          letter-spacing: .2em;
+          text-shadow: 0 0 10px #a94dff;
         }
 
-        .hero-prefix {
-          display: block;
-          font-family: var(--font-pixel);
+        .brand-dot {
+          width: 7px;
+          height: 7px;
+          display: inline-block;
+          background: #7dffbc;
+          margin-right: 8px;
+          border-radius: 50%;
+          box-shadow: 0 0 12px #7dffbc;
+        }
+
+        .version {
+          color: #696070;
+          margin-left: 8px;
+        }
+
+        .computer-status {
+          color: #70677b;
           font-size: 8px;
-          color: #aaa4c8;
-          margin-bottom: 12px;
-          letter-spacing: .12em;
+          letter-spacing: .2em;
         }
 
-        .hero-name-wrap {
-          position: relative;
+        .exit-button {
+          border: 1px solid #45394f;
+          color: #a99bad;
+          background: transparent;
+          padding: 7px 12px;
+          font-family: inherit;
+          font-size: 9px;
+          cursor: pointer;
+          transition: .2s;
         }
 
-        .glitch-name {
+        .exit-button:hover {
+          color: white;
+          border-color: #bc70ff;
+          box-shadow: 0 0 15px rgba(188,112,255,.4);
+        }
+
+
+        /* ===================================================
+           DESKTOP AREA
+        =================================================== */
+
+        .desktop-area {
           position: relative;
-          width: max-content;
-          max-width: 100%;
-          font-family: var(--font-orbitron);
-          font-size: clamp(55px, 8vw, 100px);
-          font-weight: 800;
-          letter-spacing: -.07em;
-          line-height: .9;
-          margin: 0;
-          color: #ddd8ee;
+          min-height: calc(100vh - 52px);
+          padding: 25px;
+          max-width: 1450px;
+          margin: auto;
+        }
+
+
+        /* ===================================================
+           WINDOWS
+        =================================================== */
+
+        .window {
+          position: absolute;
+          background: rgba(18,13,27,.94);
+          border: 1px solid #593b69;
+          box-shadow:
+            0 0 0 1px rgba(0,0,0,.8),
+            0 15px 40px rgba(0,0,0,.55),
+            0 0 30px rgba(135,65,190,.12);
+
+          backdrop-filter: blur(8px);
+          overflow: hidden;
+        }
+
+        .window:hover {
+          border-color: #9d5bd1;
+        }
+
+        .window::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            repeating-linear-gradient(
+              0deg,
+              transparent,
+              transparent 3px,
+              rgba(255,255,255,.015) 4px
+            );
+        }
+
+
+        .window-header {
+          height: 31px;
+          background: #21182a;
+          border-bottom: 1px solid #493550;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 9px;
+          font-size: 8px;
+          letter-spacing: .15em;
+          color: #c7b8ce;
+        }
+
+        .window-controls {
+          display: flex;
+          gap: 5px;
+        }
+
+        .window-control {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+        }
+
+        .control-purple {
+          background: #c579ff;
+          box-shadow: 0 0 7px #c579ff;
+        }
+
+        .control-pink {
+          background: #ff6fae;
+          box-shadow: 0 0 7px #ff6fae;
+        }
+
+        .control-green {
+          background: #6dffb1;
+          box-shadow: 0 0 7px #6dffb1;
+        }
+
+        .control-blue {
+          background: #65cfff;
+          box-shadow: 0 0 7px #65cfff;
+        }
+
+        .control-yellow {
+          background: #ffe26d;
+          box-shadow: 0 0 7px #ffe26d;
+        }
+
+        .close-window {
+          background: none;
+          border: none;
+          color: #8d7f94;
+          cursor: pointer;
+          font-family: inherit;
+        }
+
+        .close-window:hover {
+          color: white;
+        }
+
+
+        /* ===================================================
+           WINDOW POSITIONS
+        =================================================== */
+
+        .welcome-window {
+          top: 35px;
+          left: 35px;
+          width: 390px;
+          z-index: 5;
+        }
+
+        .archive-window {
+          top: 190px;
+          left: 310px;
+          width: min(720px, calc(100% - 390px));
+          z-index: 8;
+        }
+
+        .system-window {
+          top: 70px;
+          right: 45px;
+          width: 245px;
+          z-index: 4;
+        }
+
+        .player-window {
+          right: 60px;
+          top: 350px;
+          width: 300px;
+          z-index: 9;
+        }
+
+        .files-window {
+          left: 40px;
+          bottom: 70px;
+          width: 330px;
+          z-index: 10;
+        }
+
+
+        /* ===================================================
+           WELCOME
+        =================================================== */
+
+        .window-content {
+          padding: 22px;
+        }
+
+        .tiny-label {
+          color: #786a84;
+          font-size: 8px;
+          letter-spacing: .25em;
+        }
+
+        .welcome-title {
+          margin: 15px 0 5px;
+          color: #e7cfff;
+          font-family: "Courier New", monospace;
+          font-size: 28px;
+          letter-spacing: .08em;
           text-shadow:
-            3px 0 #8275ad,
-            -2px 0 #9b4c55;
-          animation: disappearGlitch 5.2s infinite;
+            0 0 8px rgba(200,130,255,.7);
         }
 
-        .glitch-name::before,
-        .glitch-name::after {
+        .welcome-subtitle {
+          color: #ff77b9;
+          font-size: 9px;
+          letter-spacing: .2em;
+        }
+
+        .terminal-message {
+          margin-top: 20px;
+          display: flex;
+          gap: 9px;
+          color: #aaa0ae;
+          font-size: 11px;
+          line-height: 1.8;
+        }
+
+        .terminal-symbol {
+          color: #72ffb5;
+        }
+
+        .blink-line {
+          margin-top: 20px;
+          color: #72ffb5;
+          font-size: 9px;
+          animation: blink 1.1s infinite;
+        }
+
+        @keyframes blink {
+          0%, 45% { opacity: 1; }
+          46%, 100% { opacity: .25; }
+        }
+
+
+        /* ===================================================
+           ARCHIVE
+        =================================================== */
+
+        .archive-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: end;
+          margin-bottom: 20px;
+        }
+
+        .archive-title {
+          margin: 6px 0 0;
+          font-size: 25px;
+          letter-spacing: .1em;
+          color: #eadcff;
+        }
+
+        .archive-counter {
+          color: #66596c;
+          font-size: 8px;
+          letter-spacing: .15em;
+        }
+
+        .section-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 9px;
+        }
+
+        .archive-file {
+          min-height: 105px;
+          position: relative;
+          padding: 13px;
+          border: 1px solid #352a3d;
+          background: #151018;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: inherit;
+          text-decoration: none;
+          transition: .2s;
+          overflow: hidden;
+        }
+
+        .archive-file:hover {
+          transform: translateY(-3px);
+          border-color: #a85dca;
+          background: #21162b;
+          box-shadow:
+            0 0 20px rgba(190,90,255,.2);
+        }
+
+        .file-number {
+          position: absolute;
+          top: 5px;
+          right: 7px;
+          color: #413646;
+          font-size: 7px;
+        }
+
+        .file-icon {
+          width: 45px;
+          height: 45px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #241a2b;
+          border: 1px solid #453651;
+          font-size: 20px;
+          flex-shrink: 0;
+        }
+
+        .file-name {
+          color: #ded0e6;
+          font-size: 12px;
+          letter-spacing: .1em;
+        }
+
+        .file-description {
+          color: #716678;
+          font-size: 8px;
+          margin-top: 6px;
+          line-height: 1.5;
+        }
+
+        .file-arrow {
+          margin-left: auto;
+          color: #624a6e;
+          font-size: 16px;
+        }
+
+        .archive-file:hover .file-arrow {
+          color: #db8cff;
+          transform: translate(3px,-3px);
+        }
+
+
+        /* ===================================================
+           SYSTEM
+        =================================================== */
+
+        .system-content {
+          padding: 15px;
+        }
+
+        .system-line {
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 1px dashed #342a38;
+          padding: 8px 0;
+          font-size: 8px;
+          color: #756b7b;
+        }
+
+        .system-line b {
+          color: #72ffb5;
+          font-weight: normal;
+        }
+
+        .system-line .chaos {
+          color: #ffcf6e;
+        }
+
+        .system-line .danger {
+          color: #ff70a9;
+        }
+
+
+        /* ===================================================
+           CD PLAYER
+        =================================================== */
+
+        .player-content {
+          display: flex;
+          padding: 18px;
+          gap: 18px;
+          align-items: center;
+        }
+
+        .cd-area {
+          width: 100px;
+          height: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .cd {
+          width: 85px;
+          height: 85px;
+          border-radius: 50%;
+
+          background:
+            conic-gradient(
+              #26202b,
+              #d3c6df,
+              #493652,
+              #bba7c9,
+              #26202b
+            );
+
+          border: 2px solid #8f7b99;
+          position: relative;
+
+          animation: cdSpin 2.7s linear infinite;
+
+          box-shadow:
+            0 0 18px rgba(190,120,255,.25);
+        }
+
+        @keyframes cdSpin {
+          from {
+            transform: rotate(0deg);
+          }
+
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .cd-hole {
+          width: 18px;
+          height: 18px;
+          background: #17111d;
+          border: 2px solid #a18ba9;
+          border-radius: 50%;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%,-50%);
+        }
+
+        .cd-label {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%,-50%);
+          color: #2a2030;
+          font-size: 7px;
+          font-weight: bold;
+        }
+
+        .song-info {
+          flex: 1;
+        }
+
+        .song-title {
+          color: #e1d4e7;
+          margin-top: 8px;
+          font-size: 11px;
+        }
+
+        .song-artist {
+          color: #716578;
+          font-size: 8px;
+          margin-top: 4px;
+        }
+
+        .equalizer {
+          display: flex;
+          gap: 3px;
+          height: 25px;
+          align-items: end;
+          margin: 15px 0;
+        }
+
+        .equalizer i {
+          display: block;
+          width: 3px;
+          background: #a45bff;
+          animation: equalize .7s infinite alternate;
+        }
+
+        .equalizer i:nth-child(1) { height: 30%; }
+        .equalizer i:nth-child(2) { height: 70%; animation-delay: .1s; }
+        .equalizer i:nth-child(3) { height: 45%; animation-delay: .2s; }
+        .equalizer i:nth-child(4) { height: 90%; animation-delay: .3s; }
+        .equalizer i:nth-child(5) { height: 60%; animation-delay: .15s; }
+        .equalizer i:nth-child(6) { height: 85%; animation-delay: .25s; }
+        .equalizer i:nth-child(7) { height: 40%; animation-delay: .35s; }
+        .equalizer i:nth-child(8) { height: 75%; animation-delay: .2s; }
+        .equalizer i:nth-child(9) { height: 50%; animation-delay: .1s; }
+        .equalizer i:nth-child(10) { height: 80%; animation-delay: .3s; }
+
+        @keyframes equalize {
+          from { transform: scaleY(.35); }
+          to { transform: scaleY(1); }
+        }
+
+        .audio-player {
+          width: 100%;
+          height: 30px;
+          margin-top: 5px;
+          filter: sepia(.4) hue-rotate(220deg) saturate(1.5);
+        }
+
+
+        /* ===================================================
+           FILES
+        =================================================== */
+
+        .files-content {
+          padding: 15px;
+          display: grid;
+          grid-template-columns: repeat(3,1fr);
+          gap: 14px;
+        }
+
+        .mini-file {
+          text-align: center;
+          cursor: pointer;
+          transition: .2s;
+        }
+
+        .mini-file:hover {
+          transform: translateY(-4px);
+          filter: drop-shadow(0 0 8px #c16bff);
+        }
+
+        .mini-file span {
+          display: block;
+          font-size: 27px;
+        }
+
+        .mini-file small {
+          display: block;
+          color: #82778b;
+          font-size: 6px;
+          margin-top: 5px;
+          word-break: break-word;
+        }
+
+
+        /* ===================================================
+           GLITCH
+        =================================================== */
+
+        .glitch {
+          position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
           content: attr(data-text);
           position: absolute;
           inset: 0;
           pointer-events: none;
         }
 
-        .glitch-name::before {
-          color: #b8a7ee;
-          animation: glitchSliceOne 4.1s infinite;
+        .glitch::before {
+          color: #ff3b9d;
+          transform: translate(-2px,0);
+          clip-path: inset(0 0 55% 0);
+          animation: glitchOne 3.5s infinite;
         }
 
-        .glitch-name::after {
-          color: #d2767d;
-          animation: glitchSliceTwo 3.3s infinite;
+        .glitch::after {
+          color: #43d9ff;
+          transform: translate(2px,0);
+          clip-path: inset(55% 0 0 0);
+          animation: glitchTwo 2.8s infinite;
         }
 
-        .hero-description {
-          width: min(330px, 100%);
-          margin-top: 28px;
-          color: #aaa7ad;
-          font-size: 11px;
-          line-height: 1.8;
+        @keyframes glitchOne {
+          0%, 90%, 100% {
+            transform: translate(0);
+            opacity: 0;
+          }
+
+          91% {
+            transform: translate(-4px,-2px);
+            opacity: 1;
+          }
+
+          94% {
+            transform: translate(3px,1px);
+            opacity: 1;
+          }
+
+          97% {
+            opacity: 0;
+          }
         }
 
-        .hero-buttons {
-          display: flex;
-          gap: 8px;
-          margin-top: 28px;
+        @keyframes glitchTwo {
+          0%, 85%, 100% {
+            transform: translate(0);
+            opacity: 0;
+          }
+
+          86% {
+            transform: translate(4px,2px);
+            opacity: 1;
+          }
+
+          89% {
+            transform: translate(-3px,-1px);
+            opacity: 1;
+          }
+
+          92% {
+            opacity: 0;
+          }
         }
 
-        .fake-button {
-          background: #d7d3d0;
-          color: #27262a;
-          border: 2px outset #eee;
-          padding: 8px 13px;
-          font-family: var(--font-space);
-          font-size: 8px;
-        }
 
-        .fake-button.secondary {
-          background: #85809a;
-          color: white;
-        }
+        /* ===================================================
+           FLOATING TEXT
+        =================================================== */
 
-
-        /* =========================
-           PAINT
-        ========================= */
-
-        .paint-window {
-          align-self: center;
-          background: #c8c7c9;
-          color: #16161a;
-          border: 2px outset #e8e8e8;
-          transform: rotate(1.5deg);
-          box-shadow: 7px 9px 0 rgba(0,0,0,.35);
-          position: relative;
-          z-index: 3;
-        }
-
-        .paint-toolbar {
-          width: 45px;
+        .floating-text {
           position: absolute;
-          top: 29px;
-          bottom: 27px;
-          left: 0;
-          background: #d4d3d5;
-          border-right: 1px solid #777;
-          display: grid;
-          grid-template-columns: 1fr;
-          padding: 5px;
-          gap: 4px;
-          z-index: 2;
-        }
-
-        .paint-toolbar span {
-          width: 28px;
-          height: 28px;
-          border: 1px solid #777;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          background: #e0dfe1;
-        }
-
-        .fake-image {
-          height: 300px;
-          margin-left: 45px;
-          position: relative;
-          overflow: hidden;
-          background:
-            radial-gradient(
-              circle at 70% 30%,
-              rgba(218,193,243,.9),
-              transparent 17%
-            ),
-            radial-gradient(
-              circle at 30% 70%,
-              rgba(115,130,184,.8),
-              transparent 35%
-            ),
-            linear-gradient(
-              135deg,
-              #534e7d,
-              #8b7ca8,
-              #525e88
-            );
-        }
-
-        .fake-image::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background:
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 8px,
-              rgba(255,255,255,.04) 9px
-            );
-        }
-
-        .fake-sun {
-          position: absolute;
-          font-size: 100px;
-          color: #e1d6ef;
-          left: 30px;
-          bottom: 25px;
-          opacity: .7;
-        }
-
-        .fake-orbit {
-          position: absolute;
-          font-size: 170px;
-          right: -25px;
-          top: -20px;
-          color: rgba(220,202,242,.35);
-        }
-
-        .fake-star {
-          position: absolute;
-          top: 50px;
-          right: 70px;
-          color: #eee6ff;
-          font-size: 35px;
-          animation: starFlicker 3s infinite;
-        }
-
-        .fake-image-text {
-          position: absolute;
-          left: 30px;
-          top: 25px;
-          display: flex;
-          flex-direction: column;
-          z-index: 2;
-          color: white;
-          font-family: var(--font-pixel);
-        }
-
-        .fake-image-text span {
+          color: #5f5268;
           font-size: 7px;
+          letter-spacing: .2em;
+          pointer-events: none;
         }
 
-        .fake-image-text strong {
-          font-family: var(--font-orbitron);
-          font-size: 60px;
-          opacity: .8;
+        .floating-one {
+          top: 5%;
+          left: 48%;
         }
 
-        .paint-palette {
-          margin-left: 45px;
-          height: 27px;
-          display: flex;
-          gap: 2px;
-          padding: 5px;
-          background: #d5d4d6;
+        .floating-two {
+          bottom: 17%;
+          right: 4%;
+          animation: fadeText 3s infinite;
         }
 
-        .paint-palette span {
-          width: 17px;
-          height: 15px;
-          background: #71659d;
-          border: 1px solid #777;
+        .floating-three {
+          top: 65%;
+          left: 4%;
+          color: #6f5d78;
         }
 
-        .paint-palette span:nth-child(2n) {
-          background: #8d86b9;
+        .floating-four {
+          bottom: 5%;
+          right: 40%;
+          color: #4f4654;
         }
 
-        .paint-palette span:nth-child(3n) {
-          background: #c6a8d9;
+        @keyframes fadeText {
+          0%,100% { opacity: .15; }
+          50% { opacity: .8; }
         }
 
 
-        /* =========================
-           CD
-        ========================= */
+        /* ===================================================
+           POLAROIDS
+        =================================================== */
 
-        .floating-cd {
+        .polaroid {
           position: absolute;
-          right: 2%;
-          top: 430px;
-          z-index: 8;
-          transform: rotate(14deg);
-        }
-
-        .cd-disc {
-          width: 185px;
-          height: 185px;
-          border-radius: 50%;
-          position: relative;
-          background:
-            conic-gradient(
-              #9c93c5,
-              #d9c9e7,
-              #6c7da8,
-              #bda5d1,
-              #8478ae,
-              #e3d4e9,
-              #9c93c5
-            );
-          box-shadow: 4px 8px 20px rgba(0,0,0,.4);
-        }
-
-        .cd-disc::before {
-          content: "";
-          position: absolute;
-          inset: 12px;
-          border-radius: 50%;
-          border: 1px solid rgba(255,255,255,.5);
-        }
-
-        .cd-disc::after {
-          content: "";
-          position: absolute;
-          inset: 45%;
-          border-radius: 50%;
-          background: #28272d;
-          border: 2px solid #bbb5bd;
-        }
-
-        .cd-rainbow {
-          position: absolute;
-          inset: 0;
-          border-radius: 50%;
-          background:
-            linear-gradient(
-              130deg,
-              transparent 35%,
-              rgba(255,255,255,.5) 46%,
-              transparent 55%
-            );
-        }
-
-        .cd-centre {
-          position: absolute;
-          inset: 50%;
-          transform: translate(-50%, -50%);
-          width: 90px;
-          height: 90px;
-          border-radius: 50%;
-          background: #74669d;
-          color: white;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          z-index: 2;
-          font-family: var(--font-pixel);
-          font-size: 7px;
-        }
-
-        .cd-centre small {
-          margin-top: 8px;
-          font-family: var(--font-space);
-        }
-
-        .cd-label {
-          margin-top: 8px;
-          font-family: var(--font-pixel);
+          padding: 7px 7px 13px;
+          background: #d5c9d9;
+          color: #201823;
+          width: 115px;
+          box-shadow: 0 12px 30px rgba(0,0,0,.5);
           font-size: 6px;
-          color: #aaa5ad;
           text-align: center;
         }
 
-
-        /* =========================
-           MUSIC PLAYER
-        ========================= */
-
-        .music-player {
-          position: absolute;
-          left: -15px;
-          top: 620px;
-          width: 300px;
-          z-index: 10;
-          transform: rotate(-2deg);
-        }
-
-        .player-body {
-          padding: 13px;
-          display: flex;
-          gap: 12px;
-          background: #c9c8ca;
-        }
-
-        .album-placeholder {
-          width: 70px;
-          height: 70px;
+        .photo-placeholder {
+          height: 100px;
           background:
             linear-gradient(
               135deg,
-              #7067a0,
-              #c4a7d2
+              #31253b,
+              #756183
             );
           display: flex;
           align-items: center;
           justify-content: center;
-          color: white;
-          font-size: 32px;
-          border: 1px solid #777;
-        }
-
-        .track-info {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 6px;
-          min-width: 0;
-        }
-
-        .player-label {
-          font-size: 6px;
-          color: #6e6a71;
-          font-family: var(--font-pixel);
-        }
-
-        .track-info strong {
-          font-size: 12px;
-          font-family: var(--font-orbitron);
-        }
-
-        .track-info span:last-child {
+          color: #d9c7e3;
           font-size: 7px;
-          color: #66636b;
         }
 
-        .player-progress {
-          margin: 0 13px;
-          height: 7px;
-          background: #77747c;
-          border: 1px inset white;
-        }
-
-        .player-progress span {
+        .polaroid span {
           display: block;
-          width: 48%;
-          height: 100%;
-          background: #62598e;
+          margin-top: 8px;
         }
 
-        .player-controls {
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-          padding: 11px;
-          font-size: 10px;
-        }
-
-
-        /* =========================
-           POPUP
-        ========================= */
-
-        .message-popup {
-          position: absolute;
-          right: 0;
-          top: 730px;
-          width: 320px;
-          z-index: 12;
-          transform: rotate(1.2deg);
-        }
-
-        .popup-body {
-          padding: 20px;
-          display: flex;
-          gap: 15px;
-          font-size: 10px;
-          line-height: 1.5;
-        }
-
-        .popup-warning {
-          width: 35px;
-          height: 35px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #a5a0b8;
-          font-family: var(--font-pixel);
-          font-size: 17px;
-        }
-
-        .popup-body p {
-          margin: 0 0 8px;
-        }
-
-        .popup-buttons {
-          display: flex;
-          justify-content: center;
-          gap: 10px;
-          margin-top: 15px;
-        }
-
-        .popup-buttons button {
-          min-width: 65px;
-          padding: 5px 10px;
-          background: #d5d4d6;
-          border: 2px outset #eee;
-          font-family: inherit;
-          font-size: 8px;
-        }
-
-
-        /* =========================
-           DIRECTORY
-        ========================= */
-
-        .directory {
-          margin-top: 100px;
-          padding-top: 35px;
-        }
-
-        .directory-heading {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          border-bottom: 1px solid #55525f;
-          padding-bottom: 15px;
-          margin-bottom: 25px;
-        }
-
-        .directory-kicker {
-          font-family: var(--font-pixel);
-          font-size: 7px;
-          color: #97919f;
-        }
-
-        .directory-heading h2 {
-          font-family: var(--font-orbitron);
-          font-size: clamp(30px, 5vw, 60px);
-          line-height: .9;
-          margin: 10px 0 0;
-          letter-spacing: -.08em;
-          color: #d6d0e3;
-        }
-
-        .directory-meta {
-          font-size: 8px;
-          color: #817d87;
-          line-height: 1.8;
-          text-align: right;
-        }
-
-        .file-layout {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 28px 25px;
-        }
-
-        .desktop-window {
-          text-decoration: none;
-          transition:
-            transform .18s ease,
-            filter .18s ease;
-        }
-
-        .desktop-window:nth-child(2) {
-          transform: rotate(1deg);
-        }
-
-        .desktop-window:nth-child(3) {
-          transform: rotate(-.7deg);
-        }
-
-        .desktop-window:nth-child(4) {
-          transform: rotate(1.4deg);
-        }
-
-        .desktop-window:nth-child(5) {
-          transform: rotate(-1deg);
-        }
-
-        .desktop-window:nth-child(6) {
-          transform: rotate(.7deg);
-        }
-
-        .desktop-window:hover {
-          transform:
-            translateY(-8px)
-            rotate(0deg)
-            scale(1.015);
-          filter: brightness(1.08);
-          z-index: 5;
-        }
-
-        .file-content {
-          min-height: 170px;
-          padding: 20px;
-          display: grid;
-          grid-template-columns: 35px 55px 1fr 25px;
-          gap: 15px;
-          align-items: center;
-          position: relative;
-          background: #d0ced0;
-        }
-
-        .file-number {
-          align-self: start;
-          font-family: var(--font-pixel);
-          font-size: 7px;
-          color: #79757b;
-        }
-
-        .file-symbol {
-          width: 55px;
-          height: 55px;
-          border: 1px solid #67636c;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #aaa6b5;
-          color: #4d4675;
-          font-size: 22px;
-        }
-
-        .file-text h3 {
-          margin: 0 0 8px;
-          font-family: var(--font-orbitron);
-          font-size: 18px;
-          letter-spacing: -.04em;
-          color: #34313a;
-        }
-
-        .file-text p {
-          margin: 0;
-          color: #68636d;
-          font-size: 8px;
-          line-height: 1.5;
-        }
-
-        .file-arrow {
-          font-size: 20px;
-          color: #5e577f;
-        }
-
-        .window-footer {
-          background: #b8b6ba;
-          border-top: 1px solid #777;
-          padding: 7px 10px;
-          font-size: 6px;
-          color: #68636d;
-          text-transform: uppercase;
-        }
-
-
-        /* =========================
-           BOTTOM
-        ========================= */
-
-        .bottom-collage {
-          min-height: 300px;
-          margin-top: 90px;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .cassette {
-          width: 290px;
-          height: 170px;
-          padding: 16px;
-          background: #76727c;
-          border: 2px solid #39373d;
-          box-shadow: 8px 10px 0 rgba(0,0,0,.35);
-          transform: rotate(-5deg);
-          position: absolute;
-          left: 12%;
-        }
-
-        .cassette-top {
-          background: #e0d7cc;
-          color: #403b45;
-          padding: 9px;
-          font-family: var(--font-pixel);
-          font-size: 7px;
-        }
-
-        .cassette-window {
-          height: 65px;
-          margin-top: 14px;
-          background: #27262a;
-          display: flex;
-          align-items: center;
-          justify-content: space-around;
-        }
-
-        .cassette-reel {
-          width: 43px;
-          height: 43px;
-          border: 5px dotted #aaa4ad;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .cassette-reel span {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          background: #aaa4ad;
-        }
-
-        .cassette-tape {
-          width: 80px;
-          height: 7px;
-          background: #77727f;
-        }
-
-        .cassette-text {
-          margin-top: 9px;
-          font-size: 7px;
-          color: #302e34;
-        }
-
-        .loading-window {
-          width: 350px;
-          transform: rotate(2deg);
-          z-index: 2;
-        }
-
-        .loading-body {
-          padding: 25px;
-          font-size: 9px;
-        }
-
-        .loading-bar {
-          height: 20px;
-          margin: 18px 0 10px;
-          border: 2px inset #eee;
-          background: #aaa8aa;
-          padding: 2px;
-        }
-
-        .loading-bar span {
-          display: block;
-          height: 100%;
-          width: 67%;
-          background:
-            repeating-linear-gradient(
-              90deg,
-              #57517f 0 12px,
-              #8b81b1 12px 15px
-            );
-        }
-
-        .loading-body small {
-          font-size: 7px;
-          color: #66636a;
-        }
-
-        .sticker {
-          position: absolute;
-          font-family: var(--font-orbitron);
-          font-weight: 900;
-          z-index: 5;
-        }
-
-        .sticker-one {
-          right: 15%;
-          top: 20px;
-          font-size: 42px;
-          color: #8c82b5;
-          transform: rotate(-9deg);
-        }
-
-        .sticker-two {
-          right: 5%;
-          bottom: 30px;
-          font-size: 70px;
-          color: #c3a8d7;
-          transform: rotate(15deg);
-        }
-
-        .sticker-three {
-          left: 4%;
-          bottom: 20px;
-          color: #b65d64;
-          font-size: 11px;
-          border: 1px solid #b65d64;
-          padding: 8px;
+        .polaroid-one {
+          top: 45%;
+          left: 5%;
           transform: rotate(-8deg);
         }
 
+        .polaroid-two {
+          bottom: 18%;
+          right: 5%;
+          transform: rotate(7deg);
+        }
 
-        /* =========================
-           FOOTER
-        ========================= */
 
-        footer {
-          margin-top: 60px;
-          padding: 20px 0 30px;
-          border-top: 1px solid #55525f;
+        /* ===================================================
+           HIDDEN EASTER EGGS
+        =================================================== */
+
+        .hidden-secret {
+          position: absolute;
+          background: transparent;
+          border: none;
+          color: #8b4fa9;
+          cursor: pointer;
+          opacity: .12;
+          transition: .4s;
+          z-index: 30;
+          animation: secretPulse 3s infinite;
+        }
+
+        .hidden-secret:hover {
+          opacity: 1;
+          color: #e7a1ff;
+          text-shadow: 0 0 12px #d66cff;
+        }
+
+        .secret-one {
+          top: 27%;
+          right: 27%;
+          font-size: 22px;
+        }
+
+        .secret-two {
+          bottom: 23%;
+          left: 26%;
+          font-size: 17px;
+        }
+
+        @keyframes secretPulse {
+          0%,100% {
+            opacity: .06;
+          }
+
+          50% {
+            opacity: .25;
+          }
+        }
+
+
+        /* ===================================================
+           EASTER EGG POPUP
+        =================================================== */
+
+        .egg-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          background: rgba(0,0,0,.72);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          backdrop-filter: blur(5px);
+        }
+
+        .egg-window {
+          width: min(470px, 100%);
+          border: 1px solid #bb70ff;
+          background: #100b17;
+          box-shadow:
+            0 0 20px rgba(190,90,255,.4),
+            0 0 80px rgba(120,30,180,.2);
+          animation: eggAppear .35s ease-out;
+        }
+
+        @keyframes eggAppear {
+          from {
+            opacity: 0;
+            transform: scale(.92) translateY(10px);
+          }
+
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+
+        .egg-header {
+          height: 34px;
+          padding: 0 12px;
+          background: #25172f;
+          border-bottom: 1px solid #4e3760;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          color: #d5c4df;
+          font-size: 8px;
+          letter-spacing: .2em;
+        }
+
+        .egg-header button {
+          border: none;
+          background: transparent;
+          color: #a793ae;
+          font-size: 17px;
+          cursor: pointer;
+        }
+
+        .egg-body {
+          padding: 30px;
+          text-align: center;
+        }
+
+        .egg-icon {
+          color: #e98cff;
+          font-size: 30px;
+          text-shadow: 0 0 20px #c655ff;
+          animation: eggSpin 4s linear infinite;
+        }
+
+        @keyframes eggSpin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+
+        .egg-glitch {
+          margin-top: 15px;
+          color: #73ffb8;
+          font-size: 10px;
+          letter-spacing: .3em;
+          animation: blink 1s infinite;
+        }
+
+        .egg-body h2 {
+          color: #f0e5f6;
+          font-size: 18px;
+          line-height: 1.5;
+          margin: 12px 0;
+        }
+
+        .egg-body p {
+          color: #817487;
+          font-size: 10px;
+          line-height: 1.7;
+        }
+
+        .egg-divider {
+          height: 1px;
+          background: #392b43;
+          margin: 22px 0;
+        }
+
+        .play-question {
+          color: #dba5ff !important;
+          letter-spacing: .1em;
+        }
+
+        .egg-audio {
+          width: 100%;
+          margin-top: 10px;
+          filter: sepia(.4) hue-rotate(220deg);
+        }
+
+        .close-egg {
+          margin-top: 20px;
+          border: 1px solid #58396a;
+          background: #1a1122;
+          color: #b79fc2;
+          padding: 9px 18px;
+          font-family: inherit;
+          font-size: 8px;
+          letter-spacing: .15em;
+          cursor: pointer;
+        }
+
+        .close-egg:hover {
+          color: white;
+          border-color: #c36cff;
+          box-shadow: 0 0 15px rgba(195,108,255,.4);
+        }
+
+
+        /* ===================================================
+           BOTTOM CONSOLE
+        =================================================== */
+
+        .bottom-console {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 28px;
+          background: rgba(8,6,11,.9);
+          border-top: 1px solid #312737;
           display: flex;
           justify-content: space-between;
-          gap: 20px;
-          color: #77737e;
+          align-items: center;
+          padding: 0 15px;
+          color: #62596b;
           font-size: 7px;
-          font-family: var(--font-pixel);
+          letter-spacing: .15em;
+          z-index: 40;
+        }
+
+        .console-middle {
+          color: #a45cff;
+          animation: blink 2s infinite;
         }
 
 
-        /* =========================
-           GLITCH
-        ========================= */
-
-        .glitch-text {
-          position: relative;
-          animation: disappearGlitch 5.7s infinite;
-        }
-
-        @keyframes disappearGlitch {
-
-          0%,
-          74%,
-          100% {
-            opacity: 1;
-            transform: translate(0);
-            filter: none;
-          }
-
-          75% {
-            opacity: .15;
-          }
-
-          76% {
-            opacity: 0;
-            transform: translate(-5px, 2px);
-          }
-
-          77% {
-            opacity: 1;
-            transform: translate(4px, -1px);
-            filter: blur(.5px);
-          }
-
-          78% {
-            opacity: .35;
-            transform: translate(-2px, 0);
-          }
-
-          79% {
-            opacity: 1;
-            transform: translate(0);
-            filter: none;
-          }
-        }
-
-        @keyframes glitchSliceOne {
-
-          0%,
-          79%,
-          100% {
-            opacity: 0;
-            clip-path: inset(0 0 100% 0);
-          }
-
-          80% {
-            opacity: .8;
-            clip-path: inset(15% 0 60% 0);
-            transform: translate(-5px);
-          }
-
-          82% {
-            opacity: 0;
-          }
-        }
-
-        @keyframes glitchSliceTwo {
-
-          0%,
-          68%,
-          100% {
-            opacity: 0;
-            clip-path: inset(100% 0 0 0);
-          }
-
-          69% {
-            opacity: .8;
-            clip-path: inset(65% 0 15% 0);
-            transform: translate(5px);
-          }
-
-          71% {
-            opacity: 0;
-          }
-        }
-
-        @keyframes starFlicker {
-
-          0%,
-          80%,
-          100% {
-            opacity: 1;
-          }
-
-          81% {
-            opacity: 0;
-          }
-
-          82% {
-            opacity: .2;
-          }
-
-          83% {
-            opacity: 1;
-          }
-        }
-
-
-        /* =========================
+        /* ===================================================
            MOBILE
-        ========================= */
+        =================================================== */
 
         @media (max-width: 800px) {
 
-          .system-bar {
-            font-size: 7px;
-          }
-
-          .system-left span:nth-child(3),
-          .system-left span:nth-child(4) {
-            display: none;
-          }
-
           .desktop {
-            width: calc(100% - 20px);
-            padding-top: 25px;
+            overflow-y: auto;
+            min-height: 100vh;
           }
 
-          .coordinates,
-          .barcode {
+          .computer-status {
             display: none;
           }
 
-          .hero-window {
-            width: 100%;
-            margin-top: 30px;
+          .desktop-area {
+            min-height: 1100px;
+            padding: 12px;
           }
 
-          .hero-content {
-            grid-template-columns: 1fr;
-            min-height: auto;
-            padding: 20px;
+          .window {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            width: 100% !important;
+            margin-bottom: 14px;
           }
 
-          .hero-copy {
-            padding: 15px 5px;
+          .welcome-window {
+            margin-top: 8px;
           }
 
-          .glitch-name {
-            font-size: clamp(55px, 18vw, 90px);
+          .archive-window {
+            margin-top: 20px;
           }
 
-          .paint-window {
-            width: 90%;
-            margin: 0 auto;
-          }
-
-          .fake-image {
-            height: 230px;
-          }
-
-          .floating-cd {
-            position: relative;
-            top: auto;
-            right: auto;
-            width: max-content;
-            margin: -20px 20px 0 auto;
-            transform: rotate(12deg) scale(.75);
-          }
-
-          .music-player {
-            position: relative;
-            top: auto;
-            left: auto;
-            width: 85%;
-            margin: 30px 0 0;
-          }
-
-          .message-popup {
-            position: relative;
-            top: auto;
-            right: auto;
-            width: 90%;
-            margin: 30px auto 0;
-          }
-
-          .directory {
-            margin-top: 70px;
-          }
-
-          .directory-heading {
-            align-items: flex-start;
-          }
-
-          .file-layout {
+          .section-grid {
             grid-template-columns: 1fr;
           }
 
-          .desktop-window:nth-child(n) {
-            transform: none;
+          .system-window {
+            width: 70% !important;
           }
 
-          .desktop-window:hover {
-            transform: translateY(-5px);
+          .player-window {
+            width: 88% !important;
+            margin-left: auto;
           }
 
-          .file-content {
-            min-height: 150px;
+          .files-window {
+            width: 92% !important;
           }
 
-          .bottom-collage {
-            min-height: 420px;
+          .polaroid {
+            display: none;
           }
 
-          .cassette {
-            left: 0;
-            top: 20px;
+          .floating-text {
+            display: none;
           }
 
-          .loading-window {
-            width: 90%;
-            margin-top: 80px;
+          .secret-one {
+            top: 70%;
+            right: 8%;
           }
 
-          .sticker-one {
-            right: 0;
-            top: 10px;
+          .secret-two {
+            bottom: 7%;
+            left: 8%;
           }
 
-          .sticker-two {
-            right: 0;
-            bottom: 30px;
+          .bottom-console {
+            position: fixed;
           }
-
-          footer {
-            flex-direction: column;
-          }
-
         }
 
       `}</style>
 
     </main>
+  )
+}
+
+
+/* ===========================================================
+   WINDOW HEADER
+=========================================================== */
+
+function WindowHeader({
+  title,
+  colour = 'purple',
+  onClose,
+}) {
+  return (
+    <div className="window-header">
+
+      <span>
+        {title}
+      </span>
+
+      <div className="window-controls">
+
+        <span className={`window-control control-${colour}`} />
+
+        <span className="window-control control-green" />
+
+        <button
+          className="close-window"
+          onClick={onClose}
+          aria-label={`Close ${title}`}
+        >
+          ×
+        </button>
+
+      </div>
+
+    </div>
   )
 }
