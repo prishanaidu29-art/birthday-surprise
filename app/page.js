@@ -1,58 +1,44 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-
-export const dynamic = 'force-dynamic'
 
 export default function HomePage() {
   const router = useRouter()
 
+  const [phase, setPhase] = useState('login')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [booting, setBooting] = useState(false)
   const [bootLine, setBootLine] = useState(0)
-  const [time, setTime] = useState('')
-  const [showError, setShowError] = useState(true)
-  const [showTerminal, setShowTerminal] = useState(true)
-  const [showCd, setShowCd] = useState(true)
-  const [showVhs, setShowVhs] = useState(true)
-  const [glitch, setGlitch] = useState(false)
-  const [selectedFolder, setSelectedFolder] = useState(null)
+  const [clock, setClock] = useState('')
+  const [cdSpin, setCdSpin] = useState(true)
+  const audioRef = useRef(null)
 
-  // CHANGE THIS
+  /*
+    ============================================================
+    CHANGE THESE
+    ============================================================
+  */
+
   const CORRECT_PASSWORD = 'clar'
 
-  const bootMessages = [
-    'BIOS MEMORY CHECK ........ OK',
-    'LOADING CLAR_ARCHIVE.EXE',
-    'SEARCHING FOR MEMORIES...',
-    'FOUND 847 FILES',
-    'MOUNTING FEETGANG/',
-    'MOUNTING EGGS/',
-    'MOUNTING GRADUATION/',
-    'LOADING AUDIO DEVICE...',
-    'LOADING QUESTIONABLE DECISIONS...',
-    'RESTORING LOST FILES...',
-    'SYSTEM READY.',
-  ]
+  // Put your song inside:
+  // public/music/birthday-song.mp3
+  //
+  // Then leave this as-is.
+  const SONG = '/music/birthday-song.mp3'
 
-  const folders = [
-    { name: 'FEETGANG', icon: '📁', x: '7%', y: '14%' },
-    { name: 'EGGS', icon: '📁', x: '18%', y: '34%' },
-    { name: 'GRADUATION', icon: '📁', x: '8%', y: '61%' },
-    { name: 'DUMP_001', icon: '📁', x: '24%', y: '72%' },
-    { name: 'CAMERA', icon: '📁', x: '82%', y: '14%' },
-    { name: 'DO_NOT_OPEN', icon: '📁', x: '88%', y: '35%' },
-    { name: 'CLAR.EXE', icon: '💾', x: '76%', y: '69%' },
-    { name: '???', icon: '📁', x: '91%', y: '67%' },
-  ]
+  /*
+    ============================================================
+    CLOCK
+    ============================================================
+  */
 
   useEffect(() => {
     const updateClock = () => {
       const now = new Date()
 
-      setTime(
+      setClock(
         now.toLocaleTimeString([], {
           hour: '2-digit',
           minute: '2-digit',
@@ -63,534 +49,629 @@ export default function HomePage() {
 
     updateClock()
 
-    const interval = setInterval(updateClock, 1000)
+    const timer = setInterval(updateClock, 1000)
 
-    return () => clearInterval(interval)
+    return () => clearInterval(timer)
   }, [])
 
-  // Random CRT glitch
+  /*
+    ============================================================
+    BOOT / LOADING
+    ============================================================
+  */
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setGlitch(true)
+    if (phase !== 'loading') return
 
-      setTimeout(() => {
-        setGlitch(false)
-      }, 120 + Math.random() * 250)
-    }, 2200 + Math.random() * 4000)
+    const messages = [
+      'INITIALIZING ARCHIVE...',
+      'SEARCHING MEMORY SECTOR...',
+      'MOUNTING PERSONAL FILES...',
+      'LOADING IMAGE CACHE...',
+      'REWINDING VHS TAPE...',
+      'CHECKING CD-ROM...',
+      'RECOVERING QUESTIONABLE DECISIONS...',
+      'ARCHIVE ACCESS GRANTED.',
+    ]
 
-    return () => clearInterval(interval)
-  }, [])
-
-  // Random fake popup
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setShowError(Math.random() > 0.35)
-    }, 7000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  // Boot sequence
-  useEffect(() => {
-    if (!booting) return
-
-    let index = 0
+    let current = 0
 
     const interval = setInterval(() => {
-      setBootLine(index)
+      current++
 
-      index++
-
-      if (index >= bootMessages.length) {
+      if (current < messages.length) {
+        setBootLine(current)
+      } else {
         clearInterval(interval)
 
         setTimeout(() => {
           sessionStorage.setItem('birthday_authenticated', 'true')
           router.push('/birthday')
-        }, 1200)
+        }, 900)
       }
-    }, 420)
+    }, 480)
 
     return () => clearInterval(interval)
-  }, [booting, router])
+  }, [phase, router])
 
-  const submitPassword = (e) => {
+  /*
+    ============================================================
+    PASSWORD
+    ============================================================
+  */
+
+  const handleSubmit = (e) => {
     e.preventDefault()
 
-    if (password.toLowerCase().trim() === CORRECT_PASSWORD) {
+    if (password.trim().toLowerCase() === CORRECT_PASSWORD.toLowerCase()) {
       setError('')
-      setBooting(true)
-      return
+      setPhase('loading')
+
+      // Try to start music after user interaction.
+      if (audioRef.current) {
+        audioRef.current.volume = 0.45
+
+        audioRef.current.play().catch(() => {})
+      }
+    } else {
+      setError('ACCESS DENIED // TRY AGAIN')
+
+      setTimeout(() => {
+        setError('')
+      }, 2200)
     }
-
-    setError('ACCESS DENIED // WRONG PASSWORD')
-    setPassword('')
-
-    setTimeout(() => {
-      setError('')
-    }, 2500)
   }
 
-  const handleFolder = (folder) => {
-    setSelectedFolder(folder)
+  /*
+    ============================================================
+    LOGIN SCREEN
+    ============================================================
+  */
 
-    setTimeout(() => {
-      setSelectedFolder(null)
-    }, 2500)
-  }
-
-  if (booting) {
+  if (phase === 'login') {
     return (
-      <main className="boot-screen">
-        <div className="boot-noise" />
+      <main className="retro-desktop">
 
-        <div className="boot-content">
-          <div className="boot-logo">
-            <span>CLAR</span>
-            <span className="boot-logo-small">ARCHIVE SYSTEM</span>
+        {/* MUSIC */}
+        <audio
+          ref={audioRef}
+          src={SONG}
+          loop
+          preload="auto"
+        />
+
+        {/* CRT EFFECTS */}
+        <div className="crt-lines" />
+        <div className="crt-vignette" />
+        <div className="noise" />
+
+        {/* TOP SYSTEM BAR */}
+        <div className="system-bar">
+
+          <div className="system-left">
+            <span className="system-dot" />
+            <span>CLAR_OS</span>
+            <span className="system-divider">///</span>
+            <span>PERSONAL TERMINAL</span>
           </div>
 
-          <div className="boot-box">
-            <div className="boot-title">
-              SYSTEM INITIALIZATION
-            </div>
-
-            <div className="boot-progress">
-              <div
-                className="boot-progress-fill"
-                style={{
-                  width: `${((bootLine + 1) / bootMessages.length) * 100}%`,
-                }}
-              />
-            </div>
-
-            <div className="boot-percentage">
-              {Math.min(
-                100,
-                Math.round(((bootLine + 1) / bootMessages.length) * 100)
-              )}
-              %
-            </div>
-
-            <div className="boot-terminal">
-              {bootMessages.slice(0, bootLine + 1).map((message, i) => (
-                <div
-                  key={message}
-                  className={i === bootLine ? 'current-boot-line' : ''}
-                >
-                  <span>&gt;</span> {message}
-                </div>
-              ))}
-            </div>
+          <div className="system-right">
+            <span>MEM: 64MB</span>
+            <span>•</span>
+            <span>{clock}</span>
           </div>
 
-          <div className="boot-footer">
-            PLEASE DO NOT TURN OFF THE COMPUTER
-          </div>
         </div>
 
-        <div className="scanlines" />
+        {/* VHS TOP TEXT */}
+        <div className="vhs-counter">
+          <span>PLAY</span>
+          <span>CH 03</span>
+          <span>SP</span>
+          <span>00:19:11</span>
+        </div>
+
+        {/* GLITCH HEADER */}
+        <div className="giant-glitch">
+          <span className="glitch-main" data-text="CLAR_OS">
+            CLAR_OS
+          </span>
+
+          <span className="glitch-copy">
+            CLAR_OS
+          </span>
+
+          <span className="glitch-copy two">
+            CLAR_OS
+          </span>
+        </div>
+
+        <div className="subtitle-glitch">
+          PERSONAL MEMORY TERMINAL
+        </div>
+
+        {/* RANDOM FLOATING SYMBOLS */}
+        <div className="floating-symbol symbol-1">✦</div>
+        <div className="floating-symbol symbol-2">+</div>
+        <div className="floating-symbol symbol-3">◈</div>
+        <div className="floating-symbol symbol-4">×</div>
+        <div className="floating-symbol symbol-5">✧</div>
+        <div className="floating-symbol symbol-6">01</div>
+        <div className="floating-symbol symbol-7">404</div>
+        <div className="floating-symbol symbol-8">♡</div>
+
+        {/* DESKTOP GRID */}
+        <div className="desktop-grid" />
+
+        {/* LEFT FOLDER COLUMN */}
+        <div className="folder-column">
+
+          <FakeFolder
+            icon="📁"
+            title="FEETGANG"
+            sub="DIR_001"
+            rotation="-2deg"
+          />
+
+          <FakeFolder
+            icon="📁"
+            title="EGGS"
+            sub="DIR_002"
+            rotation="1deg"
+          />
+
+          <FakeFolder
+            icon="📁"
+            title="GRADUATION"
+            sub="DIR_003"
+            rotation="-1deg"
+          />
+
+          <FakeFolder
+            icon="📁"
+            title="DO_NOT_OPEN"
+            sub="???"
+            rotation="2deg"
+          />
+
+        </div>
+
+        {/* RIGHT SIDE MINI WINDOWS */}
+        <div className="mini-window window-one">
+
+          <WindowBar title="MEMORY.EXE" />
+
+          <div className="window-content">
+
+            <div className="pixel-photo">
+              <img
+                src="/images/clar-main.jpg"
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
+
+              <div className="photo-placeholder">
+                IMAGE
+                <br />
+                MISSING
+              </div>
+            </div>
+
+            <div className="tiny-text">
+              FILE: CLAR_MAIN.JPG
+              <br />
+              SIZE: 2.4MB
+              <br />
+              STATUS: ????
+            </div>
+
+          </div>
+
+        </div>
+
+        <div className="mini-window window-two">
+
+          <WindowBar title="SYSTEM.LOG" />
+
+          <div className="terminal-lines">
+            <p>&gt; hello clar</p>
+            <p>&gt; birthday_mode: ON</p>
+            <p>&gt; chaos_level: HIGH</p>
+            <p>&gt; dignity: 404</p>
+            <p className="blink">
+              &gt; waiting...
+            </p>
+          </div>
+
+        </div>
+
+        {/* CD PLAYER */}
+        <div className="cd-player">
+
+          <div className="cd-header">
+            <span>CD PLAYER</span>
+            <span>◉</span>
+          </div>
+
+          <div className={`cd ${cdSpin ? 'spinning' : ''}`}>
+
+            <div className="cd-hole" />
+
+            <div className="cd-label">
+              CLAR
+            </div>
+
+          </div>
+
+          <div className="cd-controls">
+
+            <button onClick={() => setCdSpin(!cdSpin)}>
+              {cdSpin ? 'Ⅱ' : '▶'}
+            </button>
+
+            <div className="equalizer">
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+
+          </div>
+
+          <div className="track-info">
+            TRACK 01
+            <br />
+            HAPPY BIRTHDAY.EXE
+          </div>
+
+        </div>
+
+        {/* VHS TAPE */}
+        <div className="vhs-tape">
+
+          <div className="vhs-label">
+            <span>VHS</span>
+            <strong>CLAR 2004–∞</strong>
+          </div>
+
+          <div className="vhs-reel reel-one" />
+          <div className="vhs-reel reel-two" />
+
+        </div>
+
+        {/* BOTTOM RIGHT PASSWORD TERMINAL */}
+        <div className="password-terminal">
+
+          <div className="terminal-header">
+
+            <span>
+              SECURE ARCHIVE
+            </span>
+
+            <span className="red-light">
+              ● REC
+            </span>
+
+          </div>
+
+          <div className="terminal-body">
+
+            <div className="access-title">
+              ENTER ACCESS CODE
+            </div>
+
+            <div className="access-sub">
+              PRIVATE FILE // SUBJECT: CLAR
+            </div>
+
+            <form onSubmit={handleSubmit}>
+
+              <div className="input-wrapper">
+
+                <span className="prompt">
+                  &gt;
+                </span>
+
+                <input
+                  autoFocus
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="PASSWORD"
+                  autoComplete="off"
+                />
+
+                <span className="cursor">
+                  █
+                </span>
+
+              </div>
+
+              <button className="enter-button">
+                [ ENTER ARCHIVE ]
+              </button>
+
+            </form>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
+          </div>
+
+        </div>
+
+        {/* BOTTOM DESKTOP BAR */}
+        <div className="bottom-bar">
+
+          <div>
+            © DVA_ARCHIVE
+          </div>
+
+          <div className="marquee">
+            ★ THIS COMPUTER CONTAINS CLASSIFIED MATERIAL ★
+            &nbsp;&nbsp;&nbsp;
+            PLEASE DO NOT LEAK ★
+            &nbsp;&nbsp;&nbsp;
+            HAPPY BIRTHDAY CLAR ★
+          </div>
+
+          <div>
+            19.11.04
+          </div>
+
+        </div>
+
+        {/* CORNER COORDINATES */}
+        <div className="coordinates">
+          03°11'04"
+          <br />
+          101°41'21"
+        </div>
+
+        {/* LOADING OVERLAY WHEN PASSWORD IS CORRECT */}
+        {phase === 'loading' && (
+          <LoadingScreen bootLine={bootLine} />
+        )}
+
       </main>
     )
   }
 
+  /*
+    ============================================================
+    THIS IS THE LOADING SCREEN
+    ============================================================
+  */
+
   return (
-    <main className={`desktop ${glitch ? 'glitch-active' : ''}`}>
+    <LoadingScreen bootLine={bootLine} />
+  )
+}
 
-      {/* CRT layers */}
-      <div className="crt-curvature" />
-      <div className="scanlines" />
-      <div className="screen-noise" />
 
-      {/* top system bar */}
-      <div className="system-bar">
-        <div>
-          <span className="status-light" />
-          CLAR_OS v1.9.11
-        </div>
+/*
+================================================================
+FAKE FOLDER
+================================================================
+*/
 
-        <div className="system-center">
-          <span className="rec-dot">●</span> REC
-        </div>
+function FakeFolder({
+  icon,
+  title,
+  sub,
+  rotation,
+}) {
+  return (
+    <div
+      className="fake-folder"
+      style={{
+        transform: `rotate(${rotation})`,
+      }}
+    >
 
-        <div>
-          {time}
-        </div>
+      <div className="folder-icon">
+        {icon}
       </div>
 
-      {/* fake desktop title */}
-      <div className="desktop-title">
-        <span className="glitch-text" data-text="PRIVATE COMPUTER">
-          PRIVATE COMPUTER
-        </span>
-        <span className="tiny-text">USER: CLAR // GUEST ACCESS</span>
+      <div className="folder-name">
+        {title}
       </div>
 
-      {/* folders */}
-      {folders.map((folder) => (
-        <button
-          key={folder.name}
-          onClick={() => handleFolder(folder)}
-          className="desktop-folder"
-          style={{
-            left: folder.x,
-            top: folder.y,
-          }}
-        >
-          <span className="folder-icon">{folder.icon}</span>
-
-          <span className="folder-name">
-            {folder.name}
-          </span>
-        </button>
-      ))}
-
-      {/* floating tiny graphics */}
-      <div className="pixel-star star-1">✦</div>
-      <div className="pixel-star star-2">+</div>
-      <div className="pixel-star star-3">✧</div>
-      <div className="pixel-star star-4">×</div>
-
-      <div className="floating-code code-1">
-        01101001<br />
-        11000101<br />
-        00110110
+      <div className="folder-sub">
+        {sub}
       </div>
 
-      <div className="floating-code code-2">
-        MEMORY_001<br />
-        MEMORY_002<br />
-        MEMORY_003
+    </div>
+  )
+}
+
+
+/*
+================================================================
+WINDOW BAR
+================================================================
+*/
+
+function WindowBar({ title }) {
+  return (
+    <div className="window-bar">
+
+      <span>
+        {title}
+      </span>
+
+      <div className="window-buttons">
+        <span>_</span>
+        <span>□</span>
+        <span>×</span>
       </div>
 
-      {/* VHS monitor */}
-      {showVhs && (
-        <div className="window vhs-window">
-          <div className="window-bar">
-            <span>VHS_PLAYER.EXE</span>
+    </div>
+  )
+}
 
-            <button onClick={() => setShowVhs(false)}>
-              ×
-            </button>
-          </div>
 
-          <div className="vhs-screen">
-            <div className="vhs-static" />
+/*
+================================================================
+LOADING SCREEN
+================================================================
+*/
 
-            <div className="vhs-face">
-              NO SIGNAL
-            </div>
+function LoadingScreen({ bootLine }) {
 
-            <div className="vhs-timestamp">
-              PLAY &nbsp; SP &nbsp; 00:19:04
-            </div>
+  const messages = [
+    'INITIALIZING ARCHIVE...',
+    'SEARCHING MEMORY SECTOR...',
+    'MOUNTING PERSONAL FILES...',
+    'LOADING IMAGE CACHE...',
+    'REWINDING VHS TAPE...',
+    'CHECKING CD-ROM...',
+    'RECOVERING QUESTIONABLE DECISIONS...',
+    'ARCHIVE ACCESS GRANTED.',
+  ]
 
-            <div className="vhs-tracking">
-              TRACKING ▰▰▰▰▱
-            </div>
-          </div>
+  const progress =
+    Math.min(
+      ((bootLine + 1) / messages.length) * 100,
+      100
+    )
 
-          <div className="vhs-controls">
-            ◀◀ &nbsp; ▶ &nbsp; ▮▮ &nbsp; ■ &nbsp; ▶▶
-          </div>
+  return (
+    <main className="loading-screen">
+
+      <div className="crt-lines" />
+      <div className="crt-vignette" />
+      <div className="noise" />
+
+      <div className="loading-content">
+
+        <div className="loading-top">
+          DVA_SYSTEM // BOOT_SEQUENCE
         </div>
-      )}
 
-      {/* CD PLAYER */}
-      {showCd && (
-        <div className="window cd-window">
-          <div className="window-bar">
-            <span>CD_PLAYER</span>
+        <div className="loading-logo">
 
-            <button onClick={() => setShowCd(false)}>
-              ×
-            </button>
-          </div>
-
-          <div className="cd-body">
-            <div className="cd-disc">
-              <div className="cd-hole" />
-            </div>
-
-            <div className="cd-info">
-              <div className="cd-track">
-                TRACK 04
-              </div>
-
-              <div className="cd-title">
-                BIRTHDAY.EXE
-              </div>
-
-              <div className="equalizer">
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-
-              <div className="cd-time">
-                02:47 / 04:19
-              </div>
-            </div>
-          </div>
-
-          <div className="cd-buttons">
-            ◀◀ &nbsp;&nbsp; ▶ &nbsp;&nbsp; ■ &nbsp;&nbsp; ▶▶
-          </div>
-        </div>
-      )}
-
-      {/* terminal */}
-      {showTerminal && (
-        <div className="window terminal-window">
-          <div className="window-bar terminal-bar">
-            <span>TERMINAL // MEMORIES</span>
-
-            <button onClick={() => setShowTerminal(false)}>
-              ×
-            </button>
-          </div>
-
-          <div className="terminal-content">
-            <div>CLAR@PRIVATE-PC:~$ ./birthday.sh</div>
-            <div>initialising...</div>
-            <div>checking files...</div>
-            <div className="terminal-green">
-              847 memories found
-            </div>
-            <div className="terminal-yellow">
-              12 questionable decisions found
-            </div>
-            <div className="terminal-red">
-              1 birthday girl detected
-            </div>
-
-            <div className="terminal-cursor">
-              _
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* fake error popup */}
-      {showError && (
-        <div className="window error-window">
-          <div className="window-bar">
-            <span>ERROR</span>
-
-            <button onClick={() => setShowError(false)}>
-              ×
-            </button>
-          </div>
-
-          <div className="error-content">
-            <div className="error-icon">
-              !
-            </div>
-
-            <div>
-              <strong>CLAR.EXE</strong>
-
-              <p>
-                has encountered an unexpected
-                amount of birthday behaviour.
-              </p>
-            </div>
-          </div>
-
-          <div className="error-buttons">
-            <button onClick={() => setShowError(false)}>
-              OK
-            </button>
-
-            <button onClick={() => setShowError(false)}>
-              IGNORE
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SYSTEM STATS */}
-      <div className="stats-window">
-        <div>MEMORY&nbsp;&nbsp; 63%</div>
-        <div>CPU&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 27%</div>
-        <div>DISK&nbsp;&nbsp;&nbsp;&nbsp; 91%</div>
-        <div>SIGNAL&nbsp;&nbsp; 72%</div>
-
-        <div className="mini-bars">
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-          <span />
-        </div>
-      </div>
-
-      {/* BIG PASSWORD WINDOW */}
-      <div className="password-window">
-
-        <div className="window-bar password-titlebar">
-          <div>
-            <span className="window-dot" />
-            <span className="window-dot" />
-            <span className="window-dot" />
-          </div>
-
-          <span>
-            SECURITY_SYSTEM.EXE
+          <span className="load-glitch">
+            CLAR
           </span>
 
-          <span>
-            v2.004
-          </span>
         </div>
 
-        <div className="password-inner">
+        <div className="loading-subtitle">
+          PERSONAL MEMORY ARCHIVE
+        </div>
 
-          <div className="security-header">
-            <div className="security-symbol">
-              ◈
+        {/* CD */}
+
+        <div className="loading-cd">
+
+          <div className="loading-cd-inner">
+
+            <div className="loading-cd-label">
+              C
             </div>
 
-            <div>
-              <div className="security-small">
-                RESTRICTED ACCESS
-              </div>
-
-              <h1
-                className="glitch-text"
-                data-text="CLAR ARCHIVE"
-              >
-                CLAR ARCHIVE
-              </h1>
-            </div>
           </div>
 
-          <div className="security-divider" />
+        </div>
 
-          <p className="password-copy">
-            This computer contains highly classified
-            birthday material.
-          </p>
+        {/* TERMINAL */}
 
-          <p className="password-warning">
-            UNAUTHORISED USERS WILL BE JUDGED.
-          </p>
+        <div className="boot-terminal">
 
-          <form onSubmit={submitPassword}>
-            <label>
-              ENTER PASSWORD
-            </label>
+          <div className="boot-title">
+            SYSTEM BOOT
+          </div>
 
-            <div className="password-row">
-              <span className="prompt">
-                &gt;_
-              </span>
+          <div className="boot-lines">
 
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoFocus
-                autoComplete="off"
-                placeholder="PASSWORD"
-              />
+            {messages.slice(0, bootLine + 1).map(
+              (message, index) => (
+                <div
+                  key={message}
+                  className={
+                    index === bootLine
+                      ? 'active-boot-line'
+                      : ''
+                  }
+                >
+                  <span>
+                    [{String(index).padStart(2, '0')}]
+                  </span>
 
-              <button type="submit">
-                ENTER
-              </button>
-            </div>
-
-            {error && (
-              <div className="password-error">
-                {error}
-              </div>
+                  {message}
+                </div>
+              )
             )}
-          </form>
 
-          <div className="password-bottom">
+          </div>
+
+        </div>
+
+        {/* PROGRESS */}
+
+        <div className="progress-area">
+
+          <div className="progress-label">
+
             <span>
-              ENCRYPTION: ████████
+              ACCESSING MEMORY
             </span>
 
             <span>
-              STATUS: LOCKED
+              {Math.floor(progress)}%
             </span>
+
+          </div>
+
+          <div className="progress-track">
+
+            <div
+              className="progress-fill"
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+
           </div>
 
         </div>
-      </div>
 
-      {/* bottom desktop bar */}
-      <div className="taskbar">
+        <div className="loading-warning">
 
-        <div className="start-button">
-          ◉ START
+          PLEASE DO NOT TURN OFF THE COMPUTER
+
+          <br />
+
+          <span>
+            SOME MEMORIES MAY BE UNSTABLE
+          </span>
+
         </div>
 
-        <div className="task-item">
-          📀 BIRTHDAY.EXE
-        </div>
-
-        <div className="task-item">
-          📼 VHS_PLAYER
-        </div>
-
-        <div className="task-item">
-          💾 CLAR_ARCHIVE
-        </div>
-
-        <div className="taskbar-right">
-          <span>🔊</span>
-          <span>▣</span>
-          <span>{time}</span>
-        </div>
-
-      </div>
-
-      {/* folder popup */}
-      {selectedFolder && (
-        <div className="folder-popup">
-          <div className="folder-popup-icon">
-            {selectedFolder.icon}
-          </div>
-
-          <div>
-            <strong>
-              {selectedFolder.name}
-            </strong>
-
-            <p>
-              FILE DIRECTORY FOUND
-            </p>
-          </div>
-
-          <div className="popup-loading">
-            ACCESSING...
-          </div>
-        </div>
-      )}
-
-      {/* mouse-ish cursor decoration */}
-      <div className="fake-cursor">
-        ◢
       </div>
 
     </main>
   )
 }
-<style jsx global>{`
 
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap');
 
+/*
+================================================================
+STYLES
+================================================================
+*/
+
+const styles = `
 * {
   box-sizing: border-box;
 }
@@ -599,106 +680,106 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: #747b9a;
+  background: #7984a8;
 }
 
-/* =========================================================
-   DESKTOP
-========================================================= */
+body {
+  overflow-x: hidden;
+}
 
-.desktop {
+button,
+input {
+  font: inherit;
+}
+
+
+/* ============================================================
+   MAIN DESKTOP
+============================================================ */
+
+.retro-desktop {
   min-height: 100vh;
-  width: 100%;
   position: relative;
   overflow: hidden;
-
+  color: #252a3b;
   background:
     radial-gradient(
-      circle at 50% 40%,
-      rgba(201, 203, 232, .45),
-      transparent 38%
+      circle at 50% 35%,
+      rgba(221, 220, 240, .85),
+      transparent 35%
     ),
     linear-gradient(
       135deg,
-      #737b9c,
-      #8b89a7 45%,
-      #646c8b
+      #8994b7 0%,
+      #a6a5c1 38%,
+      #7d89ae 72%,
+      #626d92 100%
     );
 
-  color: #17192a;
-
-  font-family: 'VT323', monospace;
+  font-family:
+    "Courier New",
+    monospace;
 }
 
-/* CRT curvature */
 
-.crt-curvature {
+/* ============================================================
+   CRT
+============================================================ */
+
+.crt-lines {
   position: fixed;
   inset: 0;
-  z-index: 100;
-  pointer-events: none;
-
-  box-shadow:
-    inset 0 0 100px rgba(0,0,0,.25),
-    inset 0 0 25px rgba(255,255,255,.08);
-
-  border-radius: 3%;
-}
-
-/* scanlines */
-
-.scanlines {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
+  z-index: 1000;
   pointer-events: none;
 
   background:
     repeating-linear-gradient(
       to bottom,
-      rgba(0,0,0,.08) 0px,
-      rgba(0,0,0,.08) 1px,
-      transparent 2px,
-      transparent 4px
+      rgba(255,255,255,.035) 0px,
+      rgba(255,255,255,.035) 1px,
+      rgba(0,0,0,.06) 2px,
+      rgba(0,0,0,.06) 4px
     );
 
-  opacity: .6;
+  mix-blend-mode: multiply;
 }
 
-/* noise */
-
-.screen-noise,
-.boot-noise {
+.crt-vignette {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 999;
   pointer-events: none;
 
-  opacity: .09;
+  box-shadow:
+    inset 0 0 160px rgba(24,28,48,.55);
+}
+
+.noise {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  pointer-events: none;
+
+  opacity: .12;
 
   background-image:
-    repeating-radial-gradient(
-      circle at 0 0,
-      rgba(255,255,255,.4) 0,
-      rgba(255,255,255,.4) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 
-  animation: noiseMove .15s steps(2) infinite;
+  animation: noiseMove .18s steps(2) infinite;
 }
 
 @keyframes noiseMove {
   0% { transform: translate(0,0); }
-  25% { transform: translate(-2px,1px); }
-  50% { transform: translate(1px,-2px); }
-  75% { transform: translate(2px,2px); }
+  25% { transform: translate(2px,-1px); }
+  50% { transform: translate(-1px,2px); }
+  75% { transform: translate(1px,1px); }
   100% { transform: translate(0,0); }
 }
 
-/* =========================================================
+
+/* ============================================================
    SYSTEM BAR
-========================================================= */
+============================================================ */
 
 .system-bar {
   position: absolute;
@@ -706,304 +787,532 @@ body {
   left: 0;
   right: 0;
 
-  height: 31px;
+  height: 34px;
 
-  background: #c1c5d6;
-  border-bottom: 2px solid #4e536c;
+  padding: 0 18px;
 
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
-  padding: 0 12px;
+  background: rgba(36,42,67,.82);
+  color: #dfe4ff;
 
-  font-family: 'Space Mono', monospace;
   font-size: 9px;
+  letter-spacing: .16em;
 
-  z-index: 40;
+  border-bottom: 1px solid rgba(255,255,255,.15);
+
+  z-index: 30;
 }
 
-.status-light {
-  display: inline-block;
+.system-left,
+.system-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.system-dot {
   width: 7px;
   height: 7px;
-
-  margin-right: 7px;
-
   border-radius: 50%;
-  background: #8e2430;
 
-  box-shadow: 0 0 7px #c63849;
+  background: #c6ff65;
 
-  animation: blink 1.2s infinite;
+  box-shadow:
+    0 0 8px #c6ff65;
+
+  animation: blinkLight 1.5s infinite;
 }
 
-@keyframes blink {
-  50% {
-    opacity: .25;
+@keyframes blinkLight {
+  0%, 45% { opacity: 1; }
+  50%, 65% { opacity: .25; }
+  70%, 100% { opacity: 1; }
+}
+
+.system-divider {
+  opacity: .35;
+}
+
+
+/* ============================================================
+   VHS
+============================================================ */
+
+.vhs-counter {
+  position: absolute;
+  top: 52px;
+  right: 24px;
+
+  display: flex;
+  gap: 13px;
+
+  font-size: 9px;
+  letter-spacing: .15em;
+
+  color: rgba(240,243,255,.8);
+
+  z-index: 20;
+
+  animation: vhsJitter 2.8s infinite;
+}
+
+@keyframes vhsJitter {
+  0%, 93%, 100% {
+    transform: translate(0);
+  }
+
+  94% {
+    transform: translate(-5px,1px);
+  }
+
+  95% {
+    transform: translate(4px,-1px);
+  }
+
+  96% {
+    transform: translate(-2px,0);
   }
 }
 
-.rec-dot {
-  color: #a62635;
-  animation: blink .8s infinite;
+
+/* ============================================================
+   DESKTOP GRID
+============================================================ */
+
+.desktop-grid {
+  position: absolute;
+  inset: 35px 0 30px;
+
+  opacity: .17;
+
+  background-image:
+    linear-gradient(
+      rgba(255,255,255,.2) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,.2) 1px,
+      transparent 1px
+    );
+
+  background-size: 44px 44px;
+
+  mask-image:
+    linear-gradient(
+      to bottom,
+      black,
+      transparent 82%
+    );
 }
 
-/* =========================================================
-   DESKTOP TEXT
-========================================================= */
 
-.desktop-title {
+/* ============================================================
+   BIG GLITCH TEXT
+============================================================ */
+
+.giant-glitch {
   position: absolute;
 
+  top: 78px;
   left: 50%;
-  top: 45px;
 
   transform: translateX(-50%);
 
+  width: 100%;
   text-align: center;
 
-  z-index: 5;
-}
-
-.desktop-title .glitch-text {
-  font-family: 'Press Start 2P', monospace;
-  font-size: clamp(15px, 2vw, 28px);
-
-  color: #25273c;
-
-  letter-spacing: 3px;
-}
-
-.tiny-text {
-  display: block;
-
-  margin-top: 8px;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  letter-spacing: 3px;
-
-  opacity: .6;
-}
-
-/* =========================================================
-   GLITCH TEXT
-========================================================= */
-
-.glitch-text {
-  position: relative;
-  display: inline-block;
-
-  animation:
-    glitchFlicker 4s infinite steps(1);
-}
-
-.glitch-text::before,
-.glitch-text::after {
-  content: attr(data-text);
-
-  position: absolute;
-  left: 0;
-  top: 0;
-
-  width: 100%;
+  z-index: 10;
 
   pointer-events: none;
 }
 
-.glitch-text::before {
-  color: #6b355e;
+.glitch-main,
+.glitch-copy {
+  font-family:
+    Impact,
+    "Arial Black",
+    sans-serif;
+
+  font-size:
+    clamp(58px, 12vw, 150px);
+
+  line-height: .8;
+
+  letter-spacing: -.06em;
+
+  color: #343b5d;
+
+  text-shadow:
+    3px 0 rgba(225,86,151,.55),
+    -3px 0 rgba(96,244,238,.5);
 
   animation:
-    glitchOne 2.8s infinite steps(2);
+    textGlitch 4s infinite steps(1);
 }
 
-.glitch-text::after {
-  color: #354c71;
+.glitch-copy {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  color: rgba(232,239,255,.8);
+
+  clip-path:
+    inset(0 0 65% 0);
 
   animation:
-    glitchTwo 3.4s infinite steps(2);
+    glitchSlice 2.3s infinite steps(1);
 }
 
-@keyframes glitchFlicker {
-  0%, 82%, 86%, 100% {
+.glitch-copy.two {
+  color: rgba(228,90,153,.6);
+
+  clip-path:
+    inset(62% 0 15% 0);
+
+  animation-delay: .4s;
+}
+
+@keyframes textGlitch {
+
+  0%, 72%, 100% {
     opacity: 1;
-  }
-
-  83% {
-    opacity: .05;
-  }
-
-  84% {
-    opacity: .8;
-  }
-
-  85% {
-    opacity: .2;
-  }
-}
-
-@keyframes glitchOne {
-  0%, 70%, 100% {
-    clip-path: inset(0 0 100% 0);
     transform: translate(0);
-  }
-
-  71% {
-    clip-path: inset(10% 0 75% 0);
-    transform: translate(-4px, -1px);
-  }
-
-  72% {
-    clip-path: inset(60% 0 20% 0);
-    transform: translate(5px, 2px);
   }
 
   73% {
-    clip-path: inset(0 0 100% 0);
+    opacity: .2;
+    transform: translate(-5px,2px);
+  }
+
+  74% {
+    opacity: 1;
+    transform: translate(7px,-1px);
+  }
+
+  75% {
+    opacity: .35;
+    transform: translate(-2px,0);
+  }
+
+  76% {
+    opacity: 1;
+  }
+
+  91% {
+    opacity: .85;
+  }
+
+  92% {
+    opacity: .05;
+  }
+
+  93% {
+    opacity: 1;
   }
 }
 
-@keyframes glitchTwo {
-  0%, 60%, 100% {
-    clip-path: inset(100% 0 0 0);
+@keyframes glitchSlice {
+
+  0%, 20%, 100% {
     transform: translate(0);
   }
 
-  61% {
-    clip-path: inset(70% 0 5% 0);
-    transform: translate(4px, 2px);
+  21% {
+    transform: translate(12px,-2px);
   }
 
-  62% {
-    clip-path: inset(20% 0 55% 0);
-    transform: translate(-5px, -1px);
+  22% {
+    transform: translate(-10px,2px);
   }
 
-  63% {
-    clip-path: inset(100% 0 0 0);
-  }
-}
-
-.glitch-active {
-  animation: wholeScreenGlitch .12s steps(2);
-}
-
-@keyframes wholeScreenGlitch {
-  0% {
-    transform: translate(0);
+  23% {
+    transform: translate(4px,0);
   }
 
-  30% {
-    transform: translate(-3px, 1px);
-  }
-
-  60% {
-    transform: translate(3px, -1px);
-  }
-
-  100% {
+  24% {
     transform: translate(0);
   }
 }
 
-/* =========================================================
-   FOLDERS
-========================================================= */
-
-.desktop-folder {
+.subtitle-glitch {
   position: absolute;
 
-  width: 90px;
+  top: 196px;
+  left: 50%;
 
-  border: 0;
-  background: transparent;
+  transform: translateX(-50%);
 
-  color: #24263a;
+  font-size: 9px;
 
-  cursor: pointer;
+  letter-spacing: .45em;
 
-  z-index: 7;
+  color: #4b5271;
 
-  text-align: center;
+  animation: disappearText 5s infinite steps(1);
 
-  transition:
-    transform .15s,
-    filter .15s;
+  z-index: 11;
 }
 
-.desktop-folder:hover {
-  transform:
-    translateY(-4px)
-    rotate(-2deg)
-    scale(1.08);
+@keyframes disappearText {
+  0%, 68%, 100% {
+    opacity: 1;
+  }
 
+  69% {
+    opacity: 0;
+  }
+
+  70% {
+    opacity: .2;
+  }
+
+  71% {
+    opacity: 0;
+  }
+
+  72% {
+    opacity: 1;
+  }
+}
+
+
+/* ============================================================
+   FLOATING SYMBOLS
+============================================================ */
+
+.floating-symbol {
+  position: absolute;
+
+  font-family: monospace;
+
+  color: rgba(236,240,255,.65);
+
+  font-size: 18px;
+
+  z-index: 8;
+
+  animation:
+    floatAround 6s ease-in-out infinite;
+}
+
+.symbol-1 {
+  top: 27%;
+  left: 8%;
+}
+
+.symbol-2 {
+  top: 44%;
+  left: 22%;
+  animation-delay: 1s;
+}
+
+.symbol-3 {
+  top: 24%;
+  right: 11%;
+  animation-delay: 2s;
+}
+
+.symbol-4 {
+  bottom: 28%;
+  right: 25%;
+  animation-delay: .5s;
+}
+
+.symbol-5 {
+  bottom: 19%;
+  left: 36%;
+  animation-delay: 1.7s;
+}
+
+.symbol-6 {
+  top: 32%;
+  right: 31%;
+  font-size: 10px;
+}
+
+.symbol-7 {
+  bottom: 20%;
+  right: 8%;
+  font-size: 9px;
+}
+
+.symbol-8 {
+  top: 48%;
+  left: 5%;
+}
+
+@keyframes floatAround {
+
+  0%,100% {
+    transform: translate(0,0) rotate(0);
+    opacity: .35;
+  }
+
+  50% {
+    transform: translate(8px,-15px) rotate(10deg);
+    opacity: .9;
+  }
+}
+
+
+/* ============================================================
+   FOLDERS
+============================================================ */
+
+.folder-column {
+  position: absolute;
+
+  left: 7%;
+
+  top: 285px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+
+  z-index: 20;
+}
+
+.fake-folder {
+  width: 145px;
+
+  padding: 8px;
+
+  cursor: default;
+
+  transition:
+    transform .25s,
+    filter .25s;
+
+  animation:
+    folderFloat 5s ease-in-out infinite;
+}
+
+.fake-folder:nth-child(2) {
+  animation-delay: .7s;
+}
+
+.fake-folder:nth-child(3) {
+  animation-delay: 1.4s;
+}
+
+.fake-folder:nth-child(4) {
+  animation-delay: 2s;
+}
+
+.fake-folder:hover {
   filter:
-    drop-shadow(0 0 5px rgba(255,255,255,.7));
+    drop-shadow(0 0 10px rgba(225,240,255,.5));
+
+  transform:
+    rotate(0deg)
+    translateX(8px)
+    scale(1.05) !important;
 }
 
 .folder-icon {
-  display: block;
-
-  font-size: 34px;
+  font-size: 38px;
 
   filter:
-    drop-shadow(2px 2px 0 rgba(40,42,60,.25));
+    drop-shadow(2px 2px 0 rgba(40,45,65,.35));
 }
 
 .folder-name {
-  display: block;
+  margin-top: -3px;
 
-  margin-top: 3px;
+  font-family:
+    "Arial Black",
+    sans-serif;
 
-  padding: 2px 4px;
+  font-size: 11px;
 
-  font-family: 'Space Mono', monospace;
+  letter-spacing: .08em;
+
+  color: #303650;
+
+  text-shadow:
+    1px 1px rgba(255,255,255,.35);
+}
+
+.folder-sub {
+  margin-top: 2px;
 
   font-size: 7px;
 
-  background: rgba(214,216,229,.55);
+  letter-spacing: .2em;
 
-  border: 1px solid rgba(50,53,74,.35);
+  color: #59617f;
 }
 
-/* =========================================================
-   WINDOWS
-========================================================= */
+@keyframes folderFloat {
 
-.window {
-  position: absolute;
-
-  background: #c6cad8;
-
-  border: 2px solid #3e435a;
-
-  box-shadow:
-    5px 6px 0 rgba(28,30,47,.25),
-    inset 1px 1px 0 #f3f4fa;
-
-  z-index: 15;
-
-  animation: windowAppear .5s ease-out;
-}
-
-@keyframes windowAppear {
-  from {
-    opacity: 0;
-    transform: scale(.85);
+  0%,100% {
+    margin-top: 0;
   }
 
-  to {
-    opacity: 1;
-    transform: scale(1);
+  50% {
+    margin-top: -4px;
+  }
+}
+
+
+/* ============================================================
+   MINI WINDOWS
+============================================================ */
+
+.mini-window {
+  position: absolute;
+
+  background: rgba(219,223,237,.88);
+
+  border:
+    1px solid #454d6a;
+
+  box-shadow:
+    7px 8px 0 rgba(41,46,67,.18),
+    0 0 20px rgba(255,255,255,.15);
+
+  z-index: 22;
+
+  backdrop-filter: blur(3px);
+
+  animation: windowFloat 7s ease-in-out infinite;
+}
+
+.window-one {
+  top: 282px;
+  right: 8%;
+  width: 190px;
+  transform: rotate(2deg);
+}
+
+.window-two {
+  top: 455px;
+  left: 27%;
+  width: 220px;
+  transform: rotate(-1deg);
+
+  animation-delay: 1.3s;
+}
+
+@keyframes windowFloat {
+  0%,100% {
+    margin-top: 0;
+  }
+
+  50% {
+    margin-top: -7px;
   }
 }
 
 .window-bar {
-  height: 23px;
+  height: 22px;
 
   padding: 0 7px;
 
@@ -1014,216 +1323,216 @@ body {
   background:
     linear-gradient(
       90deg,
-      #363b59,
-      #626887
+      #515b82,
+      #697394
     );
 
-  color: #f1f1f4;
+  color: white;
 
-  font-family: 'Space Mono', monospace;
+  font-size: 8px;
 
-  font-size: 7px;
-
-  letter-spacing: 1px;
+  letter-spacing: .08em;
 }
 
-.window-bar button {
-  border: 0;
-
-  background: #b8bdcf;
-
-  color: #24283e;
-
-  width: 16px;
-  height: 15px;
-
-  cursor: pointer;
-
-  font-weight: bold;
+.window-buttons {
+  display: flex;
+  gap: 3px;
 }
 
-.window-bar button:hover {
-  background: #e1e3ed;
+.window-buttons span {
+  width: 13px;
+  height: 13px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #c8cddd;
+
+  color: #30364f;
+
+  font-size: 8px;
 }
 
-/* =========================================================
-   VHS
-========================================================= */
-
-.vhs-window {
-  width: 250px;
-
-  left: 36%;
-  top: 12%;
-
-  transform: rotate(-2deg);
+.window-content {
+  padding: 9px;
 }
 
-.vhs-screen {
-  height: 145px;
-
-  position: relative;
-
-  overflow: hidden;
+.pixel-photo {
+  height: 100px;
 
   background:
     repeating-linear-gradient(
       0deg,
-      #262638,
-      #262638 2px,
-      #747a98 3px,
-      #747a98 4px
+      #858da9 0 3px,
+      #717a9b 3px 6px
     );
 
-  color: #d4d6e5;
-}
-
-.vhs-static {
-  position: absolute;
-  inset: 0;
-
-  opacity: .5;
-
-  background:
-    repeating-linear-gradient(
-      90deg,
-      transparent 0 2px,
-      rgba(255,255,255,.15) 3px
-    );
-
-  animation: staticMove .12s infinite;
-}
-
-@keyframes staticMove {
-  0% { transform: translateX(0); }
-  50% { transform: translateX(-8px); }
-  100% { transform: translateX(5px); }
-}
-
-.vhs-face {
-  position: absolute;
-
-  inset: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-family: 'Press Start 2P', monospace;
-
-  font-size: 12px;
-
-  text-shadow:
-    2px 0 #8d3d65,
-    -2px 0 #405b80;
-
-  animation: vhsText 1.8s infinite;
-}
-
-@keyframes vhsText {
-  0%, 80% {
-    opacity: 1;
-  }
-
-  81% {
-    opacity: .1;
-  }
-
-  82% {
-    opacity: .8;
-  }
-
-  83% {
-    opacity: .15;
-  }
-
-  84% {
-    opacity: 1;
-  }
-}
-
-.vhs-timestamp {
-  position: absolute;
-
-  left: 7px;
-  top: 7px;
-
-  font-size: 8px;
-
-  font-family: 'Space Mono', monospace;
-}
-
-.vhs-tracking {
-  position: absolute;
-
-  bottom: 7px;
-  right: 7px;
-
-  font-size: 7px;
-
-  font-family: 'Space Mono', monospace;
-}
-
-.vhs-controls {
-  height: 27px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 12px;
-
-  color: #373b54;
-}
-
-/* =========================================================
-   CD PLAYER
-========================================================= */
-
-.cd-window {
-  width: 280px;
-
-  right: 7%;
-  top: 13%;
-
-  transform: rotate(1deg);
-}
-
-.cd-body {
-  display: flex;
-
-  padding: 16px;
-
-  gap: 15px;
-}
-
-.cd-disc {
-  width: 105px;
-  height: 105px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background:
-    conic-gradient(
-      #b7bad0,
-      #e3e4ec,
-      #777d9b,
-      #d7d9e4,
-      #858aa4,
-      #e7e8ef,
-      #b7bad0
-    );
-
-  border: 2px solid #4e536d;
+  border:
+    1px solid #565e79;
 
   position: relative;
 
-  animation: cdSpin 5s linear infinite;
+  overflow: hidden;
+}
+
+.pixel-photo img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  filter:
+    saturate(.65)
+    contrast(1.1);
+}
+
+.photo-placeholder {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  font-size: 9px;
+
+  line-height: 1.5;
+
+  color: rgba(255,255,255,.5);
+
+  letter-spacing: .18em;
+}
+
+.tiny-text {
+  margin-top: 7px;
+
+  font-size: 7px;
+
+  line-height: 1.7;
+
+  color: #505873;
+}
+
+
+/* ============================================================
+   TERMINAL
+============================================================ */
+
+.terminal-lines {
+  padding: 10px;
+
+  min-height: 110px;
+
+  background: #272c43;
+
+  color: #b9ffce;
+
+  font-size: 8px;
+
+  line-height: 1.8;
+}
+
+.terminal-lines p {
+  margin: 0;
+}
+
+.terminal-lines p:nth-child(2) {
+  color: #8ee8ff;
+}
+
+.terminal-lines p:nth-child(3) {
+  color: #ffb2d8;
+}
+
+.blink {
+  animation: terminalBlink 1s infinite;
+}
+
+@keyframes terminalBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+
+/* ============================================================
+   CD PLAYER
+============================================================ */
+
+.cd-player {
+  position: absolute;
+
+  bottom: 78px;
+  left: 50%;
+
+  transform: translateX(-50%) rotate(-2deg);
+
+  width: 190px;
+
+  padding: 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(214,218,235,.94),
+      rgba(165,173,201,.94)
+    );
+
+  border:
+    1px solid #59627e;
 
   box-shadow:
-    0 0 8px rgba(31,34,55,.3);
+    10px 12px 0 rgba(38,43,64,.18),
+    inset 0 0 20px rgba(255,255,255,.35);
+
+  z-index: 25;
+}
+
+.cd-header {
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 8px;
+
+  letter-spacing: .15em;
+
+  color: #3c4562;
+
+  margin-bottom: 10px;
+}
+
+.cd {
+  width: 105px;
+  height: 105px;
+
+  margin: auto;
+
+  border-radius: 50%;
+
+  position: relative;
+
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      #b8c0d5 0deg 8deg,
+      #e2e4ee 8deg 16deg
+    );
+
+  box-shadow:
+    inset 0 0 0 5px rgba(76,84,112,.15),
+    inset 0 0 20px rgba(40,45,60,.3),
+    0 5px 12px rgba(34,39,59,.25);
+
+  transition: animation .3s;
+}
+
+.cd.spinning {
+  animation:
+    cdSpin 2.8s linear infinite;
 }
 
 @keyframes cdSpin {
@@ -1232,152 +1541,385 @@ body {
   }
 }
 
+.cd::before {
+  content: '';
+
+  position: absolute;
+
+  inset: 19px;
+
+  border-radius: 50%;
+
+  background:
+    conic-gradient(
+      #8bd8ff,
+      #e7a5ff,
+      #9cffe2,
+      #ffd9a8,
+      #8bd8ff
+    );
+
+  opacity: .6;
+
+  mix-blend-mode: multiply;
+}
+
 .cd-hole {
   position: absolute;
 
-  width: 18px;
-  height: 18px;
-
-  border-radius: 50%;
+  width: 22px;
+  height: 22px;
 
   left: 50%;
   top: 50%;
 
   transform: translate(-50%,-50%);
 
-  background: #777d9a;
+  border-radius: 50%;
 
-  border: 3px solid #4c526b;
+  background: #737c99;
+
+  border: 6px solid #d8dbe7;
+
+  z-index: 3;
 }
 
-.cd-info {
-  padding-top: 5px;
-}
+.cd-label {
+  position: absolute;
 
-.cd-track {
-  font-family: 'Space Mono', monospace;
+  left: 50%;
+  top: 50%;
 
-  font-size: 7px;
-
-  color: #555a75;
-}
-
-.cd-title {
-  margin-top: 10px;
-
-  font-family: 'Press Start 2P', monospace;
+  transform: translate(-50%,-50%);
 
   font-size: 8px;
 
-  line-height: 1.7;
+  letter-spacing: .15em;
 
-  color: #272a40;
+  z-index: 4;
+
+  color: #343c58;
+}
+
+.cd-controls {
+  margin-top: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.cd-controls button {
+  border: 0;
+
+  background: #4e5777;
+
+  color: white;
+
+  width: 30px;
+  height: 24px;
+
+  cursor: pointer;
+
+  font-size: 10px;
 }
 
 .equalizer {
-  height: 30px;
+  flex: 1;
 
-  margin-top: 12px;
+  height: 24px;
 
   display: flex;
+
   align-items: end;
 
   gap: 2px;
 }
 
 .equalizer i {
-  display: block;
+  flex: 1;
 
-  width: 4px;
+  background: #525b7b;
 
-  background: #555b7b;
-
-  animation: eq .7s ease-in-out infinite alternate;
+  animation:
+    eq .8s ease-in-out infinite alternate;
 }
 
-.equalizer i:nth-child(1) { height: 8px; }
-.equalizer i:nth-child(2) { height: 21px; animation-delay: .1s; }
-.equalizer i:nth-child(3) { height: 13px; animation-delay: .2s; }
-.equalizer i:nth-child(4) { height: 25px; animation-delay: .3s; }
-.equalizer i:nth-child(5) { height: 11px; animation-delay: .4s; }
-.equalizer i:nth-child(6) { height: 28px; animation-delay: .5s; }
-.equalizer i:nth-child(7) { height: 17px; animation-delay: .2s; }
-.equalizer i:nth-child(8) { height: 24px; animation-delay: .1s; }
-.equalizer i:nth-child(9) { height: 10px; }
+.equalizer i:nth-child(1) { height: 30%; }
+.equalizer i:nth-child(2) { height: 70%; animation-delay:.1s; }
+.equalizer i:nth-child(3) { height: 45%; animation-delay:.2s; }
+.equalizer i:nth-child(4) { height: 90%; animation-delay:.3s; }
+.equalizer i:nth-child(5) { height: 60%; animation-delay:.4s; }
+.equalizer i:nth-child(6) { height: 80%; animation-delay:.5s; }
+.equalizer i:nth-child(7) { height: 40%; animation-delay:.6s; }
+.equalizer i:nth-child(8) { height: 65%; animation-delay:.7s; }
 
 @keyframes eq {
+  from {
+    transform: scaleY(.35);
+  }
+
   to {
-    height: 4px;
+    transform: scaleY(1);
   }
 }
 
-.cd-time {
-  margin-top: 8px;
+.track-info {
+  margin-top: 9px;
 
-  font-size: 9px;
+  font-size: 7px;
 
-  font-family: 'Space Mono', monospace;
+  line-height: 1.6;
+
+  letter-spacing: .1em;
+
+  color: #4e5773;
 }
 
-.cd-buttons {
-  border-top: 1px solid #85899e;
 
-  text-align: center;
+/* ============================================================
+   VHS TAPE
+============================================================ */
+
+.vhs-tape {
+  position: absolute;
+
+  bottom: 90px;
+  right: 8%;
+
+  width: 180px;
+  height: 105px;
+
+  transform: rotate(4deg);
+
+  background:
+    linear-gradient(
+      145deg,
+      #242a3c,
+      #343b53
+    );
+
+  border-radius: 5px;
+
+  box-shadow:
+    8px 10px 0 rgba(38,43,64,.22);
+
+  z-index: 23;
+
+  animation:
+    tapeFloat 6s ease-in-out infinite;
+}
+
+@keyframes tapeFloat {
+  0%,100% {
+    transform: rotate(4deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(3deg) translateY(-7px);
+  }
+}
+
+.vhs-label {
+  position: absolute;
+
+  left: 13px;
+  right: 13px;
+  top: 25px;
+
+  height: 48px;
+
+  background: #c8c9d5;
 
   padding: 8px;
 
-  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  font-size: 7px;
+
+  color: #343b51;
+
+  transform: skewX(-3deg);
 }
 
-/* =========================================================
-   TERMINAL
-========================================================= */
+.vhs-label span {
+  font-family: Impact, sans-serif;
 
-.terminal-window {
-  width: 290px;
-
-  left: 4%;
-  bottom: 16%;
-
-  background: #202338;
-
-  color: #bfc5db;
-
-  transform: rotate(1deg);
+  font-size: 16px;
 }
 
-.terminal-bar {
-  background: #363a57;
+.vhs-label strong {
+  font-size: 7px;
+
+  letter-spacing: .1em;
 }
 
-.terminal-content {
-  min-height: 145px;
+.vhs-reel {
+  position: absolute;
 
-  padding: 13px;
+  top: 36px;
 
-  font-family: 'VT323', monospace;
+  width: 25px;
+  height: 25px;
 
-  font-size: 13px;
+  border-radius: 50%;
 
-  line-height: 1.45;
+  background:
+    repeating-conic-gradient(
+      #d6d9e2 0 15deg,
+      #7a829c 15deg 30deg
+    );
+
+  border: 5px solid #596178;
 }
 
-.terminal-green {
-  color: #a5c9a6;
+.reel-one {
+  left: 25px;
 }
 
-.terminal-yellow {
-  color: #d4c28a;
+.reel-two {
+  right: 25px;
 }
 
-.terminal-red {
-  color: #c88d99;
+
+/* ============================================================
+   PASSWORD TERMINAL
+============================================================ */
+
+.password-terminal {
+  position: absolute;
+
+  right: 5%;
+  bottom: 210px;
+
+  width: min(350px, 42vw);
+
+  background: rgba(39,45,67,.94);
+
+  border:
+    1px solid rgba(214,221,255,.4);
+
+  box-shadow:
+    10px 10px 0 rgba(35,40,59,.2),
+    0 0 30px rgba(48,56,90,.3);
+
+  z-index: 35;
+
+  animation:
+    terminalFloat 5s ease-in-out infinite;
 }
 
-.terminal-cursor {
-  display: inline-block;
+@keyframes terminalFloat {
+  0%,100% {
+    transform: translateY(0);
+  }
 
-  animation: cursorBlink .8s infinite;
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.terminal-header {
+  height: 27px;
+
+  padding: 0 10px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: #525d82;
+
+  color: #f2f4ff;
+
+  font-size: 8px;
+
+  letter-spacing: .12em;
+}
+
+.red-light {
+  color: #ff92ad;
+
+  animation: blinkLight 1.2s infinite;
+}
+
+.terminal-body {
+  padding: 18px;
+}
+
+.access-title {
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: 15px;
+
+  color: #e4e8ff;
+
+  letter-spacing: .08em;
+}
+
+.access-sub {
+  margin-top: 5px;
+
+  font-size: 7px;
+
+  color: #929bb9;
+
+  letter-spacing: .18em;
+}
+
+.input-wrapper {
+  margin-top: 18px;
+
+  height: 38px;
+
+  border:
+    1px solid #707b9d;
+
+  background: #20263b;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 0 10px;
+
+  color: #b9ffcf;
+}
+
+.prompt {
+  margin-right: 8px;
+}
+
+.input-wrapper input {
+  flex: 1;
+
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #d7ffe3;
+
+  font-size: 11px;
+
+  letter-spacing: .2em;
+}
+
+.input-wrapper input::placeholder {
+  color: #65708f;
+}
+
+.cursor {
+  animation: cursorBlink .9s infinite;
 }
 
 @keyframes cursorBlink {
@@ -1386,893 +1928,559 @@ body {
   }
 }
 
-/* =========================================================
-   ERROR WINDOW
-========================================================= */
+.enter-button {
+  margin-top: 10px;
 
-.error-window {
-  width: 250px;
+  width: 100%;
 
-  right: 18%;
-  bottom: 18%;
+  height: 32px;
 
-  transform: rotate(-1deg);
+  border:
+    1px solid #7883a6;
 
-  z-index: 25;
-}
-
-.error-content {
-  display: flex;
-
-  gap: 12px;
-
-  padding: 17px;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 8px;
-
-  line-height: 1.7;
-}
-
-.error-icon {
-  width: 29px;
-  height: 29px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #62677f;
-
-  color: #fff;
-
-  font-size: 20px;
-
-  font-family: Arial;
-}
-
-.error-content p {
-  margin: 5px 0 0;
-}
-
-.error-buttons {
-  padding: 0 15px 13px;
-
-  display: flex;
-  justify-content: end;
-
-  gap: 6px;
-}
-
-.error-buttons button {
-  min-width: 58px;
-
-  border: 1px solid #575c73;
-
-  background: #d5d8e2;
-
-  padding: 4px;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-}
-
-/* =========================================================
-   STATS
-========================================================= */
-
-.stats-window {
-  position: absolute;
-
-  right: 3%;
-  bottom: 14%;
-
-  width: 125px;
-
-  padding: 9px;
-
-  background: rgba(196,200,216,.8);
-
-  border: 1px solid #555b72;
-
-  box-shadow: 3px 4px rgba(30,32,49,.2);
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  line-height: 1.8;
-
-  z-index: 10;
-}
-
-.mini-bars {
-  display: flex;
-
-  gap: 2px;
-
-  height: 22px;
-
-  align-items: end;
-}
-
-.mini-bars span {
-  width: 8px;
-
-  background: #535975;
-
-  animation: stats 1s infinite alternate;
-}
-
-.mini-bars span:nth-child(1) { height: 7px; }
-.mini-bars span:nth-child(2) { height: 17px; animation-delay: .1s; }
-.mini-bars span:nth-child(3) { height: 11px; animation-delay: .2s; }
-.mini-bars span:nth-child(4) { height: 20px; animation-delay: .3s; }
-.mini-bars span:nth-child(5) { height: 8px; animation-delay: .4s; }
-.mini-bars span:nth-child(6) { height: 15px; animation-delay: .5s; }
-.mini-bars span:nth-child(7) { height: 19px; animation-delay: .6s; }
-.mini-bars span:nth-child(8) { height: 12px; animation-delay: .7s; }
-
-@keyframes stats {
-  to {
-    transform: scaleY(.45);
-  }
-}
-
-/* =========================================================
-   PASSWORD WINDOW
-========================================================= */
-
-.password-window {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-
-  transform: translate(-50%, -50%);
-
-  width: min(500px, 85vw);
-
-  background: #c5c9d8;
-
-  border: 3px solid #3f445c;
-
-  box-shadow:
-    8px 10px 0 rgba(27,29,45,.25),
-    inset 2px 2px white;
-
-  z-index: 35;
-
-  animation: passwordFloat 5s ease-in-out infinite;
-}
-
-@keyframes passwordFloat {
-  0%, 100% {
-    transform: translate(-50%, -50%) rotate(0deg);
-  }
-
-  50% {
-    transform: translate(-50%, calc(-50% - 3px)) rotate(.25deg);
-  }
-}
-
-.password-titlebar {
-  height: 28px;
-
-  font-size: 7px;
-}
-
-.window-dot {
-  display: inline-block;
-
-  width: 7px;
-  height: 7px;
-
-  margin-right: 3px;
-
-  border: 1px solid #41455d;
-
-  background: #a9afc4;
-}
-
-.password-inner {
-  padding: 25px;
-}
-
-.security-header {
-  display: flex;
-
-  align-items: center;
-
-  gap: 15px;
-}
-
-.security-symbol {
-  width: 48px;
-  height: 48px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #454b67;
-
-  color: #dfe1eb;
-
-  font-size: 25px;
-
-  box-shadow:
-    inset 2px 2px rgba(255,255,255,.25);
-}
-
-.security-small {
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  letter-spacing: 2px;
-
-  color: #626780;
-}
-
-.security-header h1 {
-  margin: 4px 0 0;
-
-  font-family: 'Press Start 2P', monospace;
-
-  font-size: clamp(13px, 2.5vw, 20px);
-
-  line-height: 1.4;
-
-  color: #292d46;
-}
-
-.security-divider {
-  height: 1px;
-
-  background: #777d94;
-
-  margin: 20px 0;
-}
-
-.password-copy {
-  margin: 0;
-
-  font-family: 'VT323', monospace;
-
-  font-size: 19px;
-
-  color: #34384f;
-}
-
-.password-warning {
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  color: #873642;
-
-  margin-top: 8px;
-}
-
-.password-window form {
-  margin-top: 20px;
-}
-
-.password-window label {
-  display: block;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  margin-bottom: 6px;
-
-  letter-spacing: 2px;
-}
-
-.password-row {
-  display: flex;
-
-  border: 2px solid #525871;
-
-  background: #e2e4eb;
-}
-
-.prompt {
-  padding: 10px;
-
-  font-family: 'VT323', monospace;
-
-  font-size: 18px;
-
-  color: #535a77;
-}
-
-.password-row input {
-  min-width: 0;
-  flex: 1;
-
-  border: 0;
-  outline: 0;
-
-  background: transparent;
-
-  font-family: 'VT323', monospace;
-
-  font-size: 18px;
-
-  color: #242840;
-}
-
-.password-row input::placeholder {
-  color: #898da0;
-}
-
-.password-row button {
-  border: 0;
-
-  border-left: 2px solid #525871;
-
-  background: #555b79;
+  background: #59647f;
 
   color: white;
 
-  padding: 0 14px;
+  font-size: 8px;
 
-  font-family: 'Press Start 2P', monospace;
-
-  font-size: 7px;
+  letter-spacing: .18em;
 
   cursor: pointer;
+
+  transition: all .2s;
 }
 
-.password-row button:hover {
-  background: #383e5c;
+.enter-button:hover {
+  background: #707b9b;
+
+  box-shadow:
+    0 0 15px rgba(200,215,255,.25);
 }
 
-.password-error {
-  margin-top: 8px;
+.error-message {
+  margin-top: 9px;
 
-  color: #8d2837;
+  color: #ff8ba7;
 
-  font-family: 'Space Mono', monospace;
+  font-size: 8px;
 
-  font-size: 7px;
+  letter-spacing: .15em;
 
-  animation: errorFlash .3s infinite;
+  animation:
+    errorGlitch .15s infinite;
 }
 
-@keyframes errorFlash {
-  50% {
-    opacity: .35;
-  }
+@keyframes errorGlitch {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+  100% { transform: translateX(-2px); }
 }
 
-.password-bottom {
-  display: flex;
 
-  justify-content: space-between;
+/* ============================================================
+   BOTTOM BAR
+============================================================ */
 
-  margin-top: 20px;
-
-  padding-top: 10px;
-
-  border-top: 1px dashed #777d94;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 6px;
-
-  color: #666b82;
-}
-
-/* =========================================================
-   FLOATING GRAPHICS
-========================================================= */
-
-.pixel-star {
+.bottom-bar {
   position: absolute;
-
-  color: #353b59;
-
-  font-family: 'VT323', monospace;
-
-  font-size: 25px;
-
-  animation: floatPixel 3s ease-in-out infinite;
-
-  z-index: 5;
-}
-
-.star-1 {
-  top: 24%;
-  left: 44%;
-}
-
-.star-2 {
-  top: 70%;
-  left: 46%;
-
-  animation-delay: .8s;
-}
-
-.star-3 {
-  right: 31%;
-  top: 45%;
-
-  animation-delay: 1.4s;
-}
-
-.star-4 {
-  right: 42%;
-  bottom: 8%;
-
-  animation-delay: 2s;
-}
-
-@keyframes floatPixel {
-  0%,100% {
-    transform: translateY(0) rotate(0deg);
-    opacity: .35;
-  }
-
-  50% {
-    transform: translateY(-10px) rotate(90deg);
-    opacity: .9;
-  }
-}
-
-.floating-code {
-  position: absolute;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 6px;
-
-  line-height: 1.6;
-
-  color: #454b69;
-
-  opacity: .5;
-
-  z-index: 3;
-
-  animation: codeFlicker 4s infinite;
-}
-
-.code-1 {
-  right: 37%;
-  bottom: 13%;
-}
-
-.code-2 {
-  left: 36%;
-  top: 19%;
-}
-
-@keyframes codeFlicker {
-  0%, 90% {
-    opacity: .5;
-  }
-
-  91% {
-    opacity: 0;
-  }
-
-  93% {
-    opacity: .7;
-  }
-
-  95% {
-    opacity: .1;
-  }
-
-  97% {
-    opacity: .5;
-  }
-}
-
-/* =========================================================
-   FOLDER POPUP
-========================================================= */
-
-.folder-popup {
-  position: fixed;
-
-  left: 50%;
-  top: 22%;
-
-  transform: translateX(-50%);
-
-  width: 230px;
-
-  padding: 13px;
-
-  display: flex;
-
-  gap: 10px;
-
-  background: #c8ccda;
-
-  border: 2px solid #4b516a;
-
-  box-shadow: 5px 6px rgba(20,22,37,.25);
-
-  z-index: 60;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  animation: popup .2s steps(2);
-}
-
-@keyframes popup {
-  from {
-    transform: translateX(-50%) scale(.8);
-  }
-
-  to {
-    transform: translateX(-50%) scale(1);
-  }
-}
-
-.folder-popup-icon {
-  font-size: 25px;
-}
-
-.folder-popup p {
-  margin: 4px 0;
-
-  color: #626780;
-}
-
-.popup-loading {
-  position: absolute;
-
-  left: 13px;
-  right: 13px;
-  bottom: 5px;
-
-  color: #7d3040;
-}
-
-/* =========================================================
-   TASKBAR
-========================================================= */
-
-.taskbar {
-  position: fixed;
 
   bottom: 0;
   left: 0;
   right: 0;
 
-  height: 32px;
+  height: 30px;
 
-  display: flex;
+  display: grid;
+
+  grid-template-columns:
+    150px
+    1fr
+    120px;
+
   align-items: center;
 
-  gap: 4px;
+  gap: 15px;
 
-  padding: 3px;
+  padding: 0 15px;
 
-  background: #bfc3d2;
+  background: rgba(38,44,66,.9);
 
-  border-top: 2px solid #e8e9ef;
-
-  z-index: 70;
-
-  font-family: 'Space Mono', monospace;
+  color: #c5cbe1;
 
   font-size: 7px;
+
+  letter-spacing: .13em;
+
+  z-index: 40;
+
+  overflow: hidden;
 }
 
-.start-button,
-.task-item {
-  height: 25px;
+.marquee {
+  white-space: nowrap;
 
-  display: flex;
-  align-items: center;
-
-  padding: 0 9px;
-
-  background: #d1d4df;
-
-  border: 1px solid #6b7084;
-
-  box-shadow:
-    inset 1px 1px #f4f5f8;
-
-  color: #30344b;
+  animation:
+    marquee 18s linear infinite;
 }
 
-.start-button {
-  font-weight: bold;
-}
-
-.task-item {
-  min-width: 110px;
-}
-
-.taskbar-right {
-  margin-left: auto;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 0 8px;
-}
-
-/* =========================================================
-   FAKE CURSOR
-========================================================= */
-
-.fake-cursor {
-  position: fixed;
-
-  right: 43%;
-  bottom: 28%;
-
-  font-size: 25px;
-
-  color: #262a43;
-
-  z-index: 75;
-
-  animation: cursorMove 4s ease-in-out infinite;
-}
-
-@keyframes cursorMove {
-  0%,100% {
-    transform: translate(0,0);
+@keyframes marquee {
+  from {
+    transform: translateX(15%);
   }
 
-  50% {
-    transform: translate(15px,-8px);
+  to {
+    transform: translateX(-15%);
   }
 }
 
-/* =========================================================
-   BOOT SCREEN
-========================================================= */
+.coordinates {
+  position: absolute;
 
-.boot-screen {
+  left: 25px;
+  bottom: 50px;
+
+  font-size: 7px;
+
+  line-height: 1.7;
+
+  color: rgba(45,52,77,.65);
+
+  z-index: 10;
+}
+
+
+/* ============================================================
+   LOADING SCREEN
+============================================================ */
+
+.loading-screen {
   min-height: 100vh;
 
   background:
     radial-gradient(
-      circle,
-      #727993,
-      #202334 70%
+      circle at center,
+      #a2a7c3 0%,
+      #6c7698 45%,
+      #3e465f 100%
     );
 
-  color: #cbd0df;
+  position: relative;
 
-  font-family: 'VT323', monospace;
+  overflow: hidden;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  color: #e8ebff;
+
+  font-family:
+    "Courier New",
+    monospace;
+}
+
+.loading-content {
+  position: relative;
+
+  z-index: 20;
+
+  width:
+    min(700px, 90vw);
+
+  text-align: center;
+}
+
+.loading-top {
+  font-size: 8px;
+
+  letter-spacing: .35em;
+
+  opacity: .65;
+
+  margin-bottom: 20px;
+}
+
+.loading-logo {
+  position: relative;
+
+  height: 90px;
+}
+
+.load-glitch {
+  font-family:
+    Impact,
+    "Arial Black",
+    sans-serif;
+
+  font-size:
+    clamp(65px, 13vw, 120px);
+
+  line-height: .8;
+
+  letter-spacing: -.05em;
+
+  color: #e9ebff;
+
+  text-shadow:
+    4px 0 #d47aa8,
+    -4px 0 #77e0dd;
+
+  animation:
+    loadingGlitch 1.5s infinite steps(1);
+}
+
+@keyframes loadingGlitch {
+  0%, 65%, 100% {
+    opacity: 1;
+  }
+
+  66% {
+    opacity: .1;
+    transform: translateX(-8px);
+  }
+
+  67% {
+    opacity: 1;
+    transform: translateX(5px);
+  }
+
+  68% {
+    transform: translateX(0);
+  }
+}
+
+.loading-subtitle {
+  margin-top: 15px;
+
+  font-size: 9px;
+
+  letter-spacing: .45em;
+
+  opacity: .65;
+}
+
+.loading-cd {
+  margin:
+    35px auto 25px;
+
+  width: 115px;
+  height: 115px;
+
+  border-radius: 50%;
+
+  background:
+    repeating-conic-gradient(
+      #ccd1e1 0 8deg,
+      #858da9 8deg 16deg
+    );
+
+  box-shadow:
+    0 0 35px rgba(226,231,255,.3),
+    inset 0 0 25px rgba(44,49,70,.4);
+
+  animation:
+    cdSpin 2s linear infinite;
+}
+
+.loading-cd-inner {
+  width: 100%;
+  height: 100%;
+
+  border-radius: 50%;
 
   display: flex;
 
   align-items: center;
   justify-content: center;
-
-  position: relative;
-
-  overflow: hidden;
 }
 
-.boot-content {
-  width: min(650px, 88vw);
+.loading-cd-label {
+  width: 38px;
+  height: 38px;
 
-  position: relative;
+  border-radius: 50%;
 
-  z-index: 10;
-}
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
-.boot-logo {
-  text-align: center;
+  background: #707994;
 
-  font-family: 'Press Start 2P', monospace;
+  border: 7px solid #d4d8e5;
 
-  font-size: clamp(20px, 5vw, 40px);
+  font-family: Impact, sans-serif;
 
-  letter-spacing: 5px;
-
-  margin-bottom: 35px;
-
-  animation: bootLogo 1s infinite alternate;
-}
-
-.boot-logo-small {
-  display: block;
-
-  margin-top: 10px;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
-
-  letter-spacing: 4px;
-
-  opacity: .6;
-}
-
-@keyframes bootLogo {
-  to {
-    text-shadow:
-      3px 0 #75415f,
-      -3px 0 #465d7b;
-  }
-}
-
-.boot-box {
-  border: 2px solid #8990a8;
-
-  padding: 25px;
-
-  background: rgba(19,21,35,.72);
-
-  box-shadow:
-    0 0 40px rgba(0,0,0,.4);
-}
-
-.boot-title {
-  font-family: 'Space Mono', monospace;
-
-  font-size: 8px;
-
-  letter-spacing: 3px;
-
-  margin-bottom: 14px;
-}
-
-.boot-progress {
-  height: 7px;
-
-  border: 1px solid #727991;
-
-  margin-bottom: 8px;
-}
-
-.boot-progress-fill {
-  height: 100%;
-
-  background: #a7acc0;
-
-  transition: width .35s linear;
-
-  box-shadow:
-    0 0 10px rgba(200,205,225,.5);
-}
-
-.boot-percentage {
-  text-align: right;
-
-  font-family: 'Space Mono', monospace;
-
-  font-size: 7px;
+  color: #303750;
 }
 
 .boot-terminal {
-  margin-top: 25px;
+  margin: 0 auto;
 
-  min-height: 180px;
+  text-align: left;
 
-  font-size: 16px;
+  width: min(500px, 100%);
 
-  line-height: 1.35;
+  min-height: 185px;
 
-  color: #adb3c8;
+  background: rgba(26,31,48,.9);
+
+  border:
+    1px solid rgba(219,226,255,.3);
+
+  box-shadow:
+    0 10px 30px rgba(20,24,40,.25);
+
+  padding: 14px;
 }
 
-.current-boot-line {
-  color: #eeeef3;
+.boot-title {
+  color: #9da8cb;
 
-  text-shadow:
-    0 0 8px rgba(220,225,240,.5);
+  font-size: 8px;
+
+  letter-spacing: .2em;
+
+  padding-bottom: 9px;
+
+  border-bottom:
+    1px solid rgba(220,225,255,.12);
+
+  margin-bottom: 10px;
 }
 
-.boot-footer {
-  margin-top: 18px;
+.boot-lines {
+  font-size: 8px;
 
-  text-align: center;
+  line-height: 1.8;
 
-  font-family: 'Space Mono', monospace;
+  color: #9da7c4;
+}
+
+.boot-lines span {
+  color: #687491;
+
+  margin-right: 9px;
+}
+
+.active-boot-line {
+  color: #c9ffd7;
+
+  animation:
+    bootFlicker .5s infinite;
+}
+
+@keyframes bootFlicker {
+  50% {
+    opacity: .55;
+  }
+}
+
+.progress-area {
+  width: min(500px, 100%);
+
+  margin: 18px auto 0;
+}
+
+.progress-label {
+  display: flex;
+
+  justify-content: space-between;
 
   font-size: 7px;
 
-  letter-spacing: 2px;
+  letter-spacing: .15em;
 
-  opacity: .5;
+  margin-bottom: 6px;
+
+  opacity: .75;
 }
 
-/* =========================================================
+.progress-track {
+  width: 100%;
+
+  height: 7px;
+
+  background: rgba(30,35,54,.5);
+
+  border:
+    1px solid rgba(230,235,255,.25);
+
+  padding: 1px;
+}
+
+.progress-fill {
+  height: 100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #9cf0db,
+      #a8c9ff,
+      #ef9fc8
+    );
+
+  transition:
+    width .35s ease;
+
+  box-shadow:
+    0 0 12px rgba(177,221,255,.45);
+}
+
+.loading-warning {
+  margin-top: 20px;
+
+  font-size: 7px;
+
+  line-height: 1.8;
+
+  letter-spacing: .2em;
+
+  opacity: .55;
+}
+
+.loading-warning span {
+  color: #ffadc9;
+}
+
+
+/* ============================================================
    MOBILE
-========================================================= */
+============================================================ */
 
 @media (max-width: 700px) {
 
-  .desktop {
-    min-height: 100svh;
-  }
-
-  .vhs-window {
-    width: 180px;
-    left: 3%;
-    top: 10%;
-  }
-
-  .vhs-screen {
-    height: 100px;
-  }
-
-  .cd-window {
-    width: 190px;
-    right: 2%;
-    top: 11%;
-  }
-
-  .cd-disc {
-    width: 65px;
-    height: 65px;
-  }
-
-  .cd-info {
-    transform: scale(.8);
-    transform-origin: left top;
-  }
-
-  .terminal-window {
-    width: 190px;
-    left: 3%;
-    bottom: 12%;
-  }
-
-  .error-window {
+  .system-right span:nth-child(1),
+  .system-right span:nth-child(2) {
     display: none;
   }
 
-  .stats-window {
-    display: none;
+  .system-bar {
+    font-size: 7px;
   }
 
-  .desktop-folder {
-    transform: scale(.75);
+  .giant-glitch {
+    top: 90px;
   }
 
-  .password-window {
-    width: 88vw;
+  .subtitle-glitch {
+    top: 180px;
+
+    font-size: 7px;
+
+    letter-spacing: .25em;
   }
 
-  .password-inner {
-    padding: 18px;
+  .folder-column {
+    top: 235px;
+    left: 5%;
+
+    gap: 7px;
   }
 
-  .password-bottom {
-    font-size: 5px;
+  .fake-folder {
+    width: 115px;
   }
 
-  .task-item {
-    display: none;
-  }
-
-  .fake-cursor {
-    display: none;
+  .folder-icon {
+    font-size: 30px;
   }
 
   .folder-name {
+    font-size: 8px;
+  }
+
+  .folder-sub {
     font-size: 6px;
   }
 
-  .desktop-title {
-    top: 55px;
+  .mini-window.window-one {
+    top: 245px;
+    right: 4%;
+    width: 145px;
+  }
+
+  .mini-window.window-two {
+    display: none;
+  }
+
+  .pixel-photo {
+    height: 70px;
+  }
+
+  .password-terminal {
+    left: 50%;
+    right: auto;
+    bottom: 70px;
+
+    transform: translateX(-50%);
+
+    width: 90vw;
+
+    animation: none;
+  }
+
+  .password-terminal:hover {
+    transform: translateX(-50%);
+  }
+
+  .cd-player {
+    left: 8%;
+    bottom: 68px;
+
+    transform:
+      scale(.7)
+      rotate(-3deg);
+
+    transform-origin: bottom left;
+  }
+
+  .vhs-tape {
+    right: 2%;
+    bottom: 65px;
+
+    transform:
+      scale(.65)
+      rotate(4deg);
+
+    transform-origin: bottom right;
+  }
+
+  .coordinates {
+    display: none;
+  }
+
+  .bottom-bar {
+    grid-template-columns: 1fr 1fr;
+
+    font-size: 6px;
+  }
+
+  .bottom-bar .marquee {
+    display: none;
+  }
+
+  .bottom-bar div:last-child {
+    text-align: right;
+  }
+
+  .floating-symbol {
+    display: none;
   }
 }
+`
 
-`}</style>
+/*
+  Inject all CSS into this page.
+*/
+if (typeof document !== 'undefined') {
+  const styleId = 'clar-retro-page-styles'
+
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style')
+    style.id = styleId
+    style.innerHTML = styles
+    document.head.appendChild(style)
+  }
+}
