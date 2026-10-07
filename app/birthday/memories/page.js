@@ -1,30 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+
 import {
   ArrowLeft,
-  Calendar,
   Camera,
   ChevronLeft,
   ChevronRight,
   Clock,
   Database,
   Disc3,
-  Eye,
-  EyeOff,
-  FastForward,
   Film,
+  FastForward,
   Gamepad2,
   Heart,
-  MonitorPlay,
   Pause,
   Play,
   Radio,
-  Rewind,
   RotateCcw,
   ScanLine,
   Search,
@@ -48,17 +44,9 @@ const Enhanced3DViewer = dynamic(
   { ssr: false }
 );
 
-/*
-|--------------------------------------------------------------------------
-| 22 TIMELINE CHAPTERS
-|--------------------------------------------------------------------------
-| 16-year span: 2010 → 2026
-| 22 chapters/moments distributed across those years.
-|
-| The actual Supabase memories get inserted into these slots in order.
-| You can later replace the labels with real events.
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* TIMELINE                                                                    */
+/* -------------------------------------------------------------------------- */
 
 const TIMELINE = [
   { tape: "01", year: 2010, age: 6, label: "THE BEGINNING" },
@@ -96,7 +84,8 @@ const FALLBACK_MEMORIES = [
   {
     id: "fallback-2",
     title: "LOST FOOTAGE",
-    description: "This section of the tape has been partially recovered.",
+    description:
+      "This section of the tape has been partially recovered.",
     date_taken: "2014-01-01",
     photo_url: "",
   },
@@ -109,11 +98,21 @@ const FALLBACK_MEMORIES = [
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/* HELPERS                                                                     */
+/* -------------------------------------------------------------------------- */
+
 function formatDate(date) {
   if (!date) return "DATE UNKNOWN";
 
   try {
-    return new Date(date).toLocaleDateString("en-GB", {
+    const parsed = new Date(date);
+
+    if (Number.isNaN(parsed.getTime())) {
+      return "DATE UNKNOWN";
+    }
+
+    return parsed.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -126,42 +125,60 @@ function formatDate(date) {
 function getMemoryYear(memory) {
   if (!memory?.date_taken) return null;
 
-  const year = new Date(memory.date_taken).getFullYear();
+  const date = new Date(memory.date_taken);
 
-  return Number.isFinite(year) ? year : null;
+  if (Number.isNaN(date.getTime())) return null;
+
+  return date.getFullYear();
 }
+
+/* -------------------------------------------------------------------------- */
+/* PAGE                                                                        */
+/* -------------------------------------------------------------------------- */
 
 export default function MemoriesPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
+  /* ------------------------------- DATA ---------------------------------- */
+
   const [memories, setMemories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  /* ------------------------------ BOOT ----------------------------------- */
+
   const [bootProgress, setBootProgress] = useState(0);
+  const [bootFinished, setBootFinished] = useState(false);
+
+  /* ----------------------------- MEMORY ---------------------------------- */
 
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  /* ------------------------------- UI ------------------------------------ */
+
   const [viewMode, setViewMode] = useState("timeline");
   const [search, setSearch] = useState("");
 
+  /* ------------------------------ PLAYER --------------------------------- */
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+
+  /* ---------------------------- EFFECTS ---------------------------------- */
 
   const [showScanlines, setShowScanlines] = useState(true);
   const [showGlitch, setShowGlitch] = useState(true);
   const [tracking, setTracking] = useState(false);
 
-  const [shuffleMode, setShuffleMode] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState([]);
+  /* ---------------------------- OTHER ------------------------------------ */
 
+  const [favoriteIds, setFavoriteIds] = useState([]);
   const [currentTimeline, setCurrentTimeline] = useState(0);
 
-  /*
-  |--------------------------------------------------------------------------
-  | AUTH
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* AUTH                                                                      */
+  /* ------------------------------------------------------------------------ */
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -169,43 +186,21 @@ export default function MemoriesPage() {
     }
   }, [authLoading, user, router]);
 
-  /*
-  |--------------------------------------------------------------------------
-  | VHS BOOT SEQUENCE
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* LOAD MEMORIES                                                             */
+  /* ------------------------------------------------------------------------ */
 
   useEffect(() => {
-    if (authLoading) return;
+    let cancelled = false;
 
-    let value = 0;
-
-    const interval = setInterval(() => {
-      value += Math.floor(Math.random() * 9) + 5;
-
-      if (value >= 100) {
-        value = 100;
-        clearInterval(interval);
-
-        setTimeout(() => {
-          setLoading(false);
-        }, 500);
+    async function loadMemories() {
+      if (!user) {
+        setDataLoading(false);
+        return;
       }
 
-      setBootProgress(value);
-    }, 80);
+      setDataLoading(true);
 
-    return () => clearInterval(interval);
-  }, [authLoading]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | LOAD MEMORIES
-  |--------------------------------------------------------------------------
-  */
-
-  useEffect(() => {
-    async function loadMemories() {
       try {
         const { data, error } = await supabase
           .from("memories")
@@ -214,74 +209,104 @@ export default function MemoriesPage() {
             ascending: true,
           });
 
+        if (cancelled) return;
+
         if (error) {
           console.error("Memory loading error:", error);
           setMemories(FALLBACK_MEMORIES);
-          return;
+        } else {
+          setMemories(
+            data?.length
+              ? data
+              : FALLBACK_MEMORIES
+          );
         }
-
-        setMemories(data?.length ? data : FALLBACK_MEMORIES);
       } catch (error) {
-        console.error(error);
-        setMemories(FALLBACK_MEMORIES);
+        if (!cancelled) {
+          console.error("Memory loading error:", error);
+          setMemories(FALLBACK_MEMORIES);
+        }
+      } finally {
+        if (!cancelled) {
+          setDataLoading(false);
+        }
       }
     }
 
-    if (user) {
-      loadMemories();
-    }
+    loadMemories();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
-  /*
-  |--------------------------------------------------------------------------
-  | KEYBOARD SHORTCUTS
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* REAL BOOT SEQUENCE                                                       */
+  /* ------------------------------------------------------------------------ */
 
   useEffect(() => {
-    function handleKeyDown(e) {
-      if (e.key === "Escape") {
-        setSelectedMemory(null);
+    if (authLoading) return;
+
+    let cancelled = false;
+    let progress = 0;
+
+    const interval = setInterval(() => {
+      if (cancelled) return;
+
+      progress += Math.floor(Math.random() * 7) + 4;
+
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+
+        setBootProgress(100);
+
+        setTimeout(() => {
+          if (!cancelled) {
+            setBootFinished(true);
+          }
+        }, 700);
+
+        return;
       }
 
-      if (e.key === "ArrowRight") {
-        nextMemory();
-      }
+      setBootProgress(progress);
+    }, 90);
 
-      if (e.key === "ArrowLeft") {
-        previousMemory();
-      }
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [authLoading]);
 
-      if (e.key.toLowerCase() === "r") {
-        randomMemory();
-      }
+  /* ------------------------------------------------------------------------ */
+  /* FINAL BOOT CONDITION                                                     */
+  /* ------------------------------------------------------------------------ */
 
-      if (e.key === " ") {
-        e.preventDefault();
-        setIsPlaying((prev) => !prev);
-      }
-    }
+  const pageLoading =
+    authLoading ||
+    dataLoading ||
+    !bootFinished;
 
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [memories, selectedIndex]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | SEARCH
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* SEARCH                                                                    */
+  /* ------------------------------------------------------------------------ */
 
   const filteredMemories = useMemo(() => {
-    if (!search.trim()) return memories;
+    const query = search.trim().toLowerCase();
 
-    const query = search.toLowerCase();
+    if (!query) {
+      return memories;
+    }
 
     return memories.filter((memory) => {
       return (
-        memory?.title?.toLowerCase().includes(query) ||
-        memory?.description?.toLowerCase().includes(query) ||
+        memory?.title
+          ?.toLowerCase()
+          .includes(query) ||
+        memory?.description
+          ?.toLowerCase()
+          .includes(query) ||
         formatDate(memory?.date_taken)
           .toLowerCase()
           .includes(query)
@@ -289,79 +314,112 @@ export default function MemoriesPage() {
     });
   }, [memories, search]);
 
-  /*
-  |--------------------------------------------------------------------------
-  | TIMELINE MAPPING
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* TIMELINE                                                                  */
+  /* ------------------------------------------------------------------------ */
 
   const timelineData = useMemo(() => {
     return TIMELINE.map((slot, index) => {
-      const matchingMemory =
-        memories.find(
-          (memory) => getMemoryYear(memory) === slot.year
-        ) || memories[index];
+      const matchingMemory = memories.find(
+        (memory) =>
+          getMemoryYear(memory) === slot.year
+      );
 
       return {
         ...slot,
-        memory: matchingMemory || null,
+        memory:
+          matchingMemory ||
+          memories[index] ||
+          null,
       };
     });
   }, [memories]);
 
-  /*
-  |--------------------------------------------------------------------------
-  | MEMORY CONTROLS
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* PLAYER FUNCTIONS                                                          */
+  /* ------------------------------------------------------------------------ */
 
-  function openMemory(memory, index = 0) {
-    if (!memory) return;
+  const togglePlayback = useCallback(() => {
+    setIsPlaying((current) => !current);
+  }, []);
 
-    setSelectedMemory(memory);
-    setSelectedIndex(index);
-  }
-
-  function nextMemory() {
+  const nextMemory = useCallback(() => {
     if (!memories.length) return;
 
-    const next = (selectedIndex + 1) % memories.length;
+    setSelectedIndex((currentIndex) => {
+      const nextIndex =
+        (currentIndex + 1) % memories.length;
 
-    setSelectedIndex(next);
-    setSelectedMemory(memories[next]);
-  }
+      setSelectedMemory(memories[nextIndex]);
 
-  function previousMemory() {
+      return nextIndex;
+    });
+  }, [memories]);
+
+  const previousMemory = useCallback(() => {
     if (!memories.length) return;
 
-    const previous =
-      (selectedIndex - 1 + memories.length) % memories.length;
+    setSelectedIndex((currentIndex) => {
+      const previousIndex =
+        (currentIndex - 1 + memories.length) %
+        memories.length;
 
-    setSelectedIndex(previous);
-    setSelectedMemory(memories[previous]);
-  }
+      setSelectedMemory(memories[previousIndex]);
 
-  function randomMemory() {
+      return previousIndex;
+    });
+  }, [memories]);
+
+  const randomMemory = useCallback(() => {
     if (!memories.length) return;
 
     const randomIndex = Math.floor(
       Math.random() * memories.length
     );
 
-    setShuffleMode(true);
     setSelectedIndex(randomIndex);
     setSelectedMemory(memories[randomIndex]);
-  }
+    setIsPlaying(true);
+  }, [memories]);
+
+  const openMemory = useCallback(
+    (memory) => {
+      if (!memory) return;
+
+      const memoryIndex = memories.findIndex(
+        (item) => item.id === memory.id
+      );
+
+      setSelectedMemory(memory);
+
+      if (memoryIndex >= 0) {
+        setSelectedIndex(memoryIndex);
+      }
+
+      setIsPlaying(true);
+    },
+    [memories]
+  );
+
+  /* ------------------------------------------------------------------------ */
+  /* FAVORITES                                                                 */
+  /* ------------------------------------------------------------------------ */
 
   function toggleFavorite(id) {
     setFavoriteIds((current) => {
       if (current.includes(id)) {
-        return current.filter((item) => item !== id);
+        return current.filter(
+          (item) => item !== id
+        );
       }
 
       return [...current, id];
     });
   }
+
+  /* ------------------------------------------------------------------------ */
+  /* TIMELINE NAVIGATION                                                       */
+  /* ------------------------------------------------------------------------ */
 
   function jumpToTimeline(index) {
     setCurrentTimeline(index);
@@ -388,13 +446,81 @@ export default function MemoriesPage() {
     }
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | LOADING
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* KEYBOARD CONTROLS                                                         */
+  /* ------------------------------------------------------------------------ */
 
-  if (authLoading || loading) {
+  useEffect(() => {
+    function handleKeyDown(event) {
+      const target = event.target;
+
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable;
+
+      if (isTyping) return;
+
+      if (event.key === "Escape") {
+        setSelectedMemory(null);
+        setIsPlaying(false);
+        return;
+      }
+
+      if (
+        event.key === "ArrowRight" ||
+        event.key === "ArrowDown"
+      ) {
+        event.preventDefault();
+        nextMemory();
+        return;
+      }
+
+      if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowUp"
+      ) {
+        event.preventDefault();
+        previousMemory();
+        return;
+      }
+
+      if (event.key === " ") {
+        event.preventDefault();
+        togglePlayback();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "r") {
+        event.preventDefault();
+        randomMemory();
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, [
+    nextMemory,
+    previousMemory,
+    randomMemory,
+    togglePlayback,
+  ]);
+
+  /* ------------------------------------------------------------------------ */
+  /* LOADING SCREEN                                                            */
+  /* ------------------------------------------------------------------------ */
+
+  if (pageLoading) {
     return (
       <>
         <div className="vhs-boot">
@@ -403,10 +529,17 @@ export default function MemoriesPage() {
           <div className="boot-terminal">
             <div className="boot-top">
               <span>ARCHIVE SYSTEM</span>
-              <span>REC ●</span>
+
+              <span className="boot-rec">
+                <span className="boot-rec-dot" />
+                REC
+              </span>
             </div>
 
-            <div className="boot-logo glitch">
+            <div
+              className="boot-logo"
+              data-text="MEMORY ARCHIVE"
+            >
               MEMORY
               <br />
               ARCHIVE
@@ -426,22 +559,45 @@ export default function MemoriesPage() {
             </div>
 
             <div className="boot-percent">
-              {bootProgress}% LOADED
+              {String(bootProgress).padStart(
+                3,
+                "0"
+              )}
+              % LOADED
             </div>
 
             <div className="boot-status">
-              {bootProgress < 25 && "CHECKING SIGNAL..."}
-              {bootProgress >= 25 &&
-                bootProgress < 50 &&
+              {bootProgress < 20 &&
+                "CHECKING SIGNAL..."}
+
+              {bootProgress >= 20 &&
+                bootProgress < 45 &&
                 "LOCATING OLD FOOTAGE..."}
-              {bootProgress >= 50 &&
-                bootProgress < 75 &&
+
+              {bootProgress >= 45 &&
+                bootProgress < 70 &&
                 "REWINDING MEMORIES..."}
-              {bootProgress >= 75 &&
-                bootProgress < 100 &&
+
+              {bootProgress >= 70 &&
+                bootProgress < 99 &&
                 "RESTORING CORRUPTED FILES..."}
-              {bootProgress === 100 &&
+
+              {bootProgress >= 99 &&
                 "PLAYBACK READY."}
+            </div>
+
+            <div className="boot-mini-status">
+              AUTH:
+              {authLoading
+                ? " VERIFYING"
+                : user
+                ? " OK"
+                : " WAITING"}
+              <br />
+              DATABASE:
+              {dataLoading
+                ? " CONNECTING"
+                : " READY"}
             </div>
           </div>
 
@@ -454,34 +610,45 @@ export default function MemoriesPage() {
           </div>
         </div>
 
-        <style jsx global>{BOOT_CSS}</style>
+        <style jsx global>
+          {BOOT_CSS}
+        </style>
       </>
     );
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | MAIN PAGE
-  |--------------------------------------------------------------------------
-  */
+  /* ------------------------------------------------------------------------ */
+  /* MAIN PAGE                                                                 */
+  /* ------------------------------------------------------------------------ */
 
   return (
     <main
       className={`archive-page ${
         showGlitch ? "glitch-enabled" : ""
-      } ${tracking ? "tracking-active" : ""}`}
+      } ${tracking ? "tracking-active" : ""} ${
+        isPlaying ? "is-playing" : ""
+      }`}
     >
-      {/* VHS DECORATIVE OVERLAYS */}
-      {showScanlines && <div className="scanlines" />}
+      {/* VHS OVERLAYS */}
+
+      {showScanlines && (
+        <div className="scanlines" />
+      )}
+
       <div className="vignette" />
       <div className="noise" />
       <div className="tracking-lines" />
 
-      {/* TOP VHS STATUS BAR */}
+      {/* ------------------------------------------------------------------ */}
+      {/* HEADER                                                             */}
+      {/* ------------------------------------------------------------------ */}
 
       <header className="vhs-header">
         <div className="header-left">
-          <Link href="/birthday" className="back-button">
+          <Link
+            href="/birthday"
+            className="back-button"
+          >
             <ArrowLeft size={15} />
             EXIT
           </Link>
@@ -498,8 +665,13 @@ export default function MemoriesPage() {
         </div>
 
         <div className="header-title">
-          <span>CLAR // MEMORY ARCHIVE</span>
-          <small>PERSONAL VHS DATABASE</small>
+          <span>
+            CLAR // MEMORY ARCHIVE
+          </span>
+
+          <small>
+            PERSONAL VHS DATABASE
+          </small>
         </div>
 
         <div className="header-right">
@@ -509,7 +681,9 @@ export default function MemoriesPage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
+      {/* ------------------------------------------------------------------ */}
+      {/* SHELL                                                              */}
+      {/* ------------------------------------------------------------------ */}
 
       <div className="archive-shell">
         {/* HERO */}
@@ -521,7 +695,10 @@ export default function MemoriesPage() {
               TAPE DATABASE // ACCESS GRANTED
             </div>
 
-            <h1 className="glitch-title" data-text="MEMORY ARCHIVE">
+            <h1
+              className="glitch-title"
+              data-text="MEMORY ARCHIVE"
+            >
               MEMORY ARCHIVE
             </h1>
 
@@ -536,16 +713,17 @@ export default function MemoriesPage() {
             <div className="hero-controls">
               <button
                 className="vcr-button play-button"
-                onClick={() =>
-                  setIsPlaying((prev) => !prev)
-                }
+                onClick={togglePlayback}
               >
                 {isPlaying ? (
                   <Pause size={15} />
                 ) : (
                   <Play size={15} />
                 )}
-                {isPlaying ? "PAUSE" : "PLAY TAPE"}
+
+                {isPlaying
+                  ? "PAUSE"
+                  : "PLAY TAPE"}
               </button>
 
               <button
@@ -561,6 +739,11 @@ export default function MemoriesPage() {
                 onClick={() => {
                   setSearch("");
                   setViewMode("timeline");
+                  setCurrentTimeline(0);
+                  setSelectedMemory(null);
+                  setSelectedIndex(0);
+                  setIsPlaying(false);
+
                   window.scrollTo({
                     top: 0,
                     behavior: "smooth",
@@ -573,18 +756,31 @@ export default function MemoriesPage() {
             </div>
           </div>
 
-          {/* FAKE VHS PLAYER */}
+          {/* VHS PLAYER */}
 
           <div className="vhs-player">
             <div className="player-screen">
               <div className="screen-grid" />
 
               <div className="player-time">
-                00:{String(memories.length).padStart(2, "0")}:22
+                00:
+                {String(
+                  Math.min(
+                    selectedIndex + 1,
+                    99
+                  )
+                ).padStart(2, "0")}
+                :22
               </div>
 
-              <div className="player-play">
-                {isPlaying ? "▶ PLAY" : "▮▮ PAUSE"}
+              <div
+                className={`player-play ${
+                  isPlaying ? "playing" : ""
+                }`}
+              >
+                {isPlaying
+                  ? "▶ PLAY"
+                  : "▮▮ PAUSE"}
               </div>
 
               <div className="player-label">
@@ -592,13 +788,28 @@ export default function MemoriesPage() {
               </div>
 
               <div className="player-corner">
-                <span>PLAY</span>
+                <span>
+                  {isPlaying ? "PLAY" : "STOP"}
+                </span>
+
                 <span>SP</span>
               </div>
             </div>
 
             <div className="player-deck">
+              {/* IMPORTANT:
+                  The reels now ONLY spin while isPlaying.
+                  They are controlled by the parent .is-playing class.
+              */}
+
               <div className="reel reel-left">
+                <div className="reel-spokes">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
                 <div className="reel-hole" />
               </div>
 
@@ -608,9 +819,22 @@ export default function MemoriesPage() {
                   <br />
                   TAPE
                 </div>
+
+                <div className="deck-status">
+                  {isPlaying
+                    ? "PLAYING"
+                    : "PAUSED"}
+                </div>
               </div>
 
               <div className="reel reel-right">
+                <div className="reel-spokes">
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
                 <div className="reel-hole" />
               </div>
             </div>
@@ -620,12 +844,15 @@ export default function MemoriesPage() {
                 onClick={previousMemory}
                 title="Previous memory"
               >
-                <Rewind size={13} />
+                <SkipBack size={13} />
               </button>
 
               <button
-                onClick={() =>
-                  setIsPlaying((prev) => !prev)
+                onClick={togglePlayback}
+                title={
+                  isPlaying
+                    ? "Pause"
+                    : "Play"
                 }
               >
                 {isPlaying ? (
@@ -639,11 +866,20 @@ export default function MemoriesPage() {
                 onClick={nextMemory}
                 title="Next memory"
               >
-                <FastForward size={13} />
+                <SkipForward size={13} />
               </button>
 
               <button
-                onClick={() => setIsMuted((prev) => !prev)}
+                onClick={() =>
+                  setIsMuted(
+                    (current) => !current
+                  )
+                }
+                title={
+                  isMuted
+                    ? "Unmute"
+                    : "Mute"
+                }
               >
                 {isMuted ? (
                   <VolumeX size={13} />
@@ -655,7 +891,7 @@ export default function MemoriesPage() {
           </div>
         </section>
 
-        {/* CONTROL PANEL */}
+        {/* CONTROL CONSOLE */}
 
         <section className="control-console">
           <div className="console-left">
@@ -671,7 +907,9 @@ export default function MemoriesPage() {
                     ? "active"
                     : ""
                 }
-                onClick={() => setViewMode("timeline")}
+                onClick={() =>
+                  setViewMode("timeline")
+                }
               >
                 <Clock size={14} />
                 TIMELINE
@@ -679,9 +917,13 @@ export default function MemoriesPage() {
 
               <button
                 className={
-                  viewMode === "grid" ? "active" : ""
+                  viewMode === "grid"
+                    ? "active"
+                    : ""
                 }
-                onClick={() => setViewMode("grid")}
+                onClick={() =>
+                  setViewMode("grid")
+                }
               >
                 <Camera size={14} />
                 CONTACT SHEET
@@ -689,9 +931,13 @@ export default function MemoriesPage() {
 
               <button
                 className={
-                  viewMode === "3d" ? "active" : ""
+                  viewMode === "3d"
+                    ? "active"
+                    : ""
                 }
-                onClick={() => setViewMode("3d")}
+                onClick={() =>
+                  setViewMode("3d")
+                }
               >
                 <Disc3 size={14} />
                 3D TAPE
@@ -702,10 +948,14 @@ export default function MemoriesPage() {
           <div className="console-right">
             <button
               className={
-                showScanlines ? "toggle active" : "toggle"
+                showScanlines
+                  ? "toggle active"
+                  : "toggle"
               }
               onClick={() =>
-                setShowScanlines((prev) => !prev)
+                setShowScanlines(
+                  (current) => !current
+                )
               }
             >
               <ScanLine size={14} />
@@ -714,10 +964,14 @@ export default function MemoriesPage() {
 
             <button
               className={
-                showGlitch ? "toggle active" : "toggle"
+                showGlitch
+                  ? "toggle active"
+                  : "toggle"
               }
               onClick={() =>
-                setShowGlitch((prev) => !prev)
+                setShowGlitch(
+                  (current) => !current
+                )
               }
             >
               <Zap size={14} />
@@ -726,10 +980,14 @@ export default function MemoriesPage() {
 
             <button
               className={
-                tracking ? "toggle active danger" : "toggle"
+                tracking
+                  ? "toggle active danger"
+                  : "toggle"
               }
               onClick={() =>
-                setTracking((prev) => !prev)
+                setTracking(
+                  (current) => !current
+                )
               }
             >
               <Video size={14} />
@@ -745,23 +1003,32 @@ export default function MemoriesPage() {
 
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(event) =>
+              setSearch(event.target.value)
+            }
             placeholder="SEARCH THE ARCHIVE..."
           />
 
           {search && (
-            <button onClick={() => setSearch("")}>
+            <button
+              onClick={() => setSearch("")}
+              aria-label="Clear search"
+            >
               <X size={14} />
             </button>
           )}
 
           <span>
             {filteredMemories.length} FILE
-            {filteredMemories.length === 1 ? "" : "S"}
+            {filteredMemories.length === 1
+              ? ""
+              : "S"}
           </span>
         </section>
 
-        {/* TIMELINE */}
+        {/* ---------------------------------------------------------------- */}
+        {/* TIMELINE                                                         */}
+        {/* ---------------------------------------------------------------- */}
 
         {viewMode === "timeline" && (
           <section className="timeline-section">
@@ -773,15 +1040,16 @@ export default function MemoriesPage() {
 
                 <h2>
                   THE LAST 16 YEARS
-                  <span>// 22 TAPES</span>
+                  <span>
+                    // 22 TAPES
+                  </span>
                 </h2>
               </div>
 
               <div className="timeline-counter">
-                {String(currentTimeline + 1).padStart(
-                  2,
-                  "0"
-                )}
+                {String(
+                  currentTimeline + 1
+                ).padStart(2, "0")}
                 /22
               </div>
             </div>
@@ -789,96 +1057,104 @@ export default function MemoriesPage() {
             <div className="timeline">
               <div className="timeline-line" />
 
-              {timelineData.map((slot, index) => {
-                const memory = slot.memory;
-                const hasMemory = Boolean(memory);
+              {timelineData.map(
+                (slot, index) => {
+                  const memory =
+                    slot.memory;
 
-                return (
-                  <article
-                    key={`${slot.tape}-${index}`}
-                    id={`timeline-${index}`}
-                    className={`timeline-node ${
-                      index % 2 === 0
-                        ? "node-left"
-                        : "node-right"
-                    } ${
-                      currentTimeline === index
-                        ? "selected"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      jumpToTimeline(index);
+                  const hasMemory =
+                    Boolean(memory);
 
-                      if (memory) {
-                        openMemory(
-                          memory,
-                          memories.findIndex(
-                            (item) =>
-                              item.id === memory.id
-                          )
+                  return (
+                    <article
+                      key={`${slot.tape}-${index}`}
+                      id={`timeline-${index}`}
+                      className={`timeline-node ${
+                        index % 2 === 0
+                          ? "node-left"
+                          : "node-right"
+                      } ${
+                        currentTimeline ===
+                        index
+                          ? "selected"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        jumpToTimeline(
+                          index
                         );
-                      }
-                    }}
-                  >
-                    <div className="timeline-dot">
-                      {hasMemory ? (
-                        <Play size={10} />
-                      ) : (
-                        <span>?</span>
-                      )}
-                    </div>
 
-                    <div className="timeline-card">
-                      <div className="tape-number">
-                        TAPE {slot.tape}
-                      </div>
-
-                      <div className="timeline-year">
-                        {slot.year}
-                      </div>
-
-                      <div className="timeline-age">
-                        AGE {slot.age}
-                      </div>
-
-                      <div className="timeline-card-title">
-                        {memory?.title ||
-                          slot.label}
-                      </div>
-
-                      <div className="timeline-card-status">
-                        {hasMemory
-                          ? "● FOOTAGE AVAILABLE"
-                          : "○ SIGNAL LOST"}
-                      </div>
-
-                      <div className="timeline-preview">
-                        {memory?.photo_url ? (
-                          <img
-                            src={memory.photo_url}
-                            alt=""
-                          />
+                        if (memory) {
+                          openMemory(
+                            memory
+                          );
+                        }
+                      }}
+                    >
+                      <div className="timeline-dot">
+                        {hasMemory ? (
+                          <Play size={10} />
                         ) : (
-                          <div className="lost-footage">
-                            NO IMAGE
-                          </div>
+                          <span>?</span>
                         )}
                       </div>
 
-                      <div className="timeline-open">
-                        {hasMemory
-                          ? "CLICK TO PLAY →"
-                          : "FILE EMPTY"}
+                      <div className="timeline-card">
+                        <div className="tape-number">
+                          TAPE {slot.tape}
+                        </div>
+
+                        <div className="timeline-year">
+                          {slot.year}
+                        </div>
+
+                        <div className="timeline-age">
+                          AGE {slot.age}
+                        </div>
+
+                        <div className="timeline-card-title">
+                          {memory?.title ||
+                            slot.label}
+                        </div>
+
+                        <div className="timeline-card-status">
+                          {hasMemory
+                            ? "● FOOTAGE AVAILABLE"
+                            : "○ SIGNAL LOST"}
+                        </div>
+
+                        <div className="timeline-preview">
+                          {memory?.photo_url ? (
+                            <img
+                              src={
+                                memory.photo_url
+                              }
+                              alt=""
+                            />
+                          ) : (
+                            <div className="lost-footage">
+                              NO IMAGE
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="timeline-open">
+                          {hasMemory
+                            ? "CLICK TO PLAY →"
+                            : "FILE EMPTY"}
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                );
-              })}
+                    </article>
+                  );
+                }
+              )}
             </div>
           </section>
         )}
 
-        {/* CONTACT SHEET */}
+        {/* ---------------------------------------------------------------- */}
+        {/* CONTACT SHEET                                                    */}
+        {/* ---------------------------------------------------------------- */}
 
         {viewMode === "grid" && (
           <section className="contact-section">
@@ -890,153 +1166,204 @@ export default function MemoriesPage() {
 
                 <h2>
                   CONTACT SHEET
-                  <span>// RAW FOOTAGE</span>
+                  <span>
+                    // RAW FOOTAGE
+                  </span>
                 </h2>
               </div>
             </div>
 
-            <div className="contact-grid">
-              {filteredMemories.map(
-                (memory, index) => {
-                  const favorite =
-                    favoriteIds.includes(memory.id);
+            {filteredMemories.length === 0 ? (
+              <div className="empty-archive">
+                NO FOOTAGE MATCHES YOUR SEARCH.
+              </div>
+            ) : (
+              <div className="contact-grid">
+                {filteredMemories.map(
+                  (memory, index) => {
+                    const favorite =
+                      favoriteIds.includes(
+                        memory.id
+                      );
 
-                  return (
-                    <article
-                      key={memory.id || index}
-                      className="memory-tape"
-                      onClick={() =>
-                        openMemory(memory, index)
-                      }
-                    >
-                      <div className="tape-sticker">
-                        VHS-{String(index + 1).padStart(
-                          2,
-                          "0"
-                        )}
-                      </div>
-
-                      <div className="memory-image">
-                        {memory.photo_url ? (
-                          <img
-                            src={memory.photo_url}
-                            alt={memory.title || ""}
-                          />
-                        ) : (
-                          <div className="image-static">
-                            <Film size={30} />
-                            <span>
-                              NO FOOTAGE
-                            </span>
-                          </div>
-                        )}
-
-                        <div className="image-overlay">
-                          <Play size={30} />
-                        </div>
-                      </div>
-
-                      <div className="memory-info">
-                        <div className="memory-date">
-                          {formatDate(
-                            memory.date_taken
+                    return (
+                      <article
+                        key={
+                          memory.id ||
+                          index
+                        }
+                        className="memory-tape"
+                        onClick={() =>
+                          openMemory(
+                            memory
+                          )
+                        }
+                      >
+                        <div className="tape-sticker">
+                          VHS-
+                          {String(
+                            index + 1
+                          ).padStart(
+                            2,
+                            "0"
                           )}
                         </div>
 
-                        <h3>
-                          {memory.title ||
-                            "UNTITLED FOOTAGE"}
-                        </h3>
+                        <div className="memory-image">
+                          {memory.photo_url ? (
+                            <img
+                              src={
+                                memory.photo_url
+                              }
+                              alt={
+                                memory.title ||
+                                ""
+                              }
+                            />
+                          ) : (
+                            <div className="image-static">
+                              <Film
+                                size={30}
+                              />
 
-                        <p>
-                          {memory.description ||
-                            "No description recorded."}
-                        </p>
+                              <span>
+                                NO FOOTAGE
+                              </span>
+                            </div>
+                          )}
 
-                        <div className="memory-bottom">
-                          <span>
-                            FILE {String(index + 1).padStart(
-                              3,
-                              "0"
-                            )}
-                          </span>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleFavorite(memory.id);
-                            }}
-                            className={
-                              favorite
-                                ? "heart active"
-                                : "heart"
-                            }
-                          >
-                            <Heart size={14} />
-                          </button>
+                          <div className="image-overlay">
+                            <Play size={30} />
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                }
-              )}
-            </div>
+
+                        <div className="memory-info">
+                          <div className="memory-date">
+                            {formatDate(
+                              memory.date_taken
+                            )}
+                          </div>
+
+                          <h3>
+                            {memory.title ||
+                              "UNTITLED FOOTAGE"}
+                          </h3>
+
+                          <p>
+                            {memory.description ||
+                              "No description recorded."}
+                          </p>
+
+                          <div className="memory-bottom">
+                            <span>
+                              FILE{" "}
+                              {String(
+                                index + 1
+                              ).padStart(
+                                3,
+                                "0"
+                              )}
+                            </span>
+
+                            <button
+                              onClick={(
+                                event
+                              ) => {
+                                event.stopPropagation();
+
+                                toggleFavorite(
+                                  memory.id
+                                );
+                              }}
+                              className={
+                                favorite
+                                  ? "heart active"
+                                  : "heart"
+                              }
+                            >
+                              <Heart
+                                size={14}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  }
+                )}
+              </div>
+            )}
           </section>
         )}
 
-        {/* 3D MODE */}
+        {/* ---------------------------------------------------------------- */}
+        {/* 3D                                                                */}
+        {/* ---------------------------------------------------------------- */}
 
         {viewMode === "3d" && (
           <section className="three-d-section">
             <Enhanced3DViewer
-              memories={filteredMemories}
-              onSelectMemory={(memory) =>
-                openMemory(
-                  memory,
-                  memories.findIndex(
-                    (item) => item.id === memory.id
-                  )
-                )
+              memories={
+                filteredMemories
+              }
+              onSelectMemory={
+                openMemory
               }
             />
           </section>
         )}
 
-        {/* BOTTOM ARCHIVE PANEL */}
+        {/* ---------------------------------------------------------------- */}
+        {/* FOOTER                                                            */}
+        {/* ---------------------------------------------------------------- */}
 
         <section className="archive-footer-panel">
           <div className="footer-stat">
             <Database size={17} />
+
             <div>
               <strong>
                 {memories.length}
               </strong>
-              <span>FILES RECOVERED</span>
+
+              <span>
+                FILES RECOVERED
+              </span>
             </div>
           </div>
 
           <div className="footer-stat">
             <Star size={17} />
+
             <div>
               <strong>
                 {favoriteIds.length}
               </strong>
-              <span>FAVOURITES</span>
+
+              <span>
+                FAVOURITES
+              </span>
             </div>
           </div>
 
           <div className="footer-stat">
             <Sparkles size={17} />
+
             <div>
               <strong>22</strong>
-              <span>TAPE CHAPTERS</span>
+
+              <span>
+                TAPE CHAPTERS
+              </span>
             </div>
           </div>
 
           <div className="footer-stat">
             <Gamepad2 size={17} />
+
             <div>
               <strong>∞</strong>
+
               <span>LORE</span>
             </div>
           </div>
@@ -1062,14 +1389,18 @@ export default function MemoriesPage() {
         </div>
       </div>
 
-      {/* EASTER EGGS */}
+      {/* ------------------------------------------------------------------ */}
+      {/* EASTER EGGS                                                        */}
+      {/* ------------------------------------------------------------------ */}
 
       <EasterEgg
         id="memories-egg-1"
         position="top-egg"
         message="CONGRATS. YOU FOUND A CORRUPTED MEMORY SIGNAL."
         onFound={() =>
-          console.log("Memory Easter Egg 1 found")
+          console.log(
+            "Memory Easter Egg 1 found"
+          )
         }
       />
 
@@ -1078,34 +1409,44 @@ export default function MemoriesPage() {
         position="bottom-egg"
         message="YOU WEREN'T SUPPOSED TO LOOK THERE 👀"
         onFound={() =>
-          console.log("Memory Easter Egg 2 found")
+          console.log(
+            "Memory Easter Egg 2 found"
+          )
         }
       />
 
-      {/* MEMORY MODAL */}
+      {/* ------------------------------------------------------------------ */}
+      {/* MEMORY MODAL                                                       */}
+      {/* ------------------------------------------------------------------ */}
 
       {selectedMemory && (
         <div
           className="memory-modal-backdrop"
-          onClick={() => setSelectedMemory(null)}
+          onClick={() => {
+            setSelectedMemory(null);
+            setIsPlaying(false);
+          }}
         >
           <div
             className="memory-modal"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
             <div className="modal-topbar">
               <span>
                 ● PLAYBACK // FILE{" "}
-                {String(selectedIndex + 1).padStart(
-                  3,
-                  "0"
-                )}
+                {String(
+                  selectedIndex + 1
+                ).padStart(3, "0")}
               </span>
 
               <button
-                onClick={() =>
-                  setSelectedMemory(null)
-                }
+                onClick={() => {
+                  setSelectedMemory(null);
+                  setIsPlaying(false);
+                }}
+                aria-label="Close memory"
               >
                 <X size={17} />
               </button>
@@ -1114,13 +1455,22 @@ export default function MemoriesPage() {
             <div className="modal-screen">
               {selectedMemory.photo_url ? (
                 <img
-                  src={selectedMemory.photo_url}
-                  alt={selectedMemory.title || ""}
+                  src={
+                    selectedMemory.photo_url
+                  }
+                  alt={
+                    selectedMemory.title ||
+                    ""
+                  }
                 />
               ) : (
                 <div className="modal-no-signal">
                   <Film size={55} />
-                  <span>NO SIGNAL</span>
+
+                  <span>
+                    NO SIGNAL
+                  </span>
+
                   <small>
                     THIS FILE HAS NO IMAGE
                   </small>
@@ -1130,14 +1480,14 @@ export default function MemoriesPage() {
               <div className="modal-scan" />
 
               <div className="modal-timecode">
-                PLAY 00:
-                {String(selectedIndex + 1).padStart(
-                  2,
-                  "0"
-                )}
-                :{String(
-                  Math.floor(Math.random() * 99)
+                {isPlaying
+                  ? "PLAY"
+                  : "PAUSE"}{" "}
+                00:
+                {String(
+                  selectedIndex + 1
                 ).padStart(2, "0")}
+                :22
               </div>
             </div>
 
@@ -1145,10 +1495,9 @@ export default function MemoriesPage() {
               <div className="modal-tape">
                 <span>
                   TAPE{" "}
-                  {String(selectedIndex + 1).padStart(
-                    2,
-                    "0"
-                  )}
+                  {String(
+                    selectedIndex + 1
+                  ).padStart(2, "0")}
                 </span>
 
                 <span>
@@ -1170,7 +1519,9 @@ export default function MemoriesPage() {
 
               <div className="modal-controls">
                 <button
-                  onClick={previousMemory}
+                  onClick={
+                    previousMemory
+                  }
                 >
                   <SkipBack size={15} />
                   PREV
@@ -1178,8 +1529,8 @@ export default function MemoriesPage() {
 
                 <button
                   className="modal-play"
-                  onClick={() =>
-                    setIsPlaying((prev) => !prev)
+                  onClick={
+                    togglePlayback
                   }
                 >
                   {isPlaying ? (
@@ -1187,14 +1538,19 @@ export default function MemoriesPage() {
                   ) : (
                     <Play size={15} />
                   )}
+
                   {isPlaying
                     ? "PAUSE"
                     : "PLAY"}
                 </button>
 
-                <button onClick={nextMemory}>
+                <button
+                  onClick={nextMemory}
+                >
                   NEXT
-                  <SkipForward size={15} />
+                  <SkipForward
+                    size={15}
+                  />
                 </button>
 
                 <button
@@ -1220,7 +1576,9 @@ export default function MemoriesPage() {
               {selectedMemory.audio_url && (
                 <audio
                   controls
-                  src={selectedMemory.audio_url}
+                  src={
+                    selectedMemory.audio_url
+                  }
                   muted={isMuted}
                   className="memory-audio"
                 />
@@ -1233,20 +1591,22 @@ export default function MemoriesPage() {
       {/* KEYBOARD HINT */}
 
       <div className="keyboard-hint">
-        ← → CHANGE TAPE&nbsp;&nbsp; SPACE PLAY&nbsp;&nbsp;
-        R RANDOM&nbsp;&nbsp; ESC CLOSE
+        ← → CHANGE TAPE&nbsp;&nbsp;
+        SPACE PLAY&nbsp;&nbsp;
+        R RANDOM&nbsp;&nbsp;
+        ESC CLOSE
       </div>
 
-      <style jsx global>{ARCHIVE_CSS}</style>
+      <style jsx global>
+        {ARCHIVE_CSS}
+      </style>
     </main>
   );
 }
 
-/*
-|--------------------------------------------------------------------------
-| BOOT CSS
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   BOOT CSS
+   ========================================================================== */
 
 const BOOT_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap');
@@ -1255,15 +1615,23 @@ const BOOT_CSS = `
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
   background: #05030a;
 }
 
 .vhs-boot {
   min-height: 100vh;
+  width: 100%;
   background:
-    radial-gradient(circle at 50% 45%, #22134b 0%, #0b0717 42%, #030207 100%);
+    radial-gradient(
+      circle at 50% 45%,
+      #22134b 0%,
+      #0b0717 42%,
+      #030207 100%
+    );
   color: #dffcff;
   display: flex;
   justify-content: center;
@@ -1271,6 +1639,22 @@ body {
   position: relative;
   overflow: hidden;
   font-family: "Share Tech Mono", monospace;
+}
+
+.vhs-boot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,.025) 0px,
+      rgba(255,255,255,.025) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  z-index: 5;
 }
 
 .boot-noise {
@@ -1292,12 +1676,13 @@ body {
 .boot-terminal {
   width: min(680px, 88vw);
   border: 1px solid #a75cff;
-  background: rgba(6, 4, 18, .92);
+  background: rgba(6, 4, 18, .94);
   box-shadow:
     0 0 25px rgba(155,92,255,.45),
     0 0 80px rgba(255,0,190,.15);
   padding: 28px;
   position: relative;
+  z-index: 10;
 }
 
 .boot-top {
@@ -1310,16 +1695,56 @@ body {
   padding-bottom: 12px;
 }
 
+.boot-rec {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #ff536c;
+}
+
+.boot-rec-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff365e;
+  box-shadow: 0 0 9px #ff365e;
+  animation: bootBlink .9s steps(2) infinite;
+}
+
 .boot-logo {
   font-family: "Press Start 2P", monospace;
   font-size: clamp(30px, 7vw, 72px);
   line-height: 1.2;
   margin: 55px 0 25px;
   color: #fff;
+  position: relative;
   text-shadow:
     3px 0 #ff3cac,
     -3px 0 #61f7ff,
     0 0 30px rgba(155,92,255,.8);
+}
+
+.boot-logo::before,
+.boot-logo::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  opacity: .25;
+  pointer-events: none;
+}
+
+.boot-logo::before {
+  color: #61f7ff;
+  transform: translateX(-2px);
+  clip-path: inset(0 0 55% 0);
+  animation: bootGlitchA 3s infinite steps(1);
+}
+
+.boot-logo::after {
+  color: #ff3cac;
+  transform: translateX(3px);
+  clip-path: inset(60% 0 0 0);
+  animation: bootGlitchB 2.6s infinite steps(1);
 }
 
 .boot-sub {
@@ -1332,6 +1757,7 @@ body {
   height: 14px;
   border: 1px solid #61f7ff;
   padding: 2px;
+  overflow: hidden;
 }
 
 .boot-bar-fill {
@@ -1345,7 +1771,7 @@ body {
       #a75cff 16px
     );
   box-shadow: 0 0 15px rgba(97,247,255,.6);
-  transition: width .08s linear;
+  transition: width .09s linear;
 }
 
 .boot-percent {
@@ -1361,9 +1787,20 @@ body {
   font-size: 16px;
 }
 
+.boot-mini-status {
+  margin-top: 24px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  color: #625c72;
+  font-size: 10px;
+  line-height: 1.8;
+  letter-spacing: 1px;
+}
+
 .boot-corner {
   position: absolute;
   bottom: 20px;
+  z-index: 10;
   font-family: "Press Start 2P", monospace;
   font-size: 8px;
   color: rgba(255,255,255,.5);
@@ -1378,23 +1815,80 @@ body {
 }
 
 @keyframes bootNoise {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(2px); }
-  100% { transform: translateY(-2px); }
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(2px);
+  }
+
+  100% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes bootBlink {
+  50% {
+    opacity: .25;
+  }
+}
+
+@keyframes bootGlitchA {
+  0%, 88%, 100% {
+    clip-path: inset(0 0 55% 0);
+  }
+
+  89% {
+    clip-path: inset(15% 0 60% 0);
+    transform: translateX(-8px);
+  }
+
+  90% {
+    clip-path: inset(0 0 80% 0);
+    transform: translateX(5px);
+  }
+}
+
+@keyframes bootGlitchB {
+  0%, 91%, 100% {
+    clip-path: inset(60% 0 0 0);
+  }
+
+  92% {
+    clip-path: inset(72% 0 0 0);
+    transform: translateX(7px);
+  }
+
+  93% {
+    clip-path: inset(55% 0 15% 0);
+    transform: translateX(-4px);
+  }
+}
+
+@media (max-width: 600px) {
+  .boot-terminal {
+    padding: 20px;
+  }
+
+  .boot-logo {
+    margin-top: 40px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .boot-noise {
+  .boot-noise,
+  .boot-rec-dot,
+  .boot-logo::before,
+  .boot-logo::after {
     animation: none;
   }
 }
 `;
 
-/*
-|--------------------------------------------------------------------------
-| ARCHIVE CSS
-|--------------------------------------------------------------------------
-*/
+/* ==========================================================================
+   ARCHIVE CSS
+   ========================================================================== */
 
 const ARCHIVE_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap');
@@ -1475,11 +1969,9 @@ button {
   mix-blend-mode: screen;
 }
 
-/*
-|--------------------------------------------------------------------------
-| CRT / VHS OVERLAYS
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* CRT / VHS                                                                  */
+/* -------------------------------------------------------------------------- */
 
 .scanlines {
   position: fixed;
@@ -1556,29 +2048,54 @@ button {
 }
 
 @keyframes noiseMove {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(-2%,1%); }
-  50% { transform: translate(1%,-2%); }
-  75% { transform: translate(2%,2%); }
-  100% { transform: translate(0,0); }
+  0% {
+    transform: translate(0,0);
+  }
+
+  25% {
+    transform: translate(-2%,1%);
+  }
+
+  50% {
+    transform: translate(1%,-2%);
+  }
+
+  75% {
+    transform: translate(2%,2%);
+  }
+
+  100% {
+    transform: translate(0,0);
+  }
 }
 
 @keyframes tracking {
-  from { transform: translateY(-10vh); }
-  to { transform: translateY(110vh); }
+  from {
+    transform: translateY(-10vh);
+  }
+
+  to {
+    transform: translateY(110vh);
+  }
 }
 
 @keyframes tapeJitter {
-  0% { transform: translateX(0); }
-  50% { transform: translateX(1px); }
-  100% { transform: translateX(-1px); }
+  0% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(1px);
+  }
+
+  100% {
+    transform: translateX(-1px);
+  }
 }
 
-/*
-|--------------------------------------------------------------------------
-| HEADER
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* HEADER                                                                     */
+/* -------------------------------------------------------------------------- */
 
 .vhs-header {
   min-height: 62px;
@@ -1671,14 +2188,14 @@ button {
 }
 
 @keyframes blink {
-  50% { opacity: .25; }
+  50% {
+    opacity: .25;
+  }
 }
 
-/*
-|--------------------------------------------------------------------------
-| SHELL
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* SHELL                                                                      */
+/* -------------------------------------------------------------------------- */
 
 .archive-shell {
   width: min(1420px, calc(100% - 28px));
@@ -1686,11 +2203,9 @@ button {
   padding: 30px 0 80px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| HERO
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* HERO                                                                       */
+/* -------------------------------------------------------------------------- */
 
 .archive-hero {
   min-height: 510px;
@@ -1817,11 +2332,9 @@ button {
   color: #10000b;
 }
 
-/*
-|--------------------------------------------------------------------------
-| VHS PLAYER
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* VHS PLAYER                                                                 */
+/* -------------------------------------------------------------------------- */
 
 .vhs-player {
   width: min(430px, 100%);
@@ -1881,9 +2394,14 @@ button {
   position: absolute;
   top: 15px;
   right: 15px;
-  color: #ff536c;
+  color: #777;
   font-size: 10px;
   font-family: "Orbitron", monospace;
+}
+
+.player-play.playing {
+  color: #ff536c;
+  text-shadow: 0 0 8px rgba(255,83,108,.7);
 }
 
 .player-label {
@@ -1930,6 +2448,10 @@ button {
   border: 1px solid #37303f;
 }
 
+/* FIXED REELS
+   They are children of .is-playing, so they spin ONLY while playback is on.
+*/
+
 .reel {
   width: 58px;
   height: 58px;
@@ -1937,11 +2459,43 @@ button {
   border-radius: 50%;
   display: grid;
   place-items: center;
+  position: relative;
 }
 
-.is-playing .reel,
-.archive-page:has(.play-button:hover) .reel {
-  animation: reelSpin 1s linear infinite;
+.is-playing .reel {
+  animation: reelSpin .8s linear infinite;
+}
+
+.reel-spokes {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+}
+
+.reel-spokes span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  height: 18px;
+  background: #8d8099;
+  transform-origin: 50% 100%;
+}
+
+.reel-spokes span:nth-child(1) {
+  transform: translate(-50%, -100%) rotate(0deg);
+}
+
+.reel-spokes span:nth-child(2) {
+  transform: translate(-50%, -100%) rotate(90deg);
+}
+
+.reel-spokes span:nth-child(3) {
+  transform: translate(-50%, -100%) rotate(180deg);
+}
+
+.reel-spokes span:nth-child(4) {
+  transform: translate(-50%, -100%) rotate(270deg);
 }
 
 .reel-hole {
@@ -1950,10 +2504,18 @@ button {
   background: #09070d;
   border-radius: 50%;
   border: 3px solid #6c6077;
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes reelSpin {
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .deck-center {
@@ -1970,6 +2532,15 @@ button {
   font-size: 7px;
   line-height: 1.5;
   color: #ffb5ea;
+}
+
+.deck-status {
+  color: #5d536b;
+  font-size: 7px;
+}
+
+.is-playing .deck-status {
+  color: var(--green);
 }
 
 .deck-buttons {
@@ -1992,11 +2563,9 @@ button {
   color: var(--cyan);
 }
 
-/*
-|--------------------------------------------------------------------------
-| CONTROL CONSOLE
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* CONTROL CONSOLE                                                            */
+/* -------------------------------------------------------------------------- */
 
 .control-console {
   margin-top: 20px;
@@ -2061,11 +2630,9 @@ button {
   color: #ff5472;
 }
 
-/*
-|--------------------------------------------------------------------------
-| SEARCH
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* SEARCH                                                                     */
+/* -------------------------------------------------------------------------- */
 
 .archive-search {
   margin: 18px 0;
@@ -2105,11 +2672,9 @@ button {
   color: #71687e;
 }
 
-/*
-|--------------------------------------------------------------------------
-| SECTION HEADINGS
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* HEADINGS                                                                   */
+/* -------------------------------------------------------------------------- */
 
 .section-heading {
   display: flex;
@@ -2137,11 +2702,9 @@ button {
   font-size: 13px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| TIMELINE
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* TIMELINE                                                                   */
+/* -------------------------------------------------------------------------- */
 
 .timeline {
   position: relative;
@@ -2325,11 +2888,9 @@ button {
   margin-top: 12px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| CONTACT SHEET
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* CONTACT SHEET                                                              */
+/* -------------------------------------------------------------------------- */
 
 .contact-grid {
   display: grid;
@@ -2460,21 +3021,28 @@ button {
   color: var(--pink);
 }
 
-/*
-|--------------------------------------------------------------------------
-| 3D
-|--------------------------------------------------------------------------
-*/
+.empty-archive {
+  min-height: 200px;
+  border: 1px dashed rgba(97,247,255,.2);
+  display: grid;
+  place-items: center;
+  color: #575064;
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+  text-align: center;
+}
+
+/* -------------------------------------------------------------------------- */
+/* 3D                                                                          */
+/* -------------------------------------------------------------------------- */
 
 .three-d-section {
   min-height: 600px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| FOOTER
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* FOOTER                                                                      */
+/* -------------------------------------------------------------------------- */
 
 .archive-footer-panel {
   margin-top: 70px;
@@ -2517,11 +3085,9 @@ button {
   margin-top: 4px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| BOTTOM NAV
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* NAV                                                                         */
+/* -------------------------------------------------------------------------- */
 
 .bottom-navigation {
   margin-top: 25px;
@@ -2544,11 +3110,9 @@ button {
   color: var(--cyan);
 }
 
-/*
-|--------------------------------------------------------------------------
-| MODAL
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* MODAL                                                                       */
+/* -------------------------------------------------------------------------- */
 
 .memory-modal-backdrop {
   position: fixed;
@@ -2702,11 +3266,9 @@ button {
   margin-top: 18px;
 }
 
-/*
-|--------------------------------------------------------------------------
-| KEYBOARD HINT
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* KEYBOARD                                                                    */
+/* -------------------------------------------------------------------------- */
 
 .keyboard-hint {
   position: fixed;
@@ -2720,11 +3282,9 @@ button {
   pointer-events: none;
 }
 
-/*
-|--------------------------------------------------------------------------
-| RESPONSIVE
-|--------------------------------------------------------------------------
-*/
+/* -------------------------------------------------------------------------- */
+/* RESPONSIVE                                                                  */
+/* -------------------------------------------------------------------------- */
 
 @media (max-width: 900px) {
   .vhs-header {
@@ -2835,6 +3395,19 @@ button {
 
   .keyboard-hint {
     display: none;
+  }
+
+  .deck-center {
+    width: 75px;
+  }
+
+  .reel {
+    width: 50px;
+    height: 50px;
+  }
+
+  .reel-spokes {
+    inset: 6px;
   }
 }
 
