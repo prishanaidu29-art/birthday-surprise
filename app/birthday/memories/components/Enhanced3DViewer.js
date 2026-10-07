@@ -1,65 +1,288 @@
-'use client'
-import React from 'react'
-import { Heart, Calendar } from 'lucide-react'
+"use client";
 
-// Enhanced 2D Photo Gallery Component
+import { useState } from "react";
+import {
+  Play,
+  RotateCcw,
+  Sparkles,
+} from "lucide-react";
 
-// Main Enhanced3DViewer Component
-export default function Enhanced3DViewer({ memories, onSelectMemory }) {
-  // Fallback 2D view while debugging 3D issues
+export default function Enhanced3DViewer({
+  memories = [],
+  onSelectMemory,
+}) {
+  const [rotation, setRotation] = useState(0);
+  const [active, setActive] = useState(null);
+
+  const visible = memories.slice(0, 11);
+
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl overflow-hidden shadow-2xl border border-white/30">
-      {/* Temporary fallback - enhanced 2D gallery */}
-      <div className="w-full h-full flex items-center justify-center p-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-h-full overflow-y-auto">
-          {memories.map((memory, index) => (
-            <div
-              key={memory.id}
-              className="group cursor-pointer transform transition-all duration-300 hover:scale-105"
-              onClick={() => onSelectMemory(memory)}
+    <div className="tape3d">
+      <div className="tape3d-header">
+        <div>
+          <span>EXPERIMENTAL MODE</span>
+          <h2>THE MEMORY VAULT</h2>
+        </div>
+
+        <button
+          onClick={() =>
+            setRotation((prev) => prev + 90)
+          }
+        >
+          <RotateCcw size={14} />
+          ROTATE
+        </button>
+      </div>
+
+      <div
+        className="tape3d-stage"
+        style={{
+          transform: `perspective(1200px) rotateX(8deg) rotateY(${rotation}deg)`,
+        }}
+      >
+        <div className="tape3d-floor" />
+
+        {visible.map((memory, index) => {
+          const angle =
+            (index / Math.max(visible.length, 1)) *
+              Math.PI *
+              2 +
+            rotation * (Math.PI / 180);
+
+          const radius = 280;
+
+          const x = Math.sin(angle) * radius;
+          const z = Math.cos(angle) * radius;
+
+          const scale = (z + radius * 1.7) /
+            (radius * 2.7);
+
+          return (
+            <button
+              key={memory.id || index}
+              className={`vault-card ${
+                active === index ? "active" : ""
+              }`}
               style={{
-                transform: `perspective(1000px) rotateY(${Math.sin(index * 0.5) * 5}deg) rotateX(${Math.cos(index * 0.3) * 3}deg)`,
-                animationDelay: `${index * 100}ms`
+                transform: `
+                  translate(-50%, -50%)
+                  translateX(${x}px)
+                  translateZ(${z}px)
+                  scale(${Math.max(scale, 0.45)})
+                `,
+                zIndex: Math.round(z + 1000),
+              }}
+              onClick={() => {
+                setActive(index);
+                onSelectMemory?.(memory);
               }}
             >
-              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden border border-white/20 hover:shadow-2xl transition-all duration-300">
-                <div className="aspect-[4/3] bg-gradient-to-br from-purple-200 to-pink-200 relative overflow-hidden">
-                  {memory.photo_url ? (
-                    <img 
-                      src={memory.photo_url} 
-                      alt={memory.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Heart className="text-purple-400 w-8 h-8 opacity-50" fill="currentColor" />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="text-sm font-bold text-gray-800 mb-1 truncate">
-                    {memory.title}
-                  </h3>
-                  <div className="flex items-center text-xs text-purple-600">
-                    <Calendar size={10} className="mr-1" />
-                    {new Date(memory.date_taken).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </div>
+              <div className="vault-image">
+                {memory.photo_url ? (
+                  <img
+                    src={memory.photo_url}
+                    alt=""
+                  />
+                ) : (
+                  <Sparkles size={30} />
+                )}
+
+                <div className="vault-play">
+                  <Play size={22} />
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+
+              <div className="vault-info">
+                <span>
+                  TAPE{" "}
+                  {String(index + 1).padStart(
+                    2,
+                    "0"
+                  )}
+                </span>
+
+                <strong>
+                  {memory.title ||
+                    "UNKNOWN FILE"}
+                </strong>
+              </div>
+            </button>
+          );
+        })}
       </div>
-      
-      {/* Status message */}
-      <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-2">
-        <p className="text-purple-600">Enhanced Gallery: {memories.length} {memories.length === 1 ? 'memory' : 'memories'}</p>
-        <p className="text-xs text-gray-500">CSS 3D perspective view</p>
+
+      <div className="tape3d-help">
+        CLICK A MEMORY TO LOAD THE FOOTAGE
       </div>
+
+      <style jsx>{`
+        .tape3d {
+          min-height: 700px;
+          padding: 20px;
+          background:
+            radial-gradient(
+              circle at center,
+              rgba(97,247,255,.08),
+              transparent 35%
+            ),
+            #06040b;
+          border: 1px solid rgba(155,92,255,.35);
+          overflow: hidden;
+          position: relative;
+        }
+
+        .tape3d-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          z-index: 20;
+        }
+
+        .tape3d-header span {
+          color: #61f7ff;
+          font: 9px "Orbitron", monospace;
+          letter-spacing: 2px;
+        }
+
+        .tape3d-header h2 {
+          color: white;
+          font: 24px "Orbitron", monospace;
+          margin: 8px 0;
+        }
+
+        .tape3d-header button {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          border: 1px solid #9b5cff;
+          background: #0d0918;
+          color: #d7baff;
+          padding: 9px 12px;
+          font: 8px "Orbitron", monospace;
+        }
+
+        .tape3d-stage {
+          height: 560px;
+          position: relative;
+          transform-style: preserve-3d;
+          transition: transform .7s cubic-bezier(.2,.8,.2,1);
+        }
+
+        .tape3d-floor {
+          position: absolute;
+          width: 700px;
+          height: 700px;
+          left: 50%;
+          top: 58%;
+          transform:
+            translate(-50%, -50%)
+            rotateX(70deg)
+            translateZ(-280px);
+
+          background:
+            linear-gradient(
+              rgba(97,247,255,.07) 1px,
+              transparent 1px
+            ),
+            linear-gradient(
+              90deg,
+              rgba(155,92,255,.07) 1px,
+              transparent 1px
+            );
+
+          background-size: 35px 35px;
+          border: 1px solid rgba(97,247,255,.12);
+        }
+
+        .vault-card {
+          width: 180px;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          padding: 0;
+          border: 1px solid rgba(155,92,255,.5);
+          background: #0b0712;
+          color: white;
+          transform-style: preserve-3d;
+          transform-origin: center;
+          transition:
+            transform .5s,
+            border-color .2s,
+            box-shadow .2s;
+          cursor: pointer;
+        }
+
+        .vault-card:hover,
+        .vault-card.active {
+          border-color: #61f7ff;
+          box-shadow:
+            0 0 30px rgba(97,247,255,.25);
+        }
+
+        .vault-image {
+          height: 140px;
+          position: relative;
+          overflow: hidden;
+          background: #08060e;
+        }
+
+        .vault-image img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .vault-play {
+          position: absolute;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          opacity: 0;
+          background: rgba(0,0,0,.45);
+        }
+
+        .vault-card:hover .vault-play {
+          opacity: 1;
+        }
+
+        .vault-info {
+          padding: 9px;
+          text-align: left;
+        }
+
+        .vault-info span {
+          color: #ff3cac;
+          display: block;
+          font: 7px "Orbitron", monospace;
+        }
+
+        .vault-info strong {
+          display: block;
+          margin-top: 6px;
+          font: 9px "Orbitron", monospace;
+        }
+
+        .tape3d-help {
+          text-align: center;
+          color: #4f475b;
+          font: 8px "Orbitron", monospace;
+          letter-spacing: 2px;
+        }
+
+        @media (max-width: 700px) {
+          .tape3d-stage {
+            transform:
+              scale(.7);
+            transform-origin: center;
+          }
+
+          .tape3d-floor {
+            width: 500px;
+            height: 500px;
+          }
+        }
+      `}</style>
     </div>
-  )
+  );
 }
