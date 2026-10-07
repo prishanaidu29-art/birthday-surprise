@@ -1,409 +1,377 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
 export default function BirthdayPage() {
   const router = useRouter()
 
-  const [windows, setWindows] = useState({
-    welcome: true,
-    archive: true,
-    system: true,
-    player: true,
-    files: true,
-  })
+  const [eggOpen, setEggOpen] = useState(null)
+  const [notesOpen, setNotesOpen] = useState(true)
+  const [musicOpen, setMusicOpen] = useState(true)
+  const [filesOpen, setFilesOpen] = useState(true)
+  const [terminalOpen, setTerminalOpen] = useState(false)
+  const [photoOpen, setPhotoOpen] = useState(true)
+  const [videoOpen, setVideoOpen] = useState(false)
 
-  const [eggFound, setEggFound] = useState(null)
-  const [showEggPopup, setShowEggPopup] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [bootTime, setBootTime] = useState(0)
+  const [musicPlaying, setMusicPlaying] = useState(false)
+  const [time, setTime] = useState(new Date())
+
+  const audioRef = useRef(null)
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('birthday_authenticated')
 
     if (authenticated !== 'true') {
       router.push('/')
-      return
     }
-
-    setBootTime(Date.now())
-
-    const timer = setTimeout(() => {
-      setBootTime(Date.now())
-    }, 100)
-
-    return () => clearTimeout(timer)
   }, [router])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   const sections = [
     {
       number: '01',
       title: 'MEMORIES',
-      subtitle: 'photos / places / moments',
-      icon: '📸',
+      sub: 'photos / places / moments',
       link: '/birthday/memories',
+      icon: '📁',
       colour: 'purple',
     },
     {
       number: '02',
       title: 'MESSAGES',
-      subtitle: 'things people wanted you to know',
-      icon: '💌',
+      sub: 'things people wanted you to know',
       link: '/birthday/messages',
+      icon: '💌',
       colour: 'pink',
     },
     {
       number: '03',
       title: 'SOUNDTRACK',
-      subtitle: 'songs that remind us of you',
-      icon: '💿',
+      sub: 'songs about you',
       link: '/birthday/playlist',
+      icon: '💿',
       colour: 'blue',
     },
     {
       number: '04',
-      title: 'THE CHAOS',
-      subtitle: 'shits / giggles / questionable decisions',
-      icon: '☢',
+      title: 'CHAOS',
+      sub: 'shits / giggles / questionable decisions',
       link: '/birthday/games',
-      colour: 'green',
-    },
-    {
-      number: '05',
-      title: 'THE QUIZ',
-      subtitle: 'let us see how well you actually know us',
-      icon: '❔',
-      link: '/birthday/quiz',
+      icon: '🎮',
       colour: 'yellow',
     },
     {
+      number: '05',
+      title: 'QUIZ',
+      sub: 'how well do you actually know us?',
+      link: '/birthday/quiz',
+      icon: '❓',
+      colour: 'green',
+    },
+    {
       number: '06',
-      title: 'THE JOURNEY',
-      subtitle: 'everywhere somehow led to here',
-      icon: '✈',
+      title: 'JOURNEY',
+      sub: 'everywhere somehow led to here',
       link: '/birthday/journey',
+      icon: '🗺️',
       colour: 'red',
     },
   ]
 
-  function toggleWindow(name) {
-    setWindows((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }))
-  }
-
-  function logout() {
+  const handleLogout = () => {
     sessionStorage.removeItem('birthday_authenticated')
     router.push('/')
   }
 
-  function discoverEgg(number) {
-    setEggFound(number)
-    setShowEggPopup(true)
+  const playMusic = () => {
+    if (!audioRef.current) return
+
+    if (musicPlaying) {
+      audioRef.current.pause()
+      setMusicPlaying(false)
+    } else {
+      audioRef.current
+        .play()
+        .then(() => setMusicPlaying(true))
+        .catch(() => {
+          console.log('Add your music file to /public/audio/birthday-song.mp3')
+        })
+    }
+  }
+
+  const openEgg = (egg) => {
+    setEggOpen(egg)
   }
 
   return (
-    <main className="desktop">
+    <main className="archive-screen">
 
-      {/* =====================================================
-          CRT / VHS BACKGROUND
-      ===================================================== */}
+      {/* =========================================================
+          AUDIO
+      ========================================================= */}
 
-      <div className="crt-noise" />
-      <div className="scanlines" />
-      <div className="vhs-bars" />
+      <audio
+        ref={audioRef}
+        src="/audio/birthday-song.mp3"
+        loop
+      />
 
-      <div className="background-grid" />
+      {/* =========================================================
+          CRT / VHS EFFECTS
+      ========================================================= */}
 
-      {/* floating pixels */}
-      <div className="pixel p1" />
-      <div className="pixel p2" />
-      <div className="pixel p3" />
-      <div className="pixel p4" />
+      <div className="crt-lines" />
+      <div className="vhs-noise" />
+      <div className="screen-flicker" />
 
-      {/* =====================================================
+      {/* =========================================================
+          BACKGROUND FLOATING GRAPHICS
+      ========================================================= */}
+
+      <div className="floating-symbol symbol-1">✦</div>
+      <div className="floating-symbol symbol-2">+</div>
+      <div className="floating-symbol symbol-3">✧</div>
+      <div className="floating-symbol symbol-4">×</div>
+      <div className="floating-symbol symbol-5">◆</div>
+      <div className="floating-symbol symbol-6">◇</div>
+
+      <div className="scan-bar" />
+
+      {/* =========================================================
           TOP COMPUTER BAR
-      ===================================================== */}
+      ========================================================= */}
 
       <header className="computer-bar">
 
-        <div className="computer-brand">
-          <span className="brand-dot" />
+        <div className="system-name">
+          <span className="green-dot" />
           CLAR_OS
-          <span className="version">v2.22</span>
+          <span className="version">v2.2.06</span>
         </div>
 
-        <div className="computer-status">
-          MEMORY ARCHIVE // ONLINE
+        <div className="system-center">
+          PRIVATE MEMORY ARCHIVE
         </div>
 
-        <button
-          className="exit-button"
-          onClick={logout}
-        >
-          EXIT ↗
-        </button>
+        <div className="system-right">
+          <span>SYS.OK</span>
+          <span>{time.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })}</span>
+
+          <button
+            onClick={handleLogout}
+            className="exit-button"
+          >
+            EXIT ×
+          </button>
+        </div>
 
       </header>
 
+      {/* =========================================================
+          DESKTOP
+      ========================================================= */}
 
-      {/* =====================================================
-          MAIN DESKTOP
-      ===================================================== */}
+      <section className="desktop">
 
-      <section className="desktop-area">
+        {/* =====================================================
+            DESKTOP ICONS
+        ===================================================== */}
 
-        {/* ===================================================
+        <div className="desktop-icons">
+
+          <div className="desktop-icon">
+            <div className="icon-box purple">📁</div>
+            <span>MEMORY</span>
+          </div>
+
+          <div className="desktop-icon">
+            <div className="icon-box pink">💿</div>
+            <span>SOUND</span>
+          </div>
+
+          <div className="desktop-icon">
+            <div className="icon-box blue">📼</div>
+            <span>VIDEO</span>
+          </div>
+
+          <div className="desktop-icon">
+            <div className="icon-box yellow">TXT</div>
+            <span>NOTES</span>
+          </div>
+
+        </div>
+
+        {/* =====================================================
             WELCOME WINDOW
-        =================================================== */}
+        ===================================================== */}
 
-        {windows.welcome && (
-          <div className="window welcome-window">
+        <div className="window welcome-window">
 
-            <WindowHeader
-              title="WELCOME.TXT"
-              colour="purple"
-              onClose={() => toggleWindow('welcome')}
-            />
+          <div className="window-title purple-title">
+            <span>WELCOME.EXE</span>
 
-            <div className="window-content">
+            <div className="window-buttons">
+              <span>−</span>
+              <span>□</span>
+              <span>×</span>
+            </div>
+          </div>
 
-              <div className="tiny-label">
-                USER DETECTED
-              </div>
+          <div className="welcome-content">
 
-              <h1 className="welcome-title glitch" data-text="WELCOME, CLAR">
-                WELCOME, CLAR
-              </h1>
+            <div className="mini-status">
+              <span className="blink-dot" />
+              CONNECTION ESTABLISHED
+            </div>
 
-              <p className="welcome-subtitle">
-                SUBJECT: YOU
+            <div className="glitch-title">
+              WELCOME
+              <span>CLAR</span>
+            </div>
+
+            <p className="welcome-copy">
+              you've entered the archive.
+              <br />
+              please explore responsibly.
+              <br />
+              <span>...or don't.</span>
+            </p>
+
+            <div className="terminal-line">
+              <span>&gt;</span>
+              SYSTEM HAS BEEN WAITING FOR YOU
+              <span className="cursor">_</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* =====================================================
+            NOTES WINDOW
+        ===================================================== */}
+
+        {notesOpen && (
+          <div className="window notes-window">
+
+            <div className="window-title yellow-title">
+              <span>notes.txt</span>
+
+              <button onClick={() => setNotesOpen(false)}>
+                ×
+              </button>
+            </div>
+
+            <div className="notes-paper">
+
+              <div className="paper-tape" />
+
+              <p className="scribble big">
+                READ BEFORE
+                <br />
+                PROCEEDING
               </p>
 
-              <div className="terminal-message">
-                <span className="terminal-symbol">&gt;</span>
+              <p className="scribble">
+                Hi Clar,
+              </p>
 
-                <span>
-                  congratulations.
-                  <br />
-                  you somehow made it into the archive.
-                  <br />
-                  please investigate responsibly.
+              <p className="scribble">
+                this is sort of an archive for you
+                to look back on your past 22 years.
+              </p>
+
+              <p className="scribble">
+                as much as it is a memory book for you,
+                don't think I didn't add a liiittlee bit
+                of hidden stuff in here HAHAHAH
+              </p>
+
+              <p className="scribble">
+                I took a heck of a long time to make
+                sure you spend a long time on this
+                so good LUCCCKKK :)
+              </p>
+
+              <div className="scribble-arrow">
+                ↓↓↓
+              </div>
+
+              <div className="tiny-warning">
+                <span>WARNING:</span>
+                hidden objects detected
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =====================================================
+            MUSIC WINDOW
+        ===================================================== */}
+
+        {musicOpen && (
+          <div className="window music-window">
+
+            <div className="window-title pink-title">
+
+              <span>CD_PLAYER.EXE</span>
+
+              <button onClick={() => setMusicOpen(false)}>
+                ×
+              </button>
+
+            </div>
+
+            <div className="music-body">
+
+              <div className={`cd ${musicPlaying ? 'spinning' : ''}`}>
+                <div className="cd-shine" />
+                <div className="cd-hole" />
+                <div className="cd-label">
+                  CLAR
+                </div>
+              </div>
+
+              <div className="music-info">
+                <span className="track-number">
+                  TRACK 01 / 22
                 </span>
 
-              </div>
+                <strong>
+                  birthday.exe
+                </strong>
 
-              <div className="blink-line">
-                █ SYSTEM READY █
-              </div>
+                <small>
+                  something chosen specifically for you
+                </small>
 
-            </div>
-
-          </div>
-        )}
-
-
-        {/* ===================================================
-            ARCHIVE WINDOW
-        =================================================== */}
-
-        {windows.archive && (
-          <div className="window archive-window">
-
-            <WindowHeader
-              title="ARCHIVE.EXE"
-              colour="pink"
-              onClose={() => toggleWindow('archive')}
-            />
-
-            <div className="window-content">
-
-              <div className="archive-heading">
-
-                <div>
-                  <span className="tiny-label">
-                    PRIVATE ARCHIVE
-                  </span>
-
-                  <h2 className="archive-title glitch" data-text="THE CLAR FILES">
-                    THE CLAR FILES
-                  </h2>
+                <div className="music-progress">
+                  <span />
                 </div>
 
-                <div className="archive-counter">
-                  06 FILES
-                </div>
-
-              </div>
-
-
-              <div className="section-grid">
-
-                {sections.map((section) => (
-
-                  <Link
-                    href={section.link}
-                    key={section.number}
-                    className={`archive-file ${section.colour}`}
-                  >
-
-                    <div className="file-number">
-                      {section.number}
-                    </div>
-
-                    <div className="file-icon">
-                      {section.icon}
-                    </div>
-
-                    <div className="file-info">
-
-                      <div className="file-name">
-                        {section.title}
-                      </div>
-
-                      <div className="file-description">
-                        {section.subtitle}
-                      </div>
-
-                    </div>
-
-                    <div className="file-arrow">
-                      ↗
-                    </div>
-
-                  </Link>
-
-                ))}
-
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-
-        {/* ===================================================
-            SYSTEM MONITOR
-        =================================================== */}
-
-        {windows.system && (
-          <div className="window system-window">
-
-            <WindowHeader
-              title="SYSTEM_MONITOR"
-              colour="green"
-              onClose={() => toggleWindow('system')}
-            />
-
-            <div className="system-content">
-
-              <div className="system-line">
-                <span>ARCHIVE STATUS</span>
-                <b>ONLINE</b>
-              </div>
-
-              <div className="system-line">
-                <span>MEMORIES</span>
-                <b>LOADED</b>
-              </div>
-
-              <div className="system-line">
-                <span>CHAOS LEVEL</span>
-                <b className="chaos">
-                  ████████░░
-                </b>
-              </div>
-
-              <div className="system-line">
-                <span>SECRETS</span>
-                <b className="danger">
-                  02 DETECTED
-                </b>
-              </div>
-
-              <div className="system-line">
-                <span>USER</span>
-                <b>CLAR</b>
-              </div>
-
-            </div>
-
-          </div>
-        )}
-
-
-        {/* ===================================================
-            CD / MUSIC WINDOW
-        =================================================== */}
-
-        {windows.player && (
-          <div className="window player-window">
-
-            <WindowHeader
-              title="CD_PLAYER.EXE"
-              colour="blue"
-              onClose={() => toggleWindow('player')}
-            />
-
-            <div className="player-content">
-
-              <div className="cd-area">
-
-                <div className="cd">
-                  <div className="cd-shine" />
-                  <div className="cd-hole" />
-                  <div className="cd-label">
-                    CLAR
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="song-info">
-
-                <span className="tiny-label">
-                  NOW PLAYING
-                </span>
-
-                <div className="song-title">
-                  birthday_archive.mp3
-                </div>
-
-                <div className="song-artist">
-                  &lt; insert song here &gt;
-                </div>
-
-                <div className="equalizer">
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                </div>
-
-                <audio
-                  id="archive-audio"
-                  controls
-                  className="audio-player"
-                  onPlay={() => setIsPlaying(true)}
-                  onPause={() => setIsPlaying(false)}
+                <button
+                  onClick={playMusic}
+                  className="play-button"
                 >
-                  <source
-                    src="/audio/main-song.mp3"
-                    type="audio/mpeg"
-                  />
-                </audio>
+                  {musicPlaying ? 'Ⅱ PAUSE' : '▶ PLAY'}
+                </button>
 
               </div>
 
@@ -412,228 +380,386 @@ export default function BirthdayPage() {
           </div>
         )}
 
+        {/* =====================================================
+            PHOTO WINDOW
+        ===================================================== */}
 
-        {/* ===================================================
+        {photoOpen && (
+          <div className="window photo-window">
+
+            <div className="window-title blue-title">
+
+              <span>PHOTOS / RANDOM</span>
+
+              <button onClick={() => setPhotoOpen(false)}>
+                ×
+              </button>
+
+            </div>
+
+            <div className="photo-collage">
+
+              <div className="photo-placeholder photo-a">
+                <span>YOUR<br />PHOTO<br />HERE</span>
+              </div>
+
+              <div className="photo-placeholder photo-b">
+                <span>DROP<br />PHOTO</span>
+              </div>
+
+              <div className="photo-placeholder photo-c">
+                <span>IMG_0022</span>
+              </div>
+
+              <div className="photo-caption">
+                FIG. 022 — SOMEONE WAS DEFINITELY
+                NOT SUPPOSED TO TAKE THIS PHOTO
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =====================================================
+            VIDEO WINDOW
+        ===================================================== */}
+
+        {videoOpen && (
+          <div className="window video-window">
+
+            <div className="window-title purple-title">
+
+              <span>VIDEO_001.MOV</span>
+
+              <button onClick={() => setVideoOpen(false)}>
+                ×
+              </button>
+
+            </div>
+
+            <div className="video-placeholder">
+
+              <div className="play-circle">
+                ▶
+              </div>
+
+              <span>
+                ADD VIDEO
+              </span>
+
+              <small>
+                /public/media/video.mp4
+              </small>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =====================================================
             FILES WINDOW
-        =================================================== */}
+        ===================================================== */}
 
-        {windows.files && (
+        {filesOpen && (
           <div className="window files-window">
 
-            <WindowHeader
-              title="MY_FILES"
-              colour="yellow"
-              onClose={() => toggleWindow('files')}
-            />
+            <div className="window-title green-title">
 
-            <div className="files-content">
+              <span>ARCHIVE / FILES</span>
 
-              <div className="mini-file">
-                <span>📁</span>
-                <small>FEETGANG</small>
-              </div>
+              <button onClick={() => setFilesOpen(false)}>
+                ×
+              </button>
 
-              <div className="mini-file">
-                <span>📁</span>
-                <small>EGGS</small>
-              </div>
+            </div>
 
-              <div className="mini-file">
-                <span>📁</span>
-                <small>GRADUATION</small>
-              </div>
+            <div className="file-grid">
 
-              <div className="mini-file">
-                <span>📁</span>
-                <small>DO_NOT_OPEN</small>
-              </div>
+              {sections.map((section) => (
+                <Link
+                  key={section.number}
+                  href={section.link}
+                  className="mini-file"
+                >
 
-              <div className="mini-file">
-                <span>💾</span>
-                <small>MEMORIES.DAT</small>
-              </div>
+                  <div className={`folder folder-${section.colour}`}>
+                    <span>{section.icon}</span>
+                  </div>
 
-              <div className="mini-file">
-                <span>📼</span>
-                <small>VIDEO_001</small>
-              </div>
+                  <div className="file-number">
+                    {section.number}
+                  </div>
+
+                  <div className="file-name">
+                    {section.title}
+                  </div>
+
+                </Link>
+              ))}
 
             </div>
 
           </div>
         )}
 
+        {/* =====================================================
+            SYSTEM TERMINAL
+        ===================================================== */}
 
-        {/* ===================================================
-            HIDDEN EASTER EGG #1
-        =================================================== */}
+        {terminalOpen && (
+          <div className="window terminal-window">
+
+            <div className="window-title green-title">
+
+              <span>TERMINAL</span>
+
+              <button onClick={() => setTerminalOpen(false)}>
+                ×
+              </button>
+
+            </div>
+
+            <div className="terminal">
+
+              <p>&gt; booting CLAR_OS...</p>
+              <p>&gt; memories found: 22</p>
+              <p>&gt; secrets found: ???</p>
+              <p>&gt; birthday detected.</p>
+              <p>&gt; good luck.</p>
+              <p className="terminal-green">
+                &gt; _
+              </p>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* =====================================================
+            APP DOCK
+        ===================================================== */}
+
+        <div className="dock">
+
+          <button
+            onClick={() => setNotesOpen(true)}
+            title="Notes"
+          >
+            📝
+          </button>
+
+          <button
+            onClick={() => setMusicOpen(true)}
+            title="Music"
+          >
+            💿
+          </button>
+
+          <button
+            onClick={() => setPhotoOpen(true)}
+            title="Photos"
+          >
+            📸
+          </button>
+
+          <button
+            onClick={() => setVideoOpen(true)}
+            title="Video"
+          >
+            📼
+          </button>
+
+          <button
+            onClick={() => setFilesOpen(true)}
+            title="Files"
+          >
+            📁
+          </button>
+
+          <button
+            onClick={() => setTerminalOpen(true)}
+            title="Terminal"
+          >
+            &gt;_
+          </button>
+
+        </div>
+
+        {/* =====================================================
+            EASTER EGG #1
+            VERY NOTICEABLE BUT STILL HIDDEN
+        ===================================================== */}
 
         <button
-          className="hidden-secret secret-one"
-          onClick={() => discoverEgg(1)}
-          aria-label="Hidden Easter egg"
+          className="egg-hotspot egg-one"
+          onClick={() => openEgg('one')}
+          aria-label="Hidden archive object"
         >
-          <span>→</span>
+          <span className="egg-glow" />
+          <span className="egg-arrow">↗</span>
         </button>
 
-
-        {/* ===================================================
-            HIDDEN EASTER EGG #2
-        =================================================== */}
+        {/* =====================================================
+            EASTER EGG #2
+        ===================================================== */}
 
         <button
-          className="hidden-secret secret-two"
-          onClick={() => discoverEgg(2)}
-          aria-label="Hidden Easter egg"
+          className="egg-hotspot egg-two"
+          onClick={() => openEgg('two')}
+          aria-label="Hidden archive object"
         >
+          <span className="egg-glow" />
+          <span className="egg-arrow">←</span>
+        </button>
+
+        {/* =====================================================
+            LITTLE BACKGROUND GAME OBJECTS
+        ===================================================== */}
+
+        <div className="game-object obj-one">
+          <span>★</span>
+        </div>
+
+        <div className="game-object obj-two">
+          <span>?</span>
+        </div>
+
+        <div className="game-object obj-three">
           <span>+</span>
-        </button>
-
-
-        {/* ===================================================
-            FLOATING GLITCH TEXT
-        =================================================== */}
-
-        <div className="floating-text floating-one glitch">
-          DO YOU REMEMBER?
         </div>
 
-        <div className="floating-text floating-two">
-          [ SEARCHING... ]
+        <div className="game-object obj-four">
+          <span>◇</span>
         </div>
 
-        <div className="floating-text floating-three glitch">
-          22 YEARS FOUND
-        </div>
+        {/* =====================================================
+            BOTTOM STATUS BAR
+        ===================================================== */}
 
-        <div className="floating-text floating-four">
-          // FILE CORRUPTED //
-        </div>
-
-
-        {/* ===================================================
-            DECORATIVE PHOTO POLAROIDS
-        =================================================== */}
-
-        <div className="polaroid polaroid-one">
-          <div className="photo-placeholder">
-            PHOTO_001
-          </div>
-          <span>???</span>
-        </div>
-
-        <div className="polaroid polaroid-two">
-          <div className="photo-placeholder">
-            PHOTO_002
-          </div>
-          <span>ARCHIVE</span>
-        </div>
-
-
-        {/* ===================================================
-            BOTTOM STATUS
-        =================================================== */}
-
-        <div className="bottom-console">
+        <div className="bottom-status">
 
           <span>
-            MEMORY SYSTEM ONLINE
-          </span>
-
-          <span className="console-middle">
-            ◉ ◉ ◉
+            <i className="status-green" />
+            ONLINE
           </span>
 
           <span>
-            {isPlaying ? 'PLAYING AUDIO' : 'STANDBY'}
+            ARCHIVE 001
+          </span>
+
+          <span>
+            MEMORY SPACE: 87%
+          </span>
+
+          <span>
+            [ TOUCH / CLICK TO EXPLORE ]
           </span>
 
         </div>
 
       </section>
 
+      {/* =========================================================
+          EASTER EGG MODAL
+      ========================================================= */}
 
-      {/* =====================================================
-          EASTER EGG POPUP
-      ===================================================== */}
-
-      {showEggPopup && (
-
+      {eggOpen && (
         <div className="egg-overlay">
 
           <div className="egg-window">
 
             <div className="egg-header">
-              SECRET_FILE.EXE
+              <span>
+                SECRET_MESSAGE.EXE
+              </span>
 
               <button
-                onClick={() => setShowEggPopup(false)}
+                onClick={() => setEggOpen(null)}
               >
                 ×
               </button>
             </div>
 
-            <div className="egg-body">
+            <div className="egg-content">
 
-              <div className="egg-icon">
-                ★
-              </div>
-
-              <div className="egg-glitch">
-                CONGRATS
+              <div className="egg-warning">
+                ✦ SECRET OBJECT FOUND ✦
               </div>
 
               <h2>
-                YOU FOUND YOUR{' '}
-                {eggFound === 1 ? 'FIRST' : 'SECOND'} EASTER EGG
+                CONGRATS
+                <br />
+                YOU FOUND YOUR
+                <br />
+                {eggOpen === 'one'
+                  ? 'FIRST'
+                  : 'SECOND'}
+                {' '}
+                EASTER EGG
               </h2>
 
+              <div className="egg-divider">
+                ─────────
+              </div>
+
               <p>
-                Apparently you actually pay attention.
+                apparently you actually looked around.
               </p>
 
-              <div className="egg-divider" />
-
-              <p className="play-question">
-                Play audio?
+              <p className="egg-small">
+                most people would have just clicked
+                the obvious stuff.
               </p>
+
+              <div className="audio-card">
+
+                <div className="audio-icon">
+                  🎙
+                </div>
+
+                <div>
+                  <strong>
+                    SECRET VOICE MESSAGE
+                  </strong>
+
+                  <small>
+                    from someone who knows you
+                  </small>
+                </div>
+
+              </div>
 
               <audio
                 controls
-                autoPlay
-                className="egg-audio"
-              >
-                <source
-                  src={
-                    eggFound === 1
-                      ? '/audio/easter-egg-1.mp3'
-                      : '/audio/easter-egg-2.mp3'
-                  }
-                  type="audio/mpeg"
-                />
-              </audio>
+                className="secret-audio"
+                src={
+                  eggOpen === 'one'
+                    ? '/audio/easter-egg-1.mp3'
+                    : '/audio/easter-egg-2.mp3'
+                }
+              />
 
-              <button
-                className="close-egg"
-                onClick={() => setShowEggPopup(false)}
-              >
-                CLOSE FILE
-              </button>
+              <p className="audio-help">
+                Replace the audio files in
+                <br />
+                <code>/public/audio/</code>
+              </p>
 
             </div>
 
           </div>
 
         </div>
-
       )}
 
-
-      {/* =====================================================
+      {/* =========================================================
           GLOBAL STYLES
-      ===================================================== */}
+      ========================================================= */}
 
       <style jsx global>{`
+
+        @import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Press+Start+2P&family=VT323&display=swap');
 
         * {
           box-sizing: border-box;
@@ -643,1237 +769,1436 @@ export default function BirthdayPage() {
         body {
           margin: 0;
           padding: 0;
-          background: #09070d;
+          background: #09050f;
         }
 
         body {
           overflow-x: hidden;
         }
 
-
-        /* ===================================================
-           DESKTOP
-        =================================================== */
-
-        .desktop {
-          min-height: 100vh;
-          background:
-            radial-gradient(
-              circle at 20% 20%,
-              rgba(110, 67, 180, .25),
-              transparent 28%
-            ),
-            radial-gradient(
-              circle at 80% 70%,
-              rgba(91, 43, 130, .25),
-              transparent 30%
-            ),
-            linear-gradient(
-              135deg,
-              #110d19,
-              #191426 45%,
-              #0b0910
-            );
-
-          color: #eee7ff;
-          position: relative;
-          overflow: hidden;
-          font-family:
-            "Courier New",
-            monospace;
+        button,
+        a {
+          -webkit-tap-highlight-color: transparent;
         }
 
+        /* ======================================================
+           MAIN SCREEN
+        ====================================================== */
 
-        /* ===================================================
+        .archive-screen {
+          min-height: 100vh;
+          color: #eee8ff;
+          background:
+            radial-gradient(circle at 15% 20%, rgba(108, 59, 180, .25), transparent 30%),
+            radial-gradient(circle at 85% 70%, rgba(204, 46, 137, .16), transparent 30%),
+            linear-gradient(135deg, #110a1b 0%, #171022 42%, #09070f 100%);
+          font-family: 'Chakra Petch', sans-serif;
+          position: relative;
+          overflow: hidden;
+        }
+
+        /* ======================================================
            CRT
-        =================================================== */
+        ====================================================== */
 
-        .crt-noise {
+        .crt-lines {
           position: fixed;
           inset: 0;
           pointer-events: none;
-          z-index: 100;
-          opacity: .09;
-
-          background-image:
-            repeating-radial-gradient(
-              circle at 0 0,
-              rgba(255,255,255,.4) 0,
-              rgba(255,255,255,.4) 1px,
-              transparent 1px,
-              transparent 3px
-            );
-
+          z-index: 999;
+          background: repeating-linear-gradient(
+            to bottom,
+            rgba(255,255,255,.025) 0px,
+            rgba(255,255,255,.025) 1px,
+            transparent 2px,
+            transparent 5px
+          );
           mix-blend-mode: screen;
         }
 
-        .scanlines {
+        .vhs-noise {
           position: fixed;
           inset: 0;
           pointer-events: none;
-          z-index: 101;
-
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              rgba(255,255,255,.035) 0px,
-              rgba(255,255,255,.035) 1px,
-              transparent 1px,
-              transparent 4px
-            );
-        }
-
-        .vhs-bars {
-          position: fixed;
-          left: 0;
-          right: 0;
-          top: 48%;
-          height: 2px;
-          background: #c76cff;
-          opacity: .08;
-          animation: vhsJump 5s infinite;
-          pointer-events: none;
-          z-index: 102;
-        }
-
-        @keyframes vhsJump {
-          0% { transform: translateY(0); }
-          20% { transform: translateY(-120px); }
-          21% { transform: translateY(0); }
-          65% { transform: translateY(90px); }
-          66% { transform: translateY(0); }
-          100% { transform: translateY(0); }
-        }
-
-
-        /* ===================================================
-           GRID
-        =================================================== */
-
-        .background-grid {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          opacity: .12;
-
+          z-index: 998;
+          opacity: .09;
           background-image:
-            linear-gradient(
-              rgba(180,120,255,.2) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(180,120,255,.2) 1px,
-              transparent 1px
+            repeating-radial-gradient(
+              circle at 20% 30%,
+              rgba(255,255,255,.5) 0px,
+              transparent 1px,
+              transparent 3px
             );
-
-          background-size: 45px 45px;
-          transform: perspective(500px) rotateX(60deg)
-            scale(1.5) translateY(180px);
-          transform-origin: bottom;
+          animation: noiseMove .18s steps(2) infinite;
         }
 
-
-        /* ===================================================
-           PIXELS
-        =================================================== */
-
-        .pixel {
+        .screen-flicker {
           position: fixed;
-          width: 7px;
-          height: 7px;
-          background: #bf6cff;
-          box-shadow: 0 0 15px #bf6cff;
-          animation: pixelFloat 4s infinite ease-in-out;
+          inset: 0;
           pointer-events: none;
+          z-index: 997;
+          background: rgba(120, 70, 255, .025);
+          animation: flicker .12s infinite;
         }
 
-        .p1 {
-          top: 22%;
-          left: 5%;
+        @keyframes flicker {
+          0%, 100% { opacity: .15; }
+          45% { opacity: .03; }
+          48% { opacity: .12; }
+          50% { opacity: .04; }
+          80% { opacity: .08; }
         }
 
-        .p2 {
-          top: 75%;
-          right: 8%;
-          animation-delay: 1s;
+        @keyframes noiseMove {
+          0% { transform: translate(0,0); }
+          25% { transform: translate(2%, -1%); }
+          50% { transform: translate(-1%, 2%); }
+          75% { transform: translate(1%, 1%); }
+          100% { transform: translate(-2%, -1%); }
         }
 
-        .p3 {
-          top: 30%;
-          right: 4%;
-          animation-delay: 2s;
-        }
-
-        .p4 {
-          bottom: 8%;
-          left: 40%;
-          animation-delay: 3s;
-        }
-
-        @keyframes pixelFloat {
-          0%,100% {
-            transform: translate(0,0);
-            opacity: .25;
-          }
-
-          50% {
-            transform: translate(10px,-20px);
-            opacity: 1;
-          }
-        }
-
-
-        /* ===================================================
-           COMPUTER BAR
-        =================================================== */
+        /* ======================================================
+           TOP BAR
+        ====================================================== */
 
         .computer-bar {
-          height: 52px;
-          border-bottom: 1px solid rgba(183,111,255,.3);
-          background: rgba(12,9,18,.85);
+          height: 46px;
+          border-bottom: 1px solid rgba(205, 171, 255, .2);
+          background: rgba(13, 8, 22, .85);
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0 18px;
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          letter-spacing: .08em;
           position: relative;
-          z-index: 20;
-          box-shadow: 0 0 30px rgba(160,70,255,.15);
+          z-index: 50;
+          box-shadow: 0 0 25px rgba(130, 75, 255, .1);
         }
 
-        .computer-brand {
-          color: #d18cff;
-          font-size: 11px;
-          letter-spacing: .2em;
-          text-shadow: 0 0 10px #a94dff;
-        }
-
-        .brand-dot {
-          width: 7px;
-          height: 7px;
-          display: inline-block;
-          background: #7dffbc;
-          margin-right: 8px;
-          border-radius: 50%;
-          box-shadow: 0 0 12px #7dffbc;
+        .system-name {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: #d7b9ff;
         }
 
         .version {
-          color: #696070;
-          margin-left: 8px;
+          color: #6f647c;
+          font-size: 13px;
         }
 
-        .computer-status {
-          color: #70677b;
-          font-size: 8px;
-          letter-spacing: .2em;
-        }
-
-        .exit-button {
-          border: 1px solid #45394f;
-          color: #a99bad;
-          background: transparent;
-          padding: 7px 12px;
-          font-family: inherit;
-          font-size: 9px;
-          cursor: pointer;
-          transition: .2s;
-        }
-
-        .exit-button:hover {
-          color: white;
-          border-color: #bc70ff;
-          box-shadow: 0 0 15px rgba(188,112,255,.4);
-        }
-
-
-        /* ===================================================
-           DESKTOP AREA
-        =================================================== */
-
-        .desktop-area {
-          position: relative;
-          min-height: calc(100vh - 52px);
-          padding: 25px;
-          max-width: 1450px;
-          margin: auto;
-        }
-
-
-        /* ===================================================
-           WINDOWS
-        =================================================== */
-
-        .window {
-          position: absolute;
-          background: rgba(18,13,27,.94);
-          border: 1px solid #593b69;
-          box-shadow:
-            0 0 0 1px rgba(0,0,0,.8),
-            0 15px 40px rgba(0,0,0,.55),
-            0 0 30px rgba(135,65,190,.12);
-
-          backdrop-filter: blur(8px);
-          overflow: hidden;
-        }
-
-        .window:hover {
-          border-color: #9d5bd1;
-        }
-
-        .window::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background:
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 3px,
-              rgba(255,255,255,.015) 4px
-            );
-        }
-
-
-        .window-header {
-          height: 31px;
-          background: #21182a;
-          border-bottom: 1px solid #493550;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 9px;
-          font-size: 8px;
-          letter-spacing: .15em;
-          color: #c7b8ce;
-        }
-
-        .window-controls {
-          display: flex;
-          gap: 5px;
-        }
-
-        .window-control {
+        .green-dot,
+        .blink-dot {
           width: 7px;
           height: 7px;
           border-radius: 50%;
+          background: #8cffd1;
+          box-shadow: 0 0 10px #8cffd1;
+          display: inline-block;
+          animation: blink 1.2s infinite;
         }
 
-        .control-purple {
-          background: #c579ff;
-          box-shadow: 0 0 7px #c579ff;
+        .system-center {
+          color: #70647c;
+          font-size: 14px;
         }
 
-        .control-pink {
-          background: #ff6fae;
-          box-shadow: 0 0 7px #ff6fae;
+        .system-right {
+          display: flex;
+          gap: 18px;
+          align-items: center;
+          color: #81758f;
         }
 
-        .control-green {
-          background: #6dffb1;
-          box-shadow: 0 0 7px #6dffb1;
-        }
-
-        .control-blue {
-          background: #65cfff;
-          box-shadow: 0 0 7px #65cfff;
-        }
-
-        .control-yellow {
-          background: #ffe26d;
-          box-shadow: 0 0 7px #ffe26d;
-        }
-
-        .close-window {
-          background: none;
-          border: none;
-          color: #8d7f94;
-          cursor: pointer;
+        .exit-button {
+          background: transparent;
+          border: 1px solid #3b2d4b;
+          color: #8c789b;
+          padding: 4px 9px;
           font-family: inherit;
+          cursor: pointer;
         }
 
-        .close-window:hover {
-          color: white;
+        .exit-button:hover {
+          color: #fff;
+          border-color: #bd63ff;
+          box-shadow: 0 0 12px rgba(189,99,255,.4);
         }
 
+        /* ======================================================
+           DESKTOP
+        ====================================================== */
 
-        /* ===================================================
-           WINDOW POSITIONS
-        =================================================== */
-
-        .welcome-window {
-          top: 35px;
-          left: 35px;
-          width: 390px;
-          z-index: 5;
+        .desktop {
+          min-height: calc(100vh - 46px);
+          position: relative;
+          overflow: hidden;
+          padding: 35px;
         }
 
-        .archive-window {
-          top: 190px;
-          left: 310px;
-          width: min(720px, calc(100% - 390px));
-          z-index: 8;
-        }
+        /* ======================================================
+           DESKTOP ICONS
+        ====================================================== */
 
-        .system-window {
-          top: 70px;
-          right: 45px;
-          width: 245px;
+        .desktop-icons {
+          position: absolute;
+          left: 18px;
+          top: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
           z-index: 4;
         }
 
-        .player-window {
-          right: 60px;
-          top: 350px;
-          width: 300px;
-          z-index: 9;
-        }
-
-        .files-window {
-          left: 40px;
-          bottom: 70px;
-          width: 330px;
-          z-index: 10;
-        }
-
-
-        /* ===================================================
-           WELCOME
-        =================================================== */
-
-        .window-content {
-          padding: 22px;
-        }
-
-        .tiny-label {
-          color: #786a84;
-          font-size: 8px;
-          letter-spacing: .25em;
-        }
-
-        .welcome-title {
-          margin: 15px 0 5px;
-          color: #e7cfff;
-          font-family: "Courier New", monospace;
-          font-size: 28px;
-          letter-spacing: .08em;
-          text-shadow:
-            0 0 8px rgba(200,130,255,.7);
-        }
-
-        .welcome-subtitle {
-          color: #ff77b9;
-          font-size: 9px;
-          letter-spacing: .2em;
-        }
-
-        .terminal-message {
-          margin-top: 20px;
-          display: flex;
-          gap: 9px;
-          color: #aaa0ae;
-          font-size: 11px;
-          line-height: 1.8;
-        }
-
-        .terminal-symbol {
-          color: #72ffb5;
-        }
-
-        .blink-line {
-          margin-top: 20px;
-          color: #72ffb5;
-          font-size: 9px;
-          animation: blink 1.1s infinite;
-        }
-
-        @keyframes blink {
-          0%, 45% { opacity: 1; }
-          46%, 100% { opacity: .25; }
-        }
-
-
-        /* ===================================================
-           ARCHIVE
-        =================================================== */
-
-        .archive-heading {
-          display: flex;
-          justify-content: space-between;
-          align-items: end;
-          margin-bottom: 20px;
-        }
-
-        .archive-title {
-          margin: 6px 0 0;
-          font-size: 25px;
-          letter-spacing: .1em;
-          color: #eadcff;
-        }
-
-        .archive-counter {
-          color: #66596c;
-          font-size: 8px;
-          letter-spacing: .15em;
-        }
-
-        .section-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 9px;
-        }
-
-        .archive-file {
-          min-height: 105px;
-          position: relative;
-          padding: 13px;
-          border: 1px solid #352a3d;
-          background: #151018;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          color: inherit;
-          text-decoration: none;
-          transition: .2s;
-          overflow: hidden;
-        }
-
-        .archive-file:hover {
-          transform: translateY(-3px);
-          border-color: #a85dca;
-          background: #21162b;
-          box-shadow:
-            0 0 20px rgba(190,90,255,.2);
-        }
-
-        .file-number {
-          position: absolute;
-          top: 5px;
-          right: 7px;
-          color: #413646;
-          font-size: 7px;
-        }
-
-        .file-icon {
-          width: 45px;
-          height: 45px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #241a2b;
-          border: 1px solid #453651;
-          font-size: 20px;
-          flex-shrink: 0;
-        }
-
-        .file-name {
-          color: #ded0e6;
-          font-size: 12px;
-          letter-spacing: .1em;
-        }
-
-        .file-description {
-          color: #716678;
-          font-size: 8px;
-          margin-top: 6px;
-          line-height: 1.5;
-        }
-
-        .file-arrow {
-          margin-left: auto;
-          color: #624a6e;
-          font-size: 16px;
-        }
-
-        .archive-file:hover .file-arrow {
-          color: #db8cff;
-          transform: translate(3px,-3px);
-        }
-
-
-        /* ===================================================
-           SYSTEM
-        =================================================== */
-
-        .system-content {
-          padding: 15px;
-        }
-
-        .system-line {
-          display: flex;
-          justify-content: space-between;
-          border-bottom: 1px dashed #342a38;
-          padding: 8px 0;
-          font-size: 8px;
-          color: #756b7b;
-        }
-
-        .system-line b {
-          color: #72ffb5;
-          font-weight: normal;
-        }
-
-        .system-line .chaos {
-          color: #ffcf6e;
-        }
-
-        .system-line .danger {
-          color: #ff70a9;
-        }
-
-
-        /* ===================================================
-           CD PLAYER
-        =================================================== */
-
-        .player-content {
-          display: flex;
-          padding: 18px;
-          gap: 18px;
-          align-items: center;
-        }
-
-        .cd-area {
-          width: 100px;
-          height: 100px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .cd {
-          width: 85px;
-          height: 85px;
-          border-radius: 50%;
-
-          background:
-            conic-gradient(
-              #26202b,
-              #d3c6df,
-              #493652,
-              #bba7c9,
-              #26202b
-            );
-
-          border: 2px solid #8f7b99;
-          position: relative;
-
-          animation: cdSpin 2.7s linear infinite;
-
-          box-shadow:
-            0 0 18px rgba(190,120,255,.25);
-        }
-
-        @keyframes cdSpin {
-          from {
-            transform: rotate(0deg);
-          }
-
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .cd-hole {
-          width: 18px;
-          height: 18px;
-          background: #17111d;
-          border: 2px solid #a18ba9;
-          border-radius: 50%;
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%,-50%);
-        }
-
-        .cd-label {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%,-50%);
-          color: #2a2030;
-          font-size: 7px;
-          font-weight: bold;
-        }
-
-        .song-info {
-          flex: 1;
-        }
-
-        .song-title {
-          color: #e1d4e7;
-          margin-top: 8px;
-          font-size: 11px;
-        }
-
-        .song-artist {
-          color: #716578;
-          font-size: 8px;
-          margin-top: 4px;
-        }
-
-        .equalizer {
-          display: flex;
-          gap: 3px;
-          height: 25px;
-          align-items: end;
-          margin: 15px 0;
-        }
-
-        .equalizer i {
-          display: block;
-          width: 3px;
-          background: #a45bff;
-          animation: equalize .7s infinite alternate;
-        }
-
-        .equalizer i:nth-child(1) { height: 30%; }
-        .equalizer i:nth-child(2) { height: 70%; animation-delay: .1s; }
-        .equalizer i:nth-child(3) { height: 45%; animation-delay: .2s; }
-        .equalizer i:nth-child(4) { height: 90%; animation-delay: .3s; }
-        .equalizer i:nth-child(5) { height: 60%; animation-delay: .15s; }
-        .equalizer i:nth-child(6) { height: 85%; animation-delay: .25s; }
-        .equalizer i:nth-child(7) { height: 40%; animation-delay: .35s; }
-        .equalizer i:nth-child(8) { height: 75%; animation-delay: .2s; }
-        .equalizer i:nth-child(9) { height: 50%; animation-delay: .1s; }
-        .equalizer i:nth-child(10) { height: 80%; animation-delay: .3s; }
-
-        @keyframes equalize {
-          from { transform: scaleY(.35); }
-          to { transform: scaleY(1); }
-        }
-
-        .audio-player {
-          width: 100%;
-          height: 30px;
-          margin-top: 5px;
-          filter: sepia(.4) hue-rotate(220deg) saturate(1.5);
-        }
-
-
-        /* ===================================================
-           FILES
-        =================================================== */
-
-        .files-content {
-          padding: 15px;
-          display: grid;
-          grid-template-columns: repeat(3,1fr);
-          gap: 14px;
-        }
-
-        .mini-file {
+        .desktop-icon {
+          width: 68px;
           text-align: center;
+          color: #9c8daa;
+          font-family: 'VT323', monospace;
+          font-size: 14px;
           cursor: pointer;
-          transition: .2s;
+          transition: transform .2s;
         }
 
-        .mini-file:hover {
+        .desktop-icon:hover {
           transform: translateY(-4px);
-          filter: drop-shadow(0 0 8px #c16bff);
+          color: white;
         }
 
-        .mini-file span {
-          display: block;
-          font-size: 27px;
-        }
-
-        .mini-file small {
-          display: block;
-          color: #82778b;
-          font-size: 6px;
-          margin-top: 5px;
-          word-break: break-word;
-        }
-
-
-        /* ===================================================
-           GLITCH
-        =================================================== */
-
-        .glitch {
-          position: relative;
-        }
-
-        .glitch::before,
-        .glitch::after {
-          content: attr(data-text);
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-        }
-
-        .glitch::before {
-          color: #ff3b9d;
-          transform: translate(-2px,0);
-          clip-path: inset(0 0 55% 0);
-          animation: glitchOne 3.5s infinite;
-        }
-
-        .glitch::after {
-          color: #43d9ff;
-          transform: translate(2px,0);
-          clip-path: inset(55% 0 0 0);
-          animation: glitchTwo 2.8s infinite;
-        }
-
-        @keyframes glitchOne {
-          0%, 90%, 100% {
-            transform: translate(0);
-            opacity: 0;
-          }
-
-          91% {
-            transform: translate(-4px,-2px);
-            opacity: 1;
-          }
-
-          94% {
-            transform: translate(3px,1px);
-            opacity: 1;
-          }
-
-          97% {
-            opacity: 0;
-          }
-        }
-
-        @keyframes glitchTwo {
-          0%, 85%, 100% {
-            transform: translate(0);
-            opacity: 0;
-          }
-
-          86% {
-            transform: translate(4px,2px);
-            opacity: 1;
-          }
-
-          89% {
-            transform: translate(-3px,-1px);
-            opacity: 1;
-          }
-
-          92% {
-            opacity: 0;
-          }
-        }
-
-
-        /* ===================================================
-           FLOATING TEXT
-        =================================================== */
-
-        .floating-text {
-          position: absolute;
-          color: #5f5268;
-          font-size: 7px;
-          letter-spacing: .2em;
-          pointer-events: none;
-        }
-
-        .floating-one {
-          top: 5%;
-          left: 48%;
-        }
-
-        .floating-two {
-          bottom: 17%;
-          right: 4%;
-          animation: fadeText 3s infinite;
-        }
-
-        .floating-three {
-          top: 65%;
-          left: 4%;
-          color: #6f5d78;
-        }
-
-        .floating-four {
-          bottom: 5%;
-          right: 40%;
-          color: #4f4654;
-        }
-
-        @keyframes fadeText {
-          0%,100% { opacity: .15; }
-          50% { opacity: .8; }
-        }
-
-
-        /* ===================================================
-           POLAROIDS
-        =================================================== */
-
-        .polaroid {
-          position: absolute;
-          padding: 7px 7px 13px;
-          background: #d5c9d9;
-          color: #201823;
-          width: 115px;
-          box-shadow: 0 12px 30px rgba(0,0,0,.5);
-          font-size: 6px;
-          text-align: center;
-        }
-
-        .photo-placeholder {
-          height: 100px;
-          background:
-            linear-gradient(
-              135deg,
-              #31253b,
-              #756183
-            );
+        .icon-box {
+          width: 45px;
+          height: 38px;
+          margin: auto;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #d9c7e3;
-          font-size: 7px;
-        }
-
-        .polaroid span {
-          display: block;
-          margin-top: 8px;
-        }
-
-        .polaroid-one {
-          top: 45%;
-          left: 5%;
-          transform: rotate(-8deg);
-        }
-
-        .polaroid-two {
-          bottom: 18%;
-          right: 5%;
-          transform: rotate(7deg);
-        }
-
-
-        /* ===================================================
-           HIDDEN EASTER EGGS
-        =================================================== */
-
-        .hidden-secret {
-          position: absolute;
-          background: transparent;
-          border: none;
-          color: #8b4fa9;
-          cursor: pointer;
-          opacity: .12;
-          transition: .4s;
-          z-index: 30;
-          animation: secretPulse 3s infinite;
-        }
-
-        .hidden-secret:hover {
-          opacity: 1;
-          color: #e7a1ff;
-          text-shadow: 0 0 12px #d66cff;
-        }
-
-        .secret-one {
-          top: 27%;
-          right: 27%;
+          border: 1px solid rgba(255,255,255,.15);
+          margin-bottom: 3px;
           font-size: 22px;
+          background: rgba(30,20,42,.7);
+          box-shadow: inset 0 0 12px rgba(255,255,255,.06);
         }
 
-        .secret-two {
-          bottom: 23%;
-          left: 26%;
-          font-size: 17px;
-        }
+        .icon-box.purple { box-shadow: 0 0 14px rgba(173,93,255,.3); }
+        .icon-box.pink { box-shadow: 0 0 14px rgba(255,71,184,.3); }
+        .icon-box.blue { box-shadow: 0 0 14px rgba(91,189,255,.3); }
+        .icon-box.yellow { box-shadow: 0 0 14px rgba(255,213,85,.3); }
 
-        @keyframes secretPulse {
-          0%,100% {
-            opacity: .06;
-          }
+        /* ======================================================
+           WINDOWS
+        ====================================================== */
 
-          50% {
-            opacity: .25;
-          }
-        }
-
-
-        /* ===================================================
-           EASTER EGG POPUP
-        =================================================== */
-
-        .egg-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 200;
-          background: rgba(0,0,0,.72);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-          backdrop-filter: blur(5px);
-        }
-
-        .egg-window {
-          width: min(470px, 100%);
-          border: 1px solid #bb70ff;
-          background: #100b17;
+        .window {
+          position: absolute;
+          background: rgba(19, 12, 28, .94);
+          border: 1px solid rgba(194, 143, 255, .32);
           box-shadow:
-            0 0 20px rgba(190,90,255,.4),
-            0 0 80px rgba(120,30,180,.2);
-          animation: eggAppear .35s ease-out;
+            0 15px 50px rgba(0,0,0,.45),
+            0 0 30px rgba(141, 65, 255, .08);
+          backdrop-filter: blur(4px);
+          overflow: hidden;
+          animation: windowAppear .6s ease-out both;
         }
 
-        @keyframes eggAppear {
+        @keyframes windowAppear {
           from {
             opacity: 0;
-            transform: scale(.92) translateY(10px);
+            transform: scale(.96) translateY(10px);
           }
-
           to {
             opacity: 1;
             transform: scale(1) translateY(0);
           }
         }
 
-        .egg-header {
-          height: 34px;
-          padding: 0 12px;
-          background: #25172f;
-          border-bottom: 1px solid #4e3760;
+        .window-title {
+          height: 29px;
           display: flex;
-          align-items: center;
           justify-content: space-between;
-          color: #d5c4df;
-          font-size: 8px;
-          letter-spacing: .2em;
+          align-items: center;
+          padding: 0 8px 0 10px;
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          letter-spacing: .06em;
+          border-bottom: 1px solid rgba(255,255,255,.1);
         }
 
-        .egg-header button {
-          border: none;
+        .window-title button {
           background: transparent;
-          color: #a793ae;
+          border: 0;
+          color: inherit;
+          font-size: 19px;
+          cursor: pointer;
+          font-family: inherit;
+        }
+
+        .purple-title {
+          background: linear-gradient(90deg, #563083, #271639);
+          color: #eadbff;
+        }
+
+        .pink-title {
+          background: linear-gradient(90deg, #84355f, #33152d);
+          color: #ffd9ef;
+        }
+
+        .blue-title {
+          background: linear-gradient(90deg, #275c81, #152e42);
+          color: #d7f3ff;
+        }
+
+        .yellow-title {
+          background: linear-gradient(90deg, #80662b, #352c18);
+          color: #fff0b1;
+        }
+
+        .green-title {
+          background: linear-gradient(90deg, #246454, #102d27);
+          color: #caffed;
+        }
+
+        /* ======================================================
+           WELCOME
+        ====================================================== */
+
+        .welcome-window {
+          width: 390px;
+          left: 13%;
+          top: 12%;
+          z-index: 7;
+        }
+
+        .welcome-content {
+          padding: 22px;
+          min-height: 205px;
+        }
+
+        .mini-status {
+          font-family: 'VT323', monospace;
+          color: #8cffd1;
+          font-size: 15px;
+          letter-spacing: .12em;
+          margin-bottom: 16px;
+        }
+
+        .glitch-title {
+          font-family: 'Press Start 2P', monospace;
+          font-size: 26px;
+          line-height: 1.45;
+          color: #eee0ff;
+          position: relative;
+          text-shadow:
+            3px 0 #ff3b9d,
+            -3px 0 #53d8ff;
+          animation: textGlitch 4s infinite;
+        }
+
+        .glitch-title span {
+          display: block;
+          color: #c58cff;
+        }
+
+        @keyframes textGlitch {
+          0%, 88%, 100% {
+            transform: translate(0);
+            opacity: 1;
+          }
+          89% {
+            transform: translate(-3px, 1px);
+            opacity: .7;
+          }
+          90% {
+            transform: translate(4px, -1px);
+            opacity: .4;
+          }
+          91% {
+            transform: translate(0);
+            opacity: 1;
+          }
+        }
+
+        .welcome-copy {
+          font-family: 'VT323', monospace;
+          font-size: 19px;
+          line-height: 1.15;
+          color: #9e91aa;
+          margin: 17px 0;
+        }
+
+        .welcome-copy span {
+          color: #e184ff;
+        }
+
+        .terminal-line {
+          font-family: 'VT323', monospace;
+          font-size: 15px;
+          color: #71677d;
+          border-top: 1px dashed #3a2d44;
+          padding-top: 10px;
+        }
+
+        .terminal-line span:first-child {
+          color: #8cffd1;
+        }
+
+        .cursor {
+          animation: cursorBlink .7s infinite;
+          color: #fff;
+        }
+
+        @keyframes cursorBlink {
+          50% { opacity: 0; }
+        }
+
+        /* ======================================================
+           NOTES
+        ====================================================== */
+
+        .notes-window {
+          width: 330px;
+          left: 5%;
+          bottom: 16%;
+          transform: rotate(-2deg);
+          z-index: 8;
+        }
+
+        .notes-paper {
+          background:
+            linear-gradient(rgba(255,255,255,.95), rgba(235,226,202,.96)),
+            #f2ecd9;
+          color: #27202a;
+          min-height: 285px;
+          padding: 24px 22px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .paper-tape {
+          position: absolute;
+          top: 7px;
+          left: 42%;
+          width: 65px;
+          height: 16px;
+          background: rgba(209,183,128,.55);
+          transform: rotate(-3deg);
+        }
+
+        .scribble {
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          line-height: 1.05;
+          margin: 0 0 11px;
+          transform: rotate(-.5deg);
+        }
+
+        .scribble.big {
+          font-size: 24px;
+          color: #5e214f;
+          font-weight: bold;
+        }
+
+        .scribble-arrow {
+          font-family: monospace;
+          color: #aa376b;
+          font-size: 21px;
+          animation: arrowBounce 1.2s infinite;
+        }
+
+        @keyframes arrowBounce {
+          50% { transform: translateY(5px); }
+        }
+
+        .tiny-warning {
+          font-family: 'VT323', monospace;
+          font-size: 14px;
+          margin-top: 8px;
+          color: #69435f;
+        }
+
+        .tiny-warning span {
+          color: #b43766;
+        }
+
+        /* ======================================================
+           MUSIC
+        ====================================================== */
+
+        .music-window {
+          width: 365px;
+          right: 8%;
+          top: 8%;
+          z-index: 10;
+        }
+
+        .music-body {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+          padding: 22px;
+        }
+
+        .cd {
+          width: 120px;
+          height: 120px;
+          border-radius: 50%;
+          background:
+            conic-gradient(
+              #e9e3f2,
+              #6c5f82,
+              #d9d0e7,
+              #514364,
+              #e8d9ff,
+              #756584,
+              #e9e3f2
+            );
+          position: relative;
+          flex-shrink: 0;
+          box-shadow:
+            0 0 20px rgba(211,155,255,.3),
+            inset 0 0 15px rgba(0,0,0,.4);
+        }
+
+        .cd.spinning {
+          animation: cdSpin 1.8s linear infinite;
+        }
+
+        @keyframes cdSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        .cd-shine {
+          position: absolute;
+          inset: 8px;
+          border-radius: 50%;
+          background: linear-gradient(
+            120deg,
+            transparent 25%,
+            rgba(255,255,255,.5) 40%,
+            transparent 53%
+          );
+        }
+
+        .cd-hole {
+          position: absolute;
+          width: 23px;
+          height: 23px;
+          background: #1a1122;
+          border-radius: 50%;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          border: 2px solid #c8bad4;
+        }
+
+        .cd-label {
+          position: absolute;
+          left: 50%;
+          top: 32%;
+          transform: translateX(-50%);
+          font-family: 'VT323', monospace;
+          font-size: 11px;
+          color: #3d274c;
+        }
+
+        .music-info {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          flex: 1;
+        }
+
+        .track-number {
+          font-family: 'VT323', monospace;
+          color: #d679b0;
+          font-size: 14px;
+        }
+
+        .music-info strong {
+          font-family: 'Press Start 2P', monospace;
+          font-size: 12px;
+          line-height: 1.5;
+          color: #f0e7ff;
+        }
+
+        .music-info small {
+          font-family: 'VT323', monospace;
+          color: #8b7e96;
+          font-size: 15px;
+        }
+
+        .music-progress {
+          width: 100%;
+          height: 4px;
+          background: #32253d;
+          margin: 5px 0;
+        }
+
+        .music-progress span {
+          display: block;
+          width: 62%;
+          height: 100%;
+          background: linear-gradient(90deg, #b25cff, #ff5cb6);
+          animation: progressPulse 2s infinite alternate;
+        }
+
+        @keyframes progressPulse {
+          to { width: 82%; }
+        }
+
+        .play-button {
+          width: max-content;
+          border: 1px solid #a95dff;
+          color: #dfc7ff;
+          background: rgba(114,45,163,.2);
+          padding: 6px 10px;
+          font-family: 'VT323', monospace;
           font-size: 17px;
           cursor: pointer;
         }
 
-        .egg-body {
+        .play-button:hover {
+          background: #9c4bdb;
+          color: white;
+          box-shadow: 0 0 15px rgba(183,77,255,.5);
+        }
+
+        /* ======================================================
+           PHOTOS
+        ====================================================== */
+
+        .photo-window {
+          right: 7%;
+          top: 39%;
+          width: 320px;
+          z-index: 6;
+        }
+
+        .photo-collage {
+          min-height: 245px;
+          position: relative;
+          background: #17101d;
+          padding: 16px;
+        }
+
+        .photo-placeholder {
+          position: absolute;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          color: #93859e;
+          border: 3px solid #ddd4e5;
+          background:
+            linear-gradient(135deg, #433650, #21192b);
+          box-shadow: 4px 5px 0 rgba(0,0,0,.35);
+        }
+
+        .photo-a {
+          width: 145px;
+          height: 105px;
+          left: 20px;
+          top: 20px;
+          transform: rotate(-5deg);
+        }
+
+        .photo-b {
+          width: 125px;
+          height: 95px;
+          right: 17px;
+          top: 30px;
+          transform: rotate(7deg);
+        }
+
+        .photo-c {
+          width: 135px;
+          height: 95px;
+          left: 78px;
+          bottom: 25px;
+          transform: rotate(2deg);
+        }
+
+        .photo-caption {
+          position: absolute;
+          bottom: 7px;
+          left: 12px;
+          right: 12px;
+          font-family: 'VT323', monospace;
+          font-size: 11px;
+          color: #655a6c;
+        }
+
+        /* ======================================================
+           VIDEO
+        ====================================================== */
+
+        .video-window {
+          width: 300px;
+          right: 34%;
+          bottom: 12%;
+          z-index: 12;
+        }
+
+        .video-placeholder {
+          height: 190px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          background:
+            radial-gradient(circle, #3e2d4f 0%, #120c18 70%);
+          color: #87758e;
+          font-family: 'VT323', monospace;
+        }
+
+        .play-circle {
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          border: 1px solid #bf73ff;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          color: #d59bff;
+          box-shadow: 0 0 22px rgba(194,104,255,.35);
+          animation: videoPulse 2s infinite;
+        }
+
+        @keyframes videoPulse {
+          50% {
+            transform: scale(1.08);
+            box-shadow: 0 0 35px rgba(194,104,255,.6);
+          }
+        }
+
+        .video-placeholder small {
+          font-size: 12px;
+          color: #51475a;
+        }
+
+        /* ======================================================
+           FILES
+        ====================================================== */
+
+        .files-window {
+          width: 420px;
+          left: 37%;
+          bottom: 7%;
+          z-index: 15;
+        }
+
+        .file-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 13px;
+          padding: 17px;
+        }
+
+        .mini-file {
+          text-decoration: none;
+          color: #b6a9bf;
+          padding: 7px;
+          transition: .2s;
+          position: relative;
+        }
+
+        .mini-file:hover {
+          background: rgba(174,95,255,.08);
+          color: white;
+          transform: translateY(-4px);
+        }
+
+        .folder {
+          height: 52px;
+          position: relative;
+          border: 1px solid rgba(255,255,255,.12);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 24px;
+          margin-bottom: 5px;
+        }
+
+        .folder::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: -7px;
+          width: 23px;
+          height: 8px;
+          background: inherit;
+          border: inherit;
+          border-bottom: 0;
+        }
+
+        .folder-purple { background: #342050; }
+        .folder-pink { background: #50213e; }
+        .folder-blue { background: #1d3d55; }
+        .folder-yellow { background: #51411f; }
+        .folder-green { background: #1e483b; }
+        .folder-red { background: #51242e; }
+
+        .file-number {
+          position: absolute;
+          right: 5px;
+          top: 4px;
+          font-family: 'VT323', monospace;
+          color: #6e6079;
+          font-size: 12px;
+        }
+
+        .file-name {
+          font-family: 'VT323', monospace;
+          font-size: 15px;
+          text-align: center;
+          letter-spacing: .04em;
+        }
+
+        /* ======================================================
+           TERMINAL
+        ====================================================== */
+
+        .terminal-window {
+          width: 310px;
+          right: 15%;
+          bottom: 20%;
+          z-index: 20;
+        }
+
+        .terminal {
+          min-height: 180px;
+          padding: 16px;
+          background: #070c0b;
+          color: #63e7b2;
+          font-family: 'VT323', monospace;
+          font-size: 18px;
+          line-height: 1.25;
+        }
+
+        .terminal-green {
+          color: #a4ffdb;
+          animation: cursorBlink .8s infinite;
+        }
+
+        /* ======================================================
+           DOCK
+        ====================================================== */
+
+        .dock {
+          position: absolute;
+          left: 50%;
+          bottom: 18px;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 7px;
+          padding: 8px 11px;
+          background: rgba(13,8,19,.88);
+          border: 1px solid #40304e;
+          box-shadow: 0 0 30px rgba(111,52,180,.25);
+          z-index: 60;
+        }
+
+        .dock button {
+          width: 42px;
+          height: 37px;
+          border: 1px solid #372842;
+          background: #1b1124;
+          color: #c7b1d4;
+          font-family: 'VT323', monospace;
+          font-size: 19px;
+          cursor: pointer;
+          transition: .2s;
+        }
+
+        .dock button:hover {
+          transform: translateY(-5px);
+          background: #35204b;
+          color: white;
+          box-shadow: 0 0 15px rgba(191,88,255,.4);
+        }
+
+        /* ======================================================
+           EASTER EGGS
+        ====================================================== */
+
+        .egg-hotspot {
+          position: absolute;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          z-index: 40;
+          width: 42px;
+          height: 42px;
+        }
+
+        /*
+          EASTER EGG #1 LOCATION:
+          lower-right edge of the welcome window area.
+          It looks like a tiny corrupted arrow.
+        */
+
+        .egg-one {
+          left: 35%;
+          top: 30%;
+        }
+
+        /*
+          EASTER EGG #2 LOCATION:
+          beside the photo window, slightly underneath it.
+        */
+
+        .egg-two {
+          right: 25%;
+          top: 63%;
+        }
+
+        .egg-glow {
+          position: absolute;
+          inset: 8px;
+          border-radius: 50%;
+          background: #d15cff;
+          filter: blur(8px);
+          opacity: .18;
+          animation: eggGlow 2s ease-in-out infinite;
+        }
+
+        .egg-arrow {
+          position: relative;
+          color: #d68aff;
+          font-family: 'VT323', monospace;
+          font-size: 26px;
+          text-shadow:
+            0 0 5px #c451ff,
+            0 0 12px #c451ff;
+          animation: eggFlicker 2.8s infinite;
+        }
+
+        @keyframes eggGlow {
+          0%, 100% {
+            opacity: .08;
+            transform: scale(.7);
+          }
+          50% {
+            opacity: .5;
+            transform: scale(1.2);
+          }
+        }
+
+        @keyframes eggFlicker {
+          0%, 80%, 100% {
+            opacity: .15;
+          }
+          82% {
+            opacity: 1;
+          }
+          84% {
+            opacity: .1;
+          }
+          86% {
+            opacity: .9;
+          }
+        }
+
+        .egg-hotspot:hover .egg-arrow {
+          opacity: 1;
+          transform: scale(1.3);
+        }
+
+        /* ======================================================
+           BACKGROUND GAME OBJECTS
+        ====================================================== */
+
+        .game-object {
+          position: absolute;
+          font-family: 'VT323', monospace;
+          pointer-events: none;
+          color: #755987;
+          opacity: .35;
+          animation: objectFloat 4s ease-in-out infinite;
+        }
+
+        .obj-one {
+          top: 14%;
+          right: 30%;
+          font-size: 25px;
+        }
+
+        .obj-two {
+          bottom: 30%;
+          right: 5%;
+          font-size: 28px;
+          color: #ca5aff;
+        }
+
+        .obj-three {
+          top: 45%;
+          left: 46%;
+          font-size: 20px;
+        }
+
+        .obj-four {
+          bottom: 9%;
+          left: 28%;
+          font-size: 30px;
+        }
+
+        @keyframes objectFloat {
+          0%,100% {
+            transform: translateY(0) rotate(0);
+          }
+          50% {
+            transform: translateY(-10px) rotate(10deg);
+          }
+        }
+
+        /* ======================================================
+           FLOATING SYMBOLS
+        ====================================================== */
+
+        .floating-symbol {
+          position: fixed;
+          color: #a866c7;
+          opacity: .18;
+          pointer-events: none;
+          font-family: 'VT323', monospace;
+          z-index: 1;
+          animation: floatSymbol 7s ease-in-out infinite;
+        }
+
+        .symbol-1 {
+          left: 20%;
+          top: 20%;
+          font-size: 25px;
+        }
+
+        .symbol-2 {
+          right: 22%;
+          top: 25%;
+          font-size: 18px;
+          animation-delay: 1s;
+        }
+
+        .symbol-3 {
+          left: 50%;
+          top: 10%;
+          font-size: 30px;
+          animation-delay: 2s;
+        }
+
+        .symbol-4 {
+          right: 12%;
+          bottom: 25%;
+          font-size: 20px;
+          animation-delay: 3s;
+        }
+
+        .symbol-5 {
+          left: 8%;
+          bottom: 30%;
+          font-size: 18px;
+          animation-delay: 4s;
+        }
+
+        .symbol-6 {
+          right: 45%;
+          bottom: 8%;
+          font-size: 24px;
+          animation-delay: 1.5s;
+        }
+
+        @keyframes floatSymbol {
+          0%,100% {
+            transform: translate(0,0) rotate(0);
+          }
+          50% {
+            transform: translate(12px,-20px) rotate(180deg);
+          }
+        }
+
+        /* ======================================================
+           SCAN BAR
+        ====================================================== */
+
+        .scan-bar {
+          position: fixed;
+          left: 0;
+          right: 0;
+          top: -10%;
+          height: 2px;
+          background: rgba(213,153,255,.35);
+          box-shadow: 0 0 20px rgba(213,153,255,.8);
+          z-index: 1000;
+          pointer-events: none;
+          animation: scan 5s linear infinite;
+        }
+
+        @keyframes scan {
+          from {
+            top: -5%;
+          }
+          to {
+            top: 105%;
+          }
+        }
+
+        /* ======================================================
+           STATUS
+        ====================================================== */
+
+        .bottom-status {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 26px;
+          padding: 0 12px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: rgba(9,5,14,.9);
+          border-top: 1px solid #302339;
+          color: #65596c;
+          font-family: 'VT323', monospace;
+          font-size: 13px;
+          letter-spacing: .05em;
+          z-index: 55;
+        }
+
+        .bottom-status span {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .status-green {
+          width: 5px;
+          height: 5px;
+          background: #72ffbd;
+          box-shadow: 0 0 7px #72ffbd;
+          border-radius: 50%;
+        }
+
+        /* ======================================================
+           EASTER EGG MODAL
+        ====================================================== */
+
+        .egg-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 20px;
+          background: rgba(4,2,8,.72);
+          backdrop-filter: blur(7px);
+        }
+
+        .egg-window {
+          width: 450px;
+          max-width: 100%;
+          background: #10091a;
+          border: 1px solid #c45cff;
+          box-shadow:
+            0 0 25px rgba(196,92,255,.5),
+            0 0 100px rgba(138,51,255,.2);
+          animation: eggOpen .35s ease-out;
+        }
+
+        @keyframes eggOpen {
+          from {
+            opacity: 0;
+            transform: scale(.88) rotate(-1deg);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) rotate(0);
+          }
+        }
+
+        .egg-header {
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 10px;
+          background: linear-gradient(90deg,#71319b,#281335);
+          font-family: 'VT323', monospace;
+          font-size: 17px;
+          color: #f1dfff;
+        }
+
+        .egg-header button {
+          border: 0;
+          background: transparent;
+          color: #fff;
+          font-family: inherit;
+          font-size: 20px;
+          cursor: pointer;
+        }
+
+        .egg-content {
           padding: 30px;
           text-align: center;
         }
 
-        .egg-icon {
-          color: #e98cff;
-          font-size: 30px;
-          text-shadow: 0 0 20px #c655ff;
-          animation: eggSpin 4s linear infinite;
+        .egg-warning {
+          color: #e88cff;
+          font-family: 'VT323', monospace;
+          font-size: 16px;
+          letter-spacing: .14em;
+          animation: blink 1.5s infinite;
         }
 
-        @keyframes eggSpin {
-          to {
-            transform: rotate(360deg);
-          }
+        @keyframes blink {
+          50% { opacity: .35; }
         }
 
-        .egg-glitch {
-          margin-top: 15px;
-          color: #73ffb8;
-          font-size: 10px;
-          letter-spacing: .3em;
-          animation: blink 1s infinite;
-        }
-
-        .egg-body h2 {
-          color: #f0e5f6;
+        .egg-content h2 {
+          font-family: 'Press Start 2P', monospace;
           font-size: 18px;
-          line-height: 1.5;
-          margin: 12px 0;
+          line-height: 1.7;
+          color: #f1e6ff;
+          text-shadow:
+            2px 0 #ff48a9,
+            -2px 0 #4ddcff;
+          margin: 20px 0;
+          animation: glitchSmall 3s infinite;
         }
 
-        .egg-body p {
-          color: #817487;
-          font-size: 10px;
-          line-height: 1.7;
+        @keyframes glitchSmall {
+          0%,90%,100% {
+            transform: translateX(0);
+          }
+          92% {
+            transform: translateX(-3px);
+          }
+          94% {
+            transform: translateX(3px);
+          }
         }
 
         .egg-divider {
-          height: 1px;
-          background: #392b43;
-          margin: 22px 0;
+          color: #684477;
+          margin: 14px 0;
         }
 
-        .play-question {
-          color: #dba5ff !important;
-          letter-spacing: .1em;
+        .egg-content p {
+          font-family: 'VT323', monospace;
+          color: #b5a5bf;
+          font-size: 19px;
+          line-height: 1.1;
         }
 
-        .egg-audio {
-          width: 100%;
-          margin-top: 10px;
-          filter: sepia(.4) hue-rotate(220deg);
+        .egg-small {
+          color: #71627b !important;
+          font-size: 15px !important;
         }
 
-        .close-egg {
-          margin-top: 20px;
-          border: 1px solid #58396a;
-          background: #1a1122;
-          color: #b79fc2;
-          padding: 9px 18px;
-          font-family: inherit;
-          font-size: 8px;
-          letter-spacing: .15em;
-          cursor: pointer;
-        }
-
-        .close-egg:hover {
-          color: white;
-          border-color: #c36cff;
-          box-shadow: 0 0 15px rgba(195,108,255,.4);
-        }
-
-
-        /* ===================================================
-           BOTTOM CONSOLE
-        =================================================== */
-
-        .bottom-console {
-          position: fixed;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          height: 28px;
-          background: rgba(8,6,11,.9);
-          border-top: 1px solid #312737;
+        .audio-card {
+          margin: 20px 0 12px;
+          border: 1px solid #392348;
+          background: #170e21;
+          padding: 12px;
           display: flex;
-          justify-content: space-between;
           align-items: center;
-          padding: 0 15px;
-          color: #62596b;
-          font-size: 7px;
-          letter-spacing: .15em;
-          z-index: 40;
+          gap: 12px;
+          text-align: left;
         }
 
-        .console-middle {
-          color: #a45cff;
-          animation: blink 2s infinite;
+        .audio-icon {
+          width: 43px;
+          height: 43px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: #38204d;
+          border: 1px solid #9856be;
+          font-size: 21px;
         }
 
+        .audio-card strong {
+          display: block;
+          font-family: 'VT323', monospace;
+          color: #e7d3f1;
+          font-size: 18px;
+        }
 
-        /* ===================================================
+        .audio-card small {
+          font-family: 'VT323', monospace;
+          color: #71617b;
+          font-size: 14px;
+        }
+
+        .secret-audio {
+          width: 100%;
+          height: 36px;
+        }
+
+        .audio-help {
+          font-size: 13px !important;
+          color: #5f5268 !important;
+          margin-top: 14px;
+        }
+
+        code {
+          color: #c67cff;
+        }
+
+        /* ======================================================
            MOBILE
-        =================================================== */
+        ====================================================== */
 
-        @media (max-width: 800px) {
+        @media (max-width: 850px) {
 
-          .desktop {
-            overflow-y: auto;
-            min-height: 100vh;
+          .computer-bar {
+            height: 40px;
+            padding: 0 9px;
+            font-size: 13px;
           }
 
-          .computer-status {
+          .system-center {
             display: none;
           }
 
-          .desktop-area {
-            min-height: 1100px;
+          .system-right span:first-child {
+            display: none;
+          }
+
+          .desktop {
+            min-height: calc(100vh - 40px);
             padding: 12px;
+            overflow-y: auto;
+            height: calc(100vh - 40px);
+          }
+
+          .desktop-icons {
+            display: none;
           }
 
           .window {
-            position: relative !important;
-            top: auto !important;
+            position: relative;
             left: auto !important;
             right: auto !important;
+            top: auto !important;
             bottom: auto !important;
-            width: 100% !important;
-            margin-bottom: 14px;
+            width: min(100%, 430px);
+            margin: 20px auto;
+            transform: none !important;
           }
 
           .welcome-window {
-            margin-top: 8px;
+            margin-top: 12px;
           }
 
-          .archive-window {
-            margin-top: 20px;
+          .music-window,
+          .photo-window,
+          .notes-window,
+          .files-window,
+          .video-window,
+          .terminal-window {
+            display: block;
           }
 
-          .section-grid {
-            grid-template-columns: 1fr;
+          .notes-window {
+            order: 2;
           }
 
-          .system-window {
-            width: 70% !important;
+          .welcome-window {
+            order: 1;
           }
 
-          .player-window {
-            width: 88% !important;
-            margin-left: auto;
+          .music-window {
+            order: 3;
+          }
+
+          .photo-window {
+            order: 4;
           }
 
           .files-window {
-            width: 92% !important;
+            order: 5;
           }
 
-          .polaroid {
-            display: none;
+          .video-window {
+            order: 6;
           }
 
-          .floating-text {
-            display: none;
+          .terminal-window {
+            order: 7;
           }
 
-          .secret-one {
-            top: 70%;
-            right: 8%;
-          }
-
-          .secret-two {
-            bottom: 7%;
-            left: 8%;
-          }
-
-          .bottom-console {
+          .dock {
             position: fixed;
+            bottom: 30px;
           }
+
+          .bottom-status {
+            position: fixed;
+            bottom: 0;
+            font-size: 10px;
+          }
+
+          .bottom-status span:nth-child(2),
+          .bottom-status span:nth-child(3) {
+            display: none;
+          }
+
+          .egg-one {
+            left: 75%;
+            top: 175px;
+          }
+
+          .egg-two {
+            right: 4%;
+            top: 640px;
+          }
+
+          .floating-symbol {
+            display: none;
+          }
+
+        }
+
+        @media (max-width: 480px) {
+
+          .desktop {
+            padding-bottom: 75px;
+          }
+
+          .glitch-title {
+            font-size: 20px;
+          }
+
+          .music-body {
+            gap: 12px;
+          }
+
+          .cd {
+            width: 95px;
+            height: 95px;
+          }
+
+          .file-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .egg-content {
+            padding: 20px;
+          }
+
+          .egg-content h2 {
+            font-size: 14px;
+          }
+
         }
 
       `}</style>
 
     </main>
-  )
-}
-
-
-/* ===========================================================
-   WINDOW HEADER
-=========================================================== */
-
-function WindowHeader({
-  title,
-  colour = 'purple',
-  onClose,
-}) {
-  return (
-    <div className="window-header">
-
-      <span>
-        {title}
-      </span>
-
-      <div className="window-controls">
-
-        <span className={`window-control control-${colour}`} />
-
-        <span className="window-control control-green" />
-
-        <button
-          className="close-window"
-          onClick={onClose}
-          aria-label={`Close ${title}`}
-        >
-          ×
-        </button>
-
-      </div>
-
-    </div>
   )
 }
