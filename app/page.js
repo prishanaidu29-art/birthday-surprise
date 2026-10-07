@@ -2,3107 +2,4128 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { VT323, Silkscreen, Orbitron } from 'next/font/google'
 
 export const dynamic = 'force-dynamic'
 
-const vt = VT323({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-vt',
-})
-
-const silk = Silkscreen({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-silk',
-})
-
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  weight: ['400', '500', '700', '800'],
-  variable: '--font-orbitron',
-})
-
 const PASSWORD = 'royal cliff'
 
-const PHOTO_SLOTS = [
-  '/photos/clar-01.jpg',
-  '/photos/clar-02.jpg',
-  '/photos/clar-03.jpg',
-  '/photos/clar-04.jpg',
-  '/photos/clar-05.jpg',
-  '/photos/clar-06.jpg',
-  '/photos/clar-07.jpg',
-  '/photos/clar-08.jpg',
+const PHOTOS = [
+  '/images/clar-01.jpg',
+  '/images/clar-02.jpg',
+  '/images/clar-03.jpg',
+  '/images/clar-04.jpg',
+  '/images/clar-05.jpg',
+  '/images/clar-06.jpg',
 ]
 
-const LOADING_PHOTOS = [
-  '/photos/clar-01.jpg',
-  '/photos/clar-02.jpg',
-  '/photos/clar-03.jpg',
-  '/photos/clar-04.jpg',
-  '/photos/clar-05.jpg',
-  '/photos/clar-06.jpg',
-  '/photos/clar-07.jpg',
-  '/photos/clar-08.jpg',
+const SECTIONS = [
+  {
+    number: '01',
+    title: 'THE MEMORIES',
+    description: 'photos & places',
+    link: '/birthday/memories',
+    icon: '▣',
+  },
+  {
+    number: '02',
+    title: 'THE MESSAGES',
+    description: 'things people wanted you to know',
+    link: '/birthday/messages',
+    icon: '✉',
+  },
+  {
+    number: '03',
+    title: 'THE SOUNDTRACK',
+    description: 'songs about you',
+    link: '/birthday/playlist',
+    icon: '♫',
+  },
+  {
+    number: '04',
+    title: 'THE CHAOS',
+    description: 'shits and giggles',
+    link: '/birthday/games',
+    icon: '☠',
+  },
+  {
+    number: '05',
+    title: 'THE QUIZ',
+    description: "let's see how well you actually know us",
+    link: '/birthday/quiz',
+    icon: '?',
+  },
+  {
+    number: '06',
+    title: 'THE JOURNEY',
+    description: 'everywhere, somehow, led to here',
+    link: '/birthday/journey',
+    icon: '→',
+  },
 ]
 
-function FakeImage({ src, alt, className = '', label = 'PHOTO' }) {
-  const [failed, setFailed] = useState(false)
-
-  return (
-    <div className={`fake-image ${className}`}>
-      {!failed && src ? (
-        <img
-          src={src}
-          alt={alt}
-          onError={() => setFailed(true)}
-        />
-      ) : (
-        <div className="image-placeholder">
-          <div className="placeholder-cross">+</div>
-          <span>{label}</span>
-          <small>INSERT MEDIA</small>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function Window({
-  title,
-  children,
-  className = '',
-  style = {},
-  zIndex = 10,
-  onFocus,
-  accent = 'purple',
-}) {
-  return (
-    <section
-      className={`retro-window ${className}`}
-      style={{
-        ...style,
-        zIndex,
-        '--window-accent':
-          accent === 'cyan'
-            ? '#5cf2ff'
-            : accent === 'pink'
-              ? '#ff4fd8'
-              : accent === 'green'
-                ? '#d7ff5c'
-                : '#9d6cff',
-      }}
-      onPointerDown={onFocus}
-    >
-      <div className="window-titlebar">
-        <div className="window-title-left">
-          <span className="window-dot" />
-          <span className="window-title">{title}</span>
-        </div>
-
-        <div className="window-buttons">
-          <button type="button">_</button>
-          <button type="button">□</button>
-          <button type="button">×</button>
-        </div>
-      </div>
-
-      <div className="window-content">{children}</div>
-    </section>
-  )
-}
-
-export default function Home() {
+export default function HomePage() {
   const router = useRouter()
 
-  const [phase, setPhase] = useState('login')
+  const [screen, setScreen] = useState('boot')
   const [password, setPassword] = useState('')
-  const [wrongAttempts, setWrongAttempts] = useState(0)
-  const [hint, setHint] = useState('')
-  const [hintOpen, setHintOpen] = useState(false)
+  const [attempts, setAttempts] = useState(0)
+  const [showHint, setShowHint] = useState(false)
+  const [hintType, setHintType] = useState(1)
+  const [error, setError] = useState(false)
 
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [loadingPhoto, setLoadingPhoto] = useState(0)
 
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [recordingPlaying, setRecordingPlaying] = useState(false)
-  const [cdSpinning, setCdSpinning] = useState(true)
+  const [photoIndex, setPhotoIndex] = useState(0)
 
-  const [focusedWindow, setFocusedWindow] = useState('notes')
+  const [activeWindow, setActiveWindow] = useState('notes')
+  const [terminalText, setTerminalText] = useState('SYSTEM READY')
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
 
-  const [time, setTime] = useState(new Date())
+  /* ---------------------------------------------------------
+     LOADING SCREEN
+  --------------------------------------------------------- */
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTime(new Date())
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    if (phase !== 'loading') return
+    if (screen !== 'loading') return
 
     setLoadingProgress(0)
     setLoadingPhoto(0)
 
-    let progress = 0
-
     const progressTimer = setInterval(() => {
-      progress += Math.random() * 4 + 2
+      setLoadingProgress((previous) => {
+        const next = previous + Math.random() * 2.5
 
-      if (progress >= 100) {
-        progress = 100
-        clearInterval(progressTimer)
-      }
+        if (next >= 100) {
+          return 100
+        }
 
-      setLoadingProgress(Math.floor(progress))
+        return next
+      })
     }, 120)
 
     const photoTimer = setInterval(() => {
-      setLoadingPhoto((current) => {
-        if (current >= LOADING_PHOTOS.length - 1) {
-          return 0
-        }
-
-        return current + 1
+      setLoadingPhoto((previous) => {
+        return (previous + 1) % PHOTOS.length
       })
-    }, 1050)
+    }, 850)
 
-    const finishTimer = setTimeout(() => {
-      sessionStorage.setItem('birthday_authenticated', 'true')
+    const transitionTimer = setTimeout(() => {
       router.push('/birthday')
-    }, 6200)
+    }, 6800)
 
     return () => {
       clearInterval(progressTimer)
       clearInterval(photoTimer)
-      clearTimeout(finishTimer)
+      clearTimeout(transitionTimer)
     }
-  }, [phase, router])
+  }, [screen, router])
 
-  const focus = (name) => {
-    setFocusedWindow(name)
-  }
+  /* ---------------------------------------------------------
+     PHOTO APP SLIDESHOW
+  --------------------------------------------------------- */
 
-  const submitPassword = async (event) => {
+  useEffect(() => {
+    if (screen !== 'boot') return
+
+    const timer = setInterval(() => {
+      setPhotoIndex((previous) => (previous + 1) % PHOTOS.length)
+    }, 2600)
+
+    return () => clearInterval(timer)
+  }, [screen])
+
+  /* ---------------------------------------------------------
+     MUSIC
+  --------------------------------------------------------- */
+
+  useEffect(() => {
+    const audio = audioRef.current
+
+    if (!audio) return
+
+    if (musicPlaying) {
+      audio.play().catch(() => {
+        setMusicPlaying(false)
+      })
+    } else {
+      audio.pause()
+    }
+  }, [musicPlaying])
+
+  /* ---------------------------------------------------------
+     RECORDING
+  --------------------------------------------------------- */
+
+  useEffect(() => {
+    const recording = recordingRef.current
+
+    if (!recording) return
+
+    if (recordingPlaying) {
+      recording.play().catch(() => {
+        setRecordingPlaying(false)
+      })
+    } else {
+      recording.pause()
+    }
+  }, [recordingPlaying])
+
+  /* ---------------------------------------------------------
+     PASSWORD
+  --------------------------------------------------------- */
+
+  function handlePasswordSubmit(event) {
     event.preventDefault()
 
-    if (password.trim().toLowerCase() === PASSWORD) {
-      sessionStorage.setItem('birthday_authenticated', 'true')
+    const entered = password.trim().toLowerCase()
 
+    if (entered === PASSWORD) {
+      setError(false)
+      setShowHint(false)
+
+      try {
+        sessionStorage.setItem('birthday_authenticated', 'true')
+      } catch {}
+
+      /*
+        Attempt to start the music immediately after the user's
+        password-submit gesture.
+      */
       if (audioRef.current) {
-        try {
-          await audioRef.current.play()
-          setMusicPlaying(true)
-        } catch {
-          setMusicPlaying(false)
-        }
+        audioRef.current
+          .play()
+          .then(() => {
+            setMusicPlaying(true)
+          })
+          .catch(() => {
+            setMusicPlaying(false)
+          })
       }
 
-      setPhase('loading')
+      setScreen('loading')
       return
     }
 
-    const newCount = wrongAttempts + 1
-    setWrongAttempts(newCount)
+    const newAttempts = attempts + 1
 
+    setAttempts(newAttempts)
+    setError(true)
     setPassword('')
 
-    if (newCount <= 3) {
-      setHint(
-        'hint it’s a nickname I gave you after learning a funny meaning of your name'
-      )
-      setHintOpen(true)
-    } else if (newCount === 5) {
-      setHint('it has something to do with a cliff')
-      setHintOpen(true)
+    if (newAttempts <= 3) {
+      setHintType(1)
+      setShowHint(true)
+    }
+
+    if (newAttempts === 5) {
+      setHintType(2)
+      setShowHint(true)
     }
   }
 
-  const toggleMusic = async () => {
-    if (!audioRef.current) return
-
-    if (musicPlaying) {
-      audioRef.current.pause()
-      setMusicPlaying(false)
-    } else {
-      try {
-        await audioRef.current.play()
-        setMusicPlaying(true)
-      } catch {
-        setMusicPlaying(false)
-      }
-    }
+  function closeHint() {
+    setShowHint(false)
   }
 
-  const toggleRecording = async () => {
-    if (!recordingRef.current) return
-
-    if (recordingPlaying) {
-      recordingRef.current.pause()
-      setRecordingPlaying(false)
-    } else {
-      try {
-        await recordingRef.current.play()
-        setRecordingPlaying(true)
-      } catch {
-        setRecordingPlaying(false)
-      }
-    }
+  function focusWindow(name) {
+    setActiveWindow(name)
   }
 
-  const formattedTime = time.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+  function runSystemScan() {
+    setTerminalText('SCANNING ARCHIVE...')
 
-  if (phase === 'loading') {
+    setTimeout(() => {
+      setTerminalText('22 YEARS FOUND')
+
+      setTimeout(() => {
+        setTerminalText('MEMORY FILES: 100%')
+
+        setTimeout(() => {
+          setTerminalText('GOOD LUCK, CLAR.')
+        }, 1200)
+      }, 1000)
+    }, 900)
+  }
+
+  /* =========================================================
+     BOOT / CRT DESKTOP
+  ========================================================= */
+
+  if (screen === 'boot') {
     return (
-      <main
-        className={`${vt.variable} ${silk.variable} ${orbitron.variable} loading-screen`}
-      >
-        <div className="loading-stars" />
+      <main className="birthday-shell">
+        <div className="background-grid" />
+        <div className="floating-pixel pixel-one" />
+        <div className="floating-pixel pixel-two" />
+        <div className="floating-pixel pixel-three" />
 
-        <div className="loading-scanlines" />
+        <section className="computer-wrapper">
 
-        <div className="loading-noise" />
+          {/* ================= CRT ================= */}
 
-        <div className="loading-corner top-left">
-          SYS.ARCHIVE // 22
-        </div>
+          <div className="crt-computer">
 
-        <div className="loading-corner top-right">
-          ACCESS // GRANTED
-        </div>
-
-        <div className="loading-corner bottom-left">
-          PLEASE WAIT...
-        </div>
-
-        <div className="loading-corner bottom-right">
-          199X—2026
-        </div>
-
-        <div className="loading-center">
-          <div className="loading-eyebrow">
-            <span>◈</span>
-            PERSONAL ARCHIVE SYSTEM
-            <span>◈</span>
-          </div>
-
-          <div className="loading-main-title">
-            <span className="glitch-word" data-text="LOADING">
-              LOADING
-            </span>
-            <span className="loading-slash">/</span>
-            <span>CLAR</span>
-          </div>
-
-          <div className="loading-subtitle">
-            RECONSTRUCTING 22 YEARS OF DATA
-          </div>
-
-          <div className="loading-photo-stage">
-            <div className="photo-stage-corner tl">REC ●</div>
-            <div className="photo-stage-corner tr">ARCHIVE_0{loadingPhoto + 1}</div>
-            <div className="photo-stage-corner bl">NO SIGNAL? LOL</div>
-            <div className="photo-stage-corner br">JPG / MEMORY</div>
-
-            <div className="loading-photo-glow" />
-
-            <FakeImage
-              src={LOADING_PHOTOS[loadingPhoto]}
-              alt={`Archive memory ${loadingPhoto + 1}`}
-              className="loading-photo"
-              label={`MEMORY 0${loadingPhoto + 1}`}
-            />
-
-            <div className="photo-counter">
-              <span>FRAME</span>
-              <strong>
-                {String(loadingPhoto + 1).padStart(2, '0')}
-              </strong>
-              <span>/ {String(LOADING_PHOTOS.length).padStart(2, '0')}</span>
-            </div>
-          </div>
-
-          <div className="loading-progress-area">
-            <div className="loading-progress-labels">
-              <span>PLEASE WAIT</span>
-              <span>{loadingProgress}%</span>
+            <div className="crt-top-label">
+              <span>CLAR-22 PERSONAL ARCHIVE SYSTEM</span>
+              <span className="top-light">● ONLINE</span>
             </div>
 
-            <div className="loading-bar">
-              <div
-                className="loading-bar-fill"
-                style={{ width: `${loadingProgress}%` }}
-              />
+            <div className="monitor-bezel">
 
-              <div className="loading-bar-scan" />
+              <div className="monitor-inner">
+
+                <div className="desktop">
+
+                  {/* CRT overlays */}
+
+                  <div className="scanlines" />
+                  <div className="screen-noise" />
+                  <div className="screen-vignette" />
+
+                  {/* ================= DESKTOP HEADER ================= */}
+
+                  <div className="desktop-header">
+                    <div className="desktop-logo">
+                      <span className="logo-symbol">✦</span>
+                      CLAR_ARCHIVE.exe
+                    </div>
+
+                    <div className="desktop-status">
+                      MEMORY CORE: ONLINE
+                    </div>
+
+                    <div className="desktop-clock">
+                      22:00:04
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      NOTES WINDOW
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window notes-window ${
+                      activeWindow === 'notes' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('notes')}
+                  >
+                    <WindowBar
+                      title="notes.txt"
+                      icon="▤"
+                      active={activeWindow === 'notes'}
+                    />
+
+                    <div className="notes-paper">
+                      <div className="paper-hole hole-one" />
+                      <div className="paper-hole hole-two" />
+                      <div className="paper-hole hole-three" />
+
+                      <div className="handwriting">
+
+                        <div className="note-heading">
+                          READ BEFORE PROCEEDING
+                        </div>
+
+                        <p>
+                          Hi Clar,
+                        </p>
+
+                        <p>
+                          this is sort of an archive for you to look
+                          back on your past 22 years as much as it is
+                          a memory book for you,
+                        </p>
+
+                        <p>
+                          don’t think I didn’t add a liiittlee bit of
+                          hidden stuff in here HAHAHAH
+                        </p>
+
+                        <p>
+                          I took a heck of a long time to make sure
+                          you spend a long time on this so good
+                          LUCCCKKK :)
+                        </p>
+
+                        <div className="scribble">
+                          — your extremely normal friend
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      FILES WINDOW
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window files-window ${
+                      activeWindow === 'files' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('files')}
+                  >
+                    <WindowBar
+                      title="ARCHIVE / FILES"
+                      icon="▦"
+                      active={activeWindow === 'files'}
+                    />
+
+                    <div className="file-grid">
+
+                      <FakeFile
+                        icon="🥚"
+                        name="EGGS"
+                      />
+
+                      <FakeFile
+                        icon="🦶"
+                        name="FEETGANG"
+                      />
+
+                      <FakeFile
+                        icon="🎓"
+                        name="GRADUATION"
+                      />
+
+                      <FakeFile
+                        icon="📸"
+                        name="MEMORIES"
+                      />
+
+                      <FakeFile
+                        icon="💌"
+                        name="MESSAGES"
+                      />
+
+                      <FakeFile
+                        icon="☠"
+                        name="DO_NOT_OPEN"
+                      />
+
+                    </div>
+
+                    <div className="files-footer">
+                      6 OBJECTS / UNKNOWN CONTENT
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      CD PLAYER
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window cd-window ${
+                      activeWindow === 'cd' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('cd')}
+                  >
+                    <WindowBar
+                      title="CD PLAYER.exe"
+                      icon="◉"
+                      active={activeWindow === 'cd'}
+                    />
+
+                    <div className="cd-player-body">
+
+                      {/* THIS CD ACTUALLY SPINS CONTINUOUSLY */}
+                      <div className="cd-spin-container">
+                        <div className="cd-disc">
+                          <div className="cd-reflection" />
+                          <div className="cd-ring ring-one" />
+                          <div className="cd-ring ring-two" />
+                          <div className="cd-label">
+                            <span>CLAR</span>
+                            <small>22</small>
+                          </div>
+                          <div className="cd-hole" />
+                        </div>
+                      </div>
+
+                      <div className="cd-information">
+                        <div className="cd-track">
+                          TRACK 01
+                        </div>
+
+                        <div className="cd-title">
+                          happy birthday.mp3
+                        </div>
+
+                        <div className="cd-wave">
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                          <span />
+                        </div>
+
+                        <button
+                          className="music-button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setMusicPlaying((value) => !value)
+                          }}
+                        >
+                          {musicPlaying ? '❚❚ PAUSE' : '▶ PLAY'}
+                        </button>
+                      </div>
+
+                    </div>
+
+                    <audio
+                      ref={audioRef}
+                      src="/media/intro.mp3"
+                      loop
+                      preload="auto"
+                    />
+                  </div>
+
+                  {/* =================================================
+                      PHOTO WINDOW
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window photos-window ${
+                      activeWindow === 'photos' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('photos')}
+                  >
+                    <WindowBar
+                      title="PHOTOS / IMG_VIEWER"
+                      icon="▣"
+                      active={activeWindow === 'photos'}
+                    />
+
+                    <div className="photo-viewer">
+
+                      <div className="photo-main">
+                        <img
+                          src={PHOTOS[photoIndex]}
+                          alt={`Clar memory ${photoIndex + 1}`}
+                          onError={(event) => {
+                            event.currentTarget.style.display = 'none'
+                            event.currentTarget.parentElement.classList.add(
+                              'photo-missing'
+                            )
+                          }}
+                        />
+
+                        <div className="photo-placeholder">
+                          <div className="placeholder-camera">
+                            ◉
+                          </div>
+                          <div>
+                            PHOTO SLOT {String(photoIndex + 1).padStart(2, '0')}
+                          </div>
+                          <small>
+                            add image to /public/images/
+                          </small>
+                        </div>
+
+                        <div className="photo-counter">
+                          {String(photoIndex + 1).padStart(2, '0')} / 06
+                        </div>
+                      </div>
+
+                      <div className="photo-thumbnails">
+                        {PHOTOS.map((_, index) => (
+                          <button
+                            key={index}
+                            className={
+                              index === photoIndex
+                                ? 'thumbnail selected'
+                                : 'thumbnail'
+                            }
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              setPhotoIndex(index)
+                            }}
+                          >
+                            {String(index + 1).padStart(2, '0')}
+                          </button>
+                        ))}
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      RECORDING WINDOW
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window recording-window ${
+                      activeWindow === 'recording' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('recording')}
+                  >
+                    <WindowBar
+                      title="VOICE_NOTE.wav"
+                      icon="♫"
+                      active={activeWindow === 'recording'}
+                    />
+
+                    <div className="recording-body">
+
+                      <div className="cassette">
+                        <div className="cassette-label">
+                          FOR CLAR
+                        </div>
+
+                        <div className="cassette-reels">
+                          <span className="cassette-reel" />
+                          <span className="cassette-reel" />
+                        </div>
+
+                        <div className="cassette-line" />
+                      </div>
+
+                      <div className="recording-info">
+                        <div className="recording-title">
+                          someone_left_a_message.wav
+                        </div>
+
+                        <div className="recording-wave">
+                          ▂▅▃▆▇▃▅▂▇▆▃▅▂▆▇▃
+                        </div>
+
+                        <button
+                          className="recording-button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            setRecordingPlaying((value) => !value)
+                          }}
+                        >
+                          {recordingPlaying
+                            ? '❚❚ STOP RECORDING'
+                            : '▶ PLAY RECORDING'}
+                        </button>
+                      </div>
+
+                    </div>
+
+                    <audio
+                      ref={recordingRef}
+                      src="/media/friend-voice.mp3"
+                      preload="metadata"
+                      onEnded={() => setRecordingPlaying(false)}
+                    />
+                  </div>
+
+                  {/* =================================================
+                      TERMINAL WINDOW
+                  ================================================= */}
+
+                  <div
+                    className={`desktop-window terminal-window ${
+                      activeWindow === 'terminal' ? 'window-active' : ''
+                    }`}
+                    onClick={() => focusWindow('terminal')}
+                  >
+                    <WindowBar
+                      title="SYSTEM_TERMINAL"
+                      icon=">"
+                      active={activeWindow === 'terminal'}
+                    />
+
+                    <div className="terminal-body">
+
+                      <div>
+                        C:\\CLAR\\ARCHIVE&gt; boot_memory.exe
+                      </div>
+
+                      <div>
+                        INITIALISING MEMORY CORE...
+                      </div>
+
+                      <div className="terminal-success">
+                        ✓ CONNECTION ESTABLISHED
+                      </div>
+
+                      <div className="terminal-output">
+                        {terminalText}
+                      </div>
+
+                      <button
+                        className="terminal-button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          runSystemScan()
+                        }}
+                      >
+                        [ RUN SCAN ]
+                      </button>
+
+                    </div>
+                  </div>
+
+                  {/* =================================================
+                      PASSWORD PANEL — INSIDE CRT
+                  ================================================= */}
+
+                  <div className="password-panel">
+
+                    <div className="password-topline">
+                      <span>SECURITY LEVEL 04</span>
+                      <span>ACCESS REQUIRED</span>
+                    </div>
+
+                    <div className="password-title">
+                      <span className="glitch" data-text="ARCHIVE LOCKED">
+                        ARCHIVE LOCKED
+                      </span>
+                    </div>
+
+                    <div className="password-intro">
+                      yayyy happy birthday Clar,
+                      if you see this it means the website is working
+                      (thank god)
+                    </div>
+
+                    <div className="password-subtext">
+                      now you just need to enter the password to enter.
+                      Good luck !
+                    </div>
+
+                    <form
+                      className="password-form"
+                      onSubmit={handlePasswordSubmit}
+                    >
+
+                      <div className="password-input-wrap">
+
+                        <span className="input-prefix">
+                          &gt;_
+                        </span>
+
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(event) => {
+                            setPassword(event.target.value)
+                            setError(false)
+                          }}
+                          placeholder="ENTER PASSWORD"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+
+                        <span className="cursor-block">
+                          █
+                        </span>
+
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="enter-button"
+                      >
+                        ENTER ARCHIVE
+                      </button>
+
+                    </form>
+
+                    <div
+                      className={
+                        error
+                          ? 'password-status status-error'
+                          : 'password-status'
+                      }
+                    >
+                      {error
+                        ? `ACCESS DENIED // ATTEMPT ${attempts}`
+                        : 'WAITING FOR USER INPUT...'}
+                    </div>
+
+                  </div>
+
+                  {/* =================================================
+                      HINT POPUP — ALSO INSIDE CRT
+                  ================================================= */}
+
+                  {showHint && (
+                    <div className="hint-window">
+
+                      <div className="hint-titlebar">
+                        <span>
+                          ⚠ SYSTEM MESSAGE
+                        </span>
+
+                        <button
+                          onClick={closeHint}
+                          aria-label="Close hint"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <div className="hint-content">
+
+                        <div className="hint-icon">
+                          !
+                        </div>
+
+                        <div>
+                          {hintType === 1 ? (
+                            <>
+                              <strong>
+                                okay okay calm down 😭
+                              </strong>
+
+                              <p>
+                                hint it’s a nickname I gave you after
+                                learning a funny meaning of your name
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <strong>
+                                FINE. ANOTHER HINT.
+                              </strong>
+
+                              <p>
+                                it has something to do with a cliff
+                              </p>
+                            </>
+                          )}
+                        </div>
+
+                      </div>
+
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+
+              <div className="monitor-bottom">
+
+                <div className="monitor-brand">
+                  MEMORIES™
+                </div>
+
+                <div className="monitor-controls">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
+              </div>
+
             </div>
 
-            <div className="loading-status">
-              <span>LOADING MEMORIES...</span>
-              <span>
-                {loadingProgress < 35
-                  ? 'MOUNTING ARCHIVE'
-                  : loadingProgress < 70
-                    ? 'INDEXING FILES'
-                    : loadingProgress < 95
-                      ? 'OPENING SECRET STUFF'
-                      : 'WELCOME'}
-              </span>
+            {/* ================= COMPUTER BASE ================= */}
+
+            <div className="computer-base">
+
+              <div className="base-slot" />
+
+              <div className="keyboard">
+
+                {Array.from({ length: 42 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="key"
+                  />
+                ))}
+
+              </div>
+
             </div>
+
           </div>
+
+          <div className="computer-shadow" />
+
+        </section>
+
+        <div className="bottom-decoration">
+          <span>EST. 2004</span>
+          <span>•</span>
+          <span>MEMORY ARCHIVE SYSTEM</span>
+          <span>•</span>
+          <span>ACCESS: RESTRICTED</span>
         </div>
 
-        <div className="loading-floating-symbol symbol-one">✦</div>
-        <div className="loading-floating-symbol symbol-two">+</div>
-        <div className="loading-floating-symbol symbol-three">◆</div>
-        <div className="loading-floating-symbol symbol-four">♡</div>
-
-        <div className="loading-ring ring-one" />
-        <div className="loading-ring ring-two" />
+        <style jsx global>{styles}</style>
       </main>
     )
   }
 
+  /* =========================================================
+     REAL LOADING STATE
+  ========================================================= */
+
+  if (screen === 'loading') {
+    return (
+      <main className="loading-screen">
+
+        <div className="loading-bg-grid" />
+        <div className="loading-scanlines" />
+        <div className="loading-vignette" />
+
+        <div className="loading-glitch glitch-one">
+          SYSTEM MEMORY
+        </div>
+
+        <div className="loading-glitch glitch-two">
+          22 YEARS
+        </div>
+
+        <div className="loading-orbit orbit-one" />
+        <div className="loading-orbit orbit-two" />
+        <div className="loading-orbit orbit-three" />
+
+        <section className="loading-terminal">
+
+          <div className="loading-topbar">
+
+            <span>
+              CLAR_ARCHIVE.exe
+            </span>
+
+            <span>
+              BUILD 22.0.2004
+            </span>
+
+            <span className="loading-live">
+              ● LIVE
+            </span>
+
+          </div>
+
+          <div className="loading-content">
+
+            <div className="loading-heading">
+
+              <div className="loading-small">
+                PLEASE WAIT // ACCESSING MEMORY CORE
+              </div>
+
+              <h1
+                className="loading-glitch-title"
+                data-text="LOADING YOUR ARCHIVE"
+              >
+                LOADING YOUR ARCHIVE
+              </h1>
+
+              <div className="loading-subtitle">
+                compiling 22 years of questionable decisions...
+              </div>
+
+            </div>
+
+            <div className="loading-photo-frame">
+
+              <div className="loading-photo-glow" />
+
+              <div className="loading-photo">
+
+                <img
+                  src={PHOTOS[loadingPhoto]}
+                  alt={`Loading memory ${loadingPhoto + 1}`}
+                  onError={(event) => {
+                    event.currentTarget.style.display = 'none'
+                    event.currentTarget.parentElement.classList.add(
+                      'loading-photo-missing'
+                    )
+                  }}
+                />
+
+                <div className="loading-placeholder">
+
+                  <div className="loading-camera">
+                    ◉
+                  </div>
+
+                  <div>
+                    MEMORY SLOT {String(loadingPhoto + 1).padStart(2, '0')}
+                  </div>
+
+                  <small>
+                    insert /images/clar-{String(
+                      loadingPhoto + 1
+                    ).padStart(2, '0')}.jpg
+                  </small>
+
+                </div>
+
+                <div className="loading-photo-label">
+                  MEMORY_{String(loadingPhoto + 1).padStart(2, '0')}
+                </div>
+
+                <div className="loading-photo-number">
+                  {String(loadingPhoto + 1).padStart(2, '0')} / 06
+                </div>
+
+              </div>
+
+            </div>
+
+            <div className="loading-data">
+
+              <div className="loading-status-row">
+                <span>
+                  STATUS
+                </span>
+
+                <span className="loading-status-text">
+                  {loadingProgress < 25
+                    ? 'SEARCHING MEMORY'
+                    : loadingProgress < 50
+                    ? 'UNPACKING PHOTOS'
+                    : loadingProgress < 75
+                    ? 'RESTORING CHAOS'
+                    : loadingProgress < 95
+                    ? 'PREPARING ARCHIVE'
+                    : 'ALMOST THERE...'}
+                </span>
+
+                <span>
+                  {Math.floor(loadingProgress)}%
+                </span>
+              </div>
+
+              <div className="loading-bar">
+                <div
+                  className="loading-bar-fill"
+                  style={{
+                    width: `${loadingProgress}%`,
+                  }}
+                />
+
+                <div className="loading-bar-scan" />
+              </div>
+
+              <div className="loading-code">
+
+                <span>
+                  &gt; memory_core.init()
+                </span>
+
+                <span>
+                  [OK]
+                </span>
+
+                <span>
+                  &gt; locating_clar.exe
+                </span>
+
+                <span>
+                  [FOUND]
+                </span>
+
+                <span>
+                  &gt; loading_birthday_protocol
+                </span>
+
+                <span className="blink">
+                  [...]
+                </span>
+
+              </div>
+
+            </div>
+
+            <div className="loading-footer">
+
+              <span>
+                DO NOT CLOSE THIS WINDOW
+              </span>
+
+              <span className="loading-heart">
+                ♥
+              </span>
+
+              <span>
+                SOMETHING SPECIAL IS WAITING
+              </span>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <style jsx global>{styles}</style>
+      </main>
+    )
+  }
+
+  return null
+}
+
+
+/* =============================================================
+   WINDOW COMPONENT
+============================================================= */
+
+function WindowBar({ title, icon, active }) {
   return (
-    <main
-      className={`${vt.variable} ${silk.variable} ${orbitron.variable} computer-page`}
+    <div
+      className={
+        active
+          ? 'window-titlebar window-titlebar-active'
+          : 'window-titlebar'
+      }
     >
-      <audio
-        ref={audioRef}
-        src="/audio/birthday-song.mp3"
-        loop
-        onEnded={() => setMusicPlaying(false)}
-      />
 
-      <audio
-        ref={recordingRef}
-        src="/audio/friend-message.mp3"
-        onEnded={() => setRecordingPlaying(false)}
-      />
+      <div className="window-title-left">
+        <span className="window-icon">
+          {icon}
+        </span>
 
-      <div className="background-grid" />
-      <div className="background-glow glow-a" />
-      <div className="background-glow glow-b" />
-
-      <div className="floating-particles">
-        {Array.from({ length: 32 }).map((_, i) => (
-          <span key={i} style={{ '--i': i }} />
-        ))}
+        <span>
+          {title}
+        </span>
       </div>
 
-      {/* ACTUAL COMPUTER FRAME */}
-
-      <div className="computer-shell">
-        <div className="computer-top">
-          <div className="computer-brand">
-            <span className="brand-mark">◈</span>
-            <span>MEMORY//SYSTEM</span>
-          </div>
-
-          <div className="computer-model">
-            MODEL: CLAR-22
-          </div>
-
-          <div className="computer-status">
-            <span className="status-light" />
-            ONLINE
-          </div>
-        </div>
-
-        <div className="monitor-bezel">
-          <div className="monitor-inner">
-            <div className="screen-reflection" />
-
-            <div className="desktop">
-              <div className="desktop-topbar">
-                <div className="desktop-logo">
-                  <span>◆</span> CLAR.EXE
-                </div>
-
-                <div className="desktop-center-status">
-                  PERSONAL MEMORY ARCHIVE
-                </div>
-
-                <div className="desktop-clock">
-                  {formattedTime}
-                </div>
-              </div>
-
-              {/* NOTES */}
-
-              <Window
-                title="notes.txt"
-                className="notes-window"
-                style={{
-                  left: '4%',
-                  top: '8%',
-                  width: '34%',
-                  minWidth: '310px',
-                }}
-                zIndex={focusedWindow === 'notes' ? 50 : 12}
-                onFocus={() => focus('notes')}
-                accent="green"
-              >
-                <div className="notes-paper">
-                  <div className="paper-holes">
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-
-                  <div className="note-heading">
-                    READ BEFORE PROCEEDING
-                  </div>
-
-                  <div className="note-text">
-                    Hi Clar , this is sort of an archive for you to look back
-                    on your past 22 years
-                    <br />
-                    <br />
-                    as much as it is a memory book for you , don’t think I
-                    didn’t add a liiittlee bit of hidden stuff in here HAHAHAH
-                    I took a heck of a long time to make sure you spend a long
-                    time on this so good LUCCCKKK:)
-                  </div>
-
-                  <div className="note-doodle doodle-star">✦</div>
-                  <div className="note-doodle doodle-heart">♡</div>
-                  <div className="note-doodle doodle-arrow">↘</div>
-                </div>
-              </Window>
-
-              {/* MUSIC */}
-
-              <Window
-                title="MUSIC_PLAYER.exe"
-                className="music-window"
-                style={{
-                  right: '4%',
-                  top: '8%',
-                  width: '27%',
-                  minWidth: '270px',
-                }}
-                zIndex={focusedWindow === 'music' ? 50 : 15}
-                onFocus={() => focus('music')}
-                accent="cyan"
-              >
-                <div className="music-player">
-                  <div className="cd-area">
-                    <div
-                      className={`cd ${cdSpinning && musicPlaying ? 'spinning' : ''}`}
-                    >
-                      <div className="cd-grooves" />
-                      <div className="cd-label">
-                        CLAR
-                        <small>22</small>
-                      </div>
-                      <div className="cd-hole" />
-                    </div>
-
-                    <button
-                      className="cd-toggle"
-                      onClick={() => setCdSpinning(!cdSpinning)}
-                      type="button"
-                    >
-                      {cdSpinning ? 'ROTATE' : 'STOP'}
-                    </button>
-                  </div>
-
-                  <div className="music-info">
-                    <div className="music-label">NOW PLAYING</div>
-                    <div className="music-title">
-                      birthday_archive.mp3
-                    </div>
-
-                    <div className="equalizer">
-                      {Array.from({ length: 16 }).map((_, i) => (
-                        <span
-                          key={i}
-                          className={musicPlaying ? 'bar-active' : ''}
-                          style={{ '--bar': (i % 6) + 2 }}
-                        />
-                      ))}
-                    </div>
-
-                    <button
-                      className="pixel-button play-button"
-                      onClick={toggleMusic}
-                      type="button"
-                    >
-                      {musicPlaying ? '❚❚ PAUSE' : '▶ PLAY'}
-                    </button>
-                  </div>
-                </div>
-              </Window>
-
-              {/* VIDEO */}
-
-              <Window
-                title="VIDEO_FEED.mov"
-                className="video-window"
-                style={{
-                  left: '5%',
-                  bottom: '7%',
-                  width: '30%',
-                  minWidth: '280px',
-                }}
-                zIndex={focusedWindow === 'video' ? 50 : 10}
-                onFocus={() => focus('video')}
-                accent="pink"
-              >
-                <div className="video-frame">
-                  <video
-                    src="/video/background.mp4"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                  />
-
-                  <div className="video-overlay">
-                    <span>● REC</span>
-                    <span>CAM_01</span>
-                  </div>
-
-                  <div className="video-missing">
-                    <span>VIDEO_FEED</span>
-                    <small>ADD /video/background.mp4</small>
-                  </div>
-                </div>
-              </Window>
-
-              {/* PHOTO APP */}
-
-              <Window
-                title="PHOTOS.exe"
-                className="photos-window"
-                style={{
-                  left: '38%',
-                  top: '31%',
-                  width: '31%',
-                  minWidth: '330px',
-                }}
-                zIndex={focusedWindow === 'photos' ? 50 : 30}
-                onFocus={() => focus('photos')}
-                accent="purple"
-              >
-                <div className="photo-collage">
-                  <div className="polaroid p1">
-                    <FakeImage
-                      src={PHOTO_SLOTS[0]}
-                      alt="Clar memory 1"
-                      label="01"
-                    />
-                    <span>this one ♡</span>
-                  </div>
-
-                  <div className="polaroid p2">
-                    <FakeImage
-                      src={PHOTO_SLOTS[1]}
-                      alt="Clar memory 2"
-                      label="02"
-                    />
-                    <span>HAHAHA</span>
-                  </div>
-
-                  <div className="polaroid p3">
-                    <FakeImage
-                      src={PHOTO_SLOTS[2]}
-                      alt="Clar memory 3"
-                      label="03"
-                    />
-                    <span>CORE MEMORY</span>
-                  </div>
-
-                  <div className="photo-sticker">♡</div>
-                  <div className="photo-sticker two">★</div>
-                </div>
-              </Window>
-
-              {/* FILES */}
-
-              <Window
-                title="MY_FILES"
-                className="files-window"
-                style={{
-                  right: '4%',
-                  bottom: '7%',
-                  width: '27%',
-                  minWidth: '280px',
-                }}
-                zIndex={focusedWindow === 'files' ? 50 : 25}
-                onFocus={() => focus('files')}
-                accent="green"
-              >
-                <div className="file-grid">
-                  {[
-                    ['FEETGANG', '01'],
-                    ['EGGS', '02'],
-                    ['GRADUATION', '03'],
-                    ['CHAOS', '04'],
-                    ['MEMORIES', '05'],
-                    ['DO_NOT_OPEN', '???'],
-                  ].map(([name, number]) => (
-                    <button
-                      className="mini-file"
-                      key={name}
-                      type="button"
-                    >
-                      <div className="folder-icon">
-                        <span />
-                      </div>
-
-                      <strong>{name}</strong>
-                      <small>{number}</small>
-                    </button>
-                  ))}
-                </div>
-              </Window>
-
-              {/* RECORDING */}
-
-              <Window
-                title="VOICE_NOTE.wav"
-                className="recording-window"
-                style={{
-                  left: '31%',
-                  bottom: '5%',
-                  width: '25%',
-                  minWidth: '270px',
-                }}
-                zIndex={focusedWindow === 'recording' ? 50 : 35}
-                onFocus={() => focus('recording')}
-                accent="cyan"
-              >
-                <div className="recording-app">
-                  <div className="cassette">
-                    <div className="cassette-label">
-                      FOR CLAR ONLY
-                    </div>
-
-                    <div className="cassette-reels">
-                      <span />
-                      <span />
-                    </div>
-                  </div>
-
-                  <div className="recording-details">
-                    <div className="recording-title">
-                      friend_message_01.wav
-                    </div>
-
-                    <div className="waveform">
-                      {Array.from({ length: 30 }).map((_, i) => (
-                        <span
-                          key={i}
-                          style={{ '--wave': ((i * 7) % 8) + 2 }}
-                          className={recordingPlaying ? 'wave-active' : ''}
-                        />
-                      ))}
-                    </div>
-
-                    <button
-                      className="pixel-button"
-                      type="button"
-                      onClick={toggleRecording}
-                    >
-                      {recordingPlaying
-                        ? '❚❚ STOP MESSAGE'
-                        : '▶ PLAY MESSAGE'}
-                    </button>
-                  </div>
-                </div>
-              </Window>
-
-              <div className="desktop-icon trash-icon">
-                <div>▣</div>
-                <span>TRASH</span>
-              </div>
-
-              <div className="desktop-icon secret-icon">
-                <div>?</div>
-                <span>???</span>
-              </div>
-
-              <div className="system-toast">
-                <span className="toast-dot" />
-                <span>WELCOME, CLAR</span>
-                <small>6 WINDOWS OPEN</small>
-              </div>
-            </div>
-
-            <div className="crt-scanlines" />
-            <div className="crt-vignette" />
-            <div className="crt-flicker" />
-          </div>
-        </div>
-
-        <div className="monitor-bottom">
-          <div className="monitor-controls">
-            <span className="control-light" />
-            <span className="control-light purple" />
-            <span className="control-light cyan" />
-          </div>
-
-          <div className="monitor-logo">MEMORY//SYSTEM™</div>
-
-          <div className="monitor-buttons">
-            <span>◉</span>
-            <span>◉</span>
-            <span>◉</span>
-          </div>
-        </div>
-
-        <div className="computer-neck" />
-
-        <div className="computer-base">
-          <div className="base-slot" />
-          <div className="base-logo">
-            CLAR-22
-          </div>
-        </div>
+      <div className="window-controls">
+        <span>—</span>
+        <span>□</span>
+        <span>×</span>
       </div>
 
-      {/* PASSWORD OVERLAY */}
-
-      <div className="password-panel">
-        <div className="password-panel-top">
-          <span>SECURE ACCESS</span>
-          <span>LOCKED</span>
-        </div>
-
-        <div className="password-panel-body">
-          <div className="tiny-warning">⚠ PRIVATE ARCHIVE</div>
-
-          <div className="intro-copy">
-            yayyy happy birthday Clar , if you see this it means the website is
-            working (thank god) ,now you just need to enter the password to
-            enter. Good luck !
-          </div>
-
-          <form onSubmit={submitPassword}>
-            <label htmlFor="password">PASSWORD</label>
-
-            <div className="password-input-wrap">
-              <span>&gt;_</span>
-
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                autoComplete="off"
-                spellCheck="false"
-                placeholder="ENTER PASSWORD"
-              />
-            </div>
-
-            <button type="submit" className="access-button">
-              ENTER ARCHIVE
-              <span>↗</span>
-            </button>
-          </form>
-
-          <div className="attempt-counter">
-            ATTEMPTS: {wrongAttempts}
-          </div>
-        </div>
-      </div>
-
-      {hintOpen && (
-        <div className="hint-overlay">
-          <div className="hint-window">
-            <div className="hint-titlebar">
-              <span>WARNING.exe</span>
-              <button
-                type="button"
-                onClick={() => setHintOpen(false)}
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="hint-body">
-              <div className="warning-icon">!</div>
-
-              <div>
-                <div className="hint-label">PASSWORD INCORRECT</div>
-
-                <p>{hint}</p>
-              </div>
-            </div>
-
-            <button
-              className="hint-ok"
-              type="button"
-              onClick={() => setHintOpen(false)}
-            >
-              OKAY FINE
-            </button>
-          </div>
-        </div>
-      )}
-
-      <style jsx global>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        html,
-        body {
-          margin: 0;
-          padding: 0;
-          min-height: 100%;
-          background: #05030c;
-        }
-
-        body {
-          overflow-x: hidden;
-        }
-
-        button,
-        input {
-          font: inherit;
-        }
-
-        button {
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        /* =========================
-           COMPUTER DESKTOP
-        ========================= */
-
-        .computer-page {
-          min-height: 100vh;
-          min-height: 100svh;
-          position: relative;
-          overflow: hidden;
-          background:
-            radial-gradient(
-              circle at 50% 40%,
-              rgba(115, 66, 200, 0.2),
-              transparent 35%
-            ),
-            #05030c;
-          color: #eee8ff;
-          font-family: var(--font-vt), monospace;
-        }
-
-        .background-grid {
-          position: fixed;
-          inset: 0;
-          opacity: 0.35;
-          background-image:
-            linear-gradient(
-              rgba(157, 108, 255, 0.08) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(157, 108, 255, 0.08) 1px,
-              transparent 1px
-            );
-          background-size: 42px 42px;
-          transform: perspective(700px) rotateX(55deg) scale(1.8);
-          transform-origin: bottom center;
-          pointer-events: none;
-        }
-
-        .background-glow {
-          position: fixed;
-          width: 35vw;
-          height: 35vw;
-          border-radius: 50%;
-          filter: blur(90px);
-          pointer-events: none;
-          opacity: 0.22;
-        }
-
-        .glow-a {
-          background: #743cff;
-          top: 5%;
-          left: 5%;
-        }
-
-        .glow-b {
-          background: #35cfff;
-          right: 5%;
-          bottom: 5%;
-        }
-
-        .floating-particles {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          overflow: hidden;
-        }
-
-        .floating-particles span {
-          position: absolute;
-          width: 2px;
-          height: 2px;
-          background: #cdbaff;
-          left: calc((var(--i) * 17) % 100 * 1%);
-          top: calc((var(--i) * 31) % 100 * 1%);
-          opacity: 0.45;
-          animation:
-            particle-float 5s infinite ease-in-out,
-            particle-blink 1.7s infinite steps(2);
-          animation-delay: calc(var(--i) * -0.22s);
-        }
-
-        @keyframes particle-float {
-          50% {
-            transform: translate(15px, -25px);
-          }
-        }
-
-        @keyframes particle-blink {
-          50% {
-            opacity: 0.1;
-          }
-        }
-
-        /* =========================
-           PHYSICAL COMPUTER
-        ========================= */
-
-        .computer-shell {
-          position: relative;
-          z-index: 5;
-          width: min(1450px, 96vw);
-          margin: 2vh auto;
-          filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.75));
-        }
-
-        .computer-top {
-          height: 46px;
-          background:
-            linear-gradient(#30294a, #171325);
-          border: 2px solid #6f648e;
-          border-bottom: 0;
-          border-radius: 18px 18px 0 0;
-          box-shadow:
-            inset 0 2px rgba(255, 255, 255, 0.12),
-            inset 0 -2px rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 22px;
-          color: #c7b9ed;
-          font-family: var(--font-silk), monospace;
-          font-size: 9px;
-          letter-spacing: 1px;
-        }
-
-        .computer-brand,
-        .computer-status {
-          display: flex;
-          align-items: center;
-          gap: 9px;
-        }
-
-        .brand-mark {
-          color: #a875ff;
-          text-shadow: 0 0 12px #8e4fff;
-        }
-
-        .status-light {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #d7ff5c;
-          box-shadow: 0 0 10px #d7ff5c;
-        }
-
-        .monitor-bezel {
-          padding: 22px;
-          background:
-            linear-gradient(135deg, #3c3554, #171323 40%, #29233c);
-          border: 2px solid #6f648e;
-          box-shadow:
-            inset 0 0 0 2px rgba(0, 0, 0, 0.6),
-            inset 0 0 30px rgba(0, 0, 0, 0.45);
-        }
-
-        .monitor-inner {
-          position: relative;
-          overflow: hidden;
-          border: 8px solid #0c0913;
-          border-radius: 16px;
-          box-shadow:
-            inset 0 0 50px rgba(0, 0, 0, 0.9),
-            0 0 0 2px #655b7d;
-          background: #080610;
-        }
-
-        .desktop {
-          position: relative;
-          height: min(760px, 76vh);
-          min-height: 620px;
-          overflow: hidden;
-          background:
-            radial-gradient(
-              circle at 50% 40%,
-              rgba(99, 48, 183, 0.28),
-              transparent 38%
-            ),
-            linear-gradient(
-              145deg,
-              #0b0714,
-              #120a21 45%,
-              #08070e
-            );
-        }
-
-        .desktop-topbar {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 34px;
-          z-index: 100;
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          align-items: center;
-          padding: 0 12px;
-          border-bottom: 1px solid rgba(184, 152, 255, 0.3);
-          background: rgba(12, 7, 24, 0.85);
-          backdrop-filter: blur(6px);
-          font-family: var(--font-silk), monospace;
-          font-size: 8px;
-          letter-spacing: 1px;
-        }
-
-        .desktop-logo {
-          color: #d7ff5c;
-        }
-
-        .desktop-logo span {
-          color: #ff4fd8;
-        }
-
-        .desktop-center-status {
-          text-align: center;
-          color: #8e84a8;
-        }
-
-        .desktop-clock {
-          text-align: right;
-          color: #5cf2ff;
-        }
-
-        /* =========================
-           WINDOWS
-        ========================= */
-
-        .retro-window {
-          position: absolute;
-          border: 1px solid var(--window-accent);
-          background: rgba(13, 9, 23, 0.96);
-          box-shadow:
-            0 18px 35px rgba(0, 0, 0, 0.55),
-            0 0 20px color-mix(
-              in srgb,
-              var(--window-accent) 18%,
-              transparent
-            );
-          backdrop-filter: blur(9px);
-          animation: window-arrive 0.55s cubic-bezier(0.2, 0.8, 0.2, 1)
-            backwards;
-          touch-action: manipulation;
-        }
-
-        @keyframes window-arrive {
-          from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.97);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        .window-titlebar {
-          height: 29px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 6px 0 9px;
-          background:
-            linear-gradient(
-              90deg,
-              color-mix(in srgb, var(--window-accent) 22%, #100b1b),
-              #100b1b
-            );
-          border-bottom: 1px solid var(--window-accent);
-          font-family: var(--font-silk), monospace;
-          font-size: 8px;
-          letter-spacing: 0.8px;
-          color: #eee8ff;
-        }
-
-        .window-title-left {
-          display: flex;
-          align-items: center;
-          gap: 7px;
-        }
-
-        .window-dot {
-          width: 7px;
-          height: 7px;
-          background: var(--window-accent);
-          box-shadow: 0 0 9px var(--window-accent);
-        }
-
-        .window-buttons {
-          display: flex;
-          gap: 3px;
-        }
-
-        .window-buttons button {
-          width: 19px;
-          height: 18px;
-          border: 1px solid #655b7d;
-          background: #211a30;
-          color: #c8bde0;
-          cursor: pointer;
-          font-size: 10px;
-          line-height: 1;
-        }
-
-        .window-buttons button:last-child:hover {
-          background: #ff4f6d;
-          color: white;
-        }
-
-        .window-content {
-          position: relative;
-          min-height: 100px;
-        }
-
-        /* =========================
-           NOTES
-        ========================= */
-
-        .notes-paper {
-          position: relative;
-          min-height: 300px;
-          padding: 27px 28px 25px 42px;
-          color: #21182d;
-          background:
-            repeating-linear-gradient(
-              transparent 0,
-              transparent 24px,
-              rgba(100, 74, 140, 0.16) 25px
-            ),
-            #eee5d1;
-          overflow: hidden;
-        }
-
-        .paper-holes {
-          position: absolute;
-          left: 12px;
-          top: 25px;
-          display: flex;
-          flex-direction: column;
-          gap: 50px;
-        }
-
-        .paper-holes span {
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          background: #100d17;
-          box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.2);
-        }
-
-        .note-heading {
-          font-family: var(--font-silk), monospace;
-          font-size: clamp(12px, 1.2vw, 17px);
-          color: #30184f;
-          margin-bottom: 17px;
-          transform: rotate(-1deg);
-          text-decoration: underline;
-          text-decoration-style: wavy;
-        }
-
-        .note-text {
-          font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
-          font-size: clamp(14px, 1.35vw, 18px);
-          line-height: 1.55;
-          transform: rotate(-0.6deg);
-        }
-
-        .note-doodle {
-          position: absolute;
-          color: #7d32bb;
-          font-family: cursive;
-          font-size: 30px;
-        }
-
-        .doodle-star {
-          top: 8px;
-          right: 20px;
-          transform: rotate(14deg);
-        }
-
-        .doodle-heart {
-          bottom: 12px;
-          right: 25px;
-          color: #d5288e;
-          transform: rotate(-12deg);
-        }
-
-        .doodle-arrow {
-          bottom: 40px;
-          left: 30px;
-        }
-
-        /* =========================
-           MUSIC
-        ========================= */
-
-        .music-player {
-          padding: 18px;
-          display: flex;
-          gap: 16px;
-          min-height: 245px;
-        }
-
-        .cd-area {
-          width: 46%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .cd {
-          width: clamp(100px, 9vw, 145px);
-          aspect-ratio: 1;
-          border-radius: 50%;
-          position: relative;
-          background:
-            conic-gradient(
-              from 0deg,
-              #f6efff,
-              #7f5aff,
-              #d9ceff,
-              #56ddff,
-              #f6efff,
-              #ff5cc8,
-              #f6efff
-            );
-          box-shadow:
-            0 0 20px rgba(145, 101, 255, 0.5),
-            inset 0 0 20px rgba(0, 0, 0, 0.35);
-        }
-
-        .cd.spinning {
-          animation: spin-cd 2s linear infinite;
-        }
-
-        @keyframes spin-cd {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        .cd-grooves {
-          position: absolute;
-          inset: 9px;
-          border-radius: 50%;
-          border: 1px solid rgba(255, 255, 255, 0.45);
-          box-shadow:
-            inset 0 0 0 6px rgba(255, 255, 255, 0.08),
-            inset 0 0 0 12px rgba(255, 255, 255, 0.08),
-            inset 0 0 0 20px rgba(255, 255, 255, 0.07);
-        }
-
-        .cd-label {
-          position: absolute;
-          inset: 31%;
-          border-radius: 50%;
-          background: #25123f;
-          color: #e9dfff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          font-family: var(--font-orbitron), sans-serif;
-          font-size: 11px;
-          border: 1px solid #9d6cff;
-          box-shadow: 0 0 12px rgba(157, 108, 255, 0.6);
-        }
-
-        .cd-label small {
-          font-size: 7px;
-          color: #d7ff5c;
-        }
-
-        .cd-hole {
-          position: absolute;
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          background: #08060e;
-          left: calc(50% - 4.5px);
-          top: calc(50% - 4.5px);
-        }
-
-        .cd-toggle {
-          border: 1px solid #5cf2ff;
-          color: #5cf2ff;
-          background: transparent;
-          padding: 4px 8px;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          cursor: pointer;
-        }
-
-        .music-info {
-          flex: 1;
-          padding-top: 12px;
-        }
-
-        .music-label {
-          color: #5cf2ff;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          letter-spacing: 1px;
-        }
-
-        .music-title {
-          margin-top: 8px;
-          font-family: var(--font-orbitron), sans-serif;
-          font-size: 10px;
-          line-height: 1.5;
-          color: #f1eaff;
-          word-break: break-word;
-        }
-
-        .equalizer {
-          height: 70px;
-          margin: 15px 0;
-          display: flex;
-          align-items: center;
-          gap: 3px;
-        }
-
-        .equalizer span {
-          flex: 1;
-          height: calc(var(--bar) * 8px);
-          max-height: 52px;
-          background: #5cf2ff;
-          opacity: 0.4;
-        }
-
-        .equalizer .bar-active {
-          animation: equalize 0.5s infinite alternate ease-in-out;
-          animation-delay: calc(var(--bar) * -0.08s);
-          opacity: 1;
-          box-shadow: 0 0 8px #5cf2ff;
-        }
-
-        @keyframes equalize {
-          to {
-            height: 8px;
-          }
-        }
-
-        .pixel-button {
-          border: 1px solid #9d6cff;
-          background: #191127;
-          color: #eee8ff;
-          padding: 9px 11px;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          cursor: pointer;
-          box-shadow: 3px 3px 0 #48277c;
-          transition: 0.15s;
-        }
-
-        .pixel-button:hover {
-          transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0 #48277c;
-          background: #291640;
-        }
-
-        .play-button {
-          border-color: #d7ff5c;
-          color: #d7ff5c;
-        }
-
-        /* =========================
-           VIDEO
-        ========================= */
-
-        .video-frame {
-          position: relative;
-          height: 225px;
-          overflow: hidden;
-          background: #07050c;
-        }
-
-        .video-frame video {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          opacity: 0.75;
-        }
-
-        .video-overlay {
-          position: absolute;
-          top: 9px;
-          left: 10px;
-          right: 10px;
-          display: flex;
-          justify-content: space-between;
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          text-shadow: 0 0 5px #000;
-          pointer-events: none;
-        }
-
-        .video-missing {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          background: rgba(7, 4, 12, 0.3);
-          pointer-events: none;
-          color: rgba(255, 255, 255, 0.65);
-          font-family: var(--font-silk), monospace;
-          font-size: 9px;
-        }
-
-        .video-missing small {
-          margin-top: 8px;
-          font-size: 6px;
-          color: #ff4fd8;
-        }
-
-        /* =========================
-           PHOTOS
-        ========================= */
-
-        .photo-collage {
-          position: relative;
-          height: 310px;
-          overflow: hidden;
-          background:
-            radial-gradient(
-              circle at 30% 30%,
-              rgba(157, 108, 255, 0.25),
-              transparent 35%
-            ),
-            #0b0811;
-        }
-
-        .polaroid {
-          position: absolute;
-          width: 43%;
-          padding: 7px 7px 22px;
-          background: #f4eddd;
-          color: #33263b;
-          box-shadow: 7px 9px 18px rgba(0, 0, 0, 0.55);
-          font-family: 'Comic Sans MS', cursive;
-          font-size: 10px;
-        }
-
-        .polaroid .fake-image {
-          width: 100%;
-          aspect-ratio: 1 / 0.82;
-          background: #d8d0c4;
-        }
-
-        .polaroid span {
-          display: block;
-          padding: 5px 2px 0;
-          text-align: center;
-        }
-
-        .p1 {
-          left: 6%;
-          top: 13%;
-          transform: rotate(-8deg);
-        }
-
-        .p2 {
-          left: 30%;
-          top: 8%;
-          transform: rotate(5deg);
-        }
-
-        .p3 {
-          right: 5%;
-          top: 17%;
-          transform: rotate(-4deg);
-        }
-
-        .photo-sticker {
-          position: absolute;
-          left: 7%;
-          bottom: 15px;
-          color: #ff4fd8;
-          font-size: 25px;
-          transform: rotate(-20deg);
-          text-shadow: 0 0 10px #ff4fd8;
-        }
-
-        .photo-sticker.two {
-          right: 8%;
-          bottom: 20px;
-          color: #d7ff5c;
-          transform: rotate(18deg);
-        }
-
-        /* =========================
-           FILES
-        ========================= */
-
-        .file-grid {
-          padding: 17px;
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 13px;
-          min-height: 245px;
-        }
-
-        .mini-file {
-          border: 0;
-          background: transparent;
-          color: #e8e1f6;
-          cursor: pointer;
-          font-family: var(--font-silk), monospace;
-          padding: 4px;
-          display: flex;
-          align-items: center;
-          flex-direction: column;
-          gap: 5px;
-          min-width: 0;
-        }
-
-        .mini-file:hover .folder-icon {
-          transform: translateY(-4px) rotate(-2deg);
-          filter: drop-shadow(0 0 9px #d7ff5c);
-        }
-
-        .mini-file strong {
-          font-size: 6px;
-          max-width: 100%;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .mini-file small {
-          font-size: 6px;
-          color: #7e7590;
-        }
-
-        .folder-icon {
-          width: 43px;
-          height: 32px;
-          background: #9d6cff;
-          position: relative;
-          border: 1px solid #d0b9ff;
-          box-shadow: 4px 4px 0 rgba(45, 25, 73, 0.9);
-          transition: 0.2s;
-        }
-
-        .folder-icon::before {
-          content: '';
-          position: absolute;
-          top: -6px;
-          left: 3px;
-          width: 17px;
-          height: 7px;
-          background: #9d6cff;
-          border: 1px solid #d0b9ff;
-          border-bottom: 0;
-        }
-
-        .folder-icon span {
-          position: absolute;
-          inset: 7px;
-          border: 1px dashed rgba(255, 255, 255, 0.4);
-        }
-
-        /* =========================
-           RECORDING
-        ========================= */
-
-        .recording-app {
-          min-height: 225px;
-          padding: 15px;
-          display: flex;
-          gap: 14px;
-          align-items: center;
-        }
-
-        .cassette {
-          width: 115px;
-          height: 82px;
-          flex-shrink: 0;
-          background: #c9c0d6;
-          border: 2px solid #756883;
-          border-radius: 5px;
-          padding: 10px;
-          box-shadow: 5px 5px 0 #271b32;
-          transform: rotate(-4deg);
-        }
-
-        .cassette-label {
-          background: #eee6d6;
-          color: #322737;
-          font-family: var(--font-silk), monospace;
-          font-size: 5px;
-          text-align: center;
-          padding: 4px 2px;
-        }
-
-        .cassette-reels {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 8px;
-        }
-
-        .cassette-reels span {
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          border: 4px dotted #40384b;
-          background: #b4aabe;
-        }
-
-        .recording-details {
-          min-width: 0;
-          flex: 1;
-        }
-
-        .recording-title {
-          color: #eee8ff;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          word-break: break-word;
-        }
-
-        .waveform {
-          height: 45px;
-          margin: 12px 0;
-          display: flex;
-          align-items: center;
-          gap: 2px;
-        }
-
-        .waveform span {
-          width: 3px;
-          height: calc(var(--wave) * 4px);
-          background: #5cf2ff;
-          opacity: 0.45;
-        }
-
-        .waveform .wave-active {
-          animation: wave 0.45s infinite alternate;
-          animation-delay: calc(var(--wave) * -0.05s);
-          opacity: 1;
-          box-shadow: 0 0 7px #5cf2ff;
-        }
-
-        @keyframes wave {
-          to {
-            transform: scaleY(0.25);
-          }
-        }
-
-        /* =========================
-           DESKTOP ICONS / TOAST
-        ========================= */
-
-        .desktop-icon {
-          position: absolute;
-          z-index: 4;
-          color: #bdb1d6;
-          text-align: center;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          opacity: 0.7;
-        }
-
-        .desktop-icon div {
-          width: 34px;
-          height: 34px;
-          margin: 0 auto 4px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid #75698d;
-          background: rgba(22, 14, 35, 0.7);
-          font-size: 17px;
-        }
-
-        .trash-icon {
-          right: 1.5%;
-          top: 43%;
-        }
-
-        .secret-icon {
-          left: 1.5%;
-          top: 46%;
-          color: #ff4fd8;
-        }
-
-        .secret-icon div {
-          border-color: #ff4fd8;
-          box-shadow: 0 0 15px rgba(255, 79, 216, 0.25);
-        }
-
-        .system-toast {
-          position: absolute;
-          right: 18px;
-          top: 48px;
-          z-index: 101;
-          padding: 7px 9px;
-          border: 1px solid rgba(215, 255, 92, 0.5);
-          background: rgba(10, 8, 15, 0.85);
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-          display: flex;
-          align-items: center;
-          gap: 7px;
-        }
-
-        .system-toast small {
-          color: #777084;
-          margin-left: 3px;
-        }
-
-        .toast-dot {
-          width: 5px;
-          height: 5px;
-          background: #d7ff5c;
-          box-shadow: 0 0 8px #d7ff5c;
-        }
-
-        /* =========================
-           IMAGE PLACEHOLDERS
-        ========================= */
-
-        .fake-image {
-          position: relative;
-          overflow: hidden;
-          background:
-            linear-gradient(
-              135deg,
-              #23183a,
-              #6c42a5 45%,
-              #101827
-            );
-        }
-
-        .fake-image img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .image-placeholder {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-direction: column;
-          color: rgba(255, 255, 255, 0.72);
-          font-family: var(--font-silk), monospace;
-          background:
-            radial-gradient(
-              circle,
-              rgba(255, 255, 255, 0.12),
-              transparent 55%
-            );
-        }
-
-        .placeholder-cross {
-          font-size: 35px;
-          line-height: 1;
-          color: #d7ff5c;
-          text-shadow: 0 0 12px #d7ff5c;
-        }
-
-        .image-placeholder span {
-          font-size: 8px;
-          letter-spacing: 1px;
-        }
-
-        .image-placeholder small {
-          margin-top: 4px;
-          font-size: 5px;
-          color: #c2b8d1;
-        }
-
-        /* =========================
-           CRT
-        ========================= */
-
-        .screen-reflection {
-          position: absolute;
-          inset: 0;
-          z-index: 1000;
-          pointer-events: none;
-          background:
-            linear-gradient(
-              110deg,
-              rgba(255, 255, 255, 0.07),
-              transparent 17%,
-              transparent 80%,
-              rgba(255, 255, 255, 0.025)
-            );
-        }
-
-        .crt-scanlines {
-          position: absolute;
-          inset: 0;
-          z-index: 999;
-          pointer-events: none;
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              rgba(255, 255, 255, 0.035) 0,
-              rgba(255, 255, 255, 0.035) 1px,
-              transparent 1px,
-              transparent 4px
-            );
-          mix-blend-mode: overlay;
-        }
-
-        .crt-vignette {
-          position: absolute;
-          inset: 0;
-          z-index: 998;
-          pointer-events: none;
-          background:
-            radial-gradient(
-              ellipse at center,
-              transparent 55%,
-              rgba(0, 0, 0, 0.6) 100%
-            );
-        }
-
-        .crt-flicker {
-          position: absolute;
-          inset: 0;
-          z-index: 997;
-          pointer-events: none;
-          background: rgba(140, 100, 255, 0.02);
-          animation: flicker 0.15s infinite;
-        }
-
-        @keyframes flicker {
-          50% {
-            opacity: 0.55;
-          }
-        }
-
-        .monitor-bottom {
-          height: 42px;
-          background:
-            linear-gradient(#29233a, #15111f);
-          border: 2px solid #6f648e;
-          border-top: 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 28px;
-          color: #716985;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-        }
-
-        .monitor-controls,
-        .monitor-buttons {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-        }
-
-        .control-light {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #d7ff5c;
-          box-shadow: 0 0 7px #d7ff5c;
-        }
-
-        .control-light.purple {
-          background: #a875ff;
-          box-shadow: 0 0 7px #a875ff;
-        }
-
-        .control-light.cyan {
-          background: #5cf2ff;
-          box-shadow: 0 0 7px #5cf2ff;
-        }
-
-        .monitor-logo {
-          color: #9085a8;
-          letter-spacing: 2px;
-        }
-
-        .computer-neck {
-          width: 190px;
-          height: 55px;
-          margin: 0 auto;
-          background: linear-gradient(
-            90deg,
-            #211b2d,
-            #403650,
-            #211b2d
-          );
-          border: 2px solid #675c7c;
-          border-top: 0;
-        }
-
-        .computer-base {
-          height: 54px;
-          background:
-            linear-gradient(#302a40, #171321);
-          border: 2px solid #6f648e;
-          border-radius: 0 0 20px 20px;
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .base-slot {
-          position: absolute;
-          left: 30px;
-          width: 110px;
-          height: 7px;
-          background: #0a0810;
-          border: 1px solid #5d536d;
-          border-radius: 2px;
-        }
-
-        .base-logo {
-          color: #8c829e;
-          font-family: var(--font-orbitron), sans-serif;
-          font-size: 9px;
-          letter-spacing: 2px;
-        }
-
-        /* =========================
-           PASSWORD PANEL
-        ========================= */
-
-        .password-panel {
-          position: fixed;
-          right: 2.8vw;
-          bottom: 2.8vh;
-          z-index: 500;
-          width: min(360px, 88vw);
-          border: 1px solid #9d6cff;
-          background: rgba(10, 7, 17, 0.97);
-          box-shadow:
-            0 20px 50px rgba(0, 0, 0, 0.75),
-            0 0 30px rgba(126, 72, 255, 0.22);
-        }
-
-        .password-panel-top {
-          height: 27px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 9px;
-          background: #201432;
-          border-bottom: 1px solid #9d6cff;
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          letter-spacing: 1px;
-        }
-
-        .password-panel-body {
-          padding: 16px;
-        }
-
-        .tiny-warning {
-          color: #ff4fd8;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          margin-bottom: 10px;
-        }
-
-        .intro-copy {
-          color: #d8d0e7;
-          font-family: var(--font-vt), monospace;
-          font-size: 18px;
-          line-height: 1.18;
-          margin-bottom: 15px;
-        }
-
-        .password-panel label {
-          display: block;
-          color: #8e84a8;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          margin-bottom: 5px;
-        }
-
-        .password-input-wrap {
-          height: 39px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 0 10px;
-          border: 1px solid #4c3b69;
-          background: #08060d;
-        }
-
-        .password-input-wrap > span {
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 9px;
-        }
-
-        .password-input-wrap input {
-          min-width: 0;
-          flex: 1;
-          height: 100%;
-          border: 0;
-          outline: 0;
-          background: transparent;
-          color: #eee8ff;
-          font-family: var(--font-silk), monospace;
-          font-size: 9px;
-        }
-
-        .password-input-wrap input::placeholder {
-          color: #50475e;
-        }
-
-        .access-button {
-          width: 100%;
-          margin-top: 9px;
-          height: 37px;
-          border: 1px solid #d7ff5c;
-          background: #1d2710;
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          letter-spacing: 1px;
-          cursor: pointer;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 12px;
-          transition: 0.15s;
-        }
-
-        .access-button:hover {
-          background: #2b3916;
-          box-shadow: 0 0 20px rgba(215, 255, 92, 0.2);
-        }
-
-        .attempt-counter {
-          margin-top: 8px;
-          color: #5f566d;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-          text-align: right;
-        }
-
-        /* =========================
-           HINT
-        ========================= */
-
-        .hint-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 900;
-          pointer-events: none;
-        }
-
-        .hint-window {
-          position: absolute;
-          right: 4vw;
-          bottom: 24vh;
-          width: min(360px, 88vw);
-          background: #100b17;
-          border: 1px solid #ff4fd8;
-          box-shadow:
-            0 20px 60px rgba(0, 0, 0, 0.8),
-            0 0 30px rgba(255, 79, 216, 0.2);
-          pointer-events: auto;
-          animation: hint-pop 0.25s ease-out;
-        }
-
-        @keyframes hint-pop {
-          from {
-            opacity: 0;
-            transform: scale(0.85) translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-
-        .hint-titlebar {
-          height: 28px;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 0 9px;
-          background: #311329;
-          border-bottom: 1px solid #ff4fd8;
-          color: #ffb9ef;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-        }
-
-        .hint-titlebar button {
-          width: 20px;
-          height: 18px;
-          border: 1px solid #9c426f;
-          background: #21101b;
-          color: #ffb9ef;
-          cursor: pointer;
-        }
-
-        .hint-body {
-          display: flex;
-          gap: 14px;
-          padding: 18px;
-        }
-
-        .warning-icon {
-          width: 40px;
-          height: 40px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #ff4fd8;
-          color: #180914;
-          font-family: var(--font-orbitron), sans-serif;
-          font-weight: 800;
-          clip-path: polygon(50% 0, 100% 100%, 0 100%);
-          padding-top: 8px;
-        }
-
-        .hint-label {
-          color: #ff4fd8;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          margin-bottom: 8px;
-        }
-
-        .hint-body p {
-          margin: 0;
-          color: #eee8ff;
-          font-family: var(--font-vt), monospace;
-          font-size: 19px;
-          line-height: 1.15;
-        }
-
-        .hint-ok {
-          margin: 0 18px 18px auto;
-          display: block;
-          border: 1px solid #ff4fd8;
-          background: #1e1020;
-          color: #ffb9ef;
-          padding: 7px 10px;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-          cursor: pointer;
-        }
-
-        /* =========================
-           LOADING SCREEN
-        ========================= */
-
-        .loading-screen {
-          min-height: 100vh;
-          min-height: 100svh;
-          position: relative;
-          overflow: hidden;
-          background:
-            radial-gradient(
-              circle at center,
-              rgba(101, 45, 190, 0.3),
-              transparent 42%
-            ),
-            #05030c;
-          color: #eee8ff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .loading-stars {
-          position: absolute;
-          inset: 0;
-          background-image:
-            radial-gradient(circle, #cbb8ff 1px, transparent 1px),
-            radial-gradient(circle, #5cf2ff 1px, transparent 1px);
-          background-size: 97px 97px, 151px 151px;
-          background-position: 10px 20px, 40px 70px;
-          opacity: 0.4;
-          animation: stars-drift 15s linear infinite;
-        }
-
-        @keyframes stars-drift {
-          to {
-            background-position: 120px 80px, 180px 20px;
-          }
-        }
-
-        .loading-scanlines {
-          position: absolute;
-          inset: 0;
-          z-index: 20;
-          pointer-events: none;
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              transparent 0,
-              transparent 3px,
-              rgba(255, 255, 255, 0.035) 4px
-            );
-        }
-
-        .loading-noise {
-          position: absolute;
-          inset: 0;
-          z-index: 19;
-          opacity: 0.09;
-          pointer-events: none;
-          background-image:
-            repeating-radial-gradient(
-              circle at 0 0,
-              #fff 0,
-              #fff 1px,
-              transparent 1px,
-              transparent 3px
-            );
-          background-size: 6px 6px;
-          animation: noise-shift 0.2s steps(2) infinite;
-        }
-
-        @keyframes noise-shift {
-          50% {
-            transform: translate(2px, -2px);
-          }
-        }
-
-        .loading-center {
-          position: relative;
-          z-index: 10;
-          width: min(820px, 90vw);
-          display: flex;
-          align-items: center;
-          flex-direction: column;
-        }
-
-        .loading-eyebrow {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          color: #5cf2ff;
-          font-family: var(--font-silk), monospace;
-          font-size: 8px;
-          letter-spacing: 2px;
-          margin-bottom: 15px;
-          text-shadow: 0 0 12px rgba(92, 242, 255, 0.7);
-        }
-
-        .loading-eyebrow span {
-          color: #ff4fd8;
-          animation: blink 0.7s steps(2) infinite;
-        }
-
-        @keyframes blink {
-          50% {
-            opacity: 0;
-          }
-        }
-
-        .loading-main-title {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          font-family: var(--font-orbitron), sans-serif;
-          font-size: clamp(30px, 5vw, 64px);
-          font-weight: 800;
-          letter-spacing: 4px;
-          color: #f0eaff;
-          text-shadow:
-            3px 0 #ff4fd8,
-            -3px 0 #5cf2ff,
-            0 0 25px rgba(157, 108, 255, 0.7);
-          animation: title-jitter 2.3s infinite steps(2);
-        }
-
-        @keyframes title-jitter {
-          0%,
-          89%,
-          100% {
-            transform: translate(0);
-          }
-
-          90% {
-            transform: translate(3px, -1px);
-          }
-
-          92% {
-            transform: translate(-3px, 1px);
-          }
-        }
-
-        .loading-slash {
-          color: #d7ff5c;
-          text-shadow: 0 0 15px #d7ff5c;
-        }
-
-        .glitch-word {
-          position: relative;
-        }
-
-        .glitch-word::before,
-        .glitch-word::after {
-          content: attr(data-text);
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 100%;
-          overflow: hidden;
-        }
-
-        .glitch-word::before {
-          color: #ff4fd8;
-          clip-path: inset(10% 0 65% 0);
-          transform: translate(-3px, 0);
-          animation: glitch-a 1.7s infinite steps(2);
-        }
-
-        .glitch-word::after {
-          color: #5cf2ff;
-          clip-path: inset(60% 0 10% 0);
-          transform: translate(3px, 0);
-          animation: glitch-b 1.1s infinite steps(2);
-        }
-
-        @keyframes glitch-a {
-          50% {
-            clip-path: inset(40% 0 35% 0);
-          }
-          72% {
-            clip-path: inset(75% 0 5% 0);
-          }
-        }
-
-        @keyframes glitch-b {
-          40% {
-            clip-path: inset(5% 0 70% 0);
-          }
-          80% {
-            clip-path: inset(65% 0 15% 0);
-          }
-        }
-
-        .loading-subtitle {
-          margin-top: 8px;
-          color: #827795;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          letter-spacing: 2px;
-        }
-
-        .loading-photo-stage {
-          position: relative;
-          width: min(610px, 78vw);
-          height: min(410px, 50vh);
-          min-height: 310px;
-          margin-top: 28px;
-          padding: 15px;
-          border: 1px solid #8b62db;
-          background: rgba(13, 7, 24, 0.72);
-          box-shadow:
-            0 0 0 5px rgba(82, 46, 135, 0.15),
-            0 0 55px rgba(127, 70, 255, 0.25),
-            inset 0 0 40px rgba(0, 0, 0, 0.6);
-        }
-
-        .loading-photo-glow {
-          position: absolute;
-          inset: 15%;
-          background: #7138ff;
-          filter: blur(60px);
-          opacity: 0.2;
-          pointer-events: none;
-        }
-
-        .loading-photo {
-          width: 100%;
-          height: 100%;
-          position: relative;
-          z-index: 2;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          background: #171021;
-        }
-
-        .loading-photo img {
-          object-fit: cover;
-        }
-
-        .loading-photo-stage::before {
-          content: '';
-          position: absolute;
-          inset: 7px;
-          border: 1px dashed rgba(215, 255, 92, 0.4);
-          pointer-events: none;
-          z-index: 3;
-        }
-
-        .photo-stage-corner {
-          position: absolute;
-          z-index: 5;
-          color: #d7ff5c;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          text-shadow: 0 0 7px #000;
-        }
-
-        .photo-stage-corner.tl {
-          left: 26px;
-          top: 25px;
-        }
-
-        .photo-stage-corner.tr {
-          right: 26px;
-          top: 25px;
-        }
-
-        .photo-stage-corner.bl {
-          left: 26px;
-          bottom: 25px;
-        }
-
-        .photo-stage-corner.br {
-          right: 26px;
-          bottom: 25px;
-        }
-
-        .photo-counter {
-          position: absolute;
-          z-index: 5;
-          bottom: 17px;
-          left: 50%;
-          transform: translateX(-50%);
-          padding: 5px 10px;
-          background: rgba(5, 3, 10, 0.78);
-          border: 1px solid rgba(92, 242, 255, 0.45);
-          color: #5cf2ff;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-          display: flex;
-          gap: 7px;
-          align-items: center;
-        }
-
-        .photo-counter strong {
-          color: #fff;
-          font-size: 9px;
-        }
-
-        .loading-progress-area {
-          width: min(610px, 78vw);
-          margin-top: 21px;
-        }
-
-        .loading-progress-labels {
-          display: flex;
-          justify-content: space-between;
-          color: #d8d0e7;
-          font-family: var(--font-silk), monospace;
-          font-size: 7px;
-          margin-bottom: 6px;
-        }
-
-        .loading-progress-labels span:last-child {
-          color: #d7ff5c;
-        }
-
-        .loading-bar {
-          position: relative;
-          width: 100%;
-          height: 14px;
-          padding: 2px;
-          border: 1px solid #7452a9;
-          background: #0a0710;
-          overflow: hidden;
-        }
-
-        .loading-bar-fill {
-          height: 100%;
-          position: relative;
-          background:
-            repeating-linear-gradient(
-              90deg,
-              #9d6cff 0,
-              #9d6cff 12px,
-              #d7ff5c 12px,
-              #d7ff5c 18px,
-              #5cf2ff 18px,
-              #5cf2ff 27px
-            );
-          box-shadow:
-            0 0 15px rgba(157, 108, 255, 0.7);
-          transition: width 0.12s linear;
-        }
-
-        .loading-bar-scan {
-          position: absolute;
-          inset: 0;
-          width: 70px;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.55),
-            transparent
-          );
-          animation: bar-shine 1.2s linear infinite;
-        }
-
-        @keyframes bar-shine {
-          from {
-            transform: translateX(-100px);
-          }
-
-          to {
-            transform: translateX(700px);
-          }
-        }
-
-        .loading-status {
-          margin-top: 7px;
-          display: flex;
-          justify-content: space-between;
-          color: #645a75;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-        }
-
-        .loading-status span:last-child {
-          color: #9d6cff;
-        }
-
-        .loading-corner {
-          position: absolute;
-          z-index: 30;
-          color: #5e546d;
-          font-family: var(--font-silk), monospace;
-          font-size: 6px;
-          letter-spacing: 1px;
-        }
-
-        .loading-corner.top-left {
-          top: 22px;
-          left: 25px;
-        }
-
-        .loading-corner.top-right {
-          top: 22px;
-          right: 25px;
-          color: #d7ff5c;
-        }
-
-        .loading-corner.bottom-left {
-          bottom: 22px;
-          left: 25px;
-        }
-
-        .loading-corner.bottom-right {
-          bottom: 22px;
-          right: 25px;
-        }
-
-        .loading-floating-symbol {
-          position: absolute;
-          z-index: 5;
-          color: #9d6cff;
-          font-family: var(--font-orbitron), sans-serif;
-          font-size: 25px;
-          text-shadow: 0 0 18px #9d6cff;
-          animation: float-symbol 4s infinite ease-in-out;
-        }
-
-        .symbol-one {
-          left: 11%;
-          top: 27%;
-        }
-
-        .symbol-two {
-          right: 14%;
-          top: 22%;
-          color: #5cf2ff;
-          animation-delay: -1s;
-        }
-
-        .symbol-three {
-          left: 16%;
-          bottom: 22%;
-          color: #d7ff5c;
-          animation-delay: -2s;
-        }
-
-        .symbol-four {
-          right: 11%;
-          bottom: 27%;
-          color: #ff4fd8;
-          animation-delay: -3s;
-        }
-
-        @keyframes float-symbol {
-          50% {
-            transform: translateY(-22px) rotate(12deg);
-          }
-        }
-
-        .loading-ring {
-          position: absolute;
-          border: 1px solid rgba(157, 108, 255, 0.25);
-          border-radius: 50%;
-          pointer-events: none;
-          animation: ring-pulse 4s infinite ease-in-out;
-        }
-
-        .ring-one {
-          width: 48vw;
-          height: 48vw;
-          max-width: 700px;
-          max-height: 700px;
-        }
-
-        .ring-two {
-          width: 62vw;
-          height: 62vw;
-          max-width: 900px;
-          max-height: 900px;
-          border-color: rgba(92, 242, 255, 0.12);
-          animation-delay: -2s;
-        }
-
-        @keyframes ring-pulse {
-          50% {
-            transform: scale(1.08);
-            opacity: 0.3;
-          }
-        }
-
-        /* =========================
-           RESPONSIVE
-        ========================= */
-
-        @media (max-width: 1100px) {
-          .computer-shell {
-            width: 99vw;
-            margin: 0.5vh auto;
-          }
-
-          .computer-top {
-            border-radius: 10px 10px 0 0;
-          }
-
-          .monitor-bezel {
-            padding: 10px;
-          }
-
-          .desktop {
-            min-height: 650px;
-            height: 76vh;
-          }
-
-          .password-panel {
-            right: 14px;
-            bottom: 14px;
-          }
-
-          .retro-window {
-            transform: scale(0.9);
-            transform-origin: top left;
-          }
-        }
-
-        @media (max-width: 800px) {
-          .computer-top {
-            padding: 0 10px;
-            font-size: 6px;
-          }
-
-          .computer-model {
-            display: none;
-          }
-
-          .monitor-bezel {
-            padding: 5px;
-          }
-
-          .desktop {
-            min-height: 680px;
-            height: 84vh;
-            overflow: hidden;
-          }
-
-          .retro-window {
-            min-width: 0 !important;
-          }
-
-          .notes-window {
-            width: 46% !important;
-            left: 2% !important;
-          }
-
-          .music-window {
-            width: 43% !important;
-            right: 2% !important;
-          }
-
-          .video-window {
-            width: 43% !important;
-            left: 2% !important;
-          }
-
-          .photos-window {
-            width: 48% !important;
-            left: 27% !important;
-            top: 34% !important;
-          }
-
-          .files-window {
-            width: 43% !important;
-            right: 2% !important;
-          }
-
-          .recording-window {
-            width: 43% !important;
-            left: 3% !important;
-          }
-
-          .note-text {
-            font-size: 14px;
-          }
-
-          .music-player,
-          .recording-app {
-            flex-direction: column;
-          }
-
-          .cd-area {
-            width: 100%;
-          }
-
-          .cd {
-            width: 85px;
-          }
-
-          .music-player {
-            min-height: 260px;
-          }
-
-          .video-frame {
-            height: 180px;
-          }
-
-          .photo-collage {
-            height: 235px;
-          }
-
-          .file-grid {
-            gap: 7px;
-            padding: 10px;
-          }
-
-          .folder-icon {
-            width: 31px;
-            height: 24px;
-          }
-
-          .system-toast {
-            display: none;
-          }
-
-          .desktop-topbar {
-            grid-template-columns: 1fr auto;
-          }
-
-          .desktop-center-status {
-            display: none;
-          }
-
-          .password-panel {
-            width: min(390px, calc(100vw - 20px));
-            left: 10px;
-            right: 10px;
-            bottom: 10px;
-          }
-
-          .hint-window {
-            right: 10px;
-            bottom: 30vh;
-            width: calc(100vw - 20px);
-          }
-
-          .loading-photo-stage {
-            width: 88vw;
-            height: 48vh;
-            min-height: 280px;
-          }
-
-          .loading-progress-area {
-            width: 88vw;
-          }
-
-          .loading-main-title {
-            font-size: clamp(26px, 8vw, 46px);
-          }
-
-          .loading-subtitle {
-            text-align: center;
-            font-size: 6px;
-          }
-
-          .loading-corner {
-            display: none;
-          }
-        }
-
-        @media (max-width: 600px) {
-          .computer-shell {
-            width: 100vw;
-            margin: 0;
-          }
-
-          .computer-top {
-            height: 32px;
-          }
-
-          .monitor-bezel {
-            padding: 3px;
-          }
-
-          .monitor-inner {
-            border-width: 4px;
-            border-radius: 8px;
-          }
-
-          .desktop {
-            min-height: 630px;
-            height: 82vh;
-          }
-
-          .retro-window {
-            font-size: 0.85em;
-          }
-
-          .notes-window {
-            width: 56% !important;
-            top: 7% !important;
-          }
-
-          .music-window {
-            width: 42% !important;
-            top: 7% !important;
-          }
-
-          .video-window {
-            width: 49% !important;
-            bottom: 4% !important;
-          }
-
-          .photos-window {
-            width: 51% !important;
-            left: 25% !important;
-            top: 35% !important;
-          }
-
-          .files-window {
-            width: 43% !important;
-            right: 2% !important;
-            bottom: 5% !important;
-          }
-
-          .recording-window {
-            width: 48% !important;
-            left: 2% !important;
-            bottom: 4% !important;
-          }
-
-          .notes-paper {
-            min-height: 250px;
-            padding: 18px 15px 18px 30px;
-          }
-
-          .note-heading {
-            font-size: 8px;
-          }
-
-          .note-text {
-            font-size: 11px;
-            line-height: 1.4;
-          }
-
-          .window-titlebar {
-            height: 24px;
-            font-size: 6px;
-          }
-
-          .window-buttons {
-            display: none;
-          }
-
-          .music-player {
-            padding: 10px;
-            min-height: 220px;
-            gap: 5px;
-          }
-
-          .music-title {
-            font-size: 7px;
-          }
-
-          .equalizer {
-            height: 40px;
-          }
-
-          .cd {
-            width: 65px;
-          }
-
-          .video-frame {
-            height: 125px;
-          }
-
-          .photo-collage {
-            height: 190px;
-          }
-
-          .polaroid {
-            padding: 4px 4px 13px;
-            font-size: 6px;
-          }
-
-          .file-grid {
-            grid-template-columns: repeat(2, 1fr);
-            min-height: 210px;
-          }
-
-          .mini-file strong {
-            font-size: 5px;
-          }
-
-          .folder-icon {
-            width: 25px;
-            height: 19px;
-          }
-
-          .recording-app {
-            min-height: 190px;
-            padding: 8px;
-          }
-
-          .cassette {
-            width: 80px;
-            height: 57px;
-          }
-
-          .cassette-label {
-            font-size: 4px;
-          }
-
-          .cassette-reels span {
-            width: 15px;
-            height: 15px;
-          }
-
-          .recording-title {
-            font-size: 5px;
-          }
-
-          .waveform {
-            height: 30px;
-          }
-
-          .pixel-button {
-            padding: 6px;
-            font-size: 5px;
-          }
-
-          .password-panel {
-            position: fixed;
-            width: calc(100vw - 16px);
-            left: 8px;
-            right: 8px;
-            bottom: 8px;
-          }
-
-          .intro-copy {
-            font-size: 16px;
-          }
-
-          .loading-main-title {
-            gap: 7px;
-            letter-spacing: 1px;
-          }
-
-          .loading-eyebrow {
-            font-size: 6px;
-          }
-
-          .loading-photo-stage {
-            width: 91vw;
-            height: 43vh;
-            min-height: 270px;
-            margin-top: 20px;
-          }
-
-          .loading-progress-area {
-            width: 91vw;
-          }
-
-          .loading-photo-stage .photo-stage-corner {
-            font-size: 5px;
-          }
-
-          .loading-status {
-            font-size: 5px;
-          }
-        }
-      `}</style>
-    </main>
+    </div>
   )
 }
+
+
+/* =============================================================
+   FILE COMPONENT
+============================================================= */
+
+function FakeFile({ icon, name }) {
+  return (
+    <button
+      className="fake-file"
+      onClick={(event) => event.stopPropagation()}
+    >
+
+      <div className="fake-file-icon">
+        {icon}
+      </div>
+
+      <div className="fake-file-name">
+        {name}
+      </div>
+
+    </button>
+  )
+}
+
+
+/* =============================================================
+   CSS
+============================================================= */
+
+const styles = `
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #05030a;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   MAIN BACKGROUND
+========================================================= */
+
+.birthday-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(125, 45, 255, 0.18),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 10% 90%,
+      rgba(255, 42, 164, 0.12),
+      transparent 28%
+    ),
+    #05030a;
+
+  color: #f4efff;
+
+  font-family:
+    "Trebuchet MS",
+    "Arial Black",
+    Arial,
+    sans-serif;
+
+  padding: 26px 18px 18px;
+}
+
+.background-grid {
+  position: fixed;
+  inset: 0;
+
+  background-image:
+    linear-gradient(
+      rgba(156, 82, 255, 0.08) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(156, 82, 255, 0.08) 1px,
+      transparent 1px
+    );
+
+  background-size: 42px 42px;
+
+  transform:
+    perspective(700px)
+    rotateX(62deg)
+    scale(1.5);
+
+  transform-origin: bottom center;
+
+  opacity: 0.4;
+
+  pointer-events: none;
+}
+
+.floating-pixel {
+  position: fixed;
+  width: 7px;
+  height: 7px;
+  background: #35f5ff;
+  box-shadow: 0 0 18px #35f5ff;
+  animation: floatPixel 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.pixel-one {
+  left: 8%;
+  top: 20%;
+}
+
+.pixel-two {
+  right: 12%;
+  top: 34%;
+  background: #ff3cac;
+  box-shadow: 0 0 18px #ff3cac;
+  animation-delay: 1s;
+}
+
+.pixel-three {
+  left: 18%;
+  bottom: 14%;
+  background: #b7ff4a;
+  box-shadow: 0 0 18px #b7ff4a;
+  animation-delay: 2s;
+}
+
+
+/* =========================================================
+   COMPUTER
+========================================================= */
+
+.computer-wrapper {
+  position: relative;
+
+  width: min(1420px, 100%);
+  margin: 0 auto;
+
+  z-index: 2;
+}
+
+.crt-computer {
+  position: relative;
+  width: 100%;
+}
+
+.crt-top-label {
+  width: 88%;
+  margin: 0 auto 8px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  color: #9b8aaf;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.top-light {
+  color: #b7ff4a;
+  text-shadow: 0 0 12px #b7ff4a;
+}
+
+
+/* =========================================================
+   MONITOR BEZEL
+========================================================= */
+
+.monitor-bezel {
+  position: relative;
+
+  width: 100%;
+
+  padding:
+    clamp(14px, 2vw, 28px)
+    clamp(14px, 2vw, 30px)
+    20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #3b3944,
+      #1a1920 42%,
+      #292730
+    );
+
+  border:
+    3px solid #09080c;
+
+  border-radius: 30px 30px 25px 25px;
+
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.18),
+    inset 0 -8px 18px rgba(0,0,0,0.65),
+    0 30px 60px rgba(0,0,0,0.75),
+    0 0 90px rgba(112, 55, 255, 0.12);
+}
+
+.monitor-inner {
+  position: relative;
+
+  background: #020305;
+
+  border:
+    7px solid #08080b;
+
+  border-radius: 23px;
+
+  box-shadow:
+    inset 0 0 35px rgba(0,0,0,0.95),
+    0 0 0 2px #4b4850;
+
+  overflow: hidden;
+}
+
+.desktop {
+  position: relative;
+
+  width: 100%;
+  min-height: 760px;
+
+  background:
+    radial-gradient(
+      ellipse at 50% 35%,
+      rgba(82, 37, 157, 0.42),
+      transparent 46%
+    ),
+    radial-gradient(
+      ellipse at 80% 90%,
+      rgba(255, 36, 164, 0.18),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #10091d,
+      #08050e 50%,
+      #11091d
+    );
+
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   CRT EFFECTS
+========================================================= */
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.035) 0px,
+      rgba(255,255,255,0.035) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.screen-noise {
+  position: absolute;
+  inset: -30%;
+
+  background:
+    repeating-radial-gradient(
+      circle at 30% 20%,
+      rgba(255,255,255,0.025) 0,
+      rgba(255,255,255,0.025) 1px,
+      transparent 2px,
+      transparent 5px
+    );
+
+  animation: noiseMove 0.15s steps(2) infinite;
+
+  z-index: 201;
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.screen-vignette {
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 48%,
+      rgba(0,0,0,0.38) 100%
+    );
+
+  z-index: 202;
+  pointer-events: none;
+}
+
+@keyframes noiseMove {
+  0% {
+    transform: translate(0,0);
+  }
+
+  25% {
+    transform: translate(-2%,1%);
+  }
+
+  50% {
+    transform: translate(1%,-2%);
+  }
+
+  75% {
+    transform: translate(2%,2%);
+  }
+
+  100% {
+    transform: translate(-1%,-1%);
+  }
+}
+
+
+/* =========================================================
+   DESKTOP HEADER
+========================================================= */
+
+.desktop-header {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 13px;
+
+  height: 27px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+
+  padding: 0 8px;
+
+  border-bottom:
+    1px solid rgba(202, 152, 255, 0.28);
+
+  color: #bca9d8;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 8px;
+  letter-spacing: 1.3px;
+
+  z-index: 10;
+}
+
+.desktop-logo {
+  color: #d9c9f2;
+}
+
+.logo-symbol {
+  color: #ff3cac;
+  margin-right: 5px;
+  text-shadow: 0 0 10px #ff3cac;
+}
+
+.desktop-status {
+  color: #b7ff4a;
+}
+
+.desktop-clock {
+  text-align: right;
+}
+
+
+/* =========================================================
+   WINDOWS
+========================================================= */
+
+.desktop-window {
+  position: absolute;
+
+  border:
+    1px solid rgba(217, 195, 255, 0.5);
+
+  background:
+    rgba(12, 7, 22, 0.92);
+
+  box-shadow:
+    0 12px 35px rgba(0,0,0,0.45),
+    0 0 22px rgba(139, 70, 255, 0.13);
+
+  backdrop-filter: blur(4px);
+
+  z-index: 5;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.desktop-window:hover {
+  transform: translateY(-2px);
+}
+
+.window-active {
+  z-index: 30;
+  box-shadow:
+    0 14px 38px rgba(0,0,0,0.55),
+    0 0 28px rgba(167, 78, 255, 0.3);
+}
+
+.window-titlebar {
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 7px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #30203e,
+      #20152d
+    );
+
+  border-bottom:
+    1px solid rgba(214, 190, 255, 0.3);
+
+  color: #bba6d2;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+.window-titlebar-active {
+  background:
+    linear-gradient(
+      90deg,
+      #6329a7,
+      #371d68
+    );
+
+  color: white;
+}
+
+.window-title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.window-icon {
+  color: #ff55bd;
+}
+
+.window-controls {
+  display: flex;
+  gap: 5px;
+  color: #8e799f;
+}
+
+.window-controls span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 11px;
+  height: 11px;
+
+  border: 1px solid rgba(255,255,255,0.18);
+
+  font-size: 7px;
+}
+
+
+/* =========================================================
+   WINDOW POSITIONS
+========================================================= */
+
+.notes-window {
+  left: 2.5%;
+  top: 7%;
+  width: 27%;
+  height: 29%;
+}
+
+.files-window {
+  right: 2.5%;
+  top: 7%;
+  width: 25%;
+  height: 31%;
+}
+
+.cd-window {
+  left: 34%;
+  top: 7%;
+  width: 31%;
+  height: 31%;
+}
+
+.photos-window {
+  left: 2.5%;
+  top: 44%;
+  width: 31%;
+  height: 45%;
+}
+
+.recording-window {
+  right: 2.5%;
+  top: 46%;
+  width: 26%;
+  height: 25%;
+}
+
+.terminal-window {
+  left: 36%;
+  top: 66%;
+  width: 28%;
+  height: 22%;
+}
+
+
+/* =========================================================
+   NOTES
+========================================================= */
+
+.notes-paper {
+  position: relative;
+
+  height: calc(100% - 25px);
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,255,255,0.7),
+      rgba(244,236,255,0.96)
+    );
+
+  color: #26182e;
+
+  padding: 18px 18px 14px 35px;
+
+  font-family:
+    "Comic Sans MS",
+    "Trebuchet MS",
+    cursive;
+
+  transform: rotate(-0.25deg);
+}
+
+.paper-hole {
+  position: absolute;
+
+  left: 10px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #170f1e;
+
+  box-shadow:
+    inset 0 1px 3px rgba(0,0,0,0.6);
+}
+
+.hole-one {
+  top: 20px;
+}
+
+.hole-two {
+  top: 50%;
+}
+
+.hole-three {
+  bottom: 20px;
+}
+
+.handwriting {
+  font-size: clamp(8px, 0.72vw, 12px);
+  line-height: 1.38;
+}
+
+.note-heading {
+  display: inline-block;
+
+  margin-bottom: 7px;
+
+  color: #d51579;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: clamp(9px, 0.8vw, 13px);
+
+  transform: rotate(-1deg);
+
+  text-decoration: underline;
+}
+
+.handwriting p {
+  margin: 6px 0;
+}
+
+.scribble {
+  margin-top: 8px;
+
+  color: #6933a7;
+
+  transform: rotate(-2deg);
+}
+
+
+/* =========================================================
+   FILES
+========================================================= */
+
+.file-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 8px;
+
+  padding: 13px 10px;
+}
+
+.fake-file {
+  border: 0;
+  background: transparent;
+
+  color: #cfc0df;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+
+  padding: 5px;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+}
+
+.fake-file:hover {
+  background: rgba(182, 121, 255, 0.13);
+}
+
+.fake-file-icon {
+  width: 32px;
+  height: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid rgba(255,255,255,0.3);
+
+  background:
+    linear-gradient(
+      135deg,
+      #513273,
+      #24152f
+    );
+
+  box-shadow:
+    0 0 10px rgba(151,72,255,0.15);
+
+  font-size: 15px;
+}
+
+.fake-file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  max-width: 75px;
+}
+
+.files-footer {
+  position: absolute;
+
+  left: 8px;
+  right: 8px;
+  bottom: 7px;
+
+  color: #736280;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+
+  border-top:
+    1px solid rgba(255,255,255,0.1);
+
+  padding-top: 5px;
+}
+
+
+/* =========================================================
+   CD PLAYER
+========================================================= */
+
+.cd-player-body {
+  height: calc(100% - 25px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: clamp(12px, 2vw, 28px);
+
+  padding: 12px;
+}
+
+.cd-spin-container {
+  position: relative;
+
+  width: min(135px, 40%);
+  aspect-ratio: 1;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+  IMPORTANT:
+  This is the actual continuous spinning CD.
+*/
+.cd-disc {
+  position: relative;
+
+  width: 100%;
+  height: 100%;
+
+  border-radius: 50%;
+
+  background:
+    conic-gradient(
+      from 0deg,
+      #eee,
+      #6f52ff,
+      #f7a4dd,
+      #35f5ff,
+      #eee,
+      #a978ff,
+      #ff3cac,
+      #eee
+    );
+
+  border:
+    2px solid rgba(255,255,255,0.8);
+
+  box-shadow:
+    0 0 18px rgba(176, 97, 255, 0.4),
+    inset 0 0 22px rgba(255,255,255,0.5);
+
+  animation:
+    cdSpin 2s linear infinite;
+
+  transform-origin: center center;
+}
+
+@keyframes cdSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cd-disc::after {
+  content: "";
+
+  position: absolute;
+  inset: 9%;
+
+  border-radius: 50%;
+
+  border:
+    1px solid rgba(255,255,255,0.4);
+}
+
+.cd-reflection {
+  position: absolute;
+
+  left: 15%;
+  top: 10%;
+
+  width: 35%;
+  height: 9%;
+
+  border-radius: 50%;
+
+  background: rgba(255,255,255,0.65);
+
+  filter: blur(3px);
+
+  transform: rotate(-20deg);
+}
+
+.cd-ring {
+  position: absolute;
+
+  border-radius: 50%;
+
+  border:
+    1px solid rgba(255,255,255,0.3);
+
+  inset: 24%;
+}
+
+.ring-two {
+  inset: 32%;
+}
+
+.cd-label {
+  position: absolute;
+
+  inset: 38%;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      #ff65c2,
+      #8b3bc6
+    );
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: 8px;
+
+  box-shadow:
+    0 0 12px rgba(255, 62, 192, 0.5);
+}
+
+.cd-label small {
+  font-size: 5px;
+}
+
+.cd-hole {
+  position: absolute;
+
+  left: 47%;
+  top: 47%;
+
+  width: 6%;
+  height: 6%;
+
+  border-radius: 50%;
+
+  background: #0a0710;
+
+  border:
+    1px solid #aaa;
+}
+
+.cd-information {
+  flex: 1;
+  min-width: 0;
+}
+
+.cd-track {
+  color: #35f5ff;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+  letter-spacing: 2px;
+}
+
+.cd-title {
+  margin-top: 5px;
+
+  color: #f7edff;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: clamp(9px, 0.9vw, 14px);
+
+  line-height: 1.1;
+}
+
+.cd-wave {
+  margin: 13px 0;
+
+  color: #ff3cac;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 10px;
+
+  letter-spacing: -1px;
+
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.music-button {
+  border:
+    1px solid #c35cff;
+
+  background:
+    rgba(118, 36, 177, 0.25);
+
+  color: #e9cfff;
+
+  padding: 6px 10px;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+
+  box-shadow:
+    0 0 10px rgba(184, 74, 255, 0.2);
+}
+
+.music-button:hover {
+  background: #8a35b8;
+  color: white;
+}
+
+
+/* =========================================================
+   PHOTO VIEWER
+========================================================= */
+
+.photo-viewer {
+  height: calc(100% - 25px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 8px;
+}
+
+.photo-main {
+  position: relative;
+
+  flex: 1;
+
+  min-height: 0;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #171021,
+      #07050a
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.17);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-main img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+
+  filter:
+    saturate(1.1)
+    contrast(1.05);
+}
+
+.photo-placeholder {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  color: #7f6d91;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+
+  pointer-events: none;
+}
+
+.photo-main:not(.photo-missing) .photo-placeholder {
+  opacity: 0;
+}
+
+.photo-main.photo-missing .photo-placeholder {
+  opacity: 1;
+}
+
+.placeholder-camera {
+  font-size: 28px;
+
+  color: #8d4cff;
+
+  text-shadow:
+    0 0 18px #8d4cff;
+}
+
+.photo-placeholder small {
+  color: #574a62;
+}
+
+.photo-counter {
+  position: absolute;
+
+  bottom: 6px;
+  right: 6px;
+
+  padding: 3px 5px;
+
+  background: rgba(0,0,0,0.7);
+
+  color: #b7ff4a;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+}
+
+.photo-thumbnails {
+  display: flex;
+
+  justify-content: center;
+
+  gap: 5px;
+
+  padding-top: 7px;
+}
+
+.thumbnail {
+  width: 25px;
+  height: 18px;
+
+  border:
+    1px solid #483755;
+
+  background: #110b18;
+
+  color: #806d8d;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+}
+
+.thumbnail.selected {
+  border-color: #ff3cac;
+
+  color: #ffb2dc;
+
+  box-shadow:
+    0 0 8px rgba(255,60,172,0.5);
+}
+
+
+/* =========================================================
+   RECORDING
+========================================================= */
+
+.recording-body {
+  height: calc(100% - 25px);
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 10px;
+}
+
+.cassette {
+  width: 75px;
+  height: 52px;
+
+  flex-shrink: 0;
+
+  border-radius: 4px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ddd,
+      #8d8d8d
+    );
+
+  border:
+    2px solid #444;
+
+  padding: 7px;
+
+  box-shadow:
+    0 5px 12px rgba(0,0,0,0.4);
+}
+
+.cassette-label {
+  background: #ff5bbd;
+
+  color: #240d20;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: 6px;
+
+  text-align: center;
+
+  padding: 2px;
+}
+
+.cassette-reels {
+  display: flex;
+  justify-content: space-between;
+
+  margin: 5px 8px;
+}
+
+.cassette-reel {
+  width: 13px;
+  height: 13px;
+
+  border-radius: 50%;
+
+  background:
+    repeating-conic-gradient(
+      #333 0deg 15deg,
+      #aaa 15deg 30deg
+    );
+
+  border: 2px solid #333;
+
+  animation:
+    cassetteSpin 1.5s linear infinite;
+}
+
+@keyframes cassetteSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cassette-line {
+  height: 3px;
+  background: #333;
+}
+
+.recording-info {
+  min-width: 0;
+}
+
+.recording-title {
+  color: #d8c5e8;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recording-wave {
+  color: #35f5ff;
+
+  font-size: 8px;
+
+  margin: 7px 0;
+
+  animation:
+    waveform 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes waveform {
+  from {
+    transform: scaleY(0.65);
+  }
+
+  to {
+    transform: scaleY(1.25);
+  }
+}
+
+.recording-button {
+  border:
+    1px solid #ff3cac;
+
+  background:
+    rgba(255,60,172,0.1);
+
+  color: #ff8acb;
+
+  padding: 5px 7px;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+}
+
+.recording-button:hover {
+  background: #a52a73;
+  color: white;
+}
+
+
+/* =========================================================
+   TERMINAL
+========================================================= */
+
+.terminal-body {
+  height: calc(100% - 25px);
+
+  padding: 9px;
+
+  color: #8dffbd;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6.5px;
+
+  line-height: 1.45;
+
+  overflow: hidden;
+
+  background:
+    rgba(0,0,0,0.32);
+}
+
+.terminal-success {
+  color: #b7ff4a;
+}
+
+.terminal-output {
+  color: #35f5ff;
+
+  margin: 3px 0;
+}
+
+.terminal-button {
+  border: 1px solid #35f5ff;
+
+  background: rgba(53,245,255,0.06);
+
+  color: #35f5ff;
+
+  padding: 3px 7px;
+
+  font-size: 6px;
+}
+
+.terminal-button:hover {
+  background: rgba(53,245,255,0.2);
+}
+
+
+/* =========================================================
+   PASSWORD PANEL — INSIDE CRT
+========================================================= */
+
+.password-panel {
+  position: absolute;
+
+  left: 50%;
+  top: 41%;
+
+  transform: translateX(-50%);
+
+  width: 30%;
+
+  min-width: 270px;
+
+  padding: 13px 15px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 8, 29, 0.97),
+      rgba(8, 5, 14, 0.97)
+    );
+
+  border:
+    1px solid #a75cff;
+
+  box-shadow:
+    0 0 22px rgba(157, 77, 255, 0.3),
+    inset 0 0 22px rgba(112, 47, 173, 0.12);
+
+  z-index: 80;
+
+  animation:
+    passwordPulse 3s ease-in-out infinite;
+}
+
+@keyframes passwordPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 22px rgba(157,77,255,0.3),
+      inset 0 0 22px rgba(112,47,173,0.12);
+  }
+
+  50% {
+    box-shadow:
+      0 0 35px rgba(157,77,255,0.5),
+      inset 0 0 30px rgba(112,47,173,0.18);
+  }
+}
+
+.password-topline {
+  display: flex;
+  justify-content: space-between;
+
+  color: #75637f;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 8px;
+}
+
+.password-title {
+  color: #f3ddff;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: clamp(12px, 1.2vw, 18px);
+
+  letter-spacing: 1px;
+
+  margin-bottom: 6px;
+}
+
+.glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+
+  overflow: hidden;
+
+  opacity: 0.8;
+}
+
+.glitch::before {
+  color: #35f5ff;
+
+  transform: translate(1px,0);
+
+  clip-path:
+    inset(10% 0 72% 0);
+
+  animation:
+    glitchOne 2.5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+  color: #ff3cac;
+
+  transform: translate(-1px,0);
+
+  clip-path:
+    inset(65% 0 15% 0);
+
+  animation:
+    glitchTwo 2s infinite linear alternate-reverse;
+}
+
+@keyframes glitchOne {
+  0%,
+  85% {
+    transform: translate(1px,0);
+  }
+
+  86% {
+    transform: translate(-5px,1px);
+  }
+
+  90% {
+    transform: translate(4px,-1px);
+  }
+
+  94% {
+    transform: translate(-1px,0);
+  }
+
+  100% {
+    transform: translate(1px,0);
+  }
+}
+
+@keyframes glitchTwo {
+  0%,
+  80% {
+    transform: translate(-1px,0);
+  }
+
+  82% {
+    transform: translate(5px,-1px);
+  }
+
+  87% {
+    transform: translate(-4px,1px);
+  }
+
+  93% {
+    transform: translate(2px,0);
+  }
+
+  100% {
+    transform: translate(-1px,0);
+  }
+}
+
+.password-intro {
+  color: #ddd0e8;
+
+  font-size: 8px;
+
+  line-height: 1.35;
+
+  margin-bottom: 4px;
+}
+
+.password-subtext {
+  color: #8c7798;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6.5px;
+
+  margin-bottom: 10px;
+}
+
+.password-form {
+  display: flex;
+
+  gap: 7px;
+}
+
+.password-input-wrap {
+  flex: 1;
+
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  border:
+    1px solid #5c3a74;
+
+  background: #050307;
+
+  height: 28px;
+
+  padding: 0 7px;
+
+  box-shadow:
+    inset 0 0 10px rgba(0,0,0,0.8);
+}
+
+.input-prefix {
+  color: #b7ff4a;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 9px;
+
+  margin-right: 5px;
+}
+
+.password-input-wrap input {
+  width: 100%;
+
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #f7edff;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 9px;
+
+  letter-spacing: 2px;
+}
+
+.password-input-wrap input::placeholder {
+  color: #514359;
+}
+
+.cursor-block {
+  color: #a956ff;
+
+  animation:
+    cursorBlink 0.9s steps(1) infinite;
+}
+
+@keyframes cursorBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.enter-button {
+  flex-shrink: 0;
+
+  height: 28px;
+
+  padding: 0 10px;
+
+  border:
+    1px solid #ff3cac;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7b2cbf,
+      #bb267f
+    );
+
+  color: white;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: 7px;
+
+  box-shadow:
+    0 0 12px rgba(255,60,172,0.25);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.enter-button:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 0 20px rgba(255,60,172,0.55);
+}
+
+.password-status {
+  margin-top: 7px;
+
+  color: #63536e;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 6px;
+
+  letter-spacing: 0.5px;
+}
+
+.status-error {
+  color: #ff5d9f;
+
+  animation:
+    statusShake 0.25s linear;
+}
+
+@keyframes statusShake {
+  0% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-3px);
+  }
+
+  50% {
+    transform: translateX(3px);
+  }
+
+  75% {
+    transform: translateX(-2px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+
+/* =========================================================
+   HINT
+========================================================= */
+
+.hint-window {
+  position: absolute;
+
+  right: 30%;
+  top: 47%;
+
+  width: 255px;
+
+  background:
+    #130b1c;
+
+  border:
+    1px solid #ff3cac;
+
+  box-shadow:
+    0 0 25px rgba(255,60,172,0.35);
+
+  z-index: 100;
+
+  animation:
+    hintAppear 0.2s ease-out;
+}
+
+@keyframes hintAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hint-titlebar {
+  height: 23px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 7px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #8d2470,
+      #4d1d63
+    );
+
+  color: white;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+}
+
+.hint-titlebar button {
+  border: 0;
+
+  background: transparent;
+
+  color: white;
+
+  font-size: 15px;
+
+  line-height: 1;
+}
+
+.hint-content {
+  display: flex;
+
+  gap: 10px;
+
+  padding: 13px;
+
+  color: #ded1e9;
+
+  font-size: 8px;
+
+  line-height: 1.45;
+}
+
+.hint-icon {
+  flex-shrink: 0;
+
+  width: 27px;
+  height: 27px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #ff3cac;
+
+  color: #210817;
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+}
+
+.hint-content p {
+  margin: 6px 0 0;
+
+  color: #9d88a8;
+}
+
+
+/* =========================================================
+   MONITOR BOTTOM
+========================================================= */
+
+.monitor-bottom {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  height: 32px;
+
+  padding: 0 18px;
+
+  color: #67636e;
+}
+
+.monitor-brand {
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: 8px;
+
+  letter-spacing: 2px;
+}
+
+.monitor-controls {
+  display: flex;
+  gap: 7px;
+}
+
+.monitor-controls span {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #17151a;
+
+  border: 1px solid #666;
+}
+
+
+/* =========================================================
+   COMPUTER BASE
+========================================================= */
+
+.computer-base {
+  width: 87%;
+
+  margin: 0 auto;
+
+  padding: 12px 30px 20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #393740,
+      #1c1a21
+    );
+
+  border:
+    3px solid #09080b;
+
+  border-top: 0;
+
+  border-radius:
+    0 0 25px 25px;
+
+  box-shadow:
+    inset 0 4px 8px rgba(255,255,255,0.07),
+    0 20px 40px rgba(0,0,0,0.65);
+}
+
+.base-slot {
+  width: 55%;
+
+  height: 6px;
+
+  margin: 0 auto 11px;
+
+  background: #0d0c10;
+
+  border-radius: 10px;
+
+  box-shadow:
+    inset 0 1px 3px black;
+}
+
+.keyboard {
+  width: 65%;
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(14, 1fr);
+
+  gap: 3px;
+
+  transform:
+    perspective(300px)
+    rotateX(10deg);
+}
+
+.key {
+  height: 7px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #64616b,
+      #29272e
+    );
+
+  border-radius: 2px;
+
+  border:
+    1px solid #18171c;
+
+  box-shadow:
+    0 2px 1px #111;
+}
+
+.computer-shadow {
+  width: 90%;
+  height: 40px;
+
+  margin: -5px auto 0;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(0,0,0,0.8),
+      transparent 70%
+    );
+
+  filter: blur(5px);
+}
+
+.bottom-decoration {
+  position: relative;
+
+  z-index: 3;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 10px;
+
+  color: #665772;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  font-size: 7px;
+
+  letter-spacing: 1.5px;
+}
+
+
+/* =========================================================
+   LOADING SCREEN
+========================================================= */
+
+.loading-screen {
+  position: relative;
+
+  min-height: 100vh;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(120, 40, 255, 0.23),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 10% 80%,
+      rgba(255, 40, 170, 0.18),
+      transparent 30%
+    ),
+    #05020a;
+
+  color: white;
+
+  font-family:
+    "Courier New",
+    monospace;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px 18px;
+}
+
+.loading-bg-grid {
+  position: absolute;
+  inset: -50%;
+
+  background-image:
+    linear-gradient(
+      rgba(255,60,172,0.07) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(53,245,255,0.07) 1px,
+      transparent 1px
+    );
+
+  background-size: 35px 35px;
+
+  transform:
+    perspective(500px)
+    rotateX(65deg);
+
+  animation:
+    loadingGrid 5s linear infinite;
+}
+
+@keyframes loadingGrid {
+  from {
+    transform:
+      perspective(500px)
+      rotateX(65deg)
+      translateY(0);
+  }
+
+  to {
+    transform:
+      perspective(500px)
+      rotateX(65deg)
+      translateY(35px);
+  }
+}
+
+.loading-scanlines {
+  position: absolute;
+  inset: 0;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.045) 0,
+      rgba(255,255,255,0.045) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+
+  pointer-events: none;
+
+  z-index: 20;
+}
+
+.loading-vignette {
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      transparent 35%,
+      rgba(0,0,0,0.7) 100%
+    );
+
+  pointer-events: none;
+
+  z-index: 21;
+}
+
+.loading-terminal {
+  position: relative;
+
+  z-index: 10;
+
+  width: min(900px, 96vw);
+
+  border:
+    1px solid #9d55ff;
+
+  background:
+    rgba(7,3,13,0.9);
+
+  box-shadow:
+    0 0 50px rgba(129,49,255,0.25),
+    inset 0 0 40px rgba(95,37,145,0.12);
+
+  backdrop-filter: blur(7px);
+}
+
+.loading-topbar {
+  height: 34px;
+
+  display: grid;
+
+  grid-template-columns: 1fr auto 1fr;
+
+  align-items: center;
+
+  padding: 0 12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #3d185d,
+      #241033,
+      #3d185d
+    );
+
+  border-bottom:
+    1px solid #7039a1;
+
+  color: #d4b6eb;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+}
+
+.loading-live {
+  text-align: right;
+
+  color: #b7ff4a;
+
+  text-shadow:
+    0 0 10px #b7ff4a;
+}
+
+.loading-content {
+  padding: clamp(20px, 4vw, 40px);
+}
+
+.loading-heading {
+  text-align: center;
+
+  margin-bottom: 24px;
+}
+
+.loading-small {
+  color: #35f5ff;
+
+  font-size: 8px;
+
+  letter-spacing: 3px;
+
+  margin-bottom: 8px;
+}
+
+.loading-glitch-title {
+  position: relative;
+
+  margin: 0;
+
+  color: #f8eaff;
+
+  font-family:
+    "Arial Black",
+    "Trebuchet MS",
+    sans-serif;
+
+  font-size: clamp(24px, 5vw, 55px);
+
+  line-height: 0.95;
+
+  letter-spacing: -1px;
+
+  text-shadow:
+    0 0 20px rgba(196,94,255,0.4);
+}
+
+.loading-glitch-title::before,
+.loading-glitch-title::after {
+  content: attr(data-text);
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 100%;
+
+  opacity: 0.8;
+
+  pointer-events: none;
+}
+
+.loading-glitch-title::before {
+  color: #35f5ff;
+
+  clip-path:
+    inset(5% 0 75% 0);
+
+  animation:
+    loadGlitchA 2.2s infinite;
+}
+
+.loading-glitch-title::after {
+  color: #ff3cac;
+
+  clip-path:
+    inset(65% 0 10% 0);
+
+  animation:
+    loadGlitchB 1.8s infinite;
+}
+
+@keyframes loadGlitchA {
+  0%,
+  90% {
+    transform: translate(0);
+  }
+
+  92% {
+    transform: translate(-7px, 1px);
+  }
+
+  95% {
+    transform: translate(5px, -1px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+@keyframes loadGlitchB {
+  0%,
+  84% {
+    transform: translate(0);
+  }
+
+  86% {
+    transform: translate(7px, -1px);
+  }
+
+  90% {
+    transform: translate(-4px, 2px);
+  }
+
+  100% {
+    transform: translate(0);
+  }
+}
+
+.loading-subtitle {
+  margin-top: 9px;
+
+  color: #806c8d;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   LOADING PHOTO
+========================================================= */
+
+.loading-photo-frame {
+  position: relative;
+
+  width: min(670px, 100%);
+
+  margin: 0 auto;
+
+  padding: 8px;
+
+  border:
+    1px solid rgba(206, 137, 255, 0.65);
+
+  background:
+    rgba(20, 9, 32, 0.75);
+
+  box-shadow:
+    0 0 30px rgba(164,71,255,0.25);
+}
+
+.loading-photo {
+  position: relative;
+
+  width: 100%;
+
+  aspect-ratio: 16 / 8.7;
+
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle,
+      #3b1d55,
+      #0b0610
+    );
+
+  border:
+    1px solid rgba(255,255,255,0.16);
+}
+
+.loading-photo img {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  filter:
+    saturate(1.2)
+    contrast(1.08);
+
+  animation:
+    photoAppear 0.35s ease-out;
+}
+
+@keyframes photoAppear {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.loading-placeholder {
+  position: absolute;
+
+  inset: 0;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  color: #79658a;
+
+  font-size: 8px;
+
+  pointer-events: none;
+}
+
+.loading-photo:not(.loading-photo-missing) .loading-placeholder {
+  opacity: 0;
+}
+
+.loading-photo-missing .loading-placeholder {
+  opacity: 1;
+}
+
+.loading-camera {
+  font-size: 45px;
+
+  color: #9c52ff;
+
+  text-shadow:
+    0 0 20px #9c52ff;
+}
+
+.loading-placeholder small {
+  color: #57475f;
+}
+
+.loading-photo-label {
+  position: absolute;
+
+  left: 10px;
+  bottom: 8px;
+
+  padding: 4px 6px;
+
+  background: rgba(0,0,0,0.75);
+
+  color: #ff75c8;
+
+  font-size: 7px;
+}
+
+.loading-photo-number {
+  position: absolute;
+
+  right: 10px;
+  bottom: 8px;
+
+  padding: 4px 6px;
+
+  background: rgba(0,0,0,0.75);
+
+  color: #b7ff4a;
+
+  font-size: 7px;
+}
+
+
+/* =========================================================
+   LOADING DATA
+========================================================= */
+
+.loading-data {
+  width: min(670px, 100%);
+
+  margin: 16px auto 0;
+}
+
+.loading-status-row {
+  display: grid;
+
+  grid-template-columns:
+    auto 1fr auto;
+
+  gap: 12px;
+
+  align-items: center;
+
+  color: #6e5d7a;
+
+  font-size: 7px;
+}
+
+.loading-status-text {
+  color: #d9c2e8;
+
+  text-align: center;
+
+  letter-spacing: 1px;
+}
+
+.loading-bar {
+  position: relative;
+
+  width: 100%;
+
+  height: 13px;
+
+  margin-top: 7px;
+
+  overflow: hidden;
+
+  border:
+    1px solid #67417f;
+
+  background: #08040d;
+
+  box-shadow:
+    inset 0 0 8px rgba(0,0,0,0.8);
+}
+
+.loading-bar-fill {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      #7d2cff,
+      #d23cff,
+      #ff3cac,
+      #35f5ff
+    );
+
+  box-shadow:
+    0 0 18px rgba(255,60,172,0.5);
+
+  transition:
+    width 0.12s linear;
+}
+
+.loading-bar-scan {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  width: 55px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.65),
+      transparent
+    );
+
+  filter: blur(2px);
+
+  animation:
+    barScan 1.2s linear infinite;
+}
+
+@keyframes barScan {
+  from {
+    left: -70px;
+  }
+
+  to {
+    left: 110%;
+  }
+}
+
+.loading-code {
+  display: grid;
+
+  grid-template-columns: 1fr auto;
+
+  gap: 2px 20px;
+
+  margin-top: 10px;
+
+  color: #5c4c65;
+
+  font-size: 6px;
+}
+
+.loading-code span:nth-child(even) {
+  color: #b7ff4a;
+
+  text-align: right;
+}
+
+.blink {
+  animation:
+    cursorBlink 0.7s steps(1) infinite;
+}
+
+.loading-footer {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 20px;
+
+  color: #574a60;
+
+  font-size: 6px;
+
+  letter-spacing: 1px;
+
+  text-align: center;
+}
+
+.loading-heart {
+  color: #ff3cac;
+
+  text-shadow:
+    0 0 10px #ff3cac;
+
+  animation:
+    heartPulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes heartPulse {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.3);
+  }
+}
+
+
+/* =========================================================
+   ORBITS
+========================================================= */
+
+.loading-orbit {
+  position: absolute;
+
+  border-radius: 50%;
+
+  border:
+    1px solid rgba(166,80,255,0.3);
+
+  pointer-events: none;
+}
+
+.orbit-one {
+  width: 650px;
+  height: 650px;
+
+  left: 50%;
+  top: 50%;
+
+  margin:
+    -325px
+    0
+    0
+    -325px;
+
+  animation:
+    orbitSpin 18s linear infinite;
+}
+
+.orbit-two {
+  width: 850px;
+  height: 300px;
+
+  left: 50%;
+  top: 50%;
+
+  margin:
+    -150px
+    0
+    0
+    -425px;
+
+  transform: rotate(35deg);
+
+  animation:
+    orbitSpin 12s linear infinite reverse;
+}
+
+.orbit-three {
+  width: 420px;
+  height: 900px;
+
+  left: 50%;
+  top: 50%;
+
+  margin:
+    -450px
+    0
+    0
+    -210px;
+
+  transform: rotate(-35deg);
+
+  animation:
+    orbitSpin 15s linear infinite;
+}
+
+@keyframes orbitSpin {
+  to {
+    transform:
+      rotate(360deg);
+  }
+}
+
+.loading-glitch {
+  position: absolute;
+
+  z-index: 5;
+
+  color: rgba(255,60,172,0.15);
+
+  font-family:
+    "Arial Black",
+    sans-serif;
+
+  font-size: clamp(50px, 12vw, 160px);
+
+  pointer-events: none;
+
+  user-select: none;
+}
+
+.glitch-one {
+  left: -2%;
+  top: 7%;
+
+  transform: rotate(-8deg);
+}
+
+.glitch-two {
+  right: -3%;
+  bottom: 5%;
+
+  transform: rotate(7deg);
+
+  color: rgba(53,245,255,0.1);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .desktop {
+    min-height: 650px;
+  }
+
+  .notes-window {
+    width: 29%;
+  }
+
+  .files-window {
+    width: 28%;
+  }
+
+  .cd-window {
+    width: 32%;
+    left: 34%;
+  }
+
+  .password-panel {
+    width: 34%;
+  }
+
+  .photos-window {
+    width: 32%;
+  }
+
+  .terminal-window {
+    width: 30%;
+  }
+
+}
+
+@media (max-width: 760px) {
+
+  .birthday-shell {
+    padding:
+      12px 6px 12px;
+  }
+
+  .crt-top-label {
+    width: 94%;
+    font-size: 7px;
+  }
+
+  .monitor-bezel {
+    padding:
+      8px
+      7px
+      12px;
+
+    border-radius: 18px;
+  }
+
+  .monitor-inner {
+    border-width: 4px;
+    border-radius: 14px;
+  }
+
+  .desktop {
+    min-height: 920px;
+  }
+
+  /*
+    On smaller screens the windows become smaller
+    but still remain inside the CRT.
+  */
+
+  .notes-window {
+    left: 3%;
+    top: 5%;
+    width: 45%;
+    height: 22%;
+  }
+
+  .files-window {
+    right: 3%;
+    top: 5%;
+    width: 45%;
+    height: 22%;
+  }
+
+  .cd-window {
+    left: 25%;
+    top: 29%;
+    width: 50%;
+    height: 23%;
+  }
+
+  .photos-window {
+    left: 3%;
+    top: 55%;
+    width: 45%;
+    height: 29%;
+  }
+
+  .recording-window {
+    right: 3%;
+    top: 55%;
+    width: 45%;
+    height: 17%;
+  }
+
+  .terminal-window {
+    left: 25%;
+    top: 73%;
+    width: 50%;
+    height: 14%;
+  }
+
+  .password-panel {
+    left: 50%;
+    top: 52%;
+
+    width: 62%;
+    min-width: 0;
+
+    padding: 10px;
+  }
+
+  .password-intro {
+    font-size: 6px;
+  }
+
+  .password-subtext {
+    font-size: 5px;
+  }
+
+  .password-form {
+    flex-direction: column;
+  }
+
+  .enter-button {
+    width: 100%;
+  }
+
+  .hint-window {
+    right: 7%;
+    top: 42%;
+
+    width: 48%;
+
+    font-size: 7px;
+  }
+
+  .keyboard {
+    width: 90%;
+  }
+
+  .computer-base {
+    width: 94%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .bottom-decoration {
+    font-size: 5px;
+    gap: 5px;
+  }
+
+  .loading-terminal {
+    width: 97vw;
+  }
+
+  .loading-content {
+    padding:
+      18px 12px 20px;
+  }
+
+  .loading-topbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .loading-topbar span:nth-child(2) {
+    display: none;
+  }
+
+  .loading-glitch-title {
+    font-size: 25px;
+  }
+
+  .loading-photo {
+    aspect-ratio: 16 / 10;
+  }
+
+}
+
+@media (max-width: 480px) {
+
+  .desktop {
+    min-height: 840px;
+  }
+
+  .notes-window {
+    height: 21%;
+  }
+
+  .files-window {
+    height: 21%;
+  }
+
+  .cd-window {
+    top: 28%;
+    height: 22%;
+  }
+
+  .photos-window {
+    top: 54%;
+    height: 27%;
+  }
+
+  .recording-window {
+    top: 54%;
+    height: 15%;
+  }
+
+  .terminal-window {
+    top: 70%;
+    height: 12%;
+  }
+
+  .password-panel {
+    top: 49%;
+    width: 68%;
+  }
+
+  .handwriting {
+    font-size: 6px;
+  }
+
+  .note-heading {
+    font-size: 7px;
+  }
+
+  .fake-file-icon {
+    width: 24px;
+    height: 21px;
+    font-size: 11px;
+  }
+
+  .fake-file {
+    font-size: 5px;
+  }
+
+  .cd-spin-container {
+    width: 70px;
+  }
+
+  .cd-title {
+    font-size: 7px;
+  }
+
+  .music-button {
+    font-size: 5px;
+    padding: 4px 6px;
+  }
+
+  .loading-heading {
+    margin-bottom: 15px;
+  }
+
+  .loading-small {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+
+  .loading-glitch-title {
+    font-size: 21px;
+  }
+
+  .loading-subtitle {
+    font-size: 6px;
+  }
+
+  .loading-status-row {
+    grid-template-columns:
+      1fr auto;
+  }
+
+  .loading-status-text {
+    display: none;
+  }
+
+}
+
+
+/* =========================================================
+   ANIMATIONS
+========================================================= */
+
+@keyframes floatPixel {
+  0%,
+  100% {
+    transform:
+      translateY(0)
+      rotate(0deg);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform:
+      translateY(-30px)
+      rotate(180deg);
+    opacity: 1;
+  }
+}
+
+`;
