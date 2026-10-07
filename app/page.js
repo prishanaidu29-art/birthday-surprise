@@ -1,2911 +1,2308 @@
-"use client";
+'use client'
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic'
 
-/* =========================================================
-   ✦✦✦ CHANGE YOUR FILES HERE ✦✦✦
-   Put your files inside /public/media/
-   ========================================================= */
+/*
+  ============================================================
+  CLAR'S BIRTHDAY — RETRO CRT ARCHIVE
+  ============================================================
 
-const BIRTHDAY_PASSWORD = "clar";
+  PHOTO / VIDEO / AUDIO SETUP
+  ---------------------------
+  Put your files inside:
+
+      /public/birthday/
+
+  Example:
+
+      /public/birthday/clar1.jpg
+      /public/birthday/clar2.jpg
+      /public/birthday/friend.mp3
+      /public/birthday/song.mp3
+      /public/birthday/background.mp4
+
+  Then change the file names in the MEDIA section below.
+
+  PASSWORD
+  --------
+  Change PASSWORD below to whatever you want.
+
+  ============================================================
+*/
+
+const PASSWORD = 'clar'
 
 const MEDIA = {
-  song: "/media/birthday-song.mp3",
-  video: "/media/background-video.mp4",
-  friendVoice: "/media/friend-voice.mp3",
-
   photos: [
-    "/media/photos/01.jpg",
-    "/media/photos/02.jpg",
-    "/media/photos/03.jpg",
-    "/media/photos/04.jpg",
-    "/media/photos/05.jpg",
-    "/media/photos/06.jpg",
+    '/birthday/clar1.jpg',
+    '/birthday/clar2.jpg',
+    '/birthday/clar3.jpg',
+    '/birthday/clar4.jpg',
   ],
-};
 
-/* =========================================================
-   MAIN PAGE
-   ========================================================= */
-
-export default function Home() {
-  const router = useRouter();
-
-  const [phase, setPhase] = useState("desktop");
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingPhoto, setLoadingPhoto] = useState(0);
-  const [musicPlaying, setMusicPlaying] = useState(false);
-  const [voicePlaying, setVoicePlaying] = useState(false);
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [clock, setClock] = useState("");
-
-  const musicRef = useRef(null);
-  const voiceRef = useRef(null);
-  const videoRef = useRef(null);
-
-  /* ---------------- CLOCK ---------------- */
-
-  useEffect(() => {
-    const updateClock = () => {
-      setClock(
-        new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      );
-    };
-
-    updateClock();
-    const interval = setInterval(updateClock, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  /* ---------------- PHOTO ROTATION ---------------- */
-
-  useEffect(() => {
-    if (MEDIA.photos.length <= 1) return;
-
-    const interval = setInterval(() => {
-      setPhotoIndex((current) => (current + 1) % MEDIA.photos.length);
-    }, 3500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  /* =====================================================
-     PASSWORD → LOADING SCREEN
-     ===================================================== */
-
-  const enterArchive = async (event) => {
-    event.preventDefault();
-
-    setPasswordError("");
-
-    if (password.trim().toLowerCase() !== BIRTHDAY_PASSWORD.toLowerCase()) {
-      setPasswordError("incorrect password... try again 👀");
-      return;
-    }
-
-    /*
-      IMPORTANT:
-      This happens inside the button click / form submit.
-      That means browsers are much more likely to allow
-      audio playback here.
-    */
-
-    try {
-      if (musicRef.current) {
-        musicRef.current.volume = 0.35;
-        await musicRef.current.play();
-        setMusicPlaying(true);
-      }
-    } catch {
-      // Browser may block audio. User can still press play manually.
-    }
-
-    try {
-      if (videoRef.current) {
-        videoRef.current.play();
-      }
-    } catch {
-      // Ignore video autoplay errors.
-    }
-
-    sessionStorage.setItem("birthday_authenticated", "true");
-
-    /* THIS is the important part */
-    setPhase("loading");
-    setLoadingProgress(0);
-    setLoadingPhoto(0);
-  };
-
-  /* =====================================================
-     GRAPHICAL LOADING SCREEN
-     ===================================================== */
-
-  useEffect(() => {
-    if (phase !== "loading") return;
-
-    let progress = 0;
-
-    const progressTimer = setInterval(() => {
-      progress += 1.6;
-
-      setLoadingProgress(Math.min(progress, 100));
-
-      if (Math.floor(progress) % 17 === 0) {
-        setLoadingPhoto((current) => (current + 1) % 6);
-      }
-
-      if (progress >= 100) {
-        clearInterval(progressTimer);
-
-        setTimeout(() => {
-          router.push("/birthday");
-        }, 1000);
-      }
-    }, 55);
-
-    const photoTimer = setInterval(() => {
-      setLoadingPhoto((current) => (current + 1) % 6);
-    }, 800);
-
-    return () => {
-      clearInterval(progressTimer);
-      clearInterval(photoTimer);
-    };
-  }, [phase, router]);
-
-  /* =====================================================
-     MUSIC
-     ===================================================== */
-
-  const toggleMusic = async () => {
-    if (!musicRef.current) return;
-
-    if (musicPlaying) {
-      musicRef.current.pause();
-      setMusicPlaying(false);
-    } else {
-      try {
-        await musicRef.current.play();
-        setMusicPlaying(true);
-      } catch {
-        setMusicPlaying(false);
-      }
-    }
-  };
-
-  /* =====================================================
-     FRIEND VOICE
-     ===================================================== */
-
-  const toggleVoice = async () => {
-    if (!voiceRef.current) return;
-
-    if (voicePlaying) {
-      voiceRef.current.pause();
-      setVoicePlaying(false);
-    } else {
-      try {
-        await voiceRef.current.play();
-        setVoicePlaying(true);
-      } catch {
-        setVoicePlaying(false);
-      }
-    }
-  };
-
-  /* =====================================================
-     LOADING SCREEN
-     ===================================================== */
-
-  if (phase === "loading") {
-    return (
-      <>
-        <div className="loading-screen">
-
-          {/* BACKGROUND GRID */}
-          <div className="loading-grid" />
-
-          {/* CRT EFFECTS */}
-          <div className="loading-scanlines" />
-          <div className="loading-noise" />
-
-          {/* CORNER LABELS */}
-          <div className="load-corner load-top-left">
-            CLAR_OS // BOOT SEQUENCE
-          </div>
-
-          <div className="load-corner load-top-right">
-            ARCHIVE 001
-          </div>
-
-          <div className="load-corner load-bottom-left">
-            DO NOT TURN OFF COMPUTER
-          </div>
-
-          <div className="load-corner load-bottom-right">
-            1999—∞
-          </div>
-
-          {/* MAIN LOADING WINDOW */}
-
-          <div className="loading-window">
-
-            <div className="loading-window-bar">
-              <span>CLAR_ARCHIVE.EXE</span>
-
-              <div className="window-buttons">
-                <span>—</span>
-                <span>□</span>
-                <span>×</span>
-              </div>
-            </div>
-
-            <div className="loading-content">
-
-              {/* TOP STATUS */}
-
-              <div className="loading-status">
-                <span className="status-dot" />
-                CONNECTION ESTABLISHED
-              </div>
-
-              <div className="loading-title">
-                <span className="title-small">WELCOME TO</span>
-                <span className="title-big">CLAR'S</span>
-                <span className="title-big outline">ARCHIVE</span>
-              </div>
-
-              {/* PHOTO STACK */}
-
-              <div className="loading-photo-zone">
-
-                <div className="photo-shadow-card" />
-
-                <div className="loading-photo-card card-back">
-                  <div className="fake-photo">
-                    <div className="fake-sun" />
-                    <div className="fake-person" />
-                    <div className="fake-ground" />
-                  </div>
-                </div>
-
-                <div className="loading-photo-card">
-
-                  {MEDIA.photos[loadingPhoto] ? (
-                    <img
-                      src={MEDIA.photos[loadingPhoto]}
-                      alt=""
-                      onError={(e) => {
-                        e.currentTarget.style.display = "none";
-                        e.currentTarget.parentElement.classList.add(
-                          "photo-fallback"
-                        );
-                      }}
-                    />
-                  ) : (
-                    <div className="fake-photo">
-                      <div className="fake-sun" />
-                      <div className="fake-person" />
-                      <div className="fake-ground" />
-                    </div>
-                  )}
-
-                  <div className="photo-fallback-content">
-                    <span>PHOTO</span>
-                    <strong>
-                      {String(loadingPhoto + 1).padStart(2, "0")}
-                    </strong>
-                  </div>
-
-                  <div className="photo-caption">
-                    FOUND IN MEMORY CACHE
-                  </div>
-                </div>
-
-                <div className="photo-number">
-                  {String(loadingPhoto + 1).padStart(2, "0")} / 06
-                </div>
-
-              </div>
-
-              {/* RANDOM LITTLE NOTES */}
-
-              <div className="loading-note note-one">
-                ♡ precious memories detected
-              </div>
-
-              <div className="loading-note note-two">
-                !! questionable files detected
-              </div>
-
-              <div className="loading-note note-three">
-                [ DO NOT DELETE ]
-              </div>
-
-              {/* TERMINAL */}
-
-              <div className="loading-terminal">
-
-                <div>
-                  <span className="terminal-green">OK</span>
-                  &nbsp; locating birthday archive...
-                </div>
-
-                <div>
-                  <span className="terminal-green">OK</span>
-                  &nbsp; checking memories...
-                </div>
-
-                <div>
-                  <span className="terminal-green">OK</span>
-                  &nbsp; checking embarrassing photos...
-                </div>
-
-                <div>
-                  <span className="terminal-yellow">!!</span>
-                  &nbsp; excessive nonsense detected
-                </div>
-
-                <div>
-                  <span className="terminal-green">OK</span>
-                  &nbsp; continuing anyway...
-                </div>
-
-              </div>
-
-              {/* PROGRESS */}
-
-              <div className="progress-area">
-
-                <div className="progress-label">
-                  <span>LOADING ARCHIVE</span>
-                  <strong>
-                    {Math.floor(loadingProgress)
-                      .toString()
-                      .padStart(3, "0")}
-                    %
-                  </strong>
-                </div>
-
-                <div className="progress-track">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${loadingProgress}%`,
-                    }}
-                  />
-
-                  <div className="progress-shine" />
-                </div>
-
-                <div className="progress-blocks">
-                  {Array.from({ length: 24 }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={
-                        loadingProgress >
-                        (index / 24) * 100
-                          ? "active"
-                          : ""
-                      }
-                    />
-                  ))}
-                </div>
-
-              </div>
-
-              <div className="loading-bottom-text">
-                <span>PLEASE WAIT</span>
-
-                <span className="loading-dots">
-                  <i>.</i>
-                  <i>.</i>
-                  <i>.</i>
-                </span>
-              </div>
-
-            </div>
-          </div>
-
-          {/* FLOATING OBJECTS */}
-
-          <div className="floating-disc">
-            <div className="disc-hole" />
-            <div className="disc-label">CLAR</div>
-          </div>
-
-          <div className="floating-star star-one">✦</div>
-          <div className="floating-star star-two">✧</div>
-          <div className="floating-star star-three">★</div>
-
-          <div className="floating-label label-one">
-            MEMORY
-          </div>
-
-          <div className="floating-label label-two">
-            BIRTHDAY!
-          </div>
-
-        </div>
-
-        <style jsx global>{loadingStyles}</style>
-      </>
-    );
+  song: '/birthday/song.mp3',
+
+  voice: '/birthday/friend.mp3',
+
+  video: '/birthday/background.mp4',
+}
+
+const MINI_FILES = [
+  {
+    name: 'FEETGANG',
+    icon: '📁',
+    colour: 'yellow',
+    message: 'classified feetgang material.',
+  },
+  {
+    name: 'EGGS',
+    icon: '🥚',
+    colour: 'green',
+    message: 'do not ask why this exists.',
+  },
+  {
+    name: 'GRADUATION',
+    icon: '🎓',
+    colour: 'blue',
+    message: 'academic weapons archive.',
+  },
+  {
+    name: 'MEMORIES',
+    icon: '💿',
+    colour: 'purple',
+    message: 'way too many questionable memories.',
+  },
+  {
+    name: 'EVIDENCE',
+    icon: '📼',
+    colour: 'red',
+    message: 'you were not supposed to find this.',
+  },
+]
+
+function GlitchText({ children, className = '' }) {
+  return (
+    <span className={`glitch ${className}`} data-text={children}>
+      {children}
+    </span>
+  )
+}
+
+function Window({
+  title,
+  children,
+  className = '',
+  onClose,
+  accent = 'blue',
+}) {
+  const accents = {
+    blue: '#4de7ff',
+    green: '#b7ff4a',
+    yellow: '#ffe66d',
+    purple: '#b79cff',
+    red: '#ff6b6b',
   }
 
-  /* =====================================================
-     MAIN DESKTOP
-     ===================================================== */
+  return (
+    <div
+      className={`retro-window ${className}`}
+      style={{ '--accent': accents[accent] || accents.blue }}
+    >
+      <div className="window-bar">
+        <div className="window-title">
+          <span className="window-dot" />
+          <span>{title}</span>
+        </div>
+
+        <div className="window-buttons">
+          <button type="button">_</button>
+          <button type="button">□</button>
+          <button type="button" onClick={onClose}>
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="window-content">{children}</div>
+    </div>
+  )
+}
+
+function FakeFolder({ file, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`fake-folder folder-${file.colour}`}
+      onClick={onClick}
+    >
+      <div className="folder-icon">
+        <span>{file.icon}</span>
+      </div>
+
+      <div className="folder-name">{file.name}</div>
+
+      <div className="folder-glow" />
+    </button>
+  )
+}
+
+function FloatingBits() {
+  const bits = [
+    ['01', '8%', '18%', 'green'],
+    ['REC', '84%', '13%', 'red'],
+    ['>>', '74%', '82%', 'blue'],
+    ['001101', '12%', '78%', 'purple'],
+    ['PLAY', '46%', '8%', 'yellow'],
+    ['♥', '91%', '60%', 'red'],
+    ['404', '4%', '47%', 'yellow'],
+    ['CD', '88%', '38%', 'blue'],
+    ['///', '38%', '91%', 'green'],
+    ['NO SIGNAL', '65%', '4%', 'red'],
+  ]
 
   return (
-    <main className="desktop">
+    <>
+      {bits.map(([text, left, top, colour], index) => (
+        <div
+          key={`${text}-${index}`}
+          className={`floating-bit bit-${colour}`}
+          style={{
+            left,
+            top,
+            animationDelay: `${index * 0.4}s`,
+          }}
+        >
+          {text}
+        </div>
+      ))}
+    </>
+  )
+}
 
-      {/* AUDIO */}
+export default function HomePage() {
+  const router = useRouter()
 
-      <audio
-        ref={musicRef}
-        src={MEDIA.song}
-        loop
-        preload="metadata"
-        onEnded={() => setMusicPlaying(false)}
-      />
+  const [password, setPassword] = useState('')
+  const [screen, setScreen] = useState('desktop')
+  const [error, setError] = useState('')
+  const [activeFile, setActiveFile] = useState(null)
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [voicePlaying, setVoicePlaying] = useState(false)
+  const [bootProgress, setBootProgress] = useState(0)
+  const [bootPhoto, setBootPhoto] = useState(0)
+  const [cursor, setCursor] = useState({ x: 50, y: 50 })
+  const [secretClicks, setSecretClicks] = useState(0)
 
-      <audio
-        ref={voiceRef}
-        src={MEDIA.friendVoice}
-        preload="metadata"
-        onEnded={() => setVoicePlaying(false)}
-      />
+  const audioRef = useRef(null)
+  const voiceRef = useRef(null)
 
-      {/* BACKGROUND VIDEO */}
+  /*
+    ------------------------------------------------------------
+    BOOT / LOADING SCREEN
+    ------------------------------------------------------------
+  */
 
-      <video
-        ref={videoRef}
-        className="background-video"
-        src={MEDIA.video}
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
+  useEffect(() => {
+    if (screen !== 'loading') return
 
-      <div className="desktop-overlay" />
-      <div className="scanlines" />
+    let progress = 0
 
-      {/* TOP COMPUTER BAR */}
+    const progressTimer = setInterval(() => {
+      progress += Math.random() * 8 + 2
 
-      <header className="topbar">
+      if (progress >= 100) {
+        progress = 100
+        clearInterval(progressTimer)
 
-        <div className="computer-name">
-          <span className="computer-dot" />
-          CLAR'S COMPUTER
+        setTimeout(() => {
+          sessionStorage.setItem('birthday_authenticated', 'true')
+          router.push('/birthday')
+        }, 900)
+      }
+
+      setBootProgress(Math.floor(progress))
+    }, 180)
+
+    const photoTimer = setInterval(() => {
+      setBootPhoto((current) => {
+        if (!MEDIA.photos.length) return 0
+        return (current + 1) % MEDIA.photos.length
+      })
+    }, 550)
+
+    return () => {
+      clearInterval(progressTimer)
+      clearInterval(photoTimer)
+    }
+  }, [screen, router])
+
+  /*
+    ------------------------------------------------------------
+    CURSOR / TOUCH MOVEMENT
+    ------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    const move = (event) => {
+      const x = event.clientX ?? 0
+      const y = event.clientY ?? 0
+
+      setCursor({
+        x: (x / window.innerWidth) * 100,
+        y: (y / window.innerHeight) * 100,
+      })
+    }
+
+    window.addEventListener('pointermove', move)
+
+    return () => window.removeEventListener('pointermove', move)
+  }, [])
+
+  /*
+    ------------------------------------------------------------
+    MUSIC
+    ------------------------------------------------------------
+  */
+
+  const toggleMusic = async () => {
+    if (!audioRef.current) return
+
+    try {
+      if (isPlaying) {
+        audioRef.current.pause()
+        setIsPlaying(false)
+      } else {
+        await audioRef.current.play()
+        setIsPlaying(true)
+      }
+    } catch {
+      setIsPlaying(false)
+    }
+  }
+
+  const toggleVoice = async () => {
+    if (!voiceRef.current) return
+
+    try {
+      if (voicePlaying) {
+        voiceRef.current.pause()
+        setVoicePlaying(false)
+      } else {
+        await voiceRef.current.play()
+        setVoicePlaying(true)
+      }
+    } catch {
+      setVoicePlaying(false)
+    }
+  }
+
+  /*
+    ------------------------------------------------------------
+    PASSWORD
+    ------------------------------------------------------------
+  */
+
+  const submitPassword = (event) => {
+    event.preventDefault()
+
+    if (password.trim().toLowerCase() === PASSWORD.toLowerCase()) {
+      setError('')
+      setScreen('loading')
+      setBootProgress(0)
+    } else {
+      setError('ACCESS DENIED // TRY AGAIN')
+      setPassword('')
+
+      setTimeout(() => {
+        setError('')
+      }, 2500)
+    }
+  }
+
+  /*
+    ------------------------------------------------------------
+    DESKTOP
+    ------------------------------------------------------------
+  */
+
+  if (screen === 'desktop') {
+    return (
+      <main
+        className="crt-desktop"
+        onClick={() => setSecretClicks((value) => value + 1)}
+      >
+        <div className="screen-glow" />
+
+        <div
+          className="cursor-glow"
+          style={{
+            left: `${cursor.x}%`,
+            top: `${cursor.y}%`,
+          }}
+        />
+
+        <div className="scanlines" />
+        <div className="vhs-noise" />
+        <div className="tracking-line" />
+        <FloatingBits />
+
+        {/* TOP STATUS BAR */}
+
+        <div className="top-status">
+          <span>CLAR_OS // PRIVATE BUILD</span>
+
+          <span className="status-middle">
+            SYSTEM ONLINE <i /> VHS MODE
+          </span>
+
+          <span>19.11.04</span>
         </div>
 
-        <div className="topbar-center">
-          <span>PRIVATE SYSTEM</span>
-          <span>•</span>
-          <span>USER: CLAR</span>
-        </div>
+        {/* MAIN TITLE */}
 
-        <div className="clock">
-          {clock || "12:00 PM"}
-        </div>
-
-      </header>
-
-      {/* DESKTOP CONTENT */}
-
-      <section className="desktop-stage">
-
-        {/* FLOATING DECOR */}
-
-        <div className="desktop-sticker sticker-a">
-          ♡
-        </div>
-
-        <div className="desktop-sticker sticker-b">
-          ★
-        </div>
-
-        <div className="desktop-sticker sticker-c">
-          !!
-        </div>
-
-        <div className="desktop-label label-a">
-          PRIVATE :)
-        </div>
-
-        <div className="desktop-label label-b">
-          DO NOT TOUCH
-        </div>
-
-        {/* INTRO */}
-
-        <div className="intro-text">
-
-          <div className="tiny-system">
-            SYSTEM MESSAGE // 001
+        <div className="intro-copy">
+          <div className="tiny-label">
+            <span className="blinking-dot" />
+            INCOMING TRANSMISSION
           </div>
 
           <h1>
-            yayyy happy birthday
-            <br />
-            <span>Clar ♡</span>
+            <GlitchText>HEY CLAR.</GlitchText>
           </h1>
 
           <p>
+            yayyy happy birthday Clar ♡
+            <br />
             if you see this it means the website is working
             <br />
-            (thank god)
+            <strong>(thank god)</strong>
             <br />
             now you just need to enter the password to enter.
             <br />
-            Good luck !
+            good luck !
           </p>
 
+          <div className="intro-code">
+            SYS.MSG // BIRTHDAY_ARCHIVE_001
+          </div>
         </div>
 
-        {/* FILES */}
+        {/* PHOTO WINDOW */}
 
-        <div className="files-window window">
-
-          <div className="window-header">
-            <span>FILE EXPLORER</span>
-            <div>— □ ×</div>
-          </div>
-
-          <div className="files-content">
-
-            <FileItem icon="📁" name="FEETGANG" />
-            <FileItem icon="📁" name="EGGS" />
-            <FileItem icon="📁" name="GRADUATION" />
-            <FileItem icon="📁" name="MEMORIES" />
-            <FileItem icon="📁" name="MESSAGES" />
-            <FileItem icon="📁" name="CHAOS" />
-
-          </div>
-
-          <div className="window-status">
-            6 objects
-          </div>
-
-        </div>
-
-        {/* NOTES */}
-
-        <div className="notes-window window">
-
-          <div className="window-header note-header">
-            <span>notes.txt</span>
-            <div>×</div>
-          </div>
-
-          <div className="notes-paper">
-
-            <div className="handwriting">
-              okay so...
-            </div>
-
-            <div className="handwriting large">
-              HAPPY
-              <br />
-              BIRTHDAY
-              <br />
-              CLAR!!!
-            </div>
-
-            <div className="handwriting">
-              ♡ this took way too long
-            </div>
-
-            <div className="scribble">
-              ~ ~ ~ ~ ~
-            </div>
-
-            <div className="tiny-note">
-              p.s. don't click
-              <br />
-              everything :)
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* PHOTO APP */}
-
-        <div className="photo-window window">
-
-          <div className="window-header">
-            <span>PHOTO_VIEWER</span>
-            <div>— □ ×</div>
-          </div>
-
+        <Window
+          title="PHOTO_VIEWER.exe"
+          className="window-photo"
+          accent="purple"
+        >
           <div className="photo-viewer">
+            {MEDIA.photos[photoIndex] ? (
+              <img
+                src={MEDIA.photos[photoIndex]}
+                alt="Birthday archive"
+                onError={(event) => {
+                  event.currentTarget.style.display = 'none'
+                }}
+              />
+            ) : null}
 
-            <div className="photo-main">
-
-              {MEDIA.photos[photoIndex] ? (
-                <img
-                  src={MEDIA.photos[photoIndex]}
-                  alt=""
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.parentElement.classList.add(
-                      "photo-empty"
-                    );
-                  }}
-                />
-              ) : (
-                <div className="photo-placeholder">
-                  YOUR PHOTO
-                </div>
-              )}
-
-              <div className="photo-overlay-text">
-                IMG_
-                {String(photoIndex + 1).padStart(2, "0")}
-              </div>
-
+            <div className="photo-placeholder">
+              <span>INSERT MEMORY</span>
+              <small>PHOTO_{String(photoIndex + 1).padStart(2, '0')}.JPG</small>
             </div>
 
-            <div className="photo-controls">
-
-              <button
-                onClick={() =>
-                  setPhotoIndex(
-                    (photoIndex - 1 + MEDIA.photos.length) %
-                      MEDIA.photos.length
-                  )
-                }
-              >
-                ◀
-              </button>
-
-              <span>
-                {photoIndex + 1} / {MEDIA.photos.length}
-              </span>
-
-              <button
-                onClick={() =>
-                  setPhotoIndex(
-                    (photoIndex + 1) % MEDIA.photos.length
-                  )
-                }
-              >
-                ▶
-              </button>
-
+            <div className="photo-counter">
+              {String(photoIndex + 1).padStart(2, '0')} /{' '}
+              {String(Math.max(MEDIA.photos.length, 1)).padStart(2, '0')}
             </div>
-
           </div>
 
-        </div>
-
-        {/* MUSIC PLAYER */}
-
-        <div className="music-window window">
-
-          <div className="window-header">
-            <span>CD PLAYER</span>
-            <div>— □ ×</div>
-          </div>
-
-          <div className="music-content">
-
-            <div
-              className={`cd ${musicPlaying ? "spinning" : ""}`}
-              onClick={toggleMusic}
+          <div className="photo-controls">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                setPhotoIndex(
+                  (photoIndex - 1 + MEDIA.photos.length) %
+                    Math.max(MEDIA.photos.length, 1)
+                )
+              }}
             >
-              <div className="cd-center">
-                ♡
-              </div>
+              ◀
+            </button>
+
+            <span>MEMORY BUFFER</span>
+
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                setPhotoIndex(
+                  (photoIndex + 1) % Math.max(MEDIA.photos.length, 1)
+                )
+              }}
+            >
+              ▶
+            </button>
+          </div>
+        </Window>
+
+        {/* MUSIC WINDOW */}
+
+        <Window
+          title="CD_PLAYER // DISC_01"
+          className="window-music"
+          accent="yellow"
+        >
+          <div className="cd-player">
+            <div className={`cd ${isPlaying ? 'cd-playing' : ''}`}>
+              <div className="cd-lines" />
+              <div className="cd-hole" />
+              <span>CLAR</span>
             </div>
 
             <div className="music-info">
-
-              <div className="music-now">
-                NOW PLAYING
+              <div className="music-title">
+                {isPlaying ? 'NOW PLAYING' : 'PRESS PLAY'}
               </div>
 
-              <strong>
-                birthday soundtrack.mp3
-              </strong>
+              <div className="music-track">
+                birthday_archive_mix.mp3
+              </div>
 
-              <div className="music-bars">
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
-                <span />
+              <div className="equalizer">
+                {[1, 2, 3, 4, 5, 6, 7].map((bar) => (
+                  <i
+                    key={bar}
+                    className={isPlaying ? 'eq-active' : ''}
+                    style={{ animationDelay: `${bar * 0.08}s` }}
+                  />
+                ))}
               </div>
 
               <button
-                className="retro-button"
-                onClick={toggleMusic}
+                type="button"
+                className="play-button"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleMusic()
+                }}
               >
-                {musicPlaying ? "Ⅱ PAUSE" : "▶ PLAY"}
+                {isPlaying ? '❚❚ STOP' : '▶ PLAY'}
               </button>
-
             </div>
-
           </div>
 
-        </div>
+          <audio
+            ref={audioRef}
+            src={MEDIA.song}
+            loop
+            onEnded={() => setIsPlaying(false)}
+          />
+        </Window>
 
-        {/* VIDEO */}
+        {/* VIDEO WINDOW */}
 
-        <div className="video-window window">
-
-          <div className="window-header">
-            <span>VIDEO_PLAYER.mov</span>
-            <div>×</div>
-          </div>
-
-          <div className="video-content">
-
+        <Window
+          title="VHS_DECK // LIVE_FEED"
+          className="window-video"
+          accent="green"
+        >
+          <div className="video-box">
             <video
               src={MEDIA.video}
               autoPlay
-              loop
               muted
+              loop
               playsInline
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
+              }}
             />
 
-            <div className="video-rec">
-              ● REC
+            <div className="video-placeholder">
+              <div className="video-static">▓▒░ NO SIGNAL ░▒▓</div>
+              <small>VIDEO_FEED.MOV</small>
             </div>
 
-            <div className="video-time">
-              00:00:{String(photoIndex).padStart(2, "0")}
-            </div>
+            <div className="video-rec">● REC</div>
+            <div className="video-time">00:19:11</div>
+          </div>
+        </Window>
 
+        {/* NOTES WINDOW */}
+
+        <Window
+          title="NOTES.txt"
+          className="window-notes"
+          accent="yellow"
+        >
+          <div className="scribbled-note">
+            <div>things to remember:</div>
+            <br />
+            <span>☑ birthday girl</span>
+            <span>☑ survived another year</span>
+            <span>☑ somehow still tolerating us</span>
+            <span>☐ become less chaotic</span>
+            <span>☐ impossible</span>
+
+            <div className="note-arrow">↳ probably don't open the archive</div>
+          </div>
+        </Window>
+
+        {/* FILE WINDOW */}
+
+        <Window
+          title="C:\\BIRTHDAY\\FILES"
+          className="window-files"
+          accent="blue"
+        >
+          <div className="folder-grid">
+            {MINI_FILES.map((file) => (
+              <FakeFolder
+                key={file.name}
+                file={file}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  setActiveFile(file)
+                }}
+              />
+            ))}
           </div>
 
-        </div>
+          <div className="folder-status">
+            {MINI_FILES.length} OBJECTS // 0 CORRUPTED
+          </div>
+        </Window>
 
-        {/* VOICE RECORDER */}
+        {/* RECORDING WINDOW */}
 
-        <div className="recorder-window window">
+        <Window
+          title="VOICE_MESSAGE.wav"
+          className="window-recording"
+          accent="red"
+        >
+          <div className="recording">
+            <div className="record-icon">🎙</div>
 
-          <div className="window-header">
-            <span>VOICE_RECORDER</span>
-            <div>×</div>
+            <div className="record-info">
+              <div className="record-name">FROM: ONE OF THE IDIOTS</div>
+
+              <div className="waveform">
+                {Array.from({ length: 28 }).map((_, index) => (
+                  <i
+                    key={index}
+                    className={voicePlaying ? 'wave-active' : ''}
+                    style={{
+                      height: `${10 + ((index * 17) % 25)}px`,
+                      animationDelay: `${index * 0.04}s`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                className="voice-button"
+                onClick={(event) => {
+                  event.stopPropagation()
+                  toggleVoice()
+                }}
+              >
+                {voicePlaying ? '❚❚ STOP VOICE' : '▶ PLAY VOICE'}
+              </button>
+            </div>
           </div>
 
-          <div className="recorder-content">
+          <audio
+            ref={voiceRef}
+            src={MEDIA.voice}
+            onEnded={() => setVoicePlaying(false)}
+          />
+        </Window>
 
-            <div className="recorder-mic">
-              🎙
-            </div>
+        {/* PASSWORD PANEL */}
 
-            <div className="recording-title">
-              A MESSAGE FOR CLAR
-            </div>
-
-            <div className="waveform">
-              {Array.from({ length: 25 }).map((_, i) => (
-                <span
-                  key={i}
-                  style={{
-                    height: `${20 + ((i * 17) % 45)}px`,
-                  }}
-                />
-              ))}
-            </div>
-
-            <button
-              className={`record-button ${
-                voicePlaying ? "playing" : ""
-              }`}
-              onClick={toggleVoice}
-            >
-              {voicePlaying ? "Ⅱ STOP" : "▶ PLAY MESSAGE"}
-            </button>
-
-          </div>
-
-        </div>
-
-        {/* PASSWORD */}
-
-        <div className="password-window">
-
+        <div
+          className="password-panel"
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className="password-top">
-            <span>🔐</span>
-            <strong>RESTRICTED AREA</strong>
-            <span>×</span>
+            <span>SECURITY_GATE</span>
+            <span>LEVEL 01</span>
           </div>
 
-          <div className="password-inner">
+          <div className="password-title">
+            <GlitchText>ENTER PASSWORD</GlitchText>
+          </div>
 
-            <div className="password-small">
-              CLAR_ARCHIVE ACCESS
+          <form onSubmit={submitPassword}>
+            <div className="input-wrap">
+              <span>&gt;_</span>
+
+              <input
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="PASSWORD..."
+                type="password"
+                autoComplete="off"
+              />
+
+              <span className="cursor-block" />
             </div>
 
-            <div className="password-prompt">
-              enter password
-            </div>
+            <button type="submit" className="enter-button">
+              ENTER ARCHIVE <span>↗</span>
+            </button>
+          </form>
 
-            <form onSubmit={enterArchive}>
+          {error && <div className="access-error">{error}</div>}
 
-              <div className="password-input-row">
+          <div className="password-footer">
+            <span>AUTH_REQUIRED</span>
+            <span>ENCRYPTION: VHS-64</span>
+          </div>
+        </div>
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError("");
-                  }}
-                  placeholder="••••••••"
-                  autoComplete="off"
-                />
+        {/* BOTTOM BAR */}
 
-                <button type="submit">
-                  ENTER ↵
+        <div className="bottom-status">
+          <span>♥ MADE WITH QUESTIONABLE DECISIONS</span>
+          <span>RAM 64KB</span>
+          <span>TRACKING: OFF</span>
+        </div>
+
+        {/* FILE POPUP */}
+
+        {activeFile && (
+          <div
+            className="file-popup-backdrop"
+            onClick={(event) => {
+              event.stopPropagation()
+              setActiveFile(null)
+            }}
+          >
+            <div
+              className="file-popup"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="popup-header">
+                <span>{activeFile.name}.TXT</span>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveFile(null)}
+                >
+                  ×
                 </button>
-
               </div>
 
-            </form>
+              <div className="popup-body">
+                <div className="popup-icon">{activeFile.icon}</div>
 
-            {passwordError && (
-              <div className="password-error">
-                {passwordError}
+                <GlitchText>{activeFile.name}</GlitchText>
+
+                <p>{activeFile.message}</p>
+
+                <div className="popup-bar">
+                  FILE OPENED // SECRET STATUS
+                </div>
               </div>
-            )}
-
-            <div className="password-hint">
-              unauthorized people will be judged
             </div>
-
           </div>
+        )}
 
-        </div>
+        {/* SECRET CLICK COUNTER */}
 
-        {/* TASKBAR */}
-
-        <div className="taskbar">
-
-          <button className="start-button">
-            ◈ START
-          </button>
-
-          <div className="task-item">
-            📁 CLAR_ARCHIVE
+        {secretClicks > 12 && (
+          <div className="secret-message">
+            YOU FOUND NOTHING.
+            <br />
+            <span>OR DID YOU?</span>
           </div>
+        )}
 
-          <div className="task-item">
-            💿 MUSIC
-          </div>
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&family=Press+Start+2P&display=swap');
 
-          <div className="task-item">
-            📷 PHOTOS
-          </div>
+          :root {
+            --lavender: #a8a0c8;
+            --dust: #7d88a8;
+            --blue: #4de7ff;
+            --green: #b7ff4a;
+            --yellow: #ffe66d;
+            --purple: #b79cff;
+            --red: #ff6b6b;
+            --ink: #111725;
+          }
 
-          <div className="task-spacer" />
+          * {
+            box-sizing: border-box;
+          }
 
-          <div className="task-status">
-            ● SYSTEM OK
-          </div>
+          html,
+          body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            background: #111725;
+          }
 
-        </div>
+          body {
+            overflow-x: hidden;
+          }
 
-      </section>
+          button,
+          input {
+            font: inherit;
+          }
 
-      {/* HIDDEN AUDIO ELEMENTS */}
+          button {
+            -webkit-tap-highlight-color: transparent;
+          }
 
-      <style jsx global>{desktopStyles}</style>
+          .crt-desktop {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            color: #edf5ff;
+            background:
+              radial-gradient(circle at 18% 18%, rgba(112, 127, 190, 0.55), transparent 30%),
+              radial-gradient(circle at 80% 70%, rgba(86, 170, 177, 0.22), transparent 28%),
+              linear-gradient(135deg, #667296 0%, #817da6 38%, #596f8d 72%, #4e607c 100%);
+            font-family: 'IBM Plex Mono', monospace;
+            isolation: isolate;
+          }
 
-    </main>
-  );
-}
+          .crt-desktop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 100;
+            pointer-events: none;
+            background:
+              repeating-linear-gradient(
+                to bottom,
+                rgba(255,255,255,0.035) 0px,
+                rgba(255,255,255,0.035) 1px,
+                transparent 2px,
+                transparent 4px
+              );
+            mix-blend-mode: overlay;
+          }
 
-/* =========================================================
-   FILE ITEM
-   ========================================================= */
+          .crt-desktop::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 101;
+            pointer-events: none;
+            box-shadow:
+              inset 0 0 100px rgba(17, 23, 37, 0.45),
+              inset 0 0 25px rgba(0, 0, 0, 0.35);
+          }
 
-function FileItem({ icon, name }) {
+          .screen-glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+              radial-gradient(
+                circle at 50% 50%,
+                rgba(190, 225, 255, 0.16),
+                transparent 55%
+              );
+            animation: screenPulse 5s ease-in-out infinite;
+          }
+
+          .scanlines,
+          .vhs-noise {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 99;
+          }
+
+          .scanlines {
+            opacity: 0.13;
+            background: repeating-linear-gradient(
+              to bottom,
+              transparent 0px,
+              transparent 3px,
+              rgba(20, 30, 50, 0.5) 4px
+            );
+          }
+
+          .vhs-noise {
+            opacity: 0.07;
+            background-image:
+              repeating-radial-gradient(
+                circle at 20% 30%,
+                rgba(255,255,255,.5) 0 1px,
+                transparent 1px 3px
+              );
+            animation: noiseMove .12s steps(2) infinite;
+          }
+
+          .tracking-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -10%;
+            height: 3px;
+            background: rgba(255,255,255,.3);
+            box-shadow:
+              0 0 8px rgba(255,255,255,.8),
+              0 0 20px rgba(77,231,255,.6);
+            z-index: 102;
+            pointer-events: none;
+            animation: tracking 7s linear infinite;
+          }
+
+          .cursor-glow {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(
+              circle,
+              rgba(77,231,255,.08),
+              transparent 70%
+            );
+            pointer-events: none;
+            z-index: 1;
+            transition: left .15s ease-out, top .15s ease-out;
+          }
+
+          .top-status,
+          .bottom-status {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            z-index: 20;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            font-size: 8px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: rgba(240,248,255,.72);
+          }
+
+          .top-status {
+            top: 14px;
+          }
+
+          .bottom-status {
+            bottom: 10px;
+            color: rgba(230,242,255,.55);
+          }
+
+          .status-middle {
+            color: var(--green);
+          }
+
+          .status-middle i,
+          .blinking-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin: 0 5px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+            animation: blink .9s infinite;
+          }
+
+          .intro-copy {
+            position: absolute;
+            left: 4%;
+            top: 12%;
+            width: min(400px, 42vw);
+            z-index: 8;
+            transform: rotate(-1deg);
+          }
+
+          .tiny-label {
+            font-size: 8px;
+            letter-spacing: .2em;
+            color: var(--green);
+            margin-bottom: 10px;
+          }
+
+          .intro-copy h1 {
+            margin: 0 0 13px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(22px, 3vw, 42px);
+            line-height: 1.3;
+            color: #f6f4e9;
+            text-shadow:
+              3px 0 var(--red),
+              -3px 0 var(--blue),
+              0 0 18px rgba(255,255,255,.3);
+          }
+
+          .intro-copy p {
+            margin: 0;
+            font-size: 11px;
+            line-height: 1.9;
+            color: #e5e9f3;
+            text-shadow: 1px 1px #49516c;
+          }
+
+          .intro-copy strong {
+            color: var(--yellow);
+          }
+
+          .intro-code {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 5px 8px;
+            background: rgba(17,23,37,.48);
+            border: 1px solid rgba(183,156,255,.5);
+            color: var(--purple);
+            font-size: 7px;
+            letter-spacing: .15em;
+          }
+
+          .glitch {
+            position: relative;
+            display: inline-block;
+            animation: glitchText 4s infinite;
+          }
+
+          .glitch::before,
+          .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+          }
+
+          .glitch::before {
+            color: var(--blue);
+            transform: translate(-2px, 0);
+            clip-path: inset(0 0 65% 0);
+            animation: glitchA 2.8s infinite steps(2);
+          }
+
+          .glitch::after {
+            color: var(--red);
+            transform: translate(2px, 0);
+            clip-path: inset(65% 0 0 0);
+            animation: glitchB 2.1s infinite steps(2);
+          }
+
+          .retro-window {
+            position: absolute;
+            z-index: 10;
+            border: 2px solid rgba(20, 28, 46, .9);
+            background: rgba(31, 42, 65, .88);
+            box-shadow:
+              5px 6px 0 rgba(31, 40, 62, .45),
+              0 0 25px rgba(15,20,40,.2);
+            backdrop-filter: blur(4px);
+            transition:
+              transform .25s ease,
+              filter .25s ease;
+          }
+
+          .retro-window:hover {
+            transform: translateY(-3px) rotate(.2deg);
+            filter: brightness(1.1);
+          }
+
+          .window-bar {
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px 0 9px;
+            background:
+              linear-gradient(
+                90deg,
+                rgba(77,231,255,.32),
+                rgba(183,156,255,.3),
+                rgba(255,230,109,.24)
+              );
+            border-bottom: 1px solid rgba(255,255,255,.22);
+            color: white;
+            font-size: 8px;
+            letter-spacing: .1em;
+          }
+
+          .window-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .window-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 7px var(--accent);
+          }
+
+          .window-buttons {
+            display: flex;
+            gap: 3px;
+          }
+
+          .window-buttons button {
+            width: 19px;
+            height: 17px;
+            border: 1px solid rgba(255,255,255,.35);
+            color: #fff;
+            background: rgba(15,20,35,.4);
+            font-size: 9px;
+            line-height: 1;
+          }
+
+          .window-buttons button:hover {
+            background: var(--accent);
+            color: #101522;
+          }
+
+          .window-content {
+            padding: 9px;
+          }
+
+          .window-photo {
+            left: 42%;
+            top: 8%;
+            width: 250px;
+            transform: rotate(1.5deg);
+          }
+
+          .window-music {
+            right: 3%;
+            top: 8%;
+            width: 285px;
+            transform: rotate(-1deg);
+          }
+
+          .window-video {
+            right: 5%;
+            top: 39%;
+            width: 300px;
+            transform: rotate(.7deg);
+          }
+
+          .window-notes {
+            left: 4%;
+            bottom: 10%;
+            width: 260px;
+            transform: rotate(-2deg);
+          }
+
+          .window-files {
+            left: 29%;
+            bottom: 6%;
+            width: 340px;
+            transform: rotate(.8deg);
+          }
+
+          .window-recording {
+            right: 31%;
+            bottom: 5%;
+            width: 350px;
+            transform: rotate(-.7deg);
+          }
+
+          .photo-viewer {
+            position: relative;
+            height: 175px;
+            overflow: hidden;
+            background:
+              linear-gradient(135deg, #4b5573, #9387b4);
+            border: 2px solid #1c2437;
+          }
+
+          .photo-viewer img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+          }
+
+          .photo-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            color: rgba(255,255,255,.7);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            text-align: center;
+            background:
+              repeating-linear-gradient(
+                0deg,
+                transparent 0 3px,
+                rgba(255,255,255,.04) 4px
+              );
+          }
+
+          .photo-placeholder small {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 7px;
+            color: var(--yellow);
+          }
+
+          .photo-counter {
+            position: absolute;
+            z-index: 3;
+            right: 5px;
+            bottom: 4px;
+            padding: 3px 5px;
+            background: rgba(10,15,25,.7);
+            color: var(--green);
+            font-size: 7px;
+          }
+
+          .photo-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 7px;
+            color: var(--purple);
+            font-size: 7px;
+          }
+
+          .photo-controls button {
+            border: 1px solid rgba(183,156,255,.6);
+            background: #242d45;
+            color: #fff;
+            padding: 4px 8px;
+            cursor: pointer;
+          }
+
+          .photo-controls button:hover {
+            background: var(--purple);
+            color: #111725;
+          }
+
+          .cd-player {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+          }
+
+          .cd {
+            position: relative;
+            flex: 0 0 auto;
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            background:
+              repeating-conic-gradient(
+                from 0deg,
+                #d9e3ec 0deg 8deg,
+                #8491a7 10deg 14deg,
+                #f8fafc 17deg 20deg
+              );
+            box-shadow:
+              0 0 15px rgba(255,230,109,.2),
+              inset 0 0 15px rgba(0,0,0,.35);
+          }
+
+          .cd::after {
+            content: '';
+            position: absolute;
+            inset: 25px;
+            border-radius: 50%;
+            background: #626d83;
+            box-shadow: inset 0 0 0 5px #aeb9c9;
+          }
+
+          .cd-hole {
+            position: absolute;
+            z-index: 2;
+            left: 50%;
+            top: 50%;
+            width: 7px;
+            height: 7px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: #111725;
+          }
+
+          .cd span {
+            position: absolute;
+            z-index: 3;
+            top: 42px;
+            left: 30px;
+            color: #111725;
+            font-size: 7px;
+            font-weight: bold;
+          }
+
+          .cd-playing {
+            animation: cdSpin 2.5s linear infinite;
+          }
+
+          .music-info {
+            min-width: 0;
+          }
+
+          .music-title {
+            color: var(--yellow);
+            font-size: 9px;
+            margin-bottom: 5px;
+          }
+
+          .music-track {
+            color: rgba(255,255,255,.55);
+            font-size: 7px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .equalizer {
+            height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin: 7px 0;
+          }
+
+          .equalizer i {
+            display: block;
+            width: 3px;
+            height: 5px;
+            background: var(--yellow);
+          }
+
+          .equalizer .eq-active {
+            animation: equalizer .4s ease-in-out infinite alternate;
+          }
+
+          .play-button,
+          .voice-button {
+            border: 1px solid var(--yellow);
+            background: rgba(255,230,109,.08);
+            color: var(--yellow);
+            padding: 5px 8px;
+            font-size: 7px;
+            cursor: pointer;
+          }
+
+          .play-button:hover,
+          .voice-button:hover {
+            background: var(--yellow);
+            color: #151b2b;
+          }
+
+          .video-box {
+            position: relative;
+            height: 150px;
+            overflow: hidden;
+            border: 2px solid #141c2c;
+            background: #202a3d;
+          }
+
+          .video-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .video-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background:
+              repeating-linear-gradient(
+                0deg,
+                #263149 0 2px,
+                #20283c 2px 4px
+              );
+            color: var(--green);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+          }
+
+          .video-placeholder small {
+            margin-top: 12px;
+            font-family: 'IBM Plex Mono';
+            font-size: 7px;
+          }
+
+          .video-rec,
+          .video-time {
+            position: absolute;
+            z-index: 2;
+            top: 6px;
+            font-size: 7px;
+            color: #fff;
+            text-shadow: 1px 1px #000;
+          }
+
+          .video-rec {
+            left: 7px;
+            color: var(--red);
+          }
+
+          .video-time {
+            right: 7px;
+          }
+
+          .scribbled-note {
+            min-height: 125px;
+            padding: 9px;
+            color: #1c2538;
+            background:
+              repeating-linear-gradient(
+                0deg,
+                #ddd6a6 0px,
+                #ddd6a6 21px,
+                #c9c08e 22px
+              );
+            font-family: 'DM Mono', monospace;
+            font-size: 10px;
+            line-height: 21px;
+            transform: rotate(.5deg);
+          }
+
+          .scribbled-note span {
+            display: block;
+          }
+
+          .scribbled-note span:nth-child(3) {
+            color: #9a3d3d;
+          }
+
+          .scribbled-note span:nth-child(4) {
+            color: #306b61;
+          }
+
+          .note-arrow {
+            margin-top: 8px;
+            color: #5a557f;
+            font-size: 8px;
+          }
+
+          .folder-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+          }
+
+          .fake-folder {
+            position: relative;
+            border: 0;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            padding: 2px;
+            min-width: 0;
+          }
+
+          .fake-folder:hover {
+            transform: translateY(-4px);
+          }
+
+          .folder-icon {
+            position: relative;
+            width: 42px;
+            height: 32px;
+            margin: 0 auto 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #d4b65f;
+            border: 2px solid #172033;
+            box-shadow: 3px 3px 0 rgba(17,23,37,.45);
+          }
+
+          .folder-icon::before {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: -7px;
+            width: 17px;
+            height: 8px;
+            background: inherit;
+            border: 2px solid #172033;
+            border-bottom: 0;
+          }
+
+          .folder-icon span {
+            position: relative;
+            z-index: 2;
+            font-size: 15px;
+          }
+
+          .folder-name {
+            font-size: 7px;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+            color: #f4f6ff;
+          }
+
+          .folder-yellow .folder-icon {
+            background: #d9ba58;
+          }
+
+          .folder-green .folder-icon {
+            background: #7da75c;
+          }
+
+          .folder-blue .folder-icon {
+            background: #668eb1;
+          }
+
+          .folder-purple .folder-icon {
+            background: #8e78aa;
+          }
+
+          .folder-red .folder-icon {
+            background: #b36a6a;
+          }
+
+          .folder-status {
+            margin-top: 10px;
+            border-top: 1px dashed rgba(255,255,255,.2);
+            padding-top: 5px;
+            font-size: 6px;
+            color: var(--green);
+          }
+
+          .recording {
+            display: flex;
+            gap: 13px;
+            align-items: center;
+          }
+
+          .record-icon {
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--red);
+            background: rgba(255,107,107,.08);
+            font-size: 23px;
+          }
+
+          .record-info {
+            flex: 1;
+          }
+
+          .record-name {
+            color: var(--red);
+            font-size: 7px;
+            margin-bottom: 7px;
+          }
+
+          .waveform {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 30px;
+          }
+
+          .waveform i {
+            display: block;
+            width: 3px;
+            background: #e9edf6;
+            opacity: .6;
+          }
+
+          .waveform .wave-active {
+            background: var(--red);
+            animation: wave .4s ease-in-out infinite alternate;
+          }
+
+          .voice-button {
+            margin-top: 6px;
+            border-color: var(--red);
+            color: var(--red);
+          }
+
+          .voice-button:hover {
+            background: var(--red);
+            color: white;
+          }
+
+          .password-panel {
+            position: absolute;
+            z-index: 30;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(390px, 84vw);
+            padding: 15px;
+            background: rgba(18,25,42,.92);
+            border: 2px solid #1b263d;
+            box-shadow:
+              8px 8px 0 rgba(22,29,47,.35),
+              0 0 30px rgba(77,231,255,.12);
+          }
+
+          .password-panel::before {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px solid rgba(77,231,255,.2);
+            pointer-events: none;
+          }
+
+          .password-top,
+          .password-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 7px;
+            letter-spacing: .14em;
+            color: rgba(255,255,255,.5);
+          }
+
+          .password-title {
+            margin: 18px 0 13px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: white;
+          }
+
+          .input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 43px;
+            padding: 0 10px;
+            border: 1px solid rgba(77,231,255,.5);
+            background: #0d1321;
+            color: var(--green);
+          }
+
+          .input-wrap input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: white;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+          }
+
+          .input-wrap input::placeholder {
+            color: rgba(255,255,255,.28);
+          }
+
+          .cursor-block {
+            width: 7px;
+            height: 15px;
+            background: var(--green);
+            animation: blink .8s steps(1) infinite;
+          }
+
+          .enter-button {
+            width: 100%;
+            margin-top: 9px;
+            padding: 12px;
+            border: 1px solid var(--blue);
+            background:
+              linear-gradient(
+                90deg,
+                rgba(77,231,255,.16),
+                rgba(183,156,255,.15)
+              );
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            cursor: pointer;
+            transition: .2s;
+          }
+
+          .enter-button:hover {
+            background: var(--blue);
+            color: #101725;
+            box-shadow: 0 0 18px rgba(77,231,255,.5);
+          }
+
+          .enter-button span {
+            color: var(--yellow);
+          }
+
+          .access-error {
+            margin-top: 8px;
+            padding: 7px;
+            border: 1px solid var(--red);
+            color: var(--red);
+            background: rgba(255,107,107,.08);
+            font-size: 8px;
+            text-align: center;
+            animation: errorFlash .25s steps(2) 3;
+          }
+
+          .password-footer {
+            margin-top: 12px;
+          }
+
+          .floating-bit {
+            position: absolute;
+            z-index: 3;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 6px;
+            opacity: .65;
+            pointer-events: none;
+            animation:
+              floatBit 4s ease-in-out infinite,
+              flicker 3s steps(2) infinite;
+          }
+
+          .bit-blue {
+            color: var(--blue);
+            text-shadow: 0 0 8px var(--blue);
+          }
+
+          .bit-green {
+            color: var(--green);
+            text-shadow: 0 0 8px var(--green);
+          }
+
+          .bit-yellow {
+            color: var(--yellow);
+            text-shadow: 0 0 8px var(--yellow);
+          }
+
+          .bit-purple {
+            color: var(--purple);
+            text-shadow: 0 0 8px var(--purple);
+          }
+
+          .bit-red {
+            color: var(--red);
+            text-shadow: 0 0 8px var(--red);
+          }
+
+          .file-popup-backdrop {
+            position: fixed;
+            z-index: 300;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(7,10,18,.6);
+            backdrop-filter: blur(5px);
+          }
+
+          .file-popup {
+            width: min(400px, 90vw);
+            background: #202a40;
+            border: 2px solid #111a2c;
+            box-shadow: 10px 10px 0 rgba(0,0,0,.35);
+            animation: popupIn .25s ease-out;
+          }
+
+          .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            background: linear-gradient(90deg, #586d9c, #756a9e);
+            color: white;
+            font-size: 8px;
+          }
+
+          .popup-header button {
+            border: 0;
+            background: transparent;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+          }
+
+          .popup-body {
+            padding: 28px;
+            text-align: center;
+          }
+
+          .popup-icon {
+            font-size: 45px;
+            margin-bottom: 15px;
+          }
+
+          .popup-body .glitch {
+            font-family: 'Press Start 2P', monospace;
+            color: var(--yellow);
+            font-size: 15px;
+          }
+
+          .popup-body p {
+            margin: 15px 0;
+            color: #dce4f1;
+            font-size: 11px;
+          }
+
+          .popup-bar {
+            padding: 7px;
+            border: 1px dashed var(--green);
+            color: var(--green);
+            font-size: 7px;
+          }
+
+          .secret-message {
+            position: fixed;
+            z-index: 400;
+            right: 20px;
+            top: 50%;
+            padding: 10px;
+            color: var(--red);
+            background: #111725;
+            border: 1px solid var(--red);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 7px;
+            animation: secretAppear .4s steps(2);
+          }
+
+          .secret-message span {
+            color: var(--blue);
+          }
+
+          /*
+            LOADING SCREEN
+          */
+
+          .loading-screen {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+              radial-gradient(
+                circle at 50% 45%,
+                #657ba0,
+                #313b58 48%,
+                #151b2c 100%
+              );
+            color: white;
+            font-family: 'IBM Plex Mono', monospace;
+          }
+
+          .loading-screen::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+              repeating-linear-gradient(
+                to bottom,
+                rgba(255,255,255,.04) 0 1px,
+                transparent 2px 5px
+              );
+            pointer-events: none;
+          }
+
+          .loading-noise {
+            position: absolute;
+            inset: 0;
+            background:
+              repeating-linear-gradient(
+                90deg,
+                transparent 0 5px,
+                rgba(77,231,255,.03) 6px,
+                transparent 8px
+              );
+            animation: noiseMove .15s steps(2) infinite;
+          }
+
+          .loading-shell {
+            position: relative;
+            z-index: 5;
+            width: min(700px, 90vw);
+            text-align: center;
+          }
+
+          .loading-kicker {
+            font-size: 8px;
+            letter-spacing: .35em;
+            color: var(--green);
+            margin-bottom: 15px;
+          }
+
+          .loading-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(17px, 3vw, 30px);
+            line-height: 1.6;
+            text-shadow:
+              3px 0 var(--red),
+              -3px 0 var(--blue);
+          }
+
+          .boot-photo {
+            position: relative;
+            width: min(330px, 72vw);
+            height: 220px;
+            margin: 25px auto;
+            border: 4px solid #141b2b;
+            background: #2a354e;
+            box-shadow:
+              10px 10px 0 rgba(0,0,0,.25),
+              0 0 35px rgba(77,231,255,.15);
+            overflow: hidden;
+          }
+
+          .boot-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            animation: bootPhoto .55s steps(2);
+          }
+
+          .boot-photo::after {
+            content: 'MEMORY RECOVERED';
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            padding: 4px 6px;
+            background: rgba(10,15,25,.75);
+            color: var(--green);
+            font-size: 7px;
+          }
+
+          .boot-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,.45);
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+          }
+
+          .boot-terminal {
+            margin: 15px auto;
+            max-width: 500px;
+            padding: 10px;
+            border: 1px solid rgba(77,231,255,.35);
+            background: rgba(8,13,24,.65);
+            text-align: left;
+            font-size: 8px;
+            line-height: 1.8;
+            color: #dfe8f4;
+          }
+
+          .terminal-green {
+            color: var(--green);
+          }
+
+          .terminal-yellow {
+            color: var(--yellow);
+          }
+
+          .progress-shell {
+            height: 18px;
+            border: 2px solid #111827;
+            padding: 3px;
+            background: #1a2337;
+          }
+
+          .progress-bar {
+            height: 100%;
+            background:
+              repeating-linear-gradient(
+                90deg,
+                var(--blue) 0 12px,
+                var(--purple) 12px 24px,
+                var(--green) 24px 36px
+              );
+            box-shadow:
+              0 0 10px rgba(77,231,255,.55);
+            transition: width .15s linear;
+          }
+
+          .progress-number {
+            margin-top: 10px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--yellow);
+          }
+
+          .loading-corners {
+            position: fixed;
+            inset: 15px;
+            pointer-events: none;
+            border: 1px solid rgba(255,255,255,.08);
+          }
+
+          .loading-corners::before,
+          .loading-corners::after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-color: var(--blue);
+            border-style: solid;
+          }
+
+          .loading-corners::before {
+            left: -1px;
+            top: -1px;
+            border-width: 3px 0 0 3px;
+          }
+
+          .loading-corners::after {
+            right: -1px;
+            bottom: -1px;
+            border-width: 0 3px 3px 0;
+          }
+
+          @keyframes glitchText {
+            0%, 87%, 100% {
+              transform: translate(0);
+            }
+            88% {
+              transform: translate(-3px, 1px);
+            }
+            89% {
+              transform: translate(4px, -1px);
+            }
+            90% {
+              transform: translate(0);
+            }
+          }
+
+          @keyframes glitchA {
+            0%, 82%, 100% {
+              transform: translate(-2px);
+            }
+            84% {
+              transform: translate(-8px, 2px);
+            }
+            86% {
+              transform: translate(5px, -2px);
+            }
+          }
+
+          @keyframes glitchB {
+            0%, 72%, 100% {
+              transform: translate(2px);
+            }
+            74% {
+              transform: translate(7px, -2px);
+            }
+            76% {
+              transform: translate(-5px, 2px);
+            }
+          }
+
+          @keyframes blink {
+            0%, 45% { opacity: 1; }
+            46%, 100% { opacity: 0; }
+          }
+
+          @keyframes screenPulse {
+            0%, 100% { opacity: .7; }
+            50% { opacity: 1; }
+          }
+
+          @keyframes noiseMove {
+            0% { transform: translate(0); }
+            25% { transform: translate(-2%, 1%); }
+            50% { transform: translate(1%, -2%); }
+            75% { transform: translate(2%, 1%); }
+            100% { transform: translate(0); }
+          }
+
+          @keyframes tracking {
+            0% { top: -5%; opacity: 0; }
+            4% { opacity: .8; }
+            12% { top: 105%; opacity: 0; }
+            100% { top: 105%; opacity: 0; }
+          }
+
+          @keyframes floatBit {
+            0%, 100% {
+              transform: translateY(0) rotate(0deg);
+            }
+            50% {
+              transform: translateY(-13px) rotate(3deg);
+            }
+          }
+
+          @keyframes flicker {
+            0%, 90%, 100% { opacity: .65; }
+            91% { opacity: .15; }
+            92% { opacity: .8; }
+            94% { opacity: .25; }
+          }
+
+          @keyframes cdSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+
+          @keyframes equalizer {
+            from { transform: scaleY(.4); }
+            to { transform: scaleY(1.7); }
+          }
+
+          @keyframes wave {
+            from { transform: scaleY(.35); }
+            to { transform: scaleY(1.1); }
+          }
+
+          @keyframes errorFlash {
+            from { transform: translateX(-4px); }
+            to { transform: translateX(4px); }
+          }
+
+          @keyframes popupIn {
+            from {
+              opacity: 0;
+              transform: scale(.9) rotate(-2deg);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) rotate(0);
+            }
+          }
+
+          @keyframes secretAppear {
+            from {
+              opacity: 0;
+              transform: translateX(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+
+          @keyframes bootPhoto {
+            0% {
+              opacity: 0;
+              transform: scale(1.15);
+              filter: saturate(2) hue-rotate(30deg);
+            }
+            50% {
+              opacity: .4;
+              transform: scale(.98);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+              filter: saturate(1);
+            }
+          }
+
+          @media (max-width: 900px) {
+            .crt-desktop {
+              min-height: 1200px;
+            }
+
+            .top-status .status-middle,
+            .bottom-status span:nth-child(2),
+            .bottom-status span:nth-child(3) {
+              display: none;
+            }
+
+            .intro-copy {
+              left: 5%;
+              top: 9%;
+              width: 55%;
+            }
+
+            .window-photo {
+              left: 5%;
+              top: 31%;
+            }
+
+            .window-music {
+              right: 5%;
+              top: 31%;
+            }
+
+            .window-video {
+              right: 5%;
+              top: 53%;
+            }
+
+            .window-notes {
+              left: 5%;
+              bottom: 22%;
+            }
+
+            .window-files {
+              left: 5%;
+              bottom: 5%;
+              width: 46%;
+            }
+
+            .window-recording {
+              right: 5%;
+              bottom: 5%;
+              width: 46%;
+            }
+
+            .password-panel {
+              top: 20%;
+            }
+          }
+
+          @media (max-width: 620px) {
+            .crt-desktop {
+              min-height: 1700px;
+            }
+
+            .top-status {
+              font-size: 6px;
+            }
+
+            .intro-copy {
+              width: 90%;
+              top: 7%;
+            }
+
+            .intro-copy h1 {
+              font-size: 20px;
+            }
+
+            .window-photo,
+            .window-music,
+            .window-video,
+            .window-notes,
+            .window-files,
+            .window-recording {
+              left: 5%;
+              right: auto;
+              width: 90%;
+            }
+
+            .window-photo {
+              top: 26%;
+            }
+
+            .window-music {
+              top: 43%;
+            }
+
+            .window-video {
+              top: 59%;
+            }
+
+            .window-notes {
+              top: 74%;
+              bottom: auto;
+            }
+
+            .window-files {
+              top: 86%;
+              bottom: auto;
+            }
+
+            .window-recording {
+              top: 101%;
+              bottom: auto;
+            }
+
+            .password-panel {
+              top: 17%;
+            }
+
+            .floating-bit {
+              display: none;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+              animation-duration: .01ms !important;
+              animation-iteration-count: 1 !important;
+              scroll-behavior: auto !important;
+            }
+          }
+        `}</style>
+      </main>
+    )
+  }
+
+  /*
+    ============================================================
+    GRAPHICAL LOADING SCREEN
+    ============================================================
+  */
+
   return (
-    <div className="file-item">
-      <div className="file-icon">{icon}</div>
-      <div className="file-name">{name}</div>
-    </div>
-  );
+    <main className="loading-screen">
+      <div className="loading-noise" />
+      <div className="scanlines" />
+      <div className="loading-corners" />
+
+      <div className="loading-shell">
+        <div className="loading-kicker">
+          // ESTABLISHING CONNECTION //
+        </div>
+
+        <div className="loading-title">
+          <GlitchText>OPENING CLAR'S ARCHIVE</GlitchText>
+        </div>
+
+        <div className="boot-photo">
+          {MEDIA.photos[bootPhoto] ? (
+            <img
+              key={bootPhoto}
+              src={MEDIA.photos[bootPhoto]}
+              alt=""
+              onError={(event) => {
+                event.currentTarget.style.display = 'none'
+              }}
+            />
+          ) : (
+            <div className="boot-placeholder">
+              RECOVERING PHOTO...
+            </div>
+          )}
+        </div>
+
+        <div className="boot-terminal">
+          <div>
+            <span className="terminal-green">&gt;</span> PASSWORD ACCEPTED
+          </div>
+          <div>
+            <span className="terminal-green">&gt;</span> DECRYPTING MEMORY FILES...
+          </div>
+          <div>
+            <span className="terminal-yellow">&gt;</span> RECOVERING PHOTO_
+            {String(bootPhoto + 1).padStart(2, '0')}
+          </div>
+          <div>
+            <span className="terminal-green">&gt;</span> LOADING QUESTIONABLE
+            DECISIONS...
+          </div>
+        </div>
+
+        <div className="progress-shell">
+          <div
+            className="progress-bar"
+            style={{ width: `${bootProgress}%` }}
+          />
+        </div>
+
+        <div className="progress-number">
+          {String(bootProgress).padStart(3, '0')}%
+        </div>
+      </div>
+    </main>
+  )
 }
-
-/* =========================================================
-   LOADING SCREEN CSS
-   ========================================================= */
-
-const loadingStyles = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Press+Start+2P&family=VT323&display=swap');
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
-.loading-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 999999;
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at 50% 45%, #7778b5 0%, #555786 28%, #343655 65%, #20223c 100%);
-
-  color: #fff4d6;
-
-  font-family: "DM Mono", monospace;
-}
-
-.loading-grid {
-  position: absolute;
-  inset: -20%;
-  opacity: .22;
-
-  background-image:
-    linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
-
-  background-size: 45px 45px;
-
-  transform: perspective(500px) rotateX(62deg) scale(1.4);
-  transform-origin: center bottom;
-
-  animation: gridMove 5s linear infinite;
-}
-
-@keyframes gridMove {
-  from {
-    background-position: 0 0;
-  }
-
-  to {
-    background-position: 0 45px;
-  }
-}
-
-.loading-scanlines {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 20;
-
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,.025) 0px,
-    rgba(255,255,255,.025) 1px,
-    transparent 1px,
-    transparent 4px
-  );
-
-  mix-blend-mode: overlay;
-}
-
-.loading-noise {
-  position: absolute;
-  inset: -50%;
-  pointer-events: none;
-  z-index: 21;
-
-  opacity: .07;
-
-  background-image:
-    repeating-radial-gradient(
-      circle at 0 0,
-      #fff 0,
-      transparent 1px,
-      transparent 3px
-    );
-
-  background-size: 5px 5px;
-
-  animation: noiseMove .18s steps(2) infinite;
-}
-
-@keyframes noiseMove {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(3%, -2%); }
-  50% { transform: translate(-2%, 3%); }
-  75% { transform: translate(2%, 2%); }
-  100% { transform: translate(-3%, -2%); }
-}
-
-.load-corner {
-  position: absolute;
-  z-index: 30;
-
-  font-family: "DM Mono", monospace;
-  font-size: 10px;
-  letter-spacing: 1px;
-
-  opacity: .65;
-}
-
-.load-top-left {
-  top: 18px;
-  left: 22px;
-}
-
-.load-top-right {
-  top: 18px;
-  right: 22px;
-}
-
-.load-bottom-left {
-  bottom: 18px;
-  left: 22px;
-}
-
-.load-bottom-right {
-  bottom: 18px;
-  right: 22px;
-}
-
-.loading-window {
-  position: absolute;
-
-  width: min(760px, 90vw);
-  min-height: 700px;
-
-  left: 50%;
-  top: 50%;
-
-  transform: translate(-50%, -50%);
-
-  background: #252743;
-
-  border: 2px solid #f5e9ca;
-
-  box-shadow:
-    12px 12px 0 rgba(15,17,34,.35),
-    0 0 0 1px #555a8d,
-    0 0 70px rgba(128,131,255,.35);
-
-  animation: windowIn .7s cubic-bezier(.16,1,.3,1);
-}
-
-@keyframes windowIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -47%) scale(.94);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-.loading-window-bar {
-  height: 35px;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  padding: 0 11px;
-
-  background: #eee2c1;
-  color: #272945;
-
-  font-family: "VT323", monospace;
-  font-size: 20px;
-
-  border-bottom: 2px solid #17182b;
-}
-
-.window-buttons {
-  display: flex;
-  gap: 12px;
-  font-family: Arial, sans-serif;
-  font-size: 13px;
-}
-
-.loading-content {
-  position: relative;
-  min-height: 663px;
-  padding: 32px 45px;
-}
-
-.loading-status {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-
-  font-size: 10px;
-  letter-spacing: 2px;
-
-  color: #baf4a5;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background: #baf4a5;
-  border-radius: 50%;
-
-  box-shadow: 0 0 14px #baf4a5;
-
-  animation: statusBlink 1s infinite;
-}
-
-@keyframes statusBlink {
-  50% {
-    opacity: .3;
-  }
-}
-
-.loading-title {
-  display: flex;
-  flex-direction: column;
-
-  margin-top: 18px;
-
-  line-height: .78;
-}
-
-.title-small {
-  font-family: "DM Mono", monospace;
-  font-size: 11px;
-  letter-spacing: 4px;
-  margin-bottom: 12px;
-  opacity: .65;
-}
-
-.title-big {
-  font-family: "Press Start 2P", monospace;
-  font-size: clamp(28px, 5vw, 51px);
-
-  color: #fff0bd;
-
-  text-shadow:
-    4px 4px 0 #464977,
-    0 0 20px rgba(255,240,189,.15);
-
-  animation: titleFlicker 3s infinite;
-}
-
-.title-big.outline {
-  color: transparent;
-  -webkit-text-stroke: 1px #fff0bd;
-
-  margin-left: 32px;
-}
-
-@keyframes titleFlicker {
-  0%, 92%, 100% {
-    opacity: 1;
-  }
-
-  94% {
-    opacity: .4;
-  }
-
-  96% {
-    opacity: 1;
-  }
-}
-
-.loading-photo-zone {
-  position: absolute;
-
-  right: 48px;
-  top: 103px;
-
-  width: 205px;
-  height: 245px;
-}
-
-.loading-photo-card {
-  position: absolute;
-  inset: 0;
-
-  padding: 9px;
-  padding-bottom: 38px;
-
-  background: #f3e8c9;
-
-  color: #252743;
-
-  transform: rotate(3deg);
-
-  box-shadow: 7px 8px 0 rgba(20,20,45,.3);
-
-  overflow: hidden;
-}
-
-.loading-photo-card.card-back {
-  transform: rotate(-8deg) translate(-8px, 8px);
-  background: #dfd4b8;
-}
-
-.loading-photo-card img,
-.fake-photo {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  background:
-    linear-gradient(
-      145deg,
-      #d2d6ef,
-      #8d8ebd 48%,
-      #ee916e
-    );
-}
-
-.photo-fallback-content {
-  position: absolute;
-  inset: 9px 9px 38px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(255,255,255,.12) 0,
-      rgba(255,255,255,.12) 3px,
-      transparent 3px,
-      transparent 8px
-    );
-
-  font-family: "Press Start 2P", monospace;
-  font-size: 9px;
-
-  opacity: 0;
-}
-
-.photo-fallback-content strong {
-  font-size: 40px;
-  margin-top: 15px;
-}
-
-.photo-fallback .photo-fallback-content {
-  opacity: 1;
-}
-
-.fake-sun {
-  position: absolute;
-
-  width: 45px;
-  height: 45px;
-
-  border-radius: 50%;
-
-  background: #ffe1a5;
-
-  top: 25px;
-  right: 25px;
-}
-
-.fake-person {
-  position: absolute;
-
-  width: 65px;
-  height: 105px;
-
-  left: 66px;
-  bottom: 20px;
-
-  background: #343655;
-
-  border-radius: 40px 40px 10px 10px;
-}
-
-.fake-ground {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  height: 32%;
-
-  background: #9e9cc6;
-}
-
-.photo-caption {
-  position: absolute;
-  bottom: 11px;
-  left: 12px;
-
-  font-family: "DM Mono", monospace;
-  font-size: 7px;
-  letter-spacing: 1px;
-}
-
-.photo-number {
-  position: absolute;
-  right: -25px;
-  bottom: 4px;
-
-  font-family: "Press Start 2P", monospace;
-  font-size: 9px;
-
-  transform: rotate(-90deg);
-}
-
-.loading-note {
-  position: absolute;
-
-  padding: 7px 9px;
-
-  background: #d8ff77;
-  color: #282a43;
-
-  font-family: "VT323", monospace;
-  font-size: 16px;
-
-  box-shadow: 4px 4px 0 rgba(0,0,0,.25);
-}
-
-.note-one {
-  right: 29px;
-  top: 365px;
-  transform: rotate(4deg);
-}
-
-.note-two {
-  left: 30px;
-  top: 408px;
-
-  background: #ff9e77;
-
-  transform: rotate(-3deg);
-}
-
-.note-three {
-  right: 80px;
-  top: 420px;
-
-  background: #e4d7ff;
-
-  transform: rotate(5deg);
-}
-
-.loading-terminal {
-  position: absolute;
-
-  left: 45px;
-  bottom: 153px;
-
-  width: 270px;
-
-  font-size: 9px;
-  line-height: 1.8;
-
-  opacity: .82;
-}
-
-.terminal-green {
-  color: #baff98;
-}
-
-.terminal-yellow {
-  color: #ffd36e;
-}
-
-.progress-area {
-  position: absolute;
-
-  left: 45px;
-  right: 45px;
-  bottom: 68px;
-}
-
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-
-  margin-bottom: 8px;
-
-  font-size: 9px;
-  letter-spacing: 1px;
-}
-
-.progress-track {
-  position: relative;
-
-  height: 17px;
-
-  border: 1px solid #eee2c1;
-
-  padding: 3px;
-
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-
-  background:
-    repeating-linear-gradient(
-      90deg,
-      #d8ff77 0,
-      #d8ff77 12px,
-      #a7d957 12px,
-      #a7d957 16px
-    );
-
-  transition: width .06s linear;
-}
-
-.progress-shine {
-  position: absolute;
-  inset: 0;
-
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255,255,255,.4),
-    transparent
-  );
-
-  transform: translateX(-100%);
-
-  animation: shine 1.2s linear infinite;
-}
-
-@keyframes shine {
-  to {
-    transform: translateX(100%);
-  }
-}
-
-.progress-blocks {
-  display: flex;
-  gap: 4px;
-
-  margin-top: 7px;
-}
-
-.progress-blocks span {
-  flex: 1;
-  height: 4px;
-
-  background: #464866;
-}
-
-.progress-blocks span.active {
-  background: #d8ff77;
-  box-shadow: 0 0 6px rgba(216,255,119,.4);
-}
-
-.loading-bottom-text {
-  position: absolute;
-
-  left: 45px;
-  right: 45px;
-  bottom: 27px;
-
-  display: flex;
-  justify-content: space-between;
-
-  font-size: 9px;
-  letter-spacing: 2px;
-
-  opacity: .55;
-}
-
-.loading-dots {
-  display: flex;
-  gap: 3px;
-}
-
-.loading-dots i {
-  font-style: normal;
-  animation: dot 1.2s infinite;
-}
-
-.loading-dots i:nth-child(2) {
-  animation-delay: .2s;
-}
-
-.loading-dots i:nth-child(3) {
-  animation-delay: .4s;
-}
-
-@keyframes dot {
-  0%, 100% { opacity: .2; }
-  50% { opacity: 1; }
-}
-
-.floating-disc {
-  position: absolute;
-
-  width: 145px;
-  height: 145px;
-
-  right: 9%;
-  bottom: 9%;
-
-  border-radius: 50%;
-
-  background:
-    repeating-radial-gradient(
-      circle,
-      #d8d9e6 0px,
-      #8e91b8 2px,
-      #d9d9e2 4px
-    );
-
-  border: 5px solid #c5c6d6;
-
-  box-shadow:
-    8px 10px 0 rgba(10,10,25,.25),
-    0 0 30px rgba(255,255,255,.15);
-
-  animation: discFloat 4s ease-in-out infinite;
-}
-
-.disc-hole {
-  position: absolute;
-
-  width: 26px;
-  height: 26px;
-
-  left: 50%;
-  top: 50%;
-
-  transform: translate(-50%, -50%);
-
-  border-radius: 50%;
-
-  background: #363856;
-
-  border: 7px solid #aeb0ca;
-}
-
-.disc-label {
-  position: absolute;
-
-  left: 50%;
-  top: 25%;
-
-  transform: translateX(-50%);
-
-  font-family: "Press Start 2P", monospace;
-  font-size: 9px;
-
-  color: #363856;
-}
-
-@keyframes discFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-
-  50% {
-    transform: translateY(-14px) rotate(10deg);
-  }
-}
-
-.floating-star {
-  position: absolute;
-
-  color: #d8ff77;
-
-  font-size: 30px;
-
-  animation: starFloat 3s ease-in-out infinite;
-}
-
-.star-one {
-  left: 12%;
-  top: 23%;
-}
-
-.star-two {
-  left: 8%;
-  bottom: 22%;
-
-  animation-delay: .8s;
-}
-
-.star-three {
-  right: 14%;
-  top: 19%;
-
-  animation-delay: 1.5s;
-}
-
-@keyframes starFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-    opacity: .5;
-  }
-
-  50% {
-    transform: translateY(-13px) rotate(15deg);
-    opacity: 1;
-  }
-}
-
-.floating-label {
-  position: absolute;
-
-  padding: 8px 12px;
-
-  font-family: "VT323", monospace;
-  font-size: 20px;
-
-  background: #ff9e77;
-  color: #272945;
-
-  box-shadow: 5px 5px 0 rgba(0,0,0,.2);
-
-  animation: labelFloat 4s ease-in-out infinite;
-}
-
-.label-one {
-  left: 7%;
-  top: 43%;
-
-  transform: rotate(-7deg);
-}
-
-.label-two {
-  right: 7%;
-  top: 43%;
-
-  background: #d8ff77;
-
-  transform: rotate(7deg);
-
-  animation-delay: 1s;
-}
-
-@keyframes labelFloat {
-  0%, 100% {
-    translate: 0 0;
-  }
-
-  50% {
-    translate: 0 -8px;
-  }
-}
-
-@media (max-width: 700px) {
-
-  .loading-window {
-    width: 94vw;
-    min-height: 620px;
-  }
-
-  .loading-content {
-    min-height: 583px;
-    padding: 25px;
-  }
-
-  .title-big {
-    font-size: 25px;
-  }
-
-  .loading-photo-zone {
-    right: 22px;
-    top: 125px;
-    width: 145px;
-    height: 175px;
-  }
-
-  .loading-terminal {
-    left: 25px;
-    bottom: 150px;
-    width: 210px;
-    font-size: 7px;
-  }
-
-  .progress-area {
-    left: 25px;
-    right: 25px;
-  }
-
-  .note-one {
-    right: 15px;
-    top: 315px;
-  }
-
-  .note-two {
-    left: 18px;
-    top: 365px;
-  }
-
-  .note-three {
-    display: none;
-  }
-
-  .floating-disc {
-    width: 80px;
-    height: 80px;
-    right: 2%;
-    bottom: 2%;
-  }
-
-  .floating-disc .disc-hole {
-    width: 18px;
-    height: 18px;
-    border-width: 5px;
-  }
-
-  .floating-disc .disc-label {
-    font-size: 6px;
-  }
-
-  .load-corner {
-    font-size: 7px;
-  }
-}
-`;
-
-/* =========================================================
-   DESKTOP CSS
-   ========================================================= */
-
-const desktopStyles = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Press+Start+2P&family=VT323&display=swap');
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  overflow-x: hidden;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-.desktop {
-  min-height: 100vh;
-
-  background:
-    radial-gradient(circle at 20% 20%, rgba(164,169,255,.5), transparent 28%),
-    radial-gradient(circle at 80% 70%, rgba(255,150,120,.25), transparent 25%),
-    #4a4b77;
-
-  color: #fff0c7;
-
-  font-family: "DM Mono", monospace;
-
-  overflow: hidden;
-
-  position: relative;
-}
-
-.background-video {
-  position: fixed;
-  inset: 0;
-
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  opacity: .14;
-
-  filter:
-    saturate(.8)
-    contrast(1.15)
-    blur(.3px);
-
-  pointer-events: none;
-}
-
-.desktop-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-
-  pointer-events: none;
-
-  background:
-    linear-gradient(
-      120deg,
-      rgba(91,96,155,.72),
-      rgba(44,45,78,.72)
-    );
-}
-
-.scanlines {
-  position: fixed;
-  inset: 0;
-  z-index: 99;
-
-  pointer-events: none;
-
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      rgba(255,255,255,.025) 0px,
-      rgba(255,255,255,.025) 1px,
-      transparent 1px,
-      transparent 4px
-    );
-}
-
-.topbar {
-  position: relative;
-  z-index: 20;
-
-  height: 42px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 16px;
-
-  background: #e8ddbd;
-  color: #292b48;
-
-  border-bottom: 2px solid #20213a;
-
-  font-family: "VT323", monospace;
-  font-size: 20px;
-}
-
-.computer-name {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-
-.computer-dot {
-  width: 9px;
-  height: 9px;
-
-  border-radius: 50%;
-
-  background: #83d26b;
-
-  box-shadow: 0 0 7px #83d26b;
-}
-
-.topbar-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  display: flex;
-  gap: 9px;
-
-  font-size: 16px;
-
-  opacity: .65;
-}
-
-.clock {
-  margin-left: auto;
-}
-
-.desktop-stage {
-  position: relative;
-
-  min-height: calc(100vh - 42px);
-
-  max-width: 1500px;
-
-  margin: 0 auto;
-
-  padding: 25px;
-
-  z-index: 10;
-}
-
-.intro-text {
-  position: absolute;
-
-  left: 6%;
-  top: 7%;
-
-  width: 380px;
-
-  z-index: 5;
-
-  animation: introFloat 5s ease-in-out infinite;
-}
-
-@keyframes introFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.tiny-system {
-  font-size: 9px;
-  letter-spacing: 3px;
-
-  opacity: .6;
-
-  margin-bottom: 15px;
-}
-
-.intro-text h1 {
-  margin: 0;
-
-  font-family: "Press Start 2P", monospace;
-
-  font-size: clamp(18px, 2.2vw, 29px);
-
-  line-height: 1.5;
-
-  color: #fff0c7;
-
-  text-shadow:
-    3px 3px 0 #35375d;
-}
-
-.intro-text h1 span {
-  color: #d9ff75;
-}
-
-.intro-text p {
-  font-family: "VT323", monospace;
-
-  font-size: 20px;
-  line-height: 1.1;
-
-  margin-top: 15px;
-
-  color: #e5def0;
-
-  opacity: .9;
-}
-
-.window {
-  position: absolute;
-
-  background: rgba(40,42,70,.95);
-
-  border: 2px solid #e7ddbf;
-
-  box-shadow:
-    8px 9px 0 rgba(20,20,40,.3),
-    0 0 30px rgba(20,20,50,.18);
-
-  overflow: hidden;
-
-  animation: windowFloat 5s ease-in-out infinite;
-}
-
-@keyframes windowFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.window-header {
-  height: 29px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 8px;
-
-  background: #e8ddbd;
-  color: #2b2c49;
-
-  font-family: "VT323", monospace;
-  font-size: 18px;
-
-  border-bottom: 2px solid #20213a;
-}
-
-.window-header div {
-  letter-spacing: 4px;
-}
-
-.files-window {
-  left: 5%;
-  bottom: 17%;
-  width: 280px;
-
-  animation-delay: .5s;
-}
-
-.files-content {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-
-  gap: 18px;
-
-  padding: 20px 12px;
-}
-
-.file-item {
-  text-align: center;
-
-  cursor: pointer;
-
-  transition: transform .2s;
-}
-
-.file-item:hover {
-  transform: translateY(-5px) rotate(-2deg);
-}
-
-.file-icon {
-  font-size: 38px;
-
-  filter: drop-shadow(3px 3px 0 rgba(0,0,0,.25));
-}
-
-.file-name {
-  margin-top: 5px;
-
-  font-size: 8px;
-
-  word-break: break-word;
-}
-
-.window-status {
-  padding: 5px 8px;
-
-  font-size: 8px;
-
-  border-top: 1px solid rgba(255,255,255,.12);
-
-  opacity: .5;
-}
-
-.notes-window {
-  left: 29%;
-  top: 7%;
-
-  width: 250px;
-
-  transform: rotate(-2deg);
-
-  animation-delay: 1s;
-}
-
-.notes-paper {
-  min-height: 230px;
-
-  padding: 18px;
-
-  background:
-    repeating-linear-gradient(
-      to bottom,
-      #f0e6c9 0,
-      #f0e6c9 23px,
-      #c9c2a9 24px
-    );
-
-  color: #3d3950;
-
-  position: relative;
-}
-
-.handwriting {
-  font-family: "Comic Sans MS", "Bradley Hand", cursive;
-
-  font-size: 17px;
-
-  transform: rotate(-3deg);
-}
-
-.handwriting.large {
-  font-size: 25px;
-
-  font-weight: bold;
-
-  margin: 12px 0;
-
-  transform: rotate(2deg);
-}
-
-.scribble {
-  font-size: 24px;
-
-  margin-top: 10px;
-
-  transform: rotate(-4deg);
-}
-
-.tiny-note {
-  position: absolute;
-
-  bottom: 9px;
-  right: 10px;
-
-  font-family: "Comic Sans MS", cursive;
-
-  font-size: 10px;
-
-  transform: rotate(4deg);
-}
-
-.photo-window {
-  right: 5%;
-  top: 8%;
-
-  width: 320px;
-
-  animation-delay: .8s;
-}
-
-.photo-viewer {
-  padding: 12px;
-}
-
-.photo-main {
-  position: relative;
-
-  width: 100%;
-  height: 220px;
-
-  background:
-    linear-gradient(135deg, #8789b9, #b6a9c8 50%, #d8846c);
-
-  overflow: hidden;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.photo-main img {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-}
-
-.photo-placeholder {
-  font-family: "Press Start 2P", monospace;
-  font-size: 11px;
-
-  opacity: .7;
-}
-
-.photo-overlay-text {
-  position: absolute;
-
-  bottom: 7px;
-  left: 7px;
-
-  padding: 3px 5px;
-
-  background: rgba(25,25,40,.7);
-
-  font-size: 8px;
-}
-
-.photo-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding-top: 9px;
-
-  font-size: 9px;
-}
-
-.photo-controls button {
-  border: 1px solid #eee1c1;
-
-  background: #343657;
-
-  color: #fff0c7;
-
-  padding: 4px 9px;
-
-  cursor: pointer;
-}
-
-.music-window {
-  left: 39%;
-  top: 34%;
-
-  width: 330px;
-
-  animation-delay: 1.4s;
-}
-
-.music-content {
-  display: flex;
-  gap: 17px;
-
-  padding: 17px;
-}
-
-.cd {
-  width: 105px;
-  height: 105px;
-
-  flex-shrink: 0;
-
-  border-radius: 50%;
-
-  background:
-    repeating-radial-gradient(
-      circle,
-      #ddddea 0px,
-      #9294b8 2px,
-      #d6d6e1 4px
-    );
-
-  border: 3px solid #c8c9d7;
-
-  position: relative;
-
-  cursor: pointer;
-}
-
-.cd::before {
-  content: "";
-
-  position: absolute;
-
-  inset: 30px;
-
-  border-radius: 50%;
-
-  background: #a58a9e;
-}
-
-.cd-center {
-  position: absolute;
-
-  inset: 43px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 2;
-
-  color: #fff0c7;
-
-  font-size: 12px;
-}
-
-.cd.spinning {
-  animation: spin 1.4s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.music-info {
-  flex: 1;
-}
-
-.music-now {
-  font-size: 8px;
-  letter-spacing: 2px;
-
-  opacity: .55;
-
-  margin-bottom: 7px;
-}
-
-.music-info strong {
-  font-family: "VT323", monospace;
-  font-size: 20px;
-}
-
-.music-bars {
-  display: flex;
-  align-items: end;
-
-  height: 42px;
-
-  gap: 3px;
-
-  margin: 8px 0;
-}
-
-.music-bars span {
-  width: 5px;
-
-  background: #d8ff77;
-
-  animation: equalizer .8s ease-in-out infinite alternate;
-}
-
-.music-bars span:nth-child(1) { height: 15px; }
-.music-bars span:nth-child(2) { height: 28px; animation-delay: .1s; }
-.music-bars span:nth-child(3) { height: 21px; animation-delay: .2s; }
-.music-bars span:nth-child(4) { height: 34px; animation-delay: .3s; }
-.music-bars span:nth-child(5) { height: 17px; animation-delay: .4s; }
-.music-bars span:nth-child(6) { height: 31px; animation-delay: .5s; }
-.music-bars span:nth-child(7) { height: 23px; animation-delay: .6s; }
-.music-bars span:nth-child(8) { height: 35px; animation-delay: .7s; }
-
-@keyframes equalizer {
-  to {
-    transform: scaleY(.25);
-  }
-}
-
-.retro-button,
-.record-button {
-  border: 1px solid #fff0c7;
-
-  background: #343657;
-
-  color: #fff0c7;
-
-  padding: 6px 9px;
-
-  cursor: pointer;
-
-  font-size: 8px;
-}
-
-.retro-button:hover,
-.record-button:hover {
-  background: #d8ff77;
-  color: #292b48;
-}
-
-.video-window {
-  right: 6%;
-  top: 43%;
-
-  width: 290px;
-
-  animation-delay: .2s;
-}
-
-.video-content {
-  height: 180px;
-
-  position: relative;
-
-  background: #17182a;
-}
-
-.video-content video {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
-
-  opacity: .8;
-}
-
-.video-rec {
-  position: absolute;
-
-  top: 9px;
-  left: 9px;
-
-  color: #ff907b;
-
-  font-size: 9px;
-
-  animation: blink 1s infinite;
-}
-
-.video-time {
-  position: absolute;
-
-  bottom: 8px;
-  right: 8px;
-
-  font-size: 9px;
-}
-
-@keyframes blink {
-  50% {
-    opacity: .2;
-  }
-}
-
-.recorder-window {
-  left: 27%;
-  bottom: 14%;
-
-  width: 310px;
-
-  animation-delay: 1.7s;
-}
-
-.recorder-content {
-  padding: 15px;
-
-  text-align: center;
-}
-
-.recorder-mic {
-  font-size: 38px;
-
-  margin-bottom: 5px;
-}
-
-.recording-title {
-  font-family: "VT323", monospace;
-
-  font-size: 19px;
-
-  margin-bottom: 8px;
-}
-
-.waveform {
-  height: 55px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 3px;
-
-  margin-bottom: 10px;
-}
-
-.waveform span {
-  width: 3px;
-
-  background: #ff9b7d;
-
-  animation: wave .7s ease-in-out infinite alternate;
-}
-
-.waveform span:nth-child(odd) {
-  animation-delay: .15s;
-}
-
-@keyframes wave {
-  to {
-    transform: scaleY(.3);
-  }
-}
-
-.record-button.playing {
-  background: #ff9b7d;
-  color: #282943;
-}
-
-.password-window {
-  position: absolute;
-
-  right: 33%;
-  bottom: 5%;
-
-  width: 390px;
-
-  background: #292b4a;
-
-  border: 2px solid #f1e5c5;
-
-  box-shadow:
-    9px 10px 0 rgba(20,20,40,.35),
-    0 0 30px rgba(20,20,40,.2);
-
-  z-index: 30;
-
-  animation: passwordPulse 3s ease-in-out infinite;
-}
-
-@keyframes passwordPulse {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-.password-top {
-  height: 30px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 0 9px;
-
-  background: #ff9d7b;
-
-  color: #2b2b49;
-
-  font-size: 9px;
-}
-
-.password-inner {
-  padding: 17px;
-}
-
-.password-small {
-  font-size: 8px;
-
-  letter-spacing: 2px;
-
-  opacity: .5;
-
-  margin-bottom: 7px;
-}
-
-.password-prompt {
-  font-family: "VT323", monospace;
-
-  font-size: 22px;
-
-  margin-bottom: 9px;
-}
-
-.password-input-row {
-  display: flex;
-  gap: 6px;
-}
-
-.password-input-row input {
-  min-width: 0;
-  flex: 1;
-
-  background: #17182a;
-
-  border: 1px solid #eee3c6;
-
-  color: #fff0c7;
-
-  padding: 9px;
-
-  outline: none;
-
-  font-family: "DM Mono", monospace;
-}
-
-.password-input-row input:focus {
-  box-shadow: 0 0 0 2px rgba(216,255,119,.35);
-}
-
-.password-input-row button {
-  background: #d8ff77;
-
-  color: #282943;
-
-  border: 0;
-
-  padding: 0 13px;
-
-  cursor: pointer;
-
-  font-size: 9px;
-
-  font-weight: bold;
-}
-
-.password-input-row button:hover {
-  background: #fff0c7;
-}
-
-.password-error {
-  margin-top: 8px;
-
-  color: #ff9b7d;
-
-  font-size: 9px;
-}
-
-.password-hint {
-  margin-top: 9px;
-
-  font-size: 7px;
-
-  opacity: .4;
-}
-
-.taskbar {
-  position: absolute;
-
-  left: 25px;
-  right: 25px;
-  bottom: 0;
-
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-
-  gap: 4px;
-
-  border-top: 2px solid #242641;
-
-  background: #dcd2b4;
-
-  color: #2a2c49;
-
-  padding: 4px;
-
-  z-index: 50;
-}
-
-.start-button {
-  height: 30px;
-
-  padding: 0 13px;
-
-  background: #ff9d7b;
-
-  border: 2px outset #fff0d0;
-
-  color: #292b49;
-
-  font-family: "Press Start 2P", monospace;
-
-  font-size: 7px;
-
-  cursor: pointer;
-}
-
-.task-item {
-  height: 28px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 10px;
-
-  background: #c8bfd0;
-
-  border: 1px inset #fff;
-
-  font-size: 8px;
-}
-
-.task-spacer {
-  flex: 1;
-}
-
-.task-status {
-  padding: 0 8px;
-
-  font-size: 8px;
-}
-
-.desktop-sticker {
-  position: absolute;
-
-  z-index: 40;
-
-  font-size: 30px;
-
-  color: #d8ff77;
-
-  animation: stickerFloat 3s ease-in-out infinite;
-}
-
-.sticker-a {
-  right: 34%;
-  top: 23%;
-}
-
-.sticker-b {
-  left: 48%;
-  bottom: 25%;
-
-  animation-delay: .8s;
-}
-
-.sticker-c {
-  right: 24%;
-  bottom: 28%;
-
-  color: #ff9d7b;
-
-  font-family: "Press Start 2P", monospace;
-  font-size: 16px;
-
-  animation-delay: 1.3s;
-}
-
-@keyframes stickerFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(-5deg);
-  }
-
-  50% {
-    transform: translateY(-8px) rotate(7deg);
-  }
-}
-
-.desktop-label {
-  position: absolute;
-
-  z-index: 40;
-
-  padding: 6px 10px;
-
-  background: #d8ff77;
-
-  color: #292b49;
-
-  font-family: "VT323", monospace;
-
-  font-size: 17px;
-
-  box-shadow: 4px 4px 0 rgba(0,0,0,.2);
-}
-
-.label-a {
-  right: 14%;
-  top: 30%;
-
-  transform: rotate(5deg);
-}
-
-.label-b {
-  left: 3%;
-  top: 45%;
-
-  background: #e4d8ff;
-
-  transform: rotate(-6deg);
-}
-
-@media (max-width: 1000px) {
-
-  .desktop {
-    overflow-y: auto;
-  }
-
-  .desktop-stage {
-    min-height: 1500px;
-  }
-
-  .intro-text {
-    left: 5%;
-    top: 30px;
-  }
-
-  .photo-window {
-    right: 4%;
-    top: 30px;
-  }
-
-  .notes-window {
-    left: 5%;
-    top: 270px;
-  }
-
-  .music-window {
-    left: 5%;
-    top: 560px;
-  }
-
-  .video-window {
-    right: 4%;
-    top: 500px;
-  }
-
-  .files-window {
-    left: 5%;
-    bottom: 260px;
-  }
-
-  .recorder-window {
-    left: 35%;
-    bottom: 260px;
-  }
-
-  .password-window {
-    right: 5%;
-    bottom: 70px;
-  }
-
-  .taskbar {
-    position: fixed;
-    bottom: 0;
-  }
-}
-
-@media (max-width: 700px) {
-
-  .topbar-center {
-    display: none;
-  }
-
-  .desktop-stage {
-    min-height: 1750px;
-    padding: 15px;
-  }
-
-  .intro-text {
-    position: relative;
-    left: auto;
-    top: auto;
-
-    width: 100%;
-
-    margin: 20px 0 25px;
-  }
-
-  .window,
-  .password-window {
-    position: relative;
-
-    left: auto;
-    right: auto;
-    top: auto;
-    bottom: auto;
-
-    width: 100%;
-
-    margin: 18px 0;
-
-    transform: none;
-  }
-
-  .notes-window,
-  .photo-window,
-  .music-window,
-  .video-window,
-  .files-window,
-  .recorder-window,
-  .password-window {
-    animation: none;
-  }
-
-  .photo-main {
-    height: 240px;
-  }
-
-  .files-content {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .desktop-sticker,
-  .desktop-label {
-    display: none;
-  }
-
-  .taskbar {
-    left: 0;
-    right: 0;
-
-    overflow: hidden;
-  }
-
-  .task-item:nth-of-type(n+3) {
-    display: none;
-  }
-}
-`;
