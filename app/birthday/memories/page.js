@@ -138,7 +138,10 @@ function getMemoryYear(memory) {
 
 export default function MemoriesPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const {
+  isAuthenticated,
+  isLoading: authLoading,
+} = useAuth();
 
   /* ------------------------------- DATA ---------------------------------- */
 
@@ -181,10 +184,10 @@ export default function MemoriesPage() {
   /* ------------------------------------------------------------------------ */
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/");
-    }
-  }, [authLoading, user, router]);
+  if (!authLoading && !isAuthenticated) {
+    router.push("/");
+  }
+}, [authLoading, isAuthenticated, router]);
 
   /* ------------------------------------------------------------------------ */
   /* LOAD MEMORIES                                                             */
@@ -194,10 +197,10 @@ export default function MemoriesPage() {
     let cancelled = false;
 
     async function loadMemories() {
-      if (!user) {
-        setDataLoading(false);
-        return;
-      }
+      if (!isAuthenticated) {
+  setDataLoading(false);
+  return;
+}
 
       setDataLoading(true);
 
@@ -238,7 +241,7 @@ export default function MemoriesPage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [isAuthenticated]);
 
   /* ------------------------------------------------------------------------ */
   /* REAL BOOT SEQUENCE                                                       */
@@ -588,11 +591,11 @@ export default function MemoriesPage() {
 
             <div className="boot-mini-status">
               AUTH:
-              {authLoading
-                ? " VERIFYING"
-                : user
-                ? " OK"
-                : " WAITING"}
+{authLoading
+  ? " VERIFYING"
+  : isAuthenticated
+  ? " OK"
+  : " WAITING"}
               <br />
               DATABASE:
               {dataLoading
