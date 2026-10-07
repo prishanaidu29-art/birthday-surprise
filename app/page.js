@@ -1,4024 +1,2911 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
-export const dynamic = 'force-dynamic'
-
-/*
-===========================================================
-  CLAR BIRTHDAY ARCHIVE
-  app/page.js
-
-  EVERYTHING FOR THE FRONT PAGE + PASSWORD + LOADING SCREEN
-  LIVES IN THIS ONE FILE.
-
-  PUT YOUR REAL FILES IN:
-
-  /public/birthday/
-
-  Example:
-  /public/birthday/clar1.jpg
-  /public/birthday/clar2.jpg
-  /public/birthday/song.mp3
-  /public/birthday/background.mp4
-  /public/birthday/friend1.mp3
-===========================================================
-*/
-
+export const dynamic = "force-dynamic";
 
 /* =========================================================
-   📸 ADD YOUR PHOTOS HERE
+   ✦✦✦ CHANGE YOUR FILES HERE ✦✦✦
+   Put your files inside /public/media/
    ========================================================= */
 
-const PHOTOS = [
-  '/birthday/clar1.jpg',
-  '/birthday/clar2.jpg',
-  '/birthday/clar3.jpg',
-  '/birthday/clar4.jpg',
-  '/birthday/clar5.jpg',
-]
+const BIRTHDAY_PASSWORD = "clar";
+
+const MEDIA = {
+  song: "/media/birthday-song.mp3",
+  video: "/media/background-video.mp4",
+  friendVoice: "/media/friend-voice.mp3",
+
+  photos: [
+    "/media/photos/01.jpg",
+    "/media/photos/02.jpg",
+    "/media/photos/03.jpg",
+    "/media/photos/04.jpg",
+    "/media/photos/05.jpg",
+    "/media/photos/06.jpg",
+  ],
+};
 
 /* =========================================================
-   🎵 ADD YOUR MUSIC HERE
+   MAIN PAGE
    ========================================================= */
 
-const MUSIC_FILE = '/birthday/song.mp3'
+export default function Home() {
+  const router = useRouter();
 
-/* =========================================================
-   🎬 ADD YOUR VIDEO HERE
-   ========================================================= */
+  const [phase, setPhase] = useState("desktop");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingPhoto, setLoadingPhoto] = useState(0);
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [voicePlaying, setVoicePlaying] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [clock, setClock] = useState("");
 
-const VIDEO_FILE = '/birthday/background.mp4'
+  const musicRef = useRef(null);
+  const voiceRef = useRef(null);
+  const videoRef = useRef(null);
 
-/* =========================================================
-   🎙️ ADD FRIEND RECORDINGS HERE
-   ========================================================= */
-
-const RECORDINGS = {
-  friend1: '/birthday/friend1.mp3',
-  friend2: '/birthday/friend2.mp3',
-}
-
-/* =========================================================
-   🔐 CHANGE PASSWORD HERE
-   ========================================================= */
-
-const PASSWORD = 'clar'
-
-/* =========================================================
-   LOADING MESSAGES
-   ========================================================= */
-
-const LOADING_MESSAGES = [
-  'BOOTING CLAR_ARCHIVE...',
-  'LOCATING QUESTIONABLE MEMORIES...',
-  'LOADING FEETGANG.EXE...',
-  'SEARCHING FOR EVIDENCE...',
-  'RECOVERING LOST FILES...',
-  'CHECKING THE EGGS...',
-  'LOADING FRIENDS...',
-  'RECONSTRUCTING CHAOS...',
-  'ACCESSING BIRTHDAY DATA...',
-  'ALMOST THERE...',
-  'ARCHIVE READY.',
-]
-
-
-export default function HomePage() {
-
-  const router = useRouter()
-
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-
-  const [stage, setStage] = useState('desktop')
-  // desktop → loading → done
-
-  const [progress, setProgress] = useState(0)
-  const [loadingMessage, setLoadingMessage] = useState(
-    LOADING_MESSAGES[0]
-  )
-
-  const [photoIndex, setPhotoIndex] = useState(0)
-
-  const [musicPlaying, setMusicPlaying] = useState(false)
-  const [recordingPlaying, setRecordingPlaying] = useState(false)
-
-  const [audioElement, setAudioElement] = useState(null)
-  const [recordingElement, setRecordingElement] = useState(null)
-
-  const [bootTime] = useState(() => Date.now())
-
-
-  /* =========================================================
-     CURRENT PHOTO
-     ========================================================= */
-
-  const currentPhoto = useMemo(() => {
-    if (!PHOTOS.length) return null
-    return PHOTOS[photoIndex % PHOTOS.length]
-  }, [photoIndex])
-
-
-  /* =========================================================
-     PHOTO SLIDESHOW DURING LOADING
-     ========================================================= */
+  /* ---------------- CLOCK ---------------- */
 
   useEffect(() => {
+    const updateClock = () => {
+      setClock(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      );
+    };
 
-    if (stage !== 'loading') return
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
 
-    const interval = setInterval(() => {
+    return () => clearInterval(interval);
+  }, []);
 
-      setPhotoIndex((previous) => {
-
-        if (!PHOTOS.length) return 0
-
-        return (previous + 1) % PHOTOS.length
-
-      })
-
-    }, 650)
-
-    return () => clearInterval(interval)
-
-  }, [stage])
-
-
-  /* =========================================================
-     LOADING PROGRESS
-     ========================================================= */
+  /* ---------------- PHOTO ROTATION ---------------- */
 
   useEffect(() => {
-
-    if (stage !== 'loading') return
-
-    setProgress(0)
-
-    let value = 0
+    if (MEDIA.photos.length <= 1) return;
 
     const interval = setInterval(() => {
+      setPhotoIndex((current) => (current + 1) % MEDIA.photos.length);
+    }, 3500);
 
-      value += Math.floor(Math.random() * 7) + 2
+    return () => clearInterval(interval);
+  }, []);
 
-      if (value >= 100) {
-        value = 100
-        clearInterval(interval)
+  /* =====================================================
+     PASSWORD → LOADING SCREEN
+     ===================================================== */
+
+  const enterArchive = async (event) => {
+    event.preventDefault();
+
+    setPasswordError("");
+
+    if (password.trim().toLowerCase() !== BIRTHDAY_PASSWORD.toLowerCase()) {
+      setPasswordError("incorrect password... try again 👀");
+      return;
+    }
+
+    /*
+      IMPORTANT:
+      This happens inside the button click / form submit.
+      That means browsers are much more likely to allow
+      audio playback here.
+    */
+
+    try {
+      if (musicRef.current) {
+        musicRef.current.volume = 0.35;
+        await musicRef.current.play();
+        setMusicPlaying(true);
+      }
+    } catch {
+      // Browser may block audio. User can still press play manually.
+    }
+
+    try {
+      if (videoRef.current) {
+        videoRef.current.play();
+      }
+    } catch {
+      // Ignore video autoplay errors.
+    }
+
+    sessionStorage.setItem("birthday_authenticated", "true");
+
+    /* THIS is the important part */
+    setPhase("loading");
+    setLoadingProgress(0);
+    setLoadingPhoto(0);
+  };
+
+  /* =====================================================
+     GRAPHICAL LOADING SCREEN
+     ===================================================== */
+
+  useEffect(() => {
+    if (phase !== "loading") return;
+
+    let progress = 0;
+
+    const progressTimer = setInterval(() => {
+      progress += 1.6;
+
+      setLoadingProgress(Math.min(progress, 100));
+
+      if (Math.floor(progress) % 17 === 0) {
+        setLoadingPhoto((current) => (current + 1) % 6);
+      }
+
+      if (progress >= 100) {
+        clearInterval(progressTimer);
 
         setTimeout(() => {
-          setStage('done')
-
-          sessionStorage.setItem(
-            'birthday_authenticated',
-            'true'
-          )
-
-          router.push('/birthday')
-
-        }, 700)
+          router.push("/birthday");
+        }, 1000);
       }
+    }, 55);
 
-      setProgress(value)
+    const photoTimer = setInterval(() => {
+      setLoadingPhoto((current) => (current + 1) % 6);
+    }, 800);
 
-      const messageIndex = Math.min(
-        LOADING_MESSAGES.length - 1,
-        Math.floor(value / 10)
-      )
+    return () => {
+      clearInterval(progressTimer);
+      clearInterval(photoTimer);
+    };
+  }, [phase, router]);
 
-      setLoadingMessage(
-        LOADING_MESSAGES[messageIndex]
-      )
-
-    }, 120)
-
-    return () => clearInterval(interval)
-
-  }, [stage, router])
-
-
-  /* =========================================================
+  /* =====================================================
      MUSIC
-     ========================================================= */
+     ===================================================== */
 
-  const toggleMusic = () => {
-
-    if (!MUSIC_FILE) return
-
-    if (!audioElement) {
-
-      const audio = new Audio(MUSIC_FILE)
-
-      audio.loop = true
-      audio.volume = 0.55
-
-      audio.play()
-        .then(() => {
-          setAudioElement(audio)
-          setMusicPlaying(true)
-        })
-        .catch(() => {
-          setMusicPlaying(false)
-        })
-
-      return
-    }
+  const toggleMusic = async () => {
+    if (!musicRef.current) return;
 
     if (musicPlaying) {
-
-      audioElement.pause()
-      setMusicPlaying(false)
-
+      musicRef.current.pause();
+      setMusicPlaying(false);
     } else {
-
-      audioElement.play()
-        .then(() => setMusicPlaying(true))
-        .catch(() => {})
-
-    }
-  }
-
-
-  /* =========================================================
-     FRIEND RECORDING
-     ========================================================= */
-
-  const toggleRecording = () => {
-
-    const file = RECORDINGS.friend1
-
-    if (!file) return
-
-    if (!recordingElement) {
-
-      const audio = new Audio(file)
-
-      audio.volume = 1
-
-      audio.onended = () => {
-        setRecordingPlaying(false)
+      try {
+        await musicRef.current.play();
+        setMusicPlaying(true);
+      } catch {
+        setMusicPlaying(false);
       }
-
-      audio.play()
-        .then(() => {
-          setRecordingElement(audio)
-          setRecordingPlaying(true)
-        })
-        .catch(() => {
-          setRecordingPlaying(false)
-        })
-
-      return
     }
+  };
 
-    if (recordingPlaying) {
+  /* =====================================================
+     FRIEND VOICE
+     ===================================================== */
 
-      recordingElement.pause()
-      setRecordingPlaying(false)
+  const toggleVoice = async () => {
+    if (!voiceRef.current) return;
 
+    if (voicePlaying) {
+      voiceRef.current.pause();
+      setVoicePlaying(false);
     } else {
-
-      recordingElement.play()
-        .then(() => setRecordingPlaying(true))
-        .catch(() => {})
-
+      try {
+        await voiceRef.current.play();
+        setVoicePlaying(true);
+      } catch {
+        setVoicePlaying(false);
+      }
     }
-  }
+  };
 
-
-  /* =========================================================
-     PASSWORD
-     ========================================================= */
-
-  const handlePassword = (event) => {
-
-    event.preventDefault()
-
-    if (
-      password.trim().toLowerCase() ===
-      PASSWORD.toLowerCase()
-    ) {
-
-      setError('')
-      setStage('loading')
-
-    } else {
-
-      setError('WRONG PASSWORD. NICE TRY THOUGH.')
-
-      setPassword('')
-
-    }
-  }
-
-
-  /* =========================================================
+  /* =====================================================
      LOADING SCREEN
-     ========================================================= */
+     ===================================================== */
 
-  if (stage === 'loading') {
-
+  if (phase === "loading") {
     return (
+      <>
+        <div className="loading-screen">
 
-      <main className="loading-screen">
+          {/* BACKGROUND GRID */}
+          <div className="loading-grid" />
 
-        <div className="crt-noise" />
-        <div className="scanlines" />
+          {/* CRT EFFECTS */}
+          <div className="loading-scanlines" />
+          <div className="loading-noise" />
 
-        <div className="loading-grid" />
-
-        {/* floating decorations */}
-
-        <div className="floating-star star-one">✦</div>
-        <div className="floating-star star-two">✧</div>
-        <div className="floating-star star-three">★</div>
-
-        <div className="loading-top">
-
-          <span>CLAR_OS</span>
-
-          <span>
-            SYSTEM TIME // {new Date().toLocaleTimeString()}
-          </span>
-
-        </div>
-
-
-        <section className="loading-window">
-
-          <div className="window-bar">
-
-            <div className="window-title">
-              <span className="window-icon">◈</span>
-              CLAR_BIRTHDAY_ARCHIVE.EXE
-            </div>
-
-            <div className="window-controls">
-              <span>—</span>
-              <span>□</span>
-              <span>×</span>
-            </div>
-
+          {/* CORNER LABELS */}
+          <div className="load-corner load-top-left">
+            CLAR_OS // BOOT SEQUENCE
           </div>
 
+          <div className="load-corner load-top-right">
+            ARCHIVE 001
+          </div>
 
-          <div className="loading-content">
+          <div className="load-corner load-bottom-left">
+            DO NOT TURN OFF COMPUTER
+          </div>
 
-            <div className="loading-left">
+          <div className="load-corner load-bottom-right">
+            1999—∞
+          </div>
 
-              <div className="boot-label">
-                SYSTEM BOOT
+          {/* MAIN LOADING WINDOW */}
+
+          <div className="loading-window">
+
+            <div className="loading-window-bar">
+              <span>CLAR_ARCHIVE.EXE</span>
+
+              <div className="window-buttons">
+                <span>—</span>
+                <span>□</span>
+                <span>×</span>
+              </div>
+            </div>
+
+            <div className="loading-content">
+
+              {/* TOP STATUS */}
+
+              <div className="loading-status">
+                <span className="status-dot" />
+                CONNECTION ESTABLISHED
               </div>
 
-              <h1
-                className="glitch"
-                data-text="ACCESSING"
-              >
-                ACCESSING
-              </h1>
+              <div className="loading-title">
+                <span className="title-small">WELCOME TO</span>
+                <span className="title-big">CLAR'S</span>
+                <span className="title-big outline">ARCHIVE</span>
+              </div>
 
-              <h2>
-                CLAR'S ARCHIVE
-              </h2>
+              {/* PHOTO STACK */}
 
-              <div className="terminal">
+              <div className="loading-photo-zone">
 
-                <div>
-                  &gt; {loadingMessage}
+                <div className="photo-shadow-card" />
+
+                <div className="loading-photo-card card-back">
+                  <div className="fake-photo">
+                    <div className="fake-sun" />
+                    <div className="fake-person" />
+                    <div className="fake-ground" />
+                  </div>
                 </div>
 
-                <div>
-                  &gt; MEMORY_INDEX:
-                  {' '}
-                  {String(
-                    Math.min(
-                      99,
-                      Math.floor(progress * 0.99)
-                    )
-                  ).padStart(2, '0')}
+                <div className="loading-photo-card">
+
+                  {MEDIA.photos[loadingPhoto] ? (
+                    <img
+                      src={MEDIA.photos[loadingPhoto]}
+                      alt=""
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.parentElement.classList.add(
+                          "photo-fallback"
+                        );
+                      }}
+                    />
+                  ) : (
+                    <div className="fake-photo">
+                      <div className="fake-sun" />
+                      <div className="fake-person" />
+                      <div className="fake-ground" />
+                    </div>
+                  )}
+
+                  <div className="photo-fallback-content">
+                    <span>PHOTO</span>
+                    <strong>
+                      {String(loadingPhoto + 1).padStart(2, "0")}
+                    </strong>
+                  </div>
+
+                  <div className="photo-caption">
+                    FOUND IN MEMORY CACHE
+                  </div>
                 </div>
 
-                <div>
-                  &gt; STATUS:
-                  {' '}
-                  <span className="lime">
-                    {progress >= 100
-                      ? 'COMPLETE'
-                      : 'READING'}
-                  </span>
-                </div>
-
-                <div className="terminal-cursor">
-                  █
+                <div className="photo-number">
+                  {String(loadingPhoto + 1).padStart(2, "0")} / 06
                 </div>
 
               </div>
 
+              {/* RANDOM LITTLE NOTES */}
 
-              {/* progress */}
+              <div className="loading-note note-one">
+                ♡ precious memories detected
+              </div>
 
-              <div className="progress-wrapper">
+              <div className="loading-note note-two">
+                !! questionable files detected
+              </div>
 
-                <div className="progress-header">
+              <div className="loading-note note-three">
+                [ DO NOT DELETE ]
+              </div>
 
-                  <span>
-                    LOADING FILES
-                  </span>
+              {/* TERMINAL */}
 
-                  <span>
-                    {progress}%
-                  </span>
+              <div className="loading-terminal">
 
+                <div>
+                  <span className="terminal-green">OK</span>
+                  &nbsp; locating birthday archive...
+                </div>
+
+                <div>
+                  <span className="terminal-green">OK</span>
+                  &nbsp; checking memories...
+                </div>
+
+                <div>
+                  <span className="terminal-green">OK</span>
+                  &nbsp; checking embarrassing photos...
+                </div>
+
+                <div>
+                  <span className="terminal-yellow">!!</span>
+                  &nbsp; excessive nonsense detected
+                </div>
+
+                <div>
+                  <span className="terminal-green">OK</span>
+                  &nbsp; continuing anyway...
+                </div>
+
+              </div>
+
+              {/* PROGRESS */}
+
+              <div className="progress-area">
+
+                <div className="progress-label">
+                  <span>LOADING ARCHIVE</span>
+                  <strong>
+                    {Math.floor(loadingProgress)
+                      .toString()
+                      .padStart(3, "0")}
+                    %
+                  </strong>
                 </div>
 
                 <div className="progress-track">
-
                   <div
                     className="progress-fill"
                     style={{
-                      width: `${progress}%`
+                      width: `${loadingProgress}%`,
                     }}
                   />
 
+                  <div className="progress-shine" />
+                </div>
+
+                <div className="progress-blocks">
+                  {Array.from({ length: 24 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className={
+                        loadingProgress >
+                        (index / 24) * 100
+                          ? "active"
+                          : ""
+                      }
+                    />
+                  ))}
                 </div>
 
               </div>
 
+              <div className="loading-bottom-text">
+                <span>PLEASE WAIT</span>
 
-              {/* fake file activity */}
-
-              <div className="file-activity">
-
-                <div>
-                  <span className="dot pink" />
-                  PHOTO_DATABASE
-                  <span>OK</span>
-                </div>
-
-                <div>
-                  <span className="dot blue" />
-                  CHAOS_FILES
-                  <span>OK</span>
-                </div>
-
-                <div>
-                  <span className="dot yellow" />
-                  FRIEND_RECORDINGS
-                  <span>OK</span>
-                </div>
-
-                <div>
-                  <span className="dot lime" />
-                  BIRTHDAY_PROTOCOL
-                  <span>OK</span>
-                </div>
-
+                <span className="loading-dots">
+                  <i>.</i>
+                  <i>.</i>
+                  <i>.</i>
+                </span>
               </div>
 
             </div>
-
-
-            {/* PHOTO REEL */}
-
-            <div className="loading-right">
-
-              <div className="photo-reel-label">
-                MEMORY BUFFER
-              </div>
-
-              <div className="photo-reel">
-
-                {currentPhoto ? (
-
-                  <img
-                    key={currentPhoto}
-                    src={currentPhoto}
-                    alt="Loading memory"
-                    className="loading-photo"
-                  />
-
-                ) : (
-
-                  <div className="photo-placeholder">
-                    NO PHOTO
-                  </div>
-
-                )}
-
-                <div className="photo-overlay">
-                  REC
-                </div>
-
-                <div className="photo-counter">
-                  IMG_
-                  {String(photoIndex + 1).padStart(3, '0')}
-                </div>
-
-              </div>
-
-
-              <div className="mini-film">
-
-                {[0, 1, 2, 3, 4].map((item) => {
-
-                  const image =
-                    PHOTOS[
-                      (photoIndex + item) %
-                      PHOTOS.length
-                    ]
-
-                  return (
-
-                    <div
-                      key={item}
-                      className="film-frame"
-                    >
-
-                      {image ? (
-
-                        <img
-                          src={image}
-                          alt=""
-                        />
-
-                      ) : (
-
-                        <span>
-                          ?
-                        </span>
-
-                      )}
-
-                    </div>
-
-                  )
-
-                })}
-
-              </div>
-
-            </div>
-
           </div>
 
+          {/* FLOATING OBJECTS */}
 
-          <div className="loading-footer">
-
-            <span>
-              © DVA SYSTEMS
-            </span>
-
-            <span>
-              DO NOT PANIC
-            </span>
-
-            <span>
-              PLEASE WAIT...
-            </span>
-
+          <div className="floating-disc">
+            <div className="disc-hole" />
+            <div className="disc-label">CLAR</div>
           </div>
 
-        </section>
+          <div className="floating-star star-one">✦</div>
+          <div className="floating-star star-two">✧</div>
+          <div className="floating-star star-three">★</div>
 
+          <div className="floating-label label-one">
+            MEMORY
+          </div>
 
-        {/* spinning CD */}
-
-        <div className="loading-cd">
-
-          <div className="cd-inner">
-            CLAR
+          <div className="floating-label label-two">
+            BIRTHDAY!
           </div>
 
         </div>
 
-
-        <div className="loading-status">
-          PLEASE WAIT
-          <span>●</span>
-          <span>●</span>
-          <span>●</span>
-        </div>
-
-      </main>
-
-    )
+        <style jsx global>{loadingStyles}</style>
+      </>
+    );
   }
 
-
-  /* =========================================================
-     MAIN STARTING DESKTOP
-     ========================================================= */
+  /* =====================================================
+     MAIN DESKTOP
+     ===================================================== */
 
   return (
-
     <main className="desktop">
 
-      <div className="crt-noise" />
+      {/* AUDIO */}
+
+      <audio
+        ref={musicRef}
+        src={MEDIA.song}
+        loop
+        preload="metadata"
+        onEnded={() => setMusicPlaying(false)}
+      />
+
+      <audio
+        ref={voiceRef}
+        src={MEDIA.friendVoice}
+        preload="metadata"
+        onEnded={() => setVoicePlaying(false)}
+      />
+
+      {/* BACKGROUND VIDEO */}
+
+      <video
+        ref={videoRef}
+        className="background-video"
+        src={MEDIA.video}
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+
+      <div className="desktop-overlay" />
       <div className="scanlines" />
 
-      {/* =====================================================
-          TOP SYSTEM BAR
-          ===================================================== */}
+      {/* TOP COMPUTER BAR */}
 
-      <div className="system-bar">
+      <header className="topbar">
 
-        <div>
-          CLAR_OS
+        <div className="computer-name">
+          <span className="computer-dot" />
+          CLAR'S COMPUTER
         </div>
 
-        <div className="system-center">
-          BIRTHDAY_ARCHIVE // 2004—2026
+        <div className="topbar-center">
+          <span>PRIVATE SYSTEM</span>
+          <span>•</span>
+          <span>USER: CLAR</span>
         </div>
 
-        <div>
-          <span className="online-dot" />
-          ONLINE
+        <div className="clock">
+          {clock || "12:00 PM"}
         </div>
 
-      </div>
+      </header>
 
+      {/* DESKTOP CONTENT */}
 
-      {/* =====================================================
-          BACKGROUND VIDEO
-          ===================================================== */}
+      <section className="desktop-stage">
 
-      {VIDEO_FILE && (
+        {/* FLOATING DECOR */}
 
-        <video
-          className="background-video"
-          src={VIDEO_FILE}
-          autoPlay
-          muted
-          loop
-          playsInline
-        />
+        <div className="desktop-sticker sticker-a">
+          ♡
+        </div>
 
-      )}
+        <div className="desktop-sticker sticker-b">
+          ★
+        </div>
 
+        <div className="desktop-sticker sticker-c">
+          !!
+        </div>
 
-      {/* =====================================================
-          BACKGROUND GRAPHICS
-          ===================================================== */}
+        <div className="desktop-label label-a">
+          PRIVATE :)
+        </div>
 
-      <div className="background-shapes">
+        <div className="desktop-label label-b">
+          DO NOT TOUCH
+        </div>
 
-        <div className="shape shape-one" />
-        <div className="shape shape-two" />
-        <div className="shape shape-three" />
+        {/* INTRO */}
 
-      </div>
+        <div className="intro-text">
 
+          <div className="tiny-system">
+            SYSTEM MESSAGE // 001
+          </div>
 
-      {/* =====================================================
-          FLOATING PIXELS
-          ===================================================== */}
+          <h1>
+            yayyy happy birthday
+            <br />
+            <span>Clar ♡</span>
+          </h1>
 
-      <div className="pixel pixel-1">✦</div>
-      <div className="pixel pixel-2">✧</div>
-      <div className="pixel pixel-3">★</div>
-      <div className="pixel pixel-4">+</div>
-      <div className="pixel pixel-5">×</div>
-      <div className="pixel pixel-6">◆</div>
+          <p>
+            if you see this it means the website is working
+            <br />
+            (thank god)
+            <br />
+            now you just need to enter the password to enter.
+            <br />
+            Good luck !
+          </p>
 
+        </div>
 
-      {/* =====================================================
-          MAIN DESKTOP
-          ===================================================== */}
+        {/* FILES */}
 
-      <div className="desktop-area">
+        <div className="files-window window">
 
+          <div className="window-header">
+            <span>FILE EXPLORER</span>
+            <div>— □ ×</div>
+          </div>
 
-        {/* ===================================================
-            NOTES WINDOW
-            =================================================== */}
+          <div className="files-content">
 
-        <section className="window notes-window">
+            <FileItem icon="📁" name="FEETGANG" />
+            <FileItem icon="📁" name="EGGS" />
+            <FileItem icon="📁" name="GRADUATION" />
+            <FileItem icon="📁" name="MEMORIES" />
+            <FileItem icon="📁" name="MESSAGES" />
+            <FileItem icon="📁" name="CHAOS" />
 
-          <div className="window-bar yellow-bar">
+          </div>
 
-            <div>
-              📝 NOTES.EXE
-            </div>
+          <div className="window-status">
+            6 objects
+          </div>
 
-            <div className="window-controls">
-              — □ ×
-            </div>
+        </div>
 
+        {/* NOTES */}
+
+        <div className="notes-window window">
+
+          <div className="window-header note-header">
+            <span>notes.txt</span>
+            <div>×</div>
           </div>
 
           <div className="notes-paper">
 
+            <div className="handwriting">
+              okay so...
+            </div>
+
+            <div className="handwriting large">
+              HAPPY
+              <br />
+              BIRTHDAY
+              <br />
+              CLAR!!!
+            </div>
+
+            <div className="handwriting">
+              ♡ this took way too long
+            </div>
+
             <div className="scribble">
-              YAYYYY
+              ~ ~ ~ ~ ~
             </div>
 
-            <p>
-              happy birthday Clar !!!
-            </p>
-
-            <p>
-              if you're seeing this,
+            <div className="tiny-note">
+              p.s. don't click
               <br />
-              it means the website
-              <br />
-              is actually working
-            </p>
-
-            <p className="small-scribble">
-              (thank god)
-            </p>
-
-            <div className="arrow">
-              ↓↓↓
+              everything :)
             </div>
-
-            <p className="highlight">
-              now enter the password
-            </p>
-
-            <p>
-              good luck lol
-            </p>
 
           </div>
 
-        </section>
+        </div>
 
+        {/* PHOTO APP */}
 
-        {/* ===================================================
-            MUSIC PLAYER
-            =================================================== */}
+        <div className="photo-window window">
 
-        <section className="window music-window">
+          <div className="window-header">
+            <span>PHOTO_VIEWER</span>
+            <div>— □ ×</div>
+          </div>
 
-          <div className="window-bar pink-bar">
+          <div className="photo-viewer">
 
-            <div>
-              💿 MUSIC PLAYER
+            <div className="photo-main">
+
+              {MEDIA.photos[photoIndex] ? (
+                <img
+                  src={MEDIA.photos[photoIndex]}
+                  alt=""
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.parentElement.classList.add(
+                      "photo-empty"
+                    );
+                  }}
+                />
+              ) : (
+                <div className="photo-placeholder">
+                  YOUR PHOTO
+                </div>
+              )}
+
+              <div className="photo-overlay-text">
+                IMG_
+                {String(photoIndex + 1).padStart(2, "0")}
+              </div>
+
             </div>
 
-            <div>
-              ×
+            <div className="photo-controls">
+
+              <button
+                onClick={() =>
+                  setPhotoIndex(
+                    (photoIndex - 1 + MEDIA.photos.length) %
+                      MEDIA.photos.length
+                  )
+                }
+              >
+                ◀
+              </button>
+
+              <span>
+                {photoIndex + 1} / {MEDIA.photos.length}
+              </span>
+
+              <button
+                onClick={() =>
+                  setPhotoIndex(
+                    (photoIndex + 1) % MEDIA.photos.length
+                  )
+                }
+              >
+                ▶
+              </button>
+
             </div>
 
+          </div>
+
+        </div>
+
+        {/* MUSIC PLAYER */}
+
+        <div className="music-window window">
+
+          <div className="window-header">
+            <span>CD PLAYER</span>
+            <div>— □ ×</div>
           </div>
 
           <div className="music-content">
 
             <div
-              className={`cd ${musicPlaying ? 'spinning' : ''}`}
+              className={`cd ${musicPlaying ? "spinning" : ""}`}
               onClick={toggleMusic}
             >
-
-              <div className="cd-label">
-                CLAR
+              <div className="cd-center">
+                ♡
               </div>
-
             </div>
 
             <div className="music-info">
 
-              <div className="now-playing">
+              <div className="music-now">
                 NOW PLAYING
               </div>
 
               <strong>
-                birthday mixtape.mp3
+                birthday soundtrack.mp3
               </strong>
 
-              <span>
-                selected with questionable taste
-              </span>
+              <div className="music-bars">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
 
               <button
+                className="retro-button"
                 onClick={toggleMusic}
-                className="play-button"
               >
-                {musicPlaying
-                  ? '❚❚ PAUSE'
-                  : '▶ PLAY'}
+                {musicPlaying ? "Ⅱ PAUSE" : "▶ PLAY"}
               </button>
 
             </div>
 
           </div>
 
-        </section>
+        </div>
 
+        {/* VIDEO */}
 
-        {/* ===================================================
-            PHOTO WINDOW
-            =================================================== */}
+        <div className="video-window window">
 
-        <section className="window photo-window">
+          <div className="window-header">
+            <span>VIDEO_PLAYER.mov</span>
+            <div>×</div>
+          </div>
 
-          <div className="window-bar blue-bar">
+          <div className="video-content">
 
-            <div>
-              🖼️ PHOTO_VIEWER
+            <video
+              src={MEDIA.video}
+              autoPlay
+              loop
+              muted
+              playsInline
+            />
+
+            <div className="video-rec">
+              ● REC
             </div>
 
-            <div>
-              ×
+            <div className="video-time">
+              00:00:{String(photoIndex).padStart(2, "0")}
             </div>
 
           </div>
 
-          <div className="photo-viewer">
+        </div>
 
-            {currentPhoto ? (
+        {/* VOICE RECORDER */}
 
-              <img
-                src={currentPhoto}
-                alt="Clar memory"
-              />
+        <div className="recorder-window window">
 
-            ) : (
-
-              <div className="image-missing">
-                ADD PHOTOS
-              </div>
-
-            )}
-
-            <div className="photo-stamp">
-              MEMORIES_001
-            </div>
-
+          <div className="window-header">
+            <span>VOICE_RECORDER</span>
+            <div>×</div>
           </div>
 
-          <div className="photo-controls">
+          <div className="recorder-content">
+
+            <div className="recorder-mic">
+              🎙
+            </div>
+
+            <div className="recording-title">
+              A MESSAGE FOR CLAR
+            </div>
+
+            <div className="waveform">
+              {Array.from({ length: 25 }).map((_, i) => (
+                <span
+                  key={i}
+                  style={{
+                    height: `${20 + ((i * 17) % 45)}px`,
+                  }}
+                />
+              ))}
+            </div>
 
             <button
-              onClick={() =>
-                setPhotoIndex(
-                  (photoIndex - 1 + PHOTOS.length) %
-                  PHOTOS.length
-                )
-              }
+              className={`record-button ${
+                voicePlaying ? "playing" : ""
+              }`}
+              onClick={toggleVoice}
             >
-              ◀
-            </button>
-
-            <span>
-              {photoIndex + 1} / {PHOTOS.length}
-            </span>
-
-            <button
-              onClick={() =>
-                setPhotoIndex(
-                  (photoIndex + 1) %
-                  PHOTOS.length
-                )
-              }
-            >
-              ▶
+              {voicePlaying ? "Ⅱ STOP" : "▶ PLAY MESSAGE"}
             </button>
 
           </div>
 
-        </section>
+        </div>
 
+        {/* PASSWORD */}
 
-        {/* ===================================================
-            FILES WINDOW
-            =================================================== */}
+        <div className="password-window">
 
-        <section className="window files-window">
-
-          <div className="window-bar purple-bar">
-
-            <div>
-              📁 MY FILES
-            </div>
-
-            <div>
-              ×
-            </div>
-
+          <div className="password-top">
+            <span>🔐</span>
+            <strong>RESTRICTED AREA</strong>
+            <span>×</span>
           </div>
 
-          <div className="file-grid">
+          <div className="password-inner">
 
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>FEETGANG</span>
-              <small>?? files</small>
+            <div className="password-small">
+              CLAR_ARCHIVE ACCESS
             </div>
 
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>EGGS</span>
-              <small>classified</small>
+            <div className="password-prompt">
+              enter password
             </div>
 
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>GRADUATION</span>
-              <small>memories</small>
-            </div>
+            <form onSubmit={enterArchive}>
 
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>CHAOS</span>
-              <small>danger</small>
-            </div>
-
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>PHOTOS</span>
-              <small>{PHOTOS.length} files</small>
-            </div>
-
-            <div className="file">
-              <div className="folder">📂</div>
-              <span>???</span>
-              <small>locked</small>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            FRIEND RECORDING
-            =================================================== */}
-
-        <section className="window recording-window">
-
-          <div className="window-bar lime-bar">
-
-            <div>
-              🎙️ VOICE_MESSAGE.wav
-            </div>
-
-            <div>
-              ×
-            </div>
-
-          </div>
-
-          <div className="recording-content">
-
-            <div className="cassette">
-
-              <div className="cassette-hole">
-                ●
-              </div>
-
-              <div className="cassette-label">
-                FOR CLAR
-              </div>
-
-              <div className="cassette-hole">
-                ●
-              </div>
-
-            </div>
-
-            <div className="recording-info">
-
-              <span>
-                INCOMING MESSAGE
-              </span>
-
-              <strong>
-                from: one of your idiots
-              </strong>
-
-              <div className="waveform">
-
-                {Array.from({
-                  length: 24
-                }).map((_, index) => (
-
-                  <i
-                    key={index}
-                    style={{
-                      height:
-                        `${20 +
-                          Math.random() * 55}%`
-                    }}
-                  />
-
-                ))}
-
-              </div>
-
-              <button
-                onClick={toggleRecording}
-                className="record-button"
-              >
-                {recordingPlaying
-                  ? '❚❚ STOP MESSAGE'
-                  : '▶ PLAY MESSAGE'}
-              </button>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            PASSWORD WINDOW
-            =================================================== */}
-
-        <section className="password-window">
-
-          <div className="password-header">
-
-            <span>
-              🔐
-            </span>
-
-            <div>
-
-              <small>
-                RESTRICTED ACCESS
-              </small>
-
-              <strong>
-                CLAR_ARCHIVE
-              </strong>
-
-            </div>
-
-            <span>
-              01
-            </span>
-
-          </div>
-
-
-          <div className="password-body">
-
-            <p className="password-intro">
-              yayyy happy birthday Clar !!!
-            </p>
-
-            <p className="password-sub">
-              if you see this it means the website
-              is working (thank god)
-            </p>
-
-            <p className="password-sub">
-              now you just need to enter the password
-              to enter. Good luck !
-            </p>
-
-
-            <form
-              onSubmit={handlePassword}
-              className="password-form"
-            >
-
-              <label>
-                ENTER PASSWORD
-              </label>
-
-              <div className="password-row">
+              <div className="password-input-row">
 
                 <input
                   type="password"
                   value={password}
-                  onChange={(event) =>
-                    setPassword(event.target.value)
-                  }
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
                   placeholder="••••••••"
                   autoComplete="off"
                 />
 
                 <button type="submit">
-                  ENTER →
+                  ENTER ↵
                 </button>
 
               </div>
 
-              {error && (
-
-                <div className="password-error">
-                  ⚠ {error}
-                </div>
-
-              )}
-
             </form>
 
-          </div>
+            {passwordError && (
+              <div className="password-error">
+                {passwordError}
+              </div>
+            )}
 
-        </section>
+            <div className="password-hint">
+              unauthorized people will be judged
+            </div>
 
-
-        {/* ===================================================
-            VHS WINDOW
-            =================================================== */}
-
-        <div className="vhs-overlay">
-
-          <div>
-            PLAY
-          </div>
-
-          <div>
-            SP
-          </div>
-
-          <div>
-            00:19:11
           </div>
 
         </div>
 
+        {/* TASKBAR */}
 
-        {/* ===================================================
-            SMALL SYSTEM WINDOWS
-            =================================================== */}
+        <div className="taskbar">
 
-        <div className="mini-window mini-one">
+          <button className="start-button">
+            ◈ START
+          </button>
 
-          <div className="mini-title">
-            SYSTEM
+          <div className="task-item">
+            📁 CLAR_ARCHIVE
           </div>
 
-          <div>
-            MEMORY: 99%
+          <div className="task-item">
+            💿 MUSIC
           </div>
 
-          <div>
-            CHAOS: HIGH
+          <div className="task-item">
+            📷 PHOTOS
           </div>
 
-        </div>
+          <div className="task-spacer" />
 
-
-        <div className="mini-window mini-two">
-
-          <div className="mini-title">
-            WARNING
-          </div>
-
-          <div className="warning-text">
-            TOO MUCH LOVE
+          <div className="task-status">
+            ● SYSTEM OK
           </div>
 
         </div>
 
+      </section>
 
-      </div>
+      {/* HIDDEN AUDIO ELEMENTS */}
 
-
-      {/* =====================================================
-          BOTTOM DOCK
-          ===================================================== */}
-
-      <div className="bottom-dock">
-
-        <span>
-          ◉ CLAR_OS
-        </span>
-
-        <span>
-          📁
-        </span>
-
-        <span>
-          💿
-        </span>
-
-        <span>
-          🎞️
-        </span>
-
-        <span>
-          ♡
-        </span>
-
-        <span className="dock-time">
-          19:11:04
-        </span>
-
-      </div>
-
-
-      {/* =====================================================
-          GLOBAL STYLES
-          ===================================================== */}
-
-      <style jsx global>{`
-
-        * {
-          box-sizing: border-box;
-        }
-
-        html,
-        body {
-          margin: 0;
-          padding: 0;
-          background: #8f8bd8;
-        }
-
-        body {
-          overflow-x: hidden;
-        }
-
-        button,
-        input {
-          font: inherit;
-        }
-
-
-        /* =====================================================
-           DESKTOP
-           ===================================================== */
-
-        .desktop {
-          min-height: 100vh;
-          position: relative;
-          overflow: hidden;
-
-          color: #17152b;
-
-          background:
-            radial-gradient(
-              circle at 15% 20%,
-              #b9f5ff 0%,
-              transparent 24%
-            ),
-            radial-gradient(
-              circle at 85% 15%,
-              #ff83cf 0%,
-              transparent 22%
-            ),
-            radial-gradient(
-              circle at 70% 80%,
-              #b7ff88 0%,
-              transparent 22%
-            ),
-            linear-gradient(
-              135deg,
-              #8c89dc,
-              #aaa5ee 40%,
-              #77c9df 100%
-            );
-        }
-
-
-        /* =====================================================
-           CRT EFFECT
-           ===================================================== */
-
-        .crt-noise {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          z-index: 100;
-          opacity: .13;
-
-          background-image:
-            repeating-radial-gradient(
-              circle at 20% 30%,
-              rgba(255,255,255,.5) 0,
-              rgba(255,255,255,.5) 1px,
-              transparent 1px,
-              transparent 3px
-            );
-
-          mix-blend-mode: overlay;
-        }
-
-        .scanlines {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          z-index: 101;
-
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              transparent 0,
-              transparent 3px,
-              rgba(20,10,50,.09) 4px
-            );
-
-          opacity: .55;
-        }
-
-
-        /* =====================================================
-           SYSTEM BAR
-           ===================================================== */
-
-        .system-bar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 34px;
-
-          z-index: 80;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          padding: 0 14px;
-
-          background: #17152b;
-          color: #eaffff;
-
-          font-family:
-            "Courier New",
-            monospace;
-
-          font-size: 10px;
-          letter-spacing: .16em;
-
-          border-bottom: 2px solid #ff4ecb;
-        }
-
-        .system-center {
-          color: #75f7ff;
-        }
-
-        .online-dot {
-          display: inline-block;
-          width: 7px;
-          height: 7px;
-          margin-right: 5px;
-
-          border-radius: 50%;
-
-          background: #baff36;
-
-          box-shadow:
-            0 0 8px #baff36;
-        }
-
-
-        /* =====================================================
-           VIDEO
-           ===================================================== */
-
-        .background-video {
-          position: fixed;
-          inset: 0;
-
-          width: 100%;
-          height: 100%;
-
-          object-fit: cover;
-
-          opacity: .16;
-
-          mix-blend-mode: multiply;
-
-          pointer-events: none;
-        }
-
-
-        /* =====================================================
-           BACKGROUND GRAPHICS
-           ===================================================== */
-
-        .background-shapes {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-        }
-
-        .shape {
-          position: absolute;
-
-          border: 2px solid rgba(255,255,255,.35);
-
-          animation:
-            floatShape
-            8s
-            ease-in-out
-            infinite;
-        }
-
-        .shape-one {
-          width: 170px;
-          height: 170px;
-
-          top: 13%;
-          right: 8%;
-
-          border-radius: 50%;
-
-          border-color: #ff4ecb;
-        }
-
-        .shape-two {
-          width: 120px;
-          height: 120px;
-
-          bottom: 13%;
-          left: 5%;
-
-          transform: rotate(45deg);
-
-          border-color: #baff36;
-        }
-
-        .shape-three {
-          width: 80px;
-          height: 80px;
-
-          top: 45%;
-          left: 48%;
-
-          border-color: #75f7ff;
-
-          animation-delay: -3s;
-        }
-
-        @keyframes floatShape {
-
-          0%,
-          100% {
-            transform:
-              translateY(0)
-              rotate(0deg);
-          }
-
-          50% {
-            transform:
-              translateY(-25px)
-              rotate(25deg);
-          }
-
-        }
-
-
-        /* =====================================================
-           DESKTOP AREA
-           ===================================================== */
-
-        .desktop-area {
-          position: relative;
-
-          min-height: 100vh;
-
-          padding:
-            58px
-            20px
-            70px;
-
-          max-width: 1500px;
-
-          margin: auto;
-        }
-
-
-        /* =====================================================
-           WINDOWS
-           ===================================================== */
-
-        .window {
-          position: absolute;
-
-          background: rgba(238,242,255,.92);
-
-          border:
-            2px solid
-            #17152b;
-
-          box-shadow:
-            7px 8px 0
-            rgba(27,20,55,.35),
-
-            0 0 30px
-            rgba(255,255,255,.25);
-
-          backdrop-filter: blur(5px);
-
-          overflow: hidden;
-
-          animation:
-            windowFloat
-            7s
-            ease-in-out
-            infinite;
-        }
-
-        @keyframes windowFloat {
-
-          0%,
-          100% {
-            transform:
-              translateY(0);
-          }
-
-          50% {
-            transform:
-              translateY(-5px);
-          }
-
-        }
-
-
-        .window-bar {
-          height: 30px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          padding: 0 9px;
-
-          font-family:
-            "Courier New",
-            monospace;
-
-          font-size: 10px;
-          font-weight: bold;
-
-          letter-spacing: .08em;
-
-          border-bottom:
-            2px solid
-            #17152b;
-        }
-
-        .yellow-bar {
-          background: #ffe85b;
-        }
-
-        .pink-bar {
-          background: #ff69c7;
-        }
-
-        .blue-bar {
-          background: #67e9ff;
-        }
-
-        .purple-bar {
-          background: #b899ff;
-        }
-
-        .lime-bar {
-          background: #baff36;
-        }
-
-        .window-controls {
-          letter-spacing: 4px;
-        }
-
-
-        /* =====================================================
-           NOTES
-           ===================================================== */
-
-        .notes-window {
-
-          width: 280px;
-
-          top: 90px;
-          left: 4%;
-
-          transform:
-            rotate(-2deg);
-
-          z-index: 12;
-        }
-
-        .notes-paper {
-
-          padding: 20px;
-
-          min-height: 280px;
-
-          background:
-            repeating-linear-gradient(
-              to bottom,
-              #fffbd6 0,
-              #fffbd6 23px,
-              #cdd9e8 24px
-            );
-
-          font-family:
-            "Comic Sans MS",
-            cursive;
-
-          color: #282042;
-
-          font-size: 15px;
-
-          line-height: 23px;
-        }
-
-        .scribble {
-
-          color: #ff3eb5;
-
-          font-size: 30px;
-
-          font-weight: bold;
-
-          transform:
-            rotate(-4deg);
-
-          text-shadow:
-            2px 2px #75f7ff;
-        }
-
-        .small-scribble {
-
-          color: #7e6aa8;
-
-          transform:
-            rotate(2deg);
-        }
-
-        .arrow {
-
-          color: #ff4ecb;
-
-          font-size: 25px;
-        }
-
-        .highlight {
-
-          display: inline;
-
-          background:
-            #baff36;
-
-          padding: 2px 5px;
-
-          transform:
-            rotate(-1deg);
-        }
-
-
-        /* =====================================================
-           MUSIC
-           ===================================================== */
-
-        .music-window {
-
-          width: 340px;
-
-          top: 75px;
-          right: 7%;
-
-          z-index: 15;
-
-          transform:
-            rotate(2deg);
-
-          animation-delay:
-            -2s;
-        }
-
-        .music-content {
-
-          padding: 20px;
-
-          display: flex;
-
-          align-items: center;
-
-          gap: 18px;
-
-          background:
-            linear-gradient(
-              135deg,
-              #f5eaff,
-              #d7faff
-            );
-        }
-
-        .cd {
-
-          width: 105px;
-          height: 105px;
-
-          flex-shrink: 0;
-
-          border-radius: 50%;
-
-          cursor: pointer;
-
-          background:
-            conic-gradient(
-              #ff4ecb,
-              #75f7ff,
-              #baff36,
-              #ffed4f,
-              #ff4ecb
-            );
-
-          border:
-            4px solid
-            #fff;
-
-          box-shadow:
-            0 0 20px
-            rgba(255,78,203,.7);
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .cd::before {
-
-          content: "";
-
-          position: absolute;
-
-          width: 34px;
-          height: 34px;
-
-          border-radius: 50%;
-
-          background:
-            #e8e5ff;
-
-          border:
-            2px solid
-            #17152b;
-        }
-
-        .cd-label {
-
-          z-index: 2;
-
-          font-size: 9px;
-
-          font-weight: bold;
-
-          font-family:
-            monospace;
-
-          color: #17152b;
-        }
-
-        .spinning {
-
-          animation:
-            spinCD
-            2s
-            linear
-            infinite;
-        }
-
-        @keyframes spinCD {
-
-          to {
-            transform:
-              rotate(360deg);
-          }
-
-        }
-
-        .music-info {
-
-          display: flex;
-
-          flex-direction: column;
-
-          gap: 5px;
-
-          font-family:
-            "Courier New",
-            monospace;
-        }
-
-        .now-playing {
-
-          color:
-            #ff2caf;
-
-          font-size:
-            9px;
-
-          letter-spacing:
-            .15em;
-        }
-
-        .music-info strong {
-
-          font-size:
-            13px;
-        }
-
-        .music-info span {
-
-          font-size:
-            9px;
-
-          color:
-            #69627f;
-        }
-
-        .play-button {
-
-          margin-top:
-            8px;
-
-          padding:
-            7px 12px;
-
-          border:
-            2px solid
-            #17152b;
-
-          background:
-            #baff36;
-
-          cursor:
-            pointer;
-
-          font-size:
-            10px;
-
-          font-weight:
-            bold;
-
-          box-shadow:
-            3px 3px 0
-            #17152b;
-        }
-
-        .play-button:active {
-
-          transform:
-            translate(
-              2px,
-              2px
-            );
-
-          box-shadow:
-            1px 1px 0
-            #17152b;
-        }
-
-
-        /* =====================================================
-           PHOTO
-           ===================================================== */
-
-        .photo-window {
-
-          width: 310px;
-
-          top: 330px;
-          left: 9%;
-
-          z-index: 11;
-
-          transform:
-            rotate(1.5deg);
-        }
-
-        .photo-viewer {
-
-          height: 215px;
-
-          padding: 12px;
-
-          position: relative;
-
-          background:
-            #242039;
-
-          overflow: hidden;
-        }
-
-        .photo-viewer img {
-
-          width: 100%;
-          height: 100%;
-
-          object-fit: cover;
-
-          filter:
-            saturate(1.3)
-            contrast(1.08);
-
-          transition:
-            .4s;
-        }
-
-        .photo-viewer img:hover {
-
-          transform:
-            scale(1.05);
-
-        }
-
-        .image-missing {
-
-          width: 100%;
-          height: 100%;
-
-          display: flex;
-          align-items: center;
-          justify-content: center;
-
-          color:
-            #75f7ff;
-
-          font-family:
-            monospace;
-
-          background:
-            repeating-linear-gradient(
-              45deg,
-              #30284d,
-              #30284d 10px,
-              #211b39 10px,
-              #211b39 20px
-            );
-        }
-
-        .photo-stamp {
-
-          position: absolute;
-
-          bottom: 15px;
-          right: 15px;
-
-          padding:
-            4px 7px;
-
-          background:
-            #ff4ecb;
-
-          color:
-            white;
-
-          font:
-            bold 9px monospace;
-
-          transform:
-            rotate(-4deg);
-        }
-
-        .photo-controls {
-
-          display: flex;
-
-          justify-content:
-            space-between;
-
-          align-items:
-            center;
-
-          padding:
-            8px 12px;
-
-          background:
-            #b899ff;
-
-          font:
-            bold 10px monospace;
-        }
-
-        .photo-controls button {
-
-          border:
-            1px solid
-            #17152b;
-
-          background:
-            #75f7ff;
-
-          cursor:
-            pointer;
-
-          padding:
-            3px 9px;
-        }
-
-
-        /* =====================================================
-           FILES
-           ===================================================== */
-
-        .files-window {
-
-          width: 420px;
-
-          bottom: 105px;
-          right: 7%;
-
-          z-index: 13;
-
-          transform:
-            rotate(-1deg);
-        }
-
-        .file-grid {
-
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(3, 1fr);
-
-          gap:
-            12px;
-
-          padding:
-            18px;
-
-          background:
-            #f3efff;
-        }
-
-        .file {
-
-          text-align:
-            center;
-
-          cursor:
-            pointer;
-
-          padding:
-            8px 4px;
-
-          border:
-            1px dashed
-            transparent;
-
-          transition:
-            .2s;
-        }
-
-        .file:hover {
-
-          background:
-            #d9fbff;
-
-          border-color:
-            #ff4ecb;
-
-          transform:
-            translateY(-4px)
-            rotate(-2deg);
-        }
-
-        .folder {
-
-          font-size:
-            34px;
-
-          filter:
-            drop-shadow(
-              2px 2px 0
-              #ff4ecb
-            );
-        }
-
-        .file span {
-
-          display:
-            block;
-
-          font:
-            bold 9px monospace;
-
-          color:
-            #282042;
-        }
-
-        .file small {
-
-          display:
-            block;
-
-          margin-top:
-            3px;
-
-          font:
-            7px monospace;
-
-          color:
-            #756e91;
-        }
-
-
-        /* =====================================================
-           RECORDING
-           ===================================================== */
-
-        .recording-window {
-
-          width:
-            440px;
-
-          bottom:
-            105px;
-
-          left:
-            50%;
-
-          transform:
-            translateX(-50%)
-            rotate(.5deg);
-
-          z-index:
-            20;
-
-          background:
-            #efffe2;
-        }
-
-        .recording-content {
-
-          display:
-            flex;
-
-          gap:
-            20px;
-
-          padding:
-            17px;
-
-          align-items:
-            center;
-        }
-
-        .cassette {
-
-          width:
-            150px;
-
-          height:
-            80px;
-
-          flex-shrink:
-            0;
-
-          background:
-            #27233b;
-
-          border:
-            3px solid
-            #151225;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-around;
-
-          color:
-            #baff36;
-
-          box-shadow:
-            inset 0 0 0 5px
-            #4a4461;
-        }
-
-        .cassette-hole {
-
-          width:
-            27px;
-
-          height:
-            27px;
-
-          border-radius:
-            50%;
-
-          background:
-            #ddd9ec;
-
-          border:
-            5px solid
-            #151225;
-
-          color:
-            #151225;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-        }
-
-        .cassette-label {
-
-          font:
-            bold 9px monospace;
-
-          color:
-            #ff5acb;
-        }
-
-        .recording-info {
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          gap:
-            5px;
-
-          font-family:
-            monospace;
-        }
-
-        .recording-info > span {
-
-          font-size:
-            8px;
-
-          color:
-            #7a35d8;
-        }
-
-        .recording-info strong {
-
-          font-size:
-            10px;
-        }
-
-        .waveform {
-
-          height:
-            32px;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            2px;
-        }
-
-        .waveform i {
-
-          display:
-            block;
-
-          width:
-            3px;
-
-          background:
-            #ff4ecb;
-
-          animation:
-            wave
-            .7s
-            ease-in-out
-            infinite
-            alternate;
-        }
-
-        .waveform i:nth-child(2n) {
-          background:
-            #75f7ff;
-        }
-
-        .waveform i:nth-child(3n) {
-          background:
-            #8d5cff;
-        }
-
-        @keyframes wave {
-
-          from {
-            transform:
-              scaleY(.5);
-          }
-
-          to {
-            transform:
-              scaleY(1.2);
-          }
-
-        }
-
-        .record-button {
-
-          border:
-            2px solid
-            #17152b;
-
-          background:
-            #ff4ecb;
-
-          color:
-            white;
-
-          padding:
-            7px 10px;
-
-          font:
-            bold 9px monospace;
-
-          cursor:
-            pointer;
-
-          box-shadow:
-            3px 3px 0
-            #17152b;
-        }
-
-
-        /* =====================================================
-           PASSWORD
-           ===================================================== */
-
-        .password-window {
-
-          position:
-            absolute;
-
-          width:
-            min(520px, 90vw);
-
-          top:
-            47%;
-
-          left:
-            50%;
-
-          transform:
-            translate(-50%, -50%)
-            rotate(-.7deg);
-
-          z-index:
-            40;
-
-          background:
-            #19162d;
-
-          color:
-            #fff;
-
-          border:
-            3px solid
-            #75f7ff;
-
-          box-shadow:
-            10px 10px 0
-            #ff4ecb,
-
-            -8px -8px 0
-            #baff36,
-
-            0 0 50px
-            rgba(117,247,255,.4);
-        }
-
-        .password-header {
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          padding:
-            12px 15px;
-
-          background:
-            linear-gradient(
-              90deg,
-              #7549ff,
-              #ff3eb5
-            );
-
-          border-bottom:
-            2px solid
-            #75f7ff;
-
-          font-family:
-            monospace;
-        }
-
-        .password-header > span {
-
-          font-size:
-            20px;
-        }
-
-        .password-header div {
-
-          flex:
-            1;
-
-          margin-left:
-            12px;
-        }
-
-        .password-header small {
-
-          display:
-            block;
-
-          font-size:
-            7px;
-
-          color:
-            #baffff;
-
-          letter-spacing:
-            .2em;
-        }
-
-        .password-header strong {
-
-          display:
-            block;
-
-          font-size:
-            15px;
-
-          letter-spacing:
-            .1em;
-        }
-
-        .password-body {
-
-          padding:
-            25px;
-        }
-
-        .password-intro {
-
-          margin:
-            0 0 8px;
-
-          font-family:
-            "Comic Sans MS",
-            cursive;
-
-          font-size:
-            22px;
-
-          color:
-            #ffe95b;
-
-          transform:
-            rotate(-1deg);
-        }
-
-        .password-sub {
-
-          margin:
-            4px 0;
-
-          color:
-            #c8c2df;
-
-          font:
-            11px/1.5
-            "Courier New",
-            monospace;
-        }
-
-        .password-form {
-
-          margin-top:
-            22px;
-        }
-
-        .password-form label {
-
-          display:
-            block;
-
-          margin-bottom:
-            7px;
-
-          color:
-            #75f7ff;
-
-          font:
-            bold 9px monospace;
-
-          letter-spacing:
-            .18em;
-        }
-
-        .password-row {
-
-          display:
-            flex;
-
-          gap:
-            8px;
-        }
-
-        .password-row input {
-
-          min-width:
-            0;
-
-          flex:
-            1;
-
-          border:
-            2px solid
-            #7e67d8;
-
-          background:
-            #0d0b19;
-
-          color:
-            #baff36;
-
-          outline:
-            none;
-
-          padding:
-            12px;
-
-          font:
-            bold 13px monospace;
-
-          box-shadow:
-            inset 0 0 15px
-            rgba(117,247,255,.08);
-        }
-
-        .password-row input:focus {
-
-          border-color:
-            #ff4ecb;
-
-          box-shadow:
-            0 0 12px
-            rgba(255,78,203,.5);
-        }
-
-        .password-row button {
-
-          border:
-            2px solid
-            #17152b;
-
-          background:
-            #baff36;
-
-          color:
-            #17152b;
-
-          padding:
-            0 17px;
-
-          cursor:
-            pointer;
-
-          font:
-            bold 11px monospace;
-
-          box-shadow:
-            4px 4px 0
-            #ff4ecb;
-        }
-
-        .password-row button:hover {
-
-          background:
-            #75f7ff;
-
-          transform:
-            translate(
-              -2px,
-              -2px
-            );
-        }
-
-        .password-error {
-
-          margin-top:
-            10px;
-
-          color:
-            #ff6b6b;
-
-          font:
-            bold 9px monospace;
-
-          animation:
-            glitchText
-            .25s
-            infinite;
-        }
-
-
-        /* =====================================================
-           VHS
-           ===================================================== */
-
-        .vhs-overlay {
-
-          position:
-            fixed;
-
-          right:
-            18px;
-
-          bottom:
-            48px;
-
-          z-index:
-            70;
-
-          display:
-            flex;
-
-          gap:
-            18px;
-
-          color:
-            white;
-
-          font:
-            9px monospace;
-
-          text-shadow:
-            2px 0 #ff4ecb,
-            -2px 0 #75f7ff;
-        }
-
-
-        /* =====================================================
-           MINI WINDOWS
-           ===================================================== */
-
-        .mini-window {
-
-          position:
-            absolute;
-
-          z-index:
-            8;
-
-          padding:
-            9px;
-
-          width:
-            145px;
-
-          background:
-            #ffffe7;
-
-          border:
-            2px solid
-            #17152b;
-
-          box-shadow:
-            4px 4px 0
-            #ff4ecb;
-
-          font:
-            8px/1.7 monospace;
-        }
-
-        .mini-title {
-
-          margin:
-            -9px -9px 7px;
-
-          padding:
-            4px 7px;
-
-          background:
-            #75f7ff;
-
-          border-bottom:
-            2px solid
-            #17152b;
-
-          font-weight:
-            bold;
-        }
-
-        .mini-one {
-
-          top:
-            270px;
-
-          right:
-            25%;
-        }
-
-        .mini-two {
-
-          bottom:
-            200px;
-
-          left:
-            27%;
-        }
-
-        .warning-text {
-
-          color:
-            #ff2faf;
-
-          font-weight:
-            bold;
-
-          animation:
-            blink
-            1s
-            steps(2)
-            infinite;
-        }
-
-
-        /* =====================================================
-           BOTTOM DOCK
-           ===================================================== */
-
-        .bottom-dock {
-
-          position:
-            fixed;
-
-          bottom:
-            0;
-
-          left:
-            0;
-
-          right:
-            0;
-
-          height:
-            32px;
-
-          z-index:
-            90;
-
-          background:
-            #17152b;
-
-          border-top:
-            2px solid
-            #75f7ff;
-
-          color:
-            white;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            20px;
-
-          padding:
-            0 14px;
-
-          font:
-            9px monospace;
-        }
-
-        .dock-time {
-
-          margin-left:
-            auto;
-
-          color:
-            #baff36;
-        }
-
-
-        /* =====================================================
-           PIXELS
-           ===================================================== */
-
-        .pixel {
-
-          position:
-            fixed;
-
-          z-index:
-            5;
-
-          font-size:
-            24px;
-
-          pointer-events:
-            none;
-
-          animation:
-            glitchFloat
-            4s
-            ease-in-out
-            infinite;
-        }
-
-        .pixel-1 {
-          top: 20%;
-          left: 48%;
-          color: #ff4ecb;
-        }
-
-        .pixel-2 {
-          top: 70%;
-          left: 4%;
-          color: #75f7ff;
-        }
-
-        .pixel-3 {
-          top: 35%;
-          right: 4%;
-          color: #baff36;
-        }
-
-        .pixel-4 {
-          bottom: 18%;
-          left: 44%;
-          color: #ffe85b;
-        }
-
-        .pixel-5 {
-          top: 80%;
-          right: 30%;
-          color: #ff4ecb;
-        }
-
-        .pixel-6 {
-          top: 11%;
-          left: 33%;
-          color: #75f7ff;
-        }
-
-        @keyframes glitchFloat {
-
-          0%,
-          100% {
-            transform:
-              translate(0,0)
-              rotate(0deg);
-          }
-
-          30% {
-            transform:
-              translate(5px,-8px)
-              rotate(10deg);
-          }
-
-          55% {
-            transform:
-              translate(-7px,5px)
-              rotate(-7deg);
-          }
-
-        }
-
-
-        /* =====================================================
-           LOADING SCREEN
-           ===================================================== */
-
-        .loading-screen {
-
-          min-height:
-            100vh;
-
-          position:
-            relative;
-
-          overflow:
-            hidden;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          background:
-            radial-gradient(
-              circle at 20% 20%,
-              #ff4ecb 0%,
-              transparent 25%
-            ),
-            radial-gradient(
-              circle at 80% 70%,
-              #75f7ff 0%,
-              transparent 28%
-            ),
-            linear-gradient(
-              135deg,
-              #19152f,
-              #302263,
-              #162c55
-            );
-
-          color:
-            white;
-
-          font-family:
-            "Courier New",
-            monospace;
-        }
-
-        .loading-grid {
-
-          position:
-            absolute;
-
-          inset:
-            0;
-
-          background-image:
-            linear-gradient(
-              rgba(117,247,255,.12) 1px,
-              transparent 1px
-            ),
-            linear-gradient(
-              90deg,
-              rgba(117,247,255,.12) 1px,
-              transparent 1px
-            );
-
-          background-size:
-            35px 35px;
-
-          transform:
-            perspective(400px)
-            rotateX(55deg)
-            scale(2);
-
-          transform-origin:
-            bottom;
-
-          opacity:
-            .5;
-        }
-
-        .loading-top {
-
-          position:
-            absolute;
-
-          top:
-            25px;
-
-          left:
-            30px;
-
-          right:
-            30px;
-
-          display:
-            flex;
-
-          justify-content:
-            space-between;
-
-          color:
-            #75f7ff;
-
-          font-size:
-            9px;
-
-          letter-spacing:
-            .16em;
-        }
-
-        .loading-window {
-
-          width:
-            min(1000px, 92vw);
-
-          position:
-            relative;
-
-          z-index:
-            10;
-
-          border:
-            3px solid
-            #75f7ff;
-
-          background:
-            rgba(16,12,35,.94);
-
-          box-shadow:
-            12px 12px 0
-            #ff4ecb,
-
-            -7px -7px 0
-            #baff36,
-
-            0 0 70px
-            rgba(117,247,255,.35);
-        }
-
-        .loading-content {
-
-          display:
-            grid;
-
-          grid-template-columns:
-            1.2fr .8fr;
-
-          min-height:
-            510px;
-        }
-
-        .loading-left {
-
-          padding:
-            40px;
-
-          border-right:
-            2px solid
-            #4f467a;
-        }
-
-        .boot-label {
-
-          display:
-            inline-block;
-
-          padding:
-            5px 9px;
-
-          background:
-            #ff4ecb;
-
-          color:
-            white;
-
-          font-size:
-            8px;
-
-          font-weight:
-            bold;
-
-          margin-bottom:
-            20px;
-        }
-
-        .loading-left h1 {
-
-          margin:
-            0;
-
-          font-size:
-            clamp(48px, 8vw, 90px);
-
-          line-height:
-            .8;
-
-          letter-spacing:
-            -.07em;
-
-          color:
-            #75f7ff;
-        }
-
-        .loading-left h2 {
-
-          margin:
-            10px 0 30px;
-
-          font-size:
-            clamp(18px, 3vw, 30px);
-
-          color:
-            #ffe85b;
-
-          text-shadow:
-            4px 0 #ff4ecb;
-        }
-
-        .glitch {
-
-          position:
-            relative;
-
-          animation:
-            glitchText
-            2s
-            infinite;
-        }
-
-        @keyframes glitchText {
-
-          0%,
-          90%,
-          100% {
-            transform:
-              translate(0);
-          }
-
-          92% {
-            transform:
-              translate(-4px, 2px);
-
-            text-shadow:
-              4px 0 #ff4ecb,
-              -4px 0 #75f7ff;
-          }
-
-          94% {
-            transform:
-              translate(5px,-2px);
-
-            text-shadow:
-              -5px 0 #ff4ecb,
-              5px 0 #baff36;
-          }
-
-          96% {
-            transform:
-              translate(-2px,0);
-          }
-
-        }
-
-        .terminal {
-
-          padding:
-            16px;
-
-          background:
-            #08070e;
-
-          border:
-            1px solid
-            #594e88;
-
-          color:
-            #a7a0c9;
-
-          font-size:
-            10px;
-
-          line-height:
-            2;
-
-          box-shadow:
-            inset 0 0 30px
-            rgba(117,247,255,.05);
-        }
-
-        .lime {
-          color:
-            #baff36;
-        }
-
-        .terminal-cursor {
-
-          color:
-            #75f7ff;
-
-          animation:
-            blink
-            .7s
-            steps(2)
-            infinite;
-        }
-
-        @keyframes blink {
-
-          50% {
-            opacity:
-              0;
-          }
-
-        }
-
-        .progress-wrapper {
-
-          margin-top:
-            25px;
-        }
-
-        .progress-header {
-
-          display:
-            flex;
-
-          justify-content:
-            space-between;
-
-          margin-bottom:
-            7px;
-
-          font-size:
-            9px;
-
-          color:
-            #75f7ff;
-        }
-
-        .progress-track {
-
-          height:
-            15px;
-
-          border:
-            2px solid
-            #75f7ff;
-
-          background:
-            #090812;
-
-          padding:
-            2px;
-        }
-
-        .progress-fill {
-
-          height:
-            100%;
-
-          background:
-            linear-gradient(
-              90deg,
-              #ff4ecb,
-              #b899ff,
-              #75f7ff,
-              #baff36
-            );
-
-          box-shadow:
-            0 0 15px
-            #75f7ff;
-
-          transition:
-            width .1s linear;
-        }
-
-        .file-activity {
-
-          margin-top:
-            25px;
-
-          display:
-            grid;
-
-          gap:
-            7px;
-
-          font-size:
-            8px;
-
-          color:
-            #827aa4;
-        }
-
-        .file-activity div {
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            8px;
-        }
-
-        .file-activity div span:last-child {
-
-          margin-left:
-            auto;
-
-          color:
-            #baff36;
-        }
-
-        .dot {
-
-          width:
-            6px;
-
-          height:
-            6px;
-
-          border-radius:
-            50%;
-        }
-
-        .pink {
-          background:
-            #ff4ecb;
-        }
-
-        .blue {
-          background:
-            #75f7ff;
-        }
-
-        .yellow {
-          background:
-            #ffe85b;
-        }
-
-        .lime {
-          background:
-            #baff36;
-        }
-
-        .loading-right {
-
-          padding:
-            30px;
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          justify-content:
-            center;
-        }
-
-        .photo-reel-label {
-
-          color:
-            #ff4ecb;
-
-          font-size:
-            9px;
-
-          margin-bottom:
-            10px;
-        }
-
-        .photo-reel {
-
-          height:
-            310px;
-
-          position:
-            relative;
-
-          padding:
-            10px;
-
-          background:
-            #05050a;
-
-          border:
-            3px solid
-            #baff36;
-
-          overflow:
-            hidden;
-
-          box-shadow:
-            0 0 25px
-            rgba(186,255,54,.25);
-        }
-
-        .loading-photo {
-
-          width:
-            100%;
-
-          height:
-            100%;
-
-          object-fit:
-            cover;
-
-          animation:
-            photoFlash
-            .65s
-            steps(2)
-            infinite;
-
-          filter:
-            saturate(1.5)
-            contrast(1.15);
-        }
-
-        @keyframes photoFlash {
-
-          0% {
-            opacity:
-              1;
-          }
-
-          92% {
-            opacity:
-              1;
-          }
-
-          95% {
-            opacity:
-              .3;
-          }
-
-          98% {
-            opacity:
-              1;
-          }
-
-        }
-
-        .photo-placeholder {
-
-          height:
-            100%;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          color:
-            #ff4ecb;
-
-          font-size:
-            20px;
-        }
-
-        .photo-overlay {
-
-          position:
-            absolute;
-
-          top:
-            18px;
-
-          left:
-            18px;
-
-          background:
-            #ff3355;
-
-          color:
-            white;
-
-          padding:
-            4px 7px;
-
-          font-size:
-            8px;
-
-          animation:
-            blink
-            1s
-            steps(2)
-            infinite;
-        }
-
-        .photo-counter {
-
-          position:
-            absolute;
-
-          right:
-            18px;
-
-          bottom:
-            18px;
-
-          padding:
-            4px 7px;
-
-          background:
-            #17152b;
-
-          color:
-            #75f7ff;
-
-          font-size:
-            8px;
-        }
-
-        .mini-film {
-
-          display:
-            flex;
-
-          gap:
-            5px;
-
-          margin-top:
-            8px;
-
-          overflow:
-            hidden;
-        }
-
-        .film-frame {
-
-          width:
-            20%;
-
-          height:
-            55px;
-
-          background:
-            #111;
-
-          border:
-            1px solid
-            #ff4ecb;
-
-          overflow:
-            hidden;
-        }
-
-        .film-frame img {
-
-          width:
-            100%;
-
-          height:
-            100%;
-
-          object-fit:
-            cover;
-        }
-
-        .film-frame span {
-
-          display:
-            flex;
-
-          height:
-            100%;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          color:
-            #75f7ff;
-        }
-
-        .loading-footer {
-
-          height:
-            32px;
-
-          display:
-            flex;
-
-          justify-content:
-            space-between;
-
-          align-items:
-            center;
-
-          padding:
-            0 15px;
-
-          background:
-            #0b0916;
-
-          border-top:
-            2px solid
-            #423a66;
-
-          color:
-            #696182;
-
-          font-size:
-            8px;
-        }
-
-        .loading-cd {
-
-          position:
-            absolute;
-
-          right:
-            8%;
-
-          top:
-            8%;
-
-          width:
-            100px;
-
-          height:
-            100px;
-
-          border-radius:
-            50%;
-
-          background:
-            conic-gradient(
-              #ff4ecb,
-              #75f7ff,
-              #baff36,
-              #ffe85b,
-              #ff4ecb
-            );
-
-          border:
-            4px solid
-            white;
-
-          animation:
-            spinCD
-            3s
-            linear
-            infinite;
-        }
-
-        .cd-inner {
-
-          position:
-            absolute;
-
-          inset:
-            34px;
-
-          border-radius:
-            50%;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            center;
-
-          background:
-            #19152f;
-
-          color:
-            #75f7ff;
-
-          font:
-            bold 8px monospace;
-        }
-
-        .loading-status {
-
-          position:
-            absolute;
-
-          bottom:
-            30px;
-
-          color:
-            #75f7ff;
-
-          font-size:
-            9px;
-
-          letter-spacing:
-            .3em;
-        }
-
-        .loading-status span {
-
-          margin-left:
-            6px;
-
-          animation:
-            blink
-            1s
-            steps(2)
-            infinite;
-        }
-
-        .loading-status span:nth-child(2) {
-          animation-delay:
-            .2s;
-        }
-
-        .loading-status span:nth-child(3) {
-          animation-delay:
-            .4s;
-        }
-
-
-        /* =====================================================
-           LOADING FLOATERS
-           ===================================================== */
-
-        .floating-star {
-
-          position:
-            absolute;
-
-          color:
-            #baff36;
-
-          font-size:
-            35px;
-
-          animation:
-            glitchFloat
-            4s
-            ease-in-out
-            infinite;
-        }
-
-        .star-one {
-          top:
-            25%;
-          left:
-            5%;
-        }
-
-        .star-two {
-          bottom:
-            20%;
-          right:
-            5%;
-          color:
-            #ff4ecb;
-        }
-
-        .star-three {
-          top:
-            65%;
-          left:
-            12%;
-          color:
-            #75f7ff;
-        }
-
-
-        /* =====================================================
-           MOBILE
-           ===================================================== */
-
-        @media (max-width: 800px) {
-
-          .desktop-area {
-            min-height:
-              1250px;
-
-            padding-top:
-              55px;
-          }
-
-          .window {
-            position:
-              absolute;
-          }
-
-          .notes-window {
-            width:
-              190px;
-
-            top:
-              75px;
-
-            left:
-              4%;
-          }
-
-          .notes-paper {
-            min-height:
-              220px;
-
-            padding:
-              13px;
-
-            font-size:
-              11px;
-
-            line-height:
-              18px;
-          }
-
-          .scribble {
-            font-size:
-              20px;
-          }
-
-          .music-window {
-            width:
-              200px;
-
-            top:
-              80px;
-
-            right:
-              3%;
-          }
-
-          .music-content {
-            padding:
-              10px;
-
-            flex-direction:
-              column;
-          }
-
-          .cd {
-            width:
-              70px;
-
-            height:
-              70px;
-          }
-
-          .photo-window {
-            width:
-              220px;
-
-            top:
-              320px;
-
-            left:
-              3%;
-          }
-
-          .photo-viewer {
-            height:
-              150px;
-          }
-
-          .files-window {
-            width:
-              250px;
-
-            bottom:
-              120px;
-
-            right:
-              3%;
-          }
-
-          .file-grid {
-            gap:
-              5px;
-
-            padding:
-              8px;
-          }
-
-          .folder {
-            font-size:
-              25px;
-          }
-
-          .recording-window {
-            width:
-              340px;
-
-            bottom:
-              390px;
-          }
-
-          .recording-content {
-            padding:
-              10px;
-
-            gap:
-              10px;
-          }
-
-          .cassette {
-            width:
-              90px;
-
-            height:
-              55px;
-          }
-
-          .cassette-hole {
-            width:
-              18px;
-
-            height:
-              18px;
-
-            border-width:
-              3px;
-          }
-
-          .cassette-label {
-            font-size:
-              6px;
-          }
-
-          .password-window {
-            top:
-              650px;
-
-            width:
-              92vw;
-
-            transform:
-              translateX(-50%)
-              rotate(-.7deg);
-          }
-
-          .password-body {
-            padding:
-              17px;
-          }
-
-          .password-intro {
-            font-size:
-              18px;
-          }
-
-          .password-row {
-            flex-direction:
-              column;
-          }
-
-          .password-row button {
-            padding:
-              11px;
-          }
-
-          .mini-one {
-            display:
-              none;
-          }
-
-          .mini-two {
-            display:
-              none;
-          }
-
-          .loading-content {
-            grid-template-columns:
-              1fr;
-          }
-
-          .loading-left {
-            border-right:
-              none;
-
-            border-bottom:
-              2px solid
-              #4f467a;
-
-            padding:
-              25px;
-          }
-
-          .loading-right {
-            padding:
-              20px;
-          }
-
-          .photo-reel {
-            height:
-              230px;
-          }
-
-          .loading-cd {
-            width:
-              60px;
-
-            height:
-              60px;
-
-            top:
-              5%;
-
-            right:
-              4%;
-          }
-
-          .cd-inner {
-            inset:
-              20px;
-          }
-
-        }
-
-      `}</style>
+      <style jsx global>{desktopStyles}</style>
 
     </main>
-  )
+  );
 }
+
+/* =========================================================
+   FILE ITEM
+   ========================================================= */
+
+function FileItem({ icon, name }) {
+  return (
+    <div className="file-item">
+      <div className="file-icon">{icon}</div>
+      <div className="file-name">{name}</div>
+    </div>
+  );
+}
+
+/* =========================================================
+   LOADING SCREEN CSS
+   ========================================================= */
+
+const loadingStyles = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Press+Start+2P&family=VT323&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 50% 45%, #7778b5 0%, #555786 28%, #343655 65%, #20223c 100%);
+
+  color: #fff4d6;
+
+  font-family: "DM Mono", monospace;
+}
+
+.loading-grid {
+  position: absolute;
+  inset: -20%;
+  opacity: .22;
+
+  background-image:
+    linear-gradient(rgba(255,255,255,.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.12) 1px, transparent 1px);
+
+  background-size: 45px 45px;
+
+  transform: perspective(500px) rotateX(62deg) scale(1.4);
+  transform-origin: center bottom;
+
+  animation: gridMove 5s linear infinite;
+}
+
+@keyframes gridMove {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 0 45px;
+  }
+}
+
+.loading-scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.025) 0px,
+    rgba(255,255,255,.025) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+
+  mix-blend-mode: overlay;
+}
+
+.loading-noise {
+  position: absolute;
+  inset: -50%;
+  pointer-events: none;
+  z-index: 21;
+
+  opacity: .07;
+
+  background-image:
+    repeating-radial-gradient(
+      circle at 0 0,
+      #fff 0,
+      transparent 1px,
+      transparent 3px
+    );
+
+  background-size: 5px 5px;
+
+  animation: noiseMove .18s steps(2) infinite;
+}
+
+@keyframes noiseMove {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(3%, -2%); }
+  50% { transform: translate(-2%, 3%); }
+  75% { transform: translate(2%, 2%); }
+  100% { transform: translate(-3%, -2%); }
+}
+
+.load-corner {
+  position: absolute;
+  z-index: 30;
+
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+
+  opacity: .65;
+}
+
+.load-top-left {
+  top: 18px;
+  left: 22px;
+}
+
+.load-top-right {
+  top: 18px;
+  right: 22px;
+}
+
+.load-bottom-left {
+  bottom: 18px;
+  left: 22px;
+}
+
+.load-bottom-right {
+  bottom: 18px;
+  right: 22px;
+}
+
+.loading-window {
+  position: absolute;
+
+  width: min(760px, 90vw);
+  min-height: 700px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  background: #252743;
+
+  border: 2px solid #f5e9ca;
+
+  box-shadow:
+    12px 12px 0 rgba(15,17,34,.35),
+    0 0 0 1px #555a8d,
+    0 0 70px rgba(128,131,255,.35);
+
+  animation: windowIn .7s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes windowIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.loading-window-bar {
+  height: 35px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 11px;
+
+  background: #eee2c1;
+  color: #272945;
+
+  font-family: "VT323", monospace;
+  font-size: 20px;
+
+  border-bottom: 2px solid #17182b;
+}
+
+.window-buttons {
+  display: flex;
+  gap: 12px;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+}
+
+.loading-content {
+  position: relative;
+  min-height: 663px;
+  padding: 32px 45px;
+}
+
+.loading-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  font-size: 10px;
+  letter-spacing: 2px;
+
+  color: #baf4a5;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #baf4a5;
+  border-radius: 50%;
+
+  box-shadow: 0 0 14px #baf4a5;
+
+  animation: statusBlink 1s infinite;
+}
+
+@keyframes statusBlink {
+  50% {
+    opacity: .3;
+  }
+}
+
+.loading-title {
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 18px;
+
+  line-height: .78;
+}
+
+.title-small {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  margin-bottom: 12px;
+  opacity: .65;
+}
+
+.title-big {
+  font-family: "Press Start 2P", monospace;
+  font-size: clamp(28px, 5vw, 51px);
+
+  color: #fff0bd;
+
+  text-shadow:
+    4px 4px 0 #464977,
+    0 0 20px rgba(255,240,189,.15);
+
+  animation: titleFlicker 3s infinite;
+}
+
+.title-big.outline {
+  color: transparent;
+  -webkit-text-stroke: 1px #fff0bd;
+
+  margin-left: 32px;
+}
+
+@keyframes titleFlicker {
+  0%, 92%, 100% {
+    opacity: 1;
+  }
+
+  94% {
+    opacity: .4;
+  }
+
+  96% {
+    opacity: 1;
+  }
+}
+
+.loading-photo-zone {
+  position: absolute;
+
+  right: 48px;
+  top: 103px;
+
+  width: 205px;
+  height: 245px;
+}
+
+.loading-photo-card {
+  position: absolute;
+  inset: 0;
+
+  padding: 9px;
+  padding-bottom: 38px;
+
+  background: #f3e8c9;
+
+  color: #252743;
+
+  transform: rotate(3deg);
+
+  box-shadow: 7px 8px 0 rgba(20,20,45,.3);
+
+  overflow: hidden;
+}
+
+.loading-photo-card.card-back {
+  transform: rotate(-8deg) translate(-8px, 8px);
+  background: #dfd4b8;
+}
+
+.loading-photo-card img,
+.fake-photo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  background:
+    linear-gradient(
+      145deg,
+      #d2d6ef,
+      #8d8ebd 48%,
+      #ee916e
+    );
+}
+
+.photo-fallback-content {
+  position: absolute;
+  inset: 9px 9px 38px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,.12) 0,
+      rgba(255,255,255,.12) 3px,
+      transparent 3px,
+      transparent 8px
+    );
+
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+
+  opacity: 0;
+}
+
+.photo-fallback-content strong {
+  font-size: 40px;
+  margin-top: 15px;
+}
+
+.photo-fallback .photo-fallback-content {
+  opacity: 1;
+}
+
+.fake-sun {
+  position: absolute;
+
+  width: 45px;
+  height: 45px;
+
+  border-radius: 50%;
+
+  background: #ffe1a5;
+
+  top: 25px;
+  right: 25px;
+}
+
+.fake-person {
+  position: absolute;
+
+  width: 65px;
+  height: 105px;
+
+  left: 66px;
+  bottom: 20px;
+
+  background: #343655;
+
+  border-radius: 40px 40px 10px 10px;
+}
+
+.fake-ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 32%;
+
+  background: #9e9cc6;
+}
+
+.photo-caption {
+  position: absolute;
+  bottom: 11px;
+  left: 12px;
+
+  font-family: "DM Mono", monospace;
+  font-size: 7px;
+  letter-spacing: 1px;
+}
+
+.photo-number {
+  position: absolute;
+  right: -25px;
+  bottom: 4px;
+
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+
+  transform: rotate(-90deg);
+}
+
+.loading-note {
+  position: absolute;
+
+  padding: 7px 9px;
+
+  background: #d8ff77;
+  color: #282a43;
+
+  font-family: "VT323", monospace;
+  font-size: 16px;
+
+  box-shadow: 4px 4px 0 rgba(0,0,0,.25);
+}
+
+.note-one {
+  right: 29px;
+  top: 365px;
+  transform: rotate(4deg);
+}
+
+.note-two {
+  left: 30px;
+  top: 408px;
+
+  background: #ff9e77;
+
+  transform: rotate(-3deg);
+}
+
+.note-three {
+  right: 80px;
+  top: 420px;
+
+  background: #e4d7ff;
+
+  transform: rotate(5deg);
+}
+
+.loading-terminal {
+  position: absolute;
+
+  left: 45px;
+  bottom: 153px;
+
+  width: 270px;
+
+  font-size: 9px;
+  line-height: 1.8;
+
+  opacity: .82;
+}
+
+.terminal-green {
+  color: #baff98;
+}
+
+.terminal-yellow {
+  color: #ffd36e;
+}
+
+.progress-area {
+  position: absolute;
+
+  left: 45px;
+  right: 45px;
+  bottom: 68px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+
+  margin-bottom: 8px;
+
+  font-size: 9px;
+  letter-spacing: 1px;
+}
+
+.progress-track {
+  position: relative;
+
+  height: 17px;
+
+  border: 1px solid #eee2c1;
+
+  padding: 3px;
+
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #d8ff77 0,
+      #d8ff77 12px,
+      #a7d957 12px,
+      #a7d957 16px
+    );
+
+  transition: width .06s linear;
+}
+
+.progress-shine {
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.4),
+    transparent
+  );
+
+  transform: translateX(-100%);
+
+  animation: shine 1.2s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.progress-blocks {
+  display: flex;
+  gap: 4px;
+
+  margin-top: 7px;
+}
+
+.progress-blocks span {
+  flex: 1;
+  height: 4px;
+
+  background: #464866;
+}
+
+.progress-blocks span.active {
+  background: #d8ff77;
+  box-shadow: 0 0 6px rgba(216,255,119,.4);
+}
+
+.loading-bottom-text {
+  position: absolute;
+
+  left: 45px;
+  right: 45px;
+  bottom: 27px;
+
+  display: flex;
+  justify-content: space-between;
+
+  font-size: 9px;
+  letter-spacing: 2px;
+
+  opacity: .55;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 3px;
+}
+
+.loading-dots i {
+  font-style: normal;
+  animation: dot 1.2s infinite;
+}
+
+.loading-dots i:nth-child(2) {
+  animation-delay: .2s;
+}
+
+.loading-dots i:nth-child(3) {
+  animation-delay: .4s;
+}
+
+@keyframes dot {
+  0%, 100% { opacity: .2; }
+  50% { opacity: 1; }
+}
+
+.floating-disc {
+  position: absolute;
+
+  width: 145px;
+  height: 145px;
+
+  right: 9%;
+  bottom: 9%;
+
+  border-radius: 50%;
+
+  background:
+    repeating-radial-gradient(
+      circle,
+      #d8d9e6 0px,
+      #8e91b8 2px,
+      #d9d9e2 4px
+    );
+
+  border: 5px solid #c5c6d6;
+
+  box-shadow:
+    8px 10px 0 rgba(10,10,25,.25),
+    0 0 30px rgba(255,255,255,.15);
+
+  animation: discFloat 4s ease-in-out infinite;
+}
+
+.disc-hole {
+  position: absolute;
+
+  width: 26px;
+  height: 26px;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #363856;
+
+  border: 7px solid #aeb0ca;
+}
+
+.disc-label {
+  position: absolute;
+
+  left: 50%;
+  top: 25%;
+
+  transform: translateX(-50%);
+
+  font-family: "Press Start 2P", monospace;
+  font-size: 9px;
+
+  color: #363856;
+}
+
+@keyframes discFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(10deg);
+  }
+}
+
+.floating-star {
+  position: absolute;
+
+  color: #d8ff77;
+
+  font-size: 30px;
+
+  animation: starFloat 3s ease-in-out infinite;
+}
+
+.star-one {
+  left: 12%;
+  top: 23%;
+}
+
+.star-two {
+  left: 8%;
+  bottom: 22%;
+
+  animation-delay: .8s;
+}
+
+.star-three {
+  right: 14%;
+  top: 19%;
+
+  animation-delay: 1.5s;
+}
+
+@keyframes starFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: .5;
+  }
+
+  50% {
+    transform: translateY(-13px) rotate(15deg);
+    opacity: 1;
+  }
+}
+
+.floating-label {
+  position: absolute;
+
+  padding: 8px 12px;
+
+  font-family: "VT323", monospace;
+  font-size: 20px;
+
+  background: #ff9e77;
+  color: #272945;
+
+  box-shadow: 5px 5px 0 rgba(0,0,0,.2);
+
+  animation: labelFloat 4s ease-in-out infinite;
+}
+
+.label-one {
+  left: 7%;
+  top: 43%;
+
+  transform: rotate(-7deg);
+}
+
+.label-two {
+  right: 7%;
+  top: 43%;
+
+  background: #d8ff77;
+
+  transform: rotate(7deg);
+
+  animation-delay: 1s;
+}
+
+@keyframes labelFloat {
+  0%, 100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+@media (max-width: 700px) {
+
+  .loading-window {
+    width: 94vw;
+    min-height: 620px;
+  }
+
+  .loading-content {
+    min-height: 583px;
+    padding: 25px;
+  }
+
+  .title-big {
+    font-size: 25px;
+  }
+
+  .loading-photo-zone {
+    right: 22px;
+    top: 125px;
+    width: 145px;
+    height: 175px;
+  }
+
+  .loading-terminal {
+    left: 25px;
+    bottom: 150px;
+    width: 210px;
+    font-size: 7px;
+  }
+
+  .progress-area {
+    left: 25px;
+    right: 25px;
+  }
+
+  .note-one {
+    right: 15px;
+    top: 315px;
+  }
+
+  .note-two {
+    left: 18px;
+    top: 365px;
+  }
+
+  .note-three {
+    display: none;
+  }
+
+  .floating-disc {
+    width: 80px;
+    height: 80px;
+    right: 2%;
+    bottom: 2%;
+  }
+
+  .floating-disc .disc-hole {
+    width: 18px;
+    height: 18px;
+    border-width: 5px;
+  }
+
+  .floating-disc .disc-label {
+    font-size: 6px;
+  }
+
+  .load-corner {
+    font-size: 7px;
+  }
+}
+`;
+
+/* =========================================================
+   DESKTOP CSS
+   ========================================================= */
+
+const desktopStyles = `
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Press+Start+2P&family=VT323&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.desktop {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(circle at 20% 20%, rgba(164,169,255,.5), transparent 28%),
+    radial-gradient(circle at 80% 70%, rgba(255,150,120,.25), transparent 25%),
+    #4a4b77;
+
+  color: #fff0c7;
+
+  font-family: "DM Mono", monospace;
+
+  overflow: hidden;
+
+  position: relative;
+}
+
+.background-video {
+  position: fixed;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  opacity: .14;
+
+  filter:
+    saturate(.8)
+    contrast(1.15)
+    blur(.3px);
+
+  pointer-events: none;
+}
+
+.desktop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      120deg,
+      rgba(91,96,155,.72),
+      rgba(44,45,78,.72)
+    );
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+
+  pointer-events: none;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255,255,255,.025) 0px,
+      rgba(255,255,255,.025) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+}
+
+.topbar {
+  position: relative;
+  z-index: 20;
+
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 16px;
+
+  background: #e8ddbd;
+  color: #292b48;
+
+  border-bottom: 2px solid #20213a;
+
+  font-family: "VT323", monospace;
+  font-size: 20px;
+}
+
+.computer-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.computer-dot {
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #83d26b;
+
+  box-shadow: 0 0 7px #83d26b;
+}
+
+.topbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  gap: 9px;
+
+  font-size: 16px;
+
+  opacity: .65;
+}
+
+.clock {
+  margin-left: auto;
+}
+
+.desktop-stage {
+  position: relative;
+
+  min-height: calc(100vh - 42px);
+
+  max-width: 1500px;
+
+  margin: 0 auto;
+
+  padding: 25px;
+
+  z-index: 10;
+}
+
+.intro-text {
+  position: absolute;
+
+  left: 6%;
+  top: 7%;
+
+  width: 380px;
+
+  z-index: 5;
+
+  animation: introFloat 5s ease-in-out infinite;
+}
+
+@keyframes introFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.tiny-system {
+  font-size: 9px;
+  letter-spacing: 3px;
+
+  opacity: .6;
+
+  margin-bottom: 15px;
+}
+
+.intro-text h1 {
+  margin: 0;
+
+  font-family: "Press Start 2P", monospace;
+
+  font-size: clamp(18px, 2.2vw, 29px);
+
+  line-height: 1.5;
+
+  color: #fff0c7;
+
+  text-shadow:
+    3px 3px 0 #35375d;
+}
+
+.intro-text h1 span {
+  color: #d9ff75;
+}
+
+.intro-text p {
+  font-family: "VT323", monospace;
+
+  font-size: 20px;
+  line-height: 1.1;
+
+  margin-top: 15px;
+
+  color: #e5def0;
+
+  opacity: .9;
+}
+
+.window {
+  position: absolute;
+
+  background: rgba(40,42,70,.95);
+
+  border: 2px solid #e7ddbf;
+
+  box-shadow:
+    8px 9px 0 rgba(20,20,40,.3),
+    0 0 30px rgba(20,20,50,.18);
+
+  overflow: hidden;
+
+  animation: windowFloat 5s ease-in-out infinite;
+}
+
+@keyframes windowFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.window-header {
+  height: 29px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 8px;
+
+  background: #e8ddbd;
+  color: #2b2c49;
+
+  font-family: "VT323", monospace;
+  font-size: 18px;
+
+  border-bottom: 2px solid #20213a;
+}
+
+.window-header div {
+  letter-spacing: 4px;
+}
+
+.files-window {
+  left: 5%;
+  bottom: 17%;
+  width: 280px;
+
+  animation-delay: .5s;
+}
+
+.files-content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 18px;
+
+  padding: 20px 12px;
+}
+
+.file-item {
+  text-align: center;
+
+  cursor: pointer;
+
+  transition: transform .2s;
+}
+
+.file-item:hover {
+  transform: translateY(-5px) rotate(-2deg);
+}
+
+.file-icon {
+  font-size: 38px;
+
+  filter: drop-shadow(3px 3px 0 rgba(0,0,0,.25));
+}
+
+.file-name {
+  margin-top: 5px;
+
+  font-size: 8px;
+
+  word-break: break-word;
+}
+
+.window-status {
+  padding: 5px 8px;
+
+  font-size: 8px;
+
+  border-top: 1px solid rgba(255,255,255,.12);
+
+  opacity: .5;
+}
+
+.notes-window {
+  left: 29%;
+  top: 7%;
+
+  width: 250px;
+
+  transform: rotate(-2deg);
+
+  animation-delay: 1s;
+}
+
+.notes-paper {
+  min-height: 230px;
+
+  padding: 18px;
+
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      #f0e6c9 0,
+      #f0e6c9 23px,
+      #c9c2a9 24px
+    );
+
+  color: #3d3950;
+
+  position: relative;
+}
+
+.handwriting {
+  font-family: "Comic Sans MS", "Bradley Hand", cursive;
+
+  font-size: 17px;
+
+  transform: rotate(-3deg);
+}
+
+.handwriting.large {
+  font-size: 25px;
+
+  font-weight: bold;
+
+  margin: 12px 0;
+
+  transform: rotate(2deg);
+}
+
+.scribble {
+  font-size: 24px;
+
+  margin-top: 10px;
+
+  transform: rotate(-4deg);
+}
+
+.tiny-note {
+  position: absolute;
+
+  bottom: 9px;
+  right: 10px;
+
+  font-family: "Comic Sans MS", cursive;
+
+  font-size: 10px;
+
+  transform: rotate(4deg);
+}
+
+.photo-window {
+  right: 5%;
+  top: 8%;
+
+  width: 320px;
+
+  animation-delay: .8s;
+}
+
+.photo-viewer {
+  padding: 12px;
+}
+
+.photo-main {
+  position: relative;
+
+  width: 100%;
+  height: 220px;
+
+  background:
+    linear-gradient(135deg, #8789b9, #b6a9c8 50%, #d8846c);
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-main img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.photo-placeholder {
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+
+  opacity: .7;
+}
+
+.photo-overlay-text {
+  position: absolute;
+
+  bottom: 7px;
+  left: 7px;
+
+  padding: 3px 5px;
+
+  background: rgba(25,25,40,.7);
+
+  font-size: 8px;
+}
+
+.photo-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-top: 9px;
+
+  font-size: 9px;
+}
+
+.photo-controls button {
+  border: 1px solid #eee1c1;
+
+  background: #343657;
+
+  color: #fff0c7;
+
+  padding: 4px 9px;
+
+  cursor: pointer;
+}
+
+.music-window {
+  left: 39%;
+  top: 34%;
+
+  width: 330px;
+
+  animation-delay: 1.4s;
+}
+
+.music-content {
+  display: flex;
+  gap: 17px;
+
+  padding: 17px;
+}
+
+.cd {
+  width: 105px;
+  height: 105px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background:
+    repeating-radial-gradient(
+      circle,
+      #ddddea 0px,
+      #9294b8 2px,
+      #d6d6e1 4px
+    );
+
+  border: 3px solid #c8c9d7;
+
+  position: relative;
+
+  cursor: pointer;
+}
+
+.cd::before {
+  content: "";
+
+  position: absolute;
+
+  inset: 30px;
+
+  border-radius: 50%;
+
+  background: #a58a9e;
+}
+
+.cd-center {
+  position: absolute;
+
+  inset: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 2;
+
+  color: #fff0c7;
+
+  font-size: 12px;
+}
+
+.cd.spinning {
+  animation: spin 1.4s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.music-info {
+  flex: 1;
+}
+
+.music-now {
+  font-size: 8px;
+  letter-spacing: 2px;
+
+  opacity: .55;
+
+  margin-bottom: 7px;
+}
+
+.music-info strong {
+  font-family: "VT323", monospace;
+  font-size: 20px;
+}
+
+.music-bars {
+  display: flex;
+  align-items: end;
+
+  height: 42px;
+
+  gap: 3px;
+
+  margin: 8px 0;
+}
+
+.music-bars span {
+  width: 5px;
+
+  background: #d8ff77;
+
+  animation: equalizer .8s ease-in-out infinite alternate;
+}
+
+.music-bars span:nth-child(1) { height: 15px; }
+.music-bars span:nth-child(2) { height: 28px; animation-delay: .1s; }
+.music-bars span:nth-child(3) { height: 21px; animation-delay: .2s; }
+.music-bars span:nth-child(4) { height: 34px; animation-delay: .3s; }
+.music-bars span:nth-child(5) { height: 17px; animation-delay: .4s; }
+.music-bars span:nth-child(6) { height: 31px; animation-delay: .5s; }
+.music-bars span:nth-child(7) { height: 23px; animation-delay: .6s; }
+.music-bars span:nth-child(8) { height: 35px; animation-delay: .7s; }
+
+@keyframes equalizer {
+  to {
+    transform: scaleY(.25);
+  }
+}
+
+.retro-button,
+.record-button {
+  border: 1px solid #fff0c7;
+
+  background: #343657;
+
+  color: #fff0c7;
+
+  padding: 6px 9px;
+
+  cursor: pointer;
+
+  font-size: 8px;
+}
+
+.retro-button:hover,
+.record-button:hover {
+  background: #d8ff77;
+  color: #292b48;
+}
+
+.video-window {
+  right: 6%;
+  top: 43%;
+
+  width: 290px;
+
+  animation-delay: .2s;
+}
+
+.video-content {
+  height: 180px;
+
+  position: relative;
+
+  background: #17182a;
+}
+
+.video-content video {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  opacity: .8;
+}
+
+.video-rec {
+  position: absolute;
+
+  top: 9px;
+  left: 9px;
+
+  color: #ff907b;
+
+  font-size: 9px;
+
+  animation: blink 1s infinite;
+}
+
+.video-time {
+  position: absolute;
+
+  bottom: 8px;
+  right: 8px;
+
+  font-size: 9px;
+}
+
+@keyframes blink {
+  50% {
+    opacity: .2;
+  }
+}
+
+.recorder-window {
+  left: 27%;
+  bottom: 14%;
+
+  width: 310px;
+
+  animation-delay: 1.7s;
+}
+
+.recorder-content {
+  padding: 15px;
+
+  text-align: center;
+}
+
+.recorder-mic {
+  font-size: 38px;
+
+  margin-bottom: 5px;
+}
+
+.recording-title {
+  font-family: "VT323", monospace;
+
+  font-size: 19px;
+
+  margin-bottom: 8px;
+}
+
+.waveform {
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 3px;
+
+  margin-bottom: 10px;
+}
+
+.waveform span {
+  width: 3px;
+
+  background: #ff9b7d;
+
+  animation: wave .7s ease-in-out infinite alternate;
+}
+
+.waveform span:nth-child(odd) {
+  animation-delay: .15s;
+}
+
+@keyframes wave {
+  to {
+    transform: scaleY(.3);
+  }
+}
+
+.record-button.playing {
+  background: #ff9b7d;
+  color: #282943;
+}
+
+.password-window {
+  position: absolute;
+
+  right: 33%;
+  bottom: 5%;
+
+  width: 390px;
+
+  background: #292b4a;
+
+  border: 2px solid #f1e5c5;
+
+  box-shadow:
+    9px 10px 0 rgba(20,20,40,.35),
+    0 0 30px rgba(20,20,40,.2);
+
+  z-index: 30;
+
+  animation: passwordPulse 3s ease-in-out infinite;
+}
+
+@keyframes passwordPulse {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.password-top {
+  height: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 9px;
+
+  background: #ff9d7b;
+
+  color: #2b2b49;
+
+  font-size: 9px;
+}
+
+.password-inner {
+  padding: 17px;
+}
+
+.password-small {
+  font-size: 8px;
+
+  letter-spacing: 2px;
+
+  opacity: .5;
+
+  margin-bottom: 7px;
+}
+
+.password-prompt {
+  font-family: "VT323", monospace;
+
+  font-size: 22px;
+
+  margin-bottom: 9px;
+}
+
+.password-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.password-input-row input {
+  min-width: 0;
+  flex: 1;
+
+  background: #17182a;
+
+  border: 1px solid #eee3c6;
+
+  color: #fff0c7;
+
+  padding: 9px;
+
+  outline: none;
+
+  font-family: "DM Mono", monospace;
+}
+
+.password-input-row input:focus {
+  box-shadow: 0 0 0 2px rgba(216,255,119,.35);
+}
+
+.password-input-row button {
+  background: #d8ff77;
+
+  color: #282943;
+
+  border: 0;
+
+  padding: 0 13px;
+
+  cursor: pointer;
+
+  font-size: 9px;
+
+  font-weight: bold;
+}
+
+.password-input-row button:hover {
+  background: #fff0c7;
+}
+
+.password-error {
+  margin-top: 8px;
+
+  color: #ff9b7d;
+
+  font-size: 9px;
+}
+
+.password-hint {
+  margin-top: 9px;
+
+  font-size: 7px;
+
+  opacity: .4;
+}
+
+.taskbar {
+  position: absolute;
+
+  left: 25px;
+  right: 25px;
+  bottom: 0;
+
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 4px;
+
+  border-top: 2px solid #242641;
+
+  background: #dcd2b4;
+
+  color: #2a2c49;
+
+  padding: 4px;
+
+  z-index: 50;
+}
+
+.start-button {
+  height: 30px;
+
+  padding: 0 13px;
+
+  background: #ff9d7b;
+
+  border: 2px outset #fff0d0;
+
+  color: #292b49;
+
+  font-family: "Press Start 2P", monospace;
+
+  font-size: 7px;
+
+  cursor: pointer;
+}
+
+.task-item {
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 10px;
+
+  background: #c8bfd0;
+
+  border: 1px inset #fff;
+
+  font-size: 8px;
+}
+
+.task-spacer {
+  flex: 1;
+}
+
+.task-status {
+  padding: 0 8px;
+
+  font-size: 8px;
+}
+
+.desktop-sticker {
+  position: absolute;
+
+  z-index: 40;
+
+  font-size: 30px;
+
+  color: #d8ff77;
+
+  animation: stickerFloat 3s ease-in-out infinite;
+}
+
+.sticker-a {
+  right: 34%;
+  top: 23%;
+}
+
+.sticker-b {
+  left: 48%;
+  bottom: 25%;
+
+  animation-delay: .8s;
+}
+
+.sticker-c {
+  right: 24%;
+  bottom: 28%;
+
+  color: #ff9d7b;
+
+  font-family: "Press Start 2P", monospace;
+  font-size: 16px;
+
+  animation-delay: 1.3s;
+}
+
+@keyframes stickerFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-8px) rotate(7deg);
+  }
+}
+
+.desktop-label {
+  position: absolute;
+
+  z-index: 40;
+
+  padding: 6px 10px;
+
+  background: #d8ff77;
+
+  color: #292b49;
+
+  font-family: "VT323", monospace;
+
+  font-size: 17px;
+
+  box-shadow: 4px 4px 0 rgba(0,0,0,.2);
+}
+
+.label-a {
+  right: 14%;
+  top: 30%;
+
+  transform: rotate(5deg);
+}
+
+.label-b {
+  left: 3%;
+  top: 45%;
+
+  background: #e4d8ff;
+
+  transform: rotate(-6deg);
+}
+
+@media (max-width: 1000px) {
+
+  .desktop {
+    overflow-y: auto;
+  }
+
+  .desktop-stage {
+    min-height: 1500px;
+  }
+
+  .intro-text {
+    left: 5%;
+    top: 30px;
+  }
+
+  .photo-window {
+    right: 4%;
+    top: 30px;
+  }
+
+  .notes-window {
+    left: 5%;
+    top: 270px;
+  }
+
+  .music-window {
+    left: 5%;
+    top: 560px;
+  }
+
+  .video-window {
+    right: 4%;
+    top: 500px;
+  }
+
+  .files-window {
+    left: 5%;
+    bottom: 260px;
+  }
+
+  .recorder-window {
+    left: 35%;
+    bottom: 260px;
+  }
+
+  .password-window {
+    right: 5%;
+    bottom: 70px;
+  }
+
+  .taskbar {
+    position: fixed;
+    bottom: 0;
+  }
+}
+
+@media (max-width: 700px) {
+
+  .topbar-center {
+    display: none;
+  }
+
+  .desktop-stage {
+    min-height: 1750px;
+    padding: 15px;
+  }
+
+  .intro-text {
+    position: relative;
+    left: auto;
+    top: auto;
+
+    width: 100%;
+
+    margin: 20px 0 25px;
+  }
+
+  .window,
+  .password-window {
+    position: relative;
+
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+
+    width: 100%;
+
+    margin: 18px 0;
+
+    transform: none;
+  }
+
+  .notes-window,
+  .photo-window,
+  .music-window,
+  .video-window,
+  .files-window,
+  .recorder-window,
+  .password-window {
+    animation: none;
+  }
+
+  .photo-main {
+    height: 240px;
+  }
+
+  .files-content {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .desktop-sticker,
+  .desktop-label {
+    display: none;
+  }
+
+  .taskbar {
+    left: 0;
+    right: 0;
+
+    overflow: hidden;
+  }
+
+  .task-item:nth-of-type(n+3) {
+    display: none;
+  }
+}
+`;
