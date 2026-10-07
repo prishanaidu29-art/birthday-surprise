@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 
 import EasterEgg from "@/components/EasterEgg";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const Enhanced3DViewer = dynamic(
   () => import("./components/Enhanced3DViewer"),
