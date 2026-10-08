@@ -79,6 +79,9 @@ export default function HomePage() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [photoDataGlitch, setPhotoDataGlitch] = useState(false)
   const photoGlitchTimerRef = useRef(null)
+  const glitchAudioRef = useRef(null)
+  const glitchActiveRef = useRef(false)
+  const resumeMusicAfterGlitchRef = useRef(false)
 
   const [activeWindow, setActiveWindow] = useState('notes')
   const [terminalText, setTerminalText] = useState('SYSTEM READY')
@@ -104,7 +107,14 @@ export default function HomePage() {
   const [terminalHistory, setTerminalHistory] = useState(['CLAR_OS TERMINAL [Version 22.04]', 'Type HELP to list commands.'])
   const dragRef = useRef(null)
 
-  useEffect(() => () => clearTimeout(photoGlitchTimerRef.current), [])
+  useEffect(() => () => {
+    clearTimeout(photoGlitchTimerRef.current)
+    glitchActiveRef.current = false
+    if (glitchAudioRef.current) {
+      glitchAudioRef.current.close().catch(() => {})
+      glitchAudioRef.current = null
+    }
+  }, [])
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -172,7 +182,7 @@ export default function HomePage() {
 
     if (!audio) return
 
-    if (musicPlaying) {
+    if (musicPlaying && !glitchActiveRef.current) {
       audio.play()
         .then(() => { musicStartedRef.current = true })
         .catch(() => { setMusicPlaying(false) })
@@ -209,6 +219,7 @@ export default function HomePage() {
     if (screen !== 'boot' || musicPlaying || musicStartedRef.current) return
 
     function startMusicOnInteraction(event) {
+      if (glitchActiveRef.current) return
       // Let the existing CD button control music without double-toggling.
       if (event.target?.closest?.('.music-button')) return
 
@@ -256,6 +267,49 @@ export default function HomePage() {
   }, [recordingPlaying])
 
   /* ---------------------------------------------------------
+     CORRUPTED PHOTO FEED / GLITCH AUDIO
+     Synthesized locally: no extra audio file needed.
+  --------------------------------------------------------- */
+
+  function playGlitchSound() {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext
+      if (!AudioContextClass) return
+      const context = new AudioContextClass()
+      glitchAudioRef.current = context
+      const length = Math.floor(context.sampleRate * 4)
+      const buffer = context.createBuffer(1, length, context.sampleRate)
+      const samples = buffer.getChannelData(0)
+      // A low-volume, stuttering digital static effect.
+      for (let i = 0; i < length; i++) {
+        const t = i / context.sampleRate
+        const gate = Math.floor(t * 17) % 5 === 0 ? 0.07 : 1
+        const envelope = Math.min(1, t * 15) * Math.min(1, (4 - t) * 9)
+        samples[i] = (Math.random() * 2 - 1) * gate * envelope
+      }
+      const source = context.createBufferSource()
+      source.buffer = buffer
+      const filter = context.createBiquadFilter()
+      filter.type = 'bandpass'
+      filter.frequency.value = 1300
+      filter.Q.value = 0.7
+      const gain = context.createGain()
+      gain.gain.value = 0.085
+      source.connect(filter)
+      filter.connect(gain)
+      gain.connect(context.destination)
+      source.onended = () => {
+        if (glitchAudioRef.current === context) glitchAudioRef.current = null
+        context.close().catch(() => {})
+      }
+      if (!soundOn) gain.gain.value = 0
+      source.start()
+    } catch {
+      // Audio may be unavailable in some browsers; the visual effect still works.
+    }
+  }
+
+  /* ---------------------------------------------------------
      PASSWORD
   --------------------------------------------------------- */
 
@@ -296,9 +350,24 @@ export default function HomePage() {
     setAttempts(newAttempts)
     if (newAttempts === 3) {
       clearTimeout(photoGlitchTimerRef.current)
+      glitchActiveRef.current = true
+      const audio = audioRef.current
+      resumeMusicAfterGlitchRef.current = Boolean(audio && !audio.paused)
+      if (audio) audio.pause()
+      setMusicPlaying(false)
       setPhotoDataGlitch(true)
       setWindowOpen(prev => ({ ...prev, photos: true }))
-      photoGlitchTimerRef.current = setTimeout(() => setPhotoDataGlitch(false), 8000)
+      playGlitchSound()
+      photoGlitchTimerRef.current = setTimeout(() => {
+        glitchActiveRef.current = false
+        setPhotoDataGlitch(false)
+        if (resumeMusicAfterGlitchRef.current && audioRef.current) {
+          audioRef.current.play()
+            .then(() => setMusicPlaying(true))
+            .catch(() => setMusicPlaying(false))
+        }
+        resumeMusicAfterGlitchRef.current = false
+      }, 4000)
     }
     setError(true)
     setPassword('')
