@@ -55,7 +55,8 @@ export default function JourneyPage() {
     if (stage !== 'ready' || !mount.current) return
     let disposed = false
     let renderer, earth, camera, scene, frame, resizeObserver
-    let cleanupPointer = () => {}
+    let cleanupPointer = () => {
+          labelElements.forEach(({ el }) => el.remove())}
     const host = mount.current
 
     async function setup() {
@@ -97,6 +98,7 @@ export default function JourneyPage() {
           marker.userData.id = p.id
           earth.add(marker)
           pickables.push(marker)
+          // Always-readable HTML labels are updated in the render loop below.
           const glow = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), new THREE.MeshBasicMaterial({ color: p.color, transparent: true, opacity: 0.28, depthWrite: false }))
           marker.add(glow)
         })
@@ -114,6 +116,29 @@ export default function JourneyPage() {
           const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: p.color, transparent: true, opacity: 0.85 }))
           earth.add(line)
         })
+        // Screen-space labels follow the rotating globe and hide behind it.
+        const labelElements = PEOPLE.filter(p => p.lat !== null).map(p => {
+          const el = document.createElement('button')
+          el.type = 'button'
+          el.textContent = '● ' + p.name
+          el.style.cssText = 'position:absolute;z-index:4;transform:translate(-50%,-50%);border:1px solid #d6a1ff;background:#180c32df;color:#fbeaff;padding:6px 9px;font:700 12px monospace;letter-spacing:1px;cursor:pointer;pointer-events:auto;white-space:nowrap;box-shadow:0 0 13px #ac5bea77'
+          el.addEventListener('click', () => selectRef.current(p))
+          host.appendChild(el)
+          return { p, el }
+        })
+        const updateLabels = () => {
+          const w = host.clientWidth, h = host.clientHeight
+          earth.updateMatrixWorld(true)
+          labelElements.forEach(({ p, el }) => {
+            const world = earth.localToWorld(position(p.lat, p.lon, 4.72))
+            const normal = earth.localToWorld(position(p.lat, p.lon, 5)).sub(earth.getWorldPosition(new THREE.Vector3())).normalize()
+            const visible = normal.dot(camera.position.clone().sub(world).normalize()) > 0.04
+            const projected = world.clone().project(camera)
+            el.style.display = visible && projected.z < 1 ? 'block' : 'none'
+            el.style.left = ((projected.x + 1) * .5 * w) + 'px'
+            el.style.top = ((1 - projected.y) * .5 * h) + 'px'
+          })
+        }
         const stars = new Float32Array(1400 * 3)
         for (let i = 0; i < stars.length; i += 3) {
           stars[i] = (Math.random() - .5) * 85
@@ -124,7 +149,7 @@ export default function JourneyPage() {
         starGeo.setAttribute('position', new THREE.BufferAttribute(stars, 3))
         scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xc7b6ff, size: 0.055 })))
 
-        earth.rotation.y = -1.7
+        earth.rotation.y = -2.95
         const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2()
         let dragging = false, moved = false, lastX = 0, lastY = 0
         const down = e => { dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY; renderer.domElement.setPointerCapture(e.pointerId) }
@@ -168,8 +193,9 @@ export default function JourneyPage() {
         const animate = () => {
           if (disposed) return
           frame = requestAnimationFrame(animate)
-          if (!dragging) earth.rotation.y += 0.0008
+          if (!dragging) earth.rotation.y += 0.00035
           renderer.render(scene, camera)
+          updateLabels()
         }
         animate()
       } catch (e) {
@@ -200,10 +226,8 @@ export default function JourneyPage() {
       <div style={{ width:'min(690px,100%)', ...panel, padding:'clamp(24px,5vw,50px)' }}>
         <div style={{ color:'#7de6ef', letterSpacing:3, fontSize:12 }}>CLAR_OS // NETWORK BOOT SEQUENCE</div>
         <h1 style={{ fontSize:'clamp(28px,6vw,60px)', letterSpacing:2, margin:'25px 0 8px', textShadow:'3px 3px #b836a6' }}>CONNECTIONS.exe</h1>
-        <p style={{ color:'#c69fdc' }}>LOCATING SIGNALS ACROSS THE WORLD...</p>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, margin:'34px 0' }}>
-          {['CLAR','NUT','NAIDU','LIMIN'].map((p,i) => <div key={p} style={{ border:'1px solid #8653b2', padding:'15px 3px', textAlign:'center', background:progress > i*23 ? '#4e2068' : '#170d27', fontSize:12 }}>◉<div style={{ marginTop:7 }}>{p}</div></div>)}
-        </div>
+        <p style={{ color:'#f5c4eb', fontSize:'clamp(16px,3vw,25px)', marginTop:20 }}>see how far away we are from each other :)</p>
+        <div style={{ fontSize:48, textAlign:'center', margin:'32px 0', filter:'drop-shadow(0 0 18px #e18afa)' }}>✧ 🌐 ✧</div>
         <div style={{ height:14, border:'1px solid #b985ea', padding:2 }}>
           <div style={{ height:'100%', width:progress+'%', background:'linear-gradient(90deg,#794bfa,#f58bd8,#75dfff)', transition:'width .05s linear' }} />
         </div>
