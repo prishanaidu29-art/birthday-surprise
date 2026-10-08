@@ -4953,4 +4953,175 @@ button {
   .birthday-shell .photo-toolbar button {font-size:9px;padding:4px;}
 }
 
+/* ============================================================
+   CLAR_OS FINAL PASSWORD DESKTOP — OCTOBER 2026
+   These styles intentionally affect only the login CRT.
+   ============================================================ */
+.birthday-shell .desktop {
+  background:
+    radial-gradient(ellipse at 54% 16%,rgba(137,79,204,.21),transparent 36%),
+    radial-gradient(ellipse at 12% 82%,rgba(103,35,175,.32),transparent 43%),
+    radial-gradient(ellipse at 90% 73%,rgba(68,33,134,.3),transparent 39%),
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.045) 3px 4px),
+    linear-gradient(130deg,#1b0b33 0%,#10071f 55%,#230f40 100%);
+}
+.birthday-shell .desktop.wallpaper-stars {
+  background:radial-gradient(#d3afff80 1px,transparent 1.4px) 0 0/31px 31px,
+  radial-gradient(#9a71d680 .6px,transparent 1.2px) 12px 9px/19px 19px,
+  linear-gradient(125deg,#140b28,#080414 70%,#2c174e);
+}
+.birthday-shell .desktop.wallpaper-plain {background:linear-gradient(130deg,#21143c,#100920 65%,#271646);}
+.birthday-shell .desktop.accent-rose .window-titlebar,
+.birthday-shell .desktop.accent-rose .notes-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .cd-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .photos-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .files-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .recording-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .terminal-window .window-titlebar {background:linear-gradient(90deg,#7a295d,#bc6098);}
+.birthday-shell .desktop.accent-blue .window-titlebar,
+.birthday-shell .desktop.accent-blue .notes-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .cd-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .photos-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .files-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .recording-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .terminal-window .window-titlebar {background:linear-gradient(90deg,#273c86,#527dc3);}
+.birthday-shell .desktop-window {rotate:0deg!important;border:2px solid #b88cdd;box-shadow:5px 6px 0 #070313b3,0 14px 28px #0009;}
+.birthday-shell .window-titlebar {
+  touch-action:none;cursor:grab;user-select:none;
+  background:linear-gradient(90deg,#4e267f,#7941a7 60%,#a16ad0)!important;
+  color:#f9f2ff;letter-spacing:.4px;
+}
+.birthday-shell .window-titlebar:active {cursor:grabbing;}
+.birthday-shell .window-titlebar-active {background:linear-gradient(90deg,#7133ad,#a35bc8)!important;}
+.birthday-shell .window-controls {display:flex;gap:3px;}
+.birthday-shell .window-controls button {
+  width:17px;height:16px;min-width:17px;padding:0;line-height:12px;
+  color:#291341;background:#d6b7ee;border:2px outset #f7e8ff;
+  font:700 11px 'Courier New',monospace;cursor:pointer;
+}
+.birthday-shell .window-controls button:active {border-style:inset;}
+.birthday-shell .desktop-header {background:linear-gradient(90deg,#391a66,#291447 55%,#47246e);}
+.birthday-shell .notes-window {left:3%;top:10%;width:30%;height:38%;}
+.birthday-shell .cd-window {right:3%;top:10%;width:29%;height:29%;}
+.birthday-shell .photos-window {left:3%;top:56%;width:31%;height:35%;}
+.birthday-shell .files-window {right:3%;top:54%;width:31%;height:35%;}
+.birthday-shell .recording-window {right:35%;top:11%;width:29%;height:22%;}
+.birthday-shell .terminal-window {left:36%;top:73%;width:29%;height:19%;}
+.birthday-shell .password-panel {left:50%;top:41%;width:31%;z-index:80;}
+.birthday-shell .desktop-shortcuts {
+  position:absolute;left:35%;top:10%;width:30%;max-width:30%;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px 4px;justify-items:center;align-content:start;z-index:13;
+}
+.birthday-shell .desktop-shortcuts button {
+  min-width:0;width:100%;max-width:95px;min-height:52px;
+  padding:5px 2px;color:#f1e4ff;font:10px/1.2 'Courier New',monospace;
+  overflow-wrap:anywhere;
+}
+.birthday-shell .desktop-shortcuts button span {font-size:22px;line-height:25px;}
+.birthday-shell .desktop-shortcuts button.selected {background:#ad73ec55;border:1px dotted #f4d8ff;}
+.birthday-shell .notes-paper {overflow-y:auto;}
+.birthday-shell .handwriting {padding-bottom:12px;}
+.birthday-shell .note-postscript {font-size:11px;line-height:1.45;color:#72557e;margin-top:17px;}
+.birthday-shell .note-whisper {font-size:11px;font-style:italic;color:#6e368d;border-top:1px dashed #bc9fb6;padding-top:10px;}
+.birthday-shell .terminal-window .terminal-body {overflow:auto;max-height:calc(100% - 29px);padding:9px;font-size:9px;}
+.birthday-shell .terminal-output {white-space:pre-wrap;overflow-wrap:anywhere;max-height:95px;overflow-y:auto;font:9px/1.5 'Courier New',monospace;}
+.birthday-shell .terminal-output div {margin-bottom:2px;}
+.birthday-shell .terminal-last {color:#8ef1ca;}
+.birthday-shell .terminal-command-form {display:flex;gap:4px;align-items:center;color:#b5f9d6;margin:5px 0;}
+.birthday-shell .terminal-command-form input {
+  background:#0d0b17;border:1px solid #528f79;color:#b4ffd5;
+  width:100%;min-width:0;padding:4px;font:10px 'Courier New',monospace;
+}
+.birthday-shell .terminal-button {margin-top:4px;}
+.birthday-shell .retro-dialog-backdrop {z-index:125;}
+.birthday-shell .file-dialog {width:min(475px,96%);}
+.birthday-shell .file-dialog .retro-dialog-body {max-height:min(60vh,560px);overflow-y:auto;}
+.birthday-shell .file-lock-icon {font-size:34px;margin:8px 0 15px;}
+.birthday-shell .file-locked small,.birthday-shell .feetgang-content small {font:9px 'Courier New',monospace;color:#80648d;}
+.birthday-shell .feetgang-content p {line-height:1.5;}
+.birthday-shell .message-archive {text-align:left;max-height:370px;overflow-y:auto;padding:4px;}
+.birthday-shell .message-archive-header {font:700 12px 'Courier New',monospace;padding:8px;border-bottom:1px solid #c6a3d9;margin-bottom:10px;}
+.birthday-shell .message-archive-header small {display:block;font-size:9px;font-weight:400;margin-top:4px;}
+.birthday-shell .chat-bubble {width:85%;max-width:340px;padding:9px 11px;margin:9px 0;border:1px solid #c6a7d5;background:#e3d1f2;border-radius:5px;}
+.birthday-shell .chat-naidu {margin-left:auto;background:#c7a6e6;}
+.birthday-shell .chat-bubble small {display:block;font:700 10px 'Courier New',monospace;color:#54316f;}
+.birthday-shell .chat-bubble p {white-space:pre-line;margin:5px 0 2px;line-height:1.35;}
+.birthday-shell .chat-bubble span {display:block;text-align:right;font:9px 'Courier New',monospace;color:#725883;}
+.birthday-shell .chat-end {text-align:center;font:9px 'Courier New',monospace;color:#8d709b;margin:12px;}
+.birthday-shell .secret-muted {font:10px 'Courier New',monospace;color:#826895;}
+.birthday-shell .start-menu {
+  position:absolute;bottom:37px;left:8px;z-index:125;
+  width:min(330px,calc(100% - 16px));max-height:calc(100% - 60px);
+  display:flex;background:#e9dcf2;color:#352148;border:3px ridge #c5a5e2;
+  box-shadow:6px 8px 0 #0009;font:12px 'Trebuchet MS',sans-serif;
+}
+.birthday-shell .start-menu-side {
+  writing-mode:vertical-rl;transform:rotate(180deg);text-align:right;
+  padding:12px 9px;background:linear-gradient(#341359,#7446a3);
+  color:#fff;font:bold 19px 'Courier New',monospace;letter-spacing:2px;
+}
+.birthday-shell .start-menu-side span {font-size:11px;opacity:.7;}
+.birthday-shell .start-menu-items {flex:1;min-width:0;overflow-y:auto;padding:6px;}
+.birthday-shell .start-menu-heading {padding:8px;font:700 10px 'Courier New',monospace;color:#7a5894;border-bottom:1px solid #b79ec8;}
+.birthday-shell .start-menu-items button {
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  background:transparent;border:0;padding:8px 10px;color:#39224d;font-size:12px;
+}
+.birthday-shell .start-menu-items button:hover,.birthday-shell .start-menu-items button:focus-visible {background:#8654b5;color:white;outline:0;}
+.birthday-shell .start-menu-items button span {font-size:17px;width:23px;text-align:center;}
+.birthday-shell .start-menu-items button small {margin-left:auto;}
+.birthday-shell .start-menu-footer {border-top:1px solid #b69acb;margin-top:5px;padding:8px 4px;font:9px 'Courier New',monospace;color:#765e8a;}
+.birthday-shell .control-panel {width:min(530px,96%);text-align:left;}
+.birthday-shell .control-tabs {display:flex;gap:2px;flex-wrap:wrap;padding:10px 12px 0;border-bottom:1px solid #d1b8df;}
+.birthday-shell .control-tabs button,.birthday-shell .control-options button,.birthday-shell .control-toggle {
+  padding:8px 10px;background:#e3d2f0;border:2px outset #fff;color:#51336a;
+  font:11px 'Courier New',monospace;
+}
+.birthday-shell .control-tabs button.chosen,.birthday-shell .control-options button.chosen {background:#9a67c6;color:white;border-style:inset;}
+.birthday-shell .control-content {padding:17px 20px;min-height:205px;font-size:13px;}
+.birthday-shell .control-content p {margin:13px 0 7px;}
+.birthday-shell .control-content small {display:block;margin-top:15px;color:#80638f;}
+.birthday-shell .control-options {display:flex;flex-wrap:wrap;gap:7px;}
+.birthday-shell .control-bottom {padding:8px 15px 14px;text-align:right;}
+.birthday-shell .finder-dialog {width:min(430px,96%);}
+.birthday-shell .finder-content {padding:15px;display:flex;flex-direction:column;gap:7px;max-height:60vh;overflow-y:auto;}
+.birthday-shell .finder-content label {font:700 12px 'Courier New',monospace;}
+.birthday-shell .finder-content input {padding:9px;border:2px inset #bda5cc;font-size:12px;}
+.birthday-shell .finder-content button {text-align:left;padding:8px;background:#e5d5f1;border:1px solid #b89ad0;color:#4c3164;}
+.birthday-shell .finder-content button:hover {background:#c6a6e0;}
+.birthday-shell .clar-screensaver {
+  position:absolute;inset:0;z-index:160;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 40%,#3d1972,#090412 75%);
+  color:#d8bbff;overflow:hidden;
+}
+.birthday-shell .screensaver-stars {font:60px Georgia,serif;animation:clarSaverFloat 6s ease-in-out infinite alternate;color:#dfb6ff;}
+.birthday-shell .screensaver-logo {font:700 clamp(45px,9vw,120px) 'Courier New',monospace;letter-spacing:.12em;text-shadow:0 0 25px #b077ff;}
+.birthday-shell .clar-screensaver p {font:11px 'Courier New',monospace;opacity:.7;}
+@keyframes clarSaverFloat {from{transform:translate(-45px,-25px) rotate(-8deg)}to{transform:translate(45px,35px) rotate(8deg)}}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop-shortcuts {left:35%;top:10%;width:30%;max-width:30%;display:grid;}
+  .birthday-shell .desktop-shortcuts button {font-size:9px;min-height:47px;}
+  .birthday-shell .password-panel {width:36%;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop {min-height:0;padding:54px 12px 58px;display:flex;flex-direction:column;gap:14px;}
+  .birthday-shell .desktop-window {position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;max-width:100%;height:auto!important;rotate:0deg!important;}
+  .birthday-shell .password-panel {position:relative;top:auto;left:auto;width:100%;order:0;transform:none;}
+  .birthday-shell .notes-window {order:1;min-height:320px;max-height:380px;}
+  .birthday-shell .cd-window {order:2;min-height:215px;}
+  .birthday-shell .photos-window {order:3;min-height:325px;}
+  .birthday-shell .files-window {order:4;min-height:250px;}
+  .birthday-shell .recording-window {order:5;min-height:170px;}
+  .birthday-shell .terminal-window {order:6;min-height:230px;}
+  .birthday-shell .desktop-shortcuts {position:relative;left:auto;top:auto;right:auto;order:7;width:100%;max-width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+  .birthday-shell .desktop-shortcuts button {font-size:9px;min-height:58px;}
+  .birthday-shell .retro-taskbar {order:8;position:sticky;bottom:0;z-index:70;}
+  .birthday-shell .window-titlebar {touch-action:auto;cursor:default;}
+  .birthday-shell .start-menu {position:fixed;bottom:35px;left:10px;max-height:65vh;z-index:155;}
+  .birthday-shell .retro-dialog-backdrop {position:fixed;inset:0;z-index:155;}
+  .birthday-shell .clar-screensaver {position:fixed;}
+}
+
 `;
