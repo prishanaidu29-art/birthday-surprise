@@ -105,7 +105,7 @@ export default function BirthdayPage() {
         .play()
         .then(() => setMusicPlaying(true))
         .catch(() => {
-          console.log('Add your music file to /public/audio/birthday-song.mp3')
+          console.log('Tap the CD player to start music if autoplay is blocked')
         })
     }
   }
@@ -123,7 +123,7 @@ export default function BirthdayPage() {
 
       <audio
         ref={audioRef}
-        src="/audio/birthday-song.mp3"
+        src="/media/intro.mp3"
         loop
       />
 
@@ -187,33 +187,26 @@ export default function BirthdayPage() {
       ========================================================= */}
 
       <section className="desktop">
+        <div className="desktop-wallpaper-title" aria-hidden="true">CLAR'S COMPUTER <span>♡</span><small>PRIVATE ARCHIVE · 2004—2026</small></div>
+        <div className="desktop-hint" aria-hidden="true">double-click energy, single-click controls ✦</div>
 
         {/* =====================================================
             DESKTOP ICONS
         ===================================================== */}
 
         <div className="desktop-icons">
-
-          <div className="desktop-icon">
-            <div className="icon-box purple">📁</div>
-            <span>MEMORY</span>
-          </div>
-
-          <div className="desktop-icon">
-            <div className="icon-box pink">💿</div>
-            <span>SOUND</span>
-          </div>
-
-          <div className="desktop-icon">
-            <div className="icon-box blue">📼</div>
-            <span>VIDEO</span>
-          </div>
-
-          <div className="desktop-icon">
-            <div className="icon-box yellow">TXT</div>
-            <span>NOTES</span>
-          </div>
-
+          <button type="button" className="desktop-icon" onClick={() => setFilesOpen(true)} title="Open archive folders">
+            <span className="icon-box purple">📁</span><span>MEMORY</span>
+          </button>
+          <button type="button" className="desktop-icon" onClick={() => setMusicOpen(true)} title="Open CD player">
+            <span className="icon-box pink">💿</span><span>SOUND</span>
+          </button>
+          <button type="button" className="desktop-icon" onClick={() => setVideoOpen(true)} title="Open video player">
+            <span className="icon-box blue">📼</span><span>VIDEO</span>
+          </button>
+          <button type="button" className="desktop-icon" onClick={() => setNotesOpen(true)} title="Open notes">
+            <span className="icon-box yellow">📝</span><span>NOTES</span>
+          </button>
         </div>
 
         {/* =====================================================
@@ -400,20 +393,22 @@ export default function BirthdayPage() {
             <div className="photo-collage">
 
               <div className="photo-placeholder photo-a">
-                <span>YOUR<br />PHOTO<br />HERE</span>
+                <img src="/images/clar-01.jpg" alt="Memory photo one" loading="lazy" />
+                <span className="photo-stamp">IMG_0001.JPG</span>
               </div>
 
               <div className="photo-placeholder photo-b">
-                <span>DROP<br />PHOTO</span>
+                <img src="/images/clar-03.jpg" alt="Memory photo two" loading="lazy" />
+                <span className="photo-stamp">IMG_0003.JPG</span>
               </div>
 
               <div className="photo-placeholder photo-c">
-                <span>IMG_0022</span>
+                <img src="/images/clar-06.jpg" alt="Memory photo three" loading="lazy" />
+                <span className="photo-stamp">IMG_0006.JPG</span>
               </div>
 
               <div className="photo-caption">
-                FIG. 022 — SOMEONE WAS DEFINITELY
-                NOT SUPPOSED TO TAKE THIS PHOTO
+                DCIM / CLAR'S CAMERA ROLL — DO NOT DELETE ♡
               </div>
 
             </div>
@@ -2195,6 +2190,261 @@ export default function BirthdayPage() {
             font-size: 14px;
           }
 
+        }
+
+
+        /* ======================================================
+           CLAR'S MESSY 2000s DESKTOP — DESKTOP / LAPTOP / IPAD
+           Deliberately staggered, but important content stays readable.
+        ====================================================== */
+
+        .archive-screen {
+          background:
+            radial-gradient(ellipse at 17% 78%, rgba(133, 47, 134, .27), transparent 48%),
+            radial-gradient(ellipse at 81% 17%, rgba(59, 112, 153, .15), transparent 43%),
+            repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.012) 3px 4px),
+            linear-gradient(132deg, #140a21, #20102e 52%, #100918);
+        }
+
+        .desktop {
+          display: grid;
+          grid-template-columns: minmax(300px, 1fr) minmax(350px, 1.13fr) minmax(300px, .95fr);
+          grid-template-rows: auto auto;
+          align-content: center;
+          align-items: start;
+          gap: 20px 22px;
+          padding: 88px 30px 110px 112px;
+          min-height: max(calc(100vh - 46px), 790px);
+          overflow: visible;
+          isolation: isolate;
+        }
+
+        .desktop::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background-image: radial-gradient(rgba(214, 166, 255, .14) .7px, transparent .7px);
+          background-size: 24px 24px;
+          opacity: .23;
+          z-index: -1;
+        }
+
+        .desktop-wallpaper-title {
+          position: absolute;
+          top: 13px;
+          left: 116px;
+          font-family: 'VT323', monospace;
+          font-size: 32px;
+          line-height: 1;
+          letter-spacing: .055em;
+          color: rgba(232, 208, 255, .65);
+          text-shadow: 2px 2px rgba(255, 80, 179, .4);
+          pointer-events: none;
+        }
+        .desktop-wallpaper-title span { color: #fca1cf; }
+        .desktop-wallpaper-title small {
+          display: block;
+          margin-top: 5px;
+          font-size: 12px;
+          letter-spacing: .22em;
+          color: #8c7b9f;
+        }
+        .desktop-hint {
+          position: absolute;
+          right: 35px;
+          top: 27px;
+          color: #a889b7;
+          font: 15px 'VT323', monospace;
+          letter-spacing: .1em;
+        }
+
+        .desktop-icons { top: 110px; left: 18px; gap: 17px; }
+        .desktop-icon {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          border: 1px solid transparent;
+          border-radius: 3px;
+          background: transparent;
+          padding: 7px 3px;
+          font: 15px 'VT323', monospace;
+        }
+        .desktop-icon:hover, .desktop-icon:focus-visible {
+          border-color: rgba(210, 170, 255, .45);
+          background: rgba(146, 87, 220, .2);
+          outline: none;
+        }
+
+        .desktop .window {
+          position: relative;
+          left: auto;
+          right: auto;
+          top: auto;
+          bottom: auto;
+          width: 100%;
+          margin: 0;
+          min-width: 0;
+          border: 1px solid rgba(223, 183, 255, .55);
+          box-shadow: 5px 6px 0 rgba(7, 4, 12, .45), 0 18px 42px rgba(0,0,0,.38);
+          backdrop-filter: blur(8px);
+        }
+        .desktop .window-title {
+          height: 32px;
+          padding-inline: 12px;
+          border-bottom: 1px solid rgba(255,255,255,.16);
+          text-shadow: 1px 1px rgba(0,0,0,.4);
+        }
+
+        .desktop .welcome-window {
+          grid-column: 1 / 3;
+          grid-row: 1;
+          max-width: 500px;
+          justify-self: center;
+          z-index: 6;
+          translate: 14px 4px;
+        }
+        .desktop .notes-window {
+          grid-column: 1;
+          grid-row: 2;
+          max-width: 360px;
+          justify-self: center;
+          z-index: 9;
+          translate: -4px -20px;
+          rotate: -1deg;
+        }
+        .desktop .music-window {
+          grid-column: 3;
+          grid-row: 1;
+          z-index: 7;
+          translate: -8px 16px;
+          rotate: .6deg;
+        }
+        .desktop .files-window {
+          grid-column: 2;
+          grid-row: 2;
+          z-index: 10;
+          translate: 2px 10px;
+          rotate: .5deg;
+        }
+        .desktop .photo-window {
+          grid-column: 3;
+          grid-row: 2;
+          z-index: 8;
+          translate: -12px -12px;
+          rotate: -1deg;
+        }
+        .desktop .terminal-window {
+          grid-column: 2;
+          grid-row: 1;
+          z-index: 15;
+          translate: 30px 100px;
+        }
+        .desktop .video-window {
+          grid-column: 2;
+          grid-row: 1;
+          z-index: 16;
+          translate: 50px 130px;
+        }
+        .desktop .notes-paper { min-height: 290px; }
+        .desktop .music-body { padding: 17px; gap: 15px; }
+        .desktop .cd { width: clamp(90px, 8vw, 120px); height: clamp(90px, 8vw, 120px); }
+        .desktop .file-grid { gap: 7px; padding: 12px; }
+        .desktop .mini-file { text-align: center; padding: 7px 3px; }
+        .desktop .file-name { overflow-wrap: anywhere; }
+
+        .desktop .photo-collage { min-height: 270px; overflow: hidden; }
+        .desktop .photo-placeholder {
+          overflow: hidden;
+          background: #1a1221;
+          border: 5px solid #ede2eb;
+          border-bottom-width: 17px;
+          box-shadow: 4px 7px 0 rgba(0,0,0,.35);
+        }
+        .desktop .photo-placeholder img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          filter: sepia(.17) saturate(.7) contrast(1.12);
+        }
+        .desktop .photo-placeholder::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,.055) 2px 3px);
+        }
+        .desktop .photo-stamp {
+          position: absolute;
+          left: 2px;
+          bottom: -15px;
+          font: 11px 'VT323', monospace;
+          color: #5a4264;
+          white-space: nowrap;
+        }
+
+        @media (min-width: 1500px) {
+          .desktop { max-width: 1680px; margin: 0 auto; }
+        }
+
+        @media (min-width: 851px) and (max-width: 1199px) {
+          .desktop {
+            grid-template-columns: minmax(280px, 1fr) minmax(300px, 1fr);
+            grid-template-rows: auto auto auto;
+            padding: 75px 28px 105px 90px;
+            align-content: start;
+            min-height: 980px;
+          }
+          .desktop .welcome-window { grid-column: 1; grid-row: 1; translate: 0 0; }
+          .desktop .music-window { grid-column: 2; grid-row: 1; translate: 0 8px; }
+          .desktop .notes-window { grid-column: 1; grid-row: 2; translate: 0 -8px; }
+          .desktop .files-window { grid-column: 2; grid-row: 2; translate: 0 0; }
+          .desktop .photo-window { grid-column: 1; grid-row: 3; translate: 0 0; max-width: 370px; justify-self: center; }
+          .desktop .terminal-window, .desktop .video-window { grid-column: 2; grid-row: 3; translate: 0 0; }
+          .desktop-wallpaper-title { left: 90px; }
+          .desktop-icons { left: 10px; }
+        }
+
+        @media (max-width: 850px) {
+          .desktop {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+            gap: 16px;
+            padding: 72px 16px 110px;
+            height: auto;
+            min-height: calc(100svh - 40px);
+            overflow: visible;
+          }
+          .desktop-wallpaper-title { left: 18px; top: 14px; font-size: 28px; }
+          .desktop-hint { display: none; }
+          .desktop .window {
+            position: relative;
+            width: min(100%, 560px);
+            max-width: 560px;
+            margin: 0 auto;
+            transform: none !important;
+            translate: none;
+            rotate: none;
+          }
+          .desktop .welcome-window { order: 1; }
+          .desktop .notes-window { order: 2; }
+          .desktop .music-window { order: 3; }
+          .desktop .photo-window { order: 4; }
+          .desktop .files-window { order: 5; }
+          .desktop .terminal-window, .desktop .video-window { order: 6; }
+          .dock { position: fixed; bottom: 28px; }
+          .bottom-status { position: fixed; bottom: 0; }
+        }
+
+        @media (max-width: 480px) {
+          .desktop { padding-inline: 12px; }
+          .desktop .file-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .desktop .music-body { flex-wrap: wrap; }
+          .desktop .photo-collage { min-height: 260px; }
         }
 
       `}</style>
