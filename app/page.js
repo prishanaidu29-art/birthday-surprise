@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-const PASSWORD = 'royal cliff'
+const PASSWORD = 'thee.archivess'
 
 const PHOTOS = [
   '/images/clar-01.jpg',
@@ -84,6 +84,23 @@ export default function HomePage() {
   const [photoPaused, setPhotoPaused] = useState(false)
   const [showRecycle, setShowRecycle] = useState(false)
   const [terminalOpen, setTerminalOpen] = useState(false)
+  const [windowOpen, setWindowOpen] = useState({notes:true, cd:true, photos:true, files:false, recording:false, terminal:false})
+  const [windowPositions, setWindowPositions] = useState({})
+  const [maximized, setMaximized] = useState(null)
+  const [startOpen, setStartOpen] = useState(false)
+  const [controlPanelOpen, setControlPanelOpen] = useState(false)
+  const [controlTab, setControlTab] = useState('appearance')
+  const [wallpaper, setWallpaper] = useState('nebula')
+  const [accent, setAccent] = useState('violet')
+  const [crtOn, setCrtOn] = useState(true)
+  const [soundOn, setSoundOn] = useState(true)
+  const [screensaver, setScreensaver] = useState(false)
+  const [finderOpen, setFinderOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedIcon, setSelectedIcon] = useState('')
+  const [terminalCommand, setTerminalCommand] = useState('')
+  const [terminalHistory, setTerminalHistory] = useState(['CLAR_OS TERMINAL [Version 22.04]', 'Type HELP to list commands.'])
+  const dragRef = useRef(null)
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -218,6 +235,8 @@ export default function HomePage() {
      RECORDING
   --------------------------------------------------------- */
 
+  useEffect(() => {if(audioRef.current)audioRef.current.muted=!soundOn;if(recordingRef.current)recordingRef.current.muted=!soundOn},[soundOn])
+
   useEffect(() => {
     const recording = recordingRef.current
 
@@ -274,12 +293,12 @@ export default function HomePage() {
     setError(true)
     setPassword('')
 
-    if (newAttempts <= 3) {
+    if (newAttempts === 2) {
       setHintType(1)
       setShowHint(true)
     }
 
-    if (newAttempts === 5) {
+    if (newAttempts >= 4) {
       setHintType(2)
       setShowHint(true)
     }
@@ -289,13 +308,68 @@ export default function HomePage() {
     setShowHint(false)
   }
 
-  function focusWindow(name) {
+  function focusWindow(name) { setActiveWindow(name) }
+  function showWindow(name) {
+    setWindowOpen(prev => ({...prev, [name]:true}))
+    if (name === 'terminal') setTerminalOpen(true)
     setActiveWindow(name)
+    setStartOpen(false)
   }
-
-  function openDesktopFile(name) {
-    setOpenFile(name)
-    focusWindow('files')
+  function hideWindow(name) {
+    setWindowOpen(prev => ({...prev, [name]:false}))
+    if (name === 'terminal') setTerminalOpen(false)
+    if (maximized === name) setMaximized(null)
+  }
+  function windowStyle(name) {
+    if (maximized === name) return {left:'2%',top:'6%',right:'auto',width:'96%',height:'87%',rotate:'0deg',zIndex:98,display:windowOpen[name]?undefined:'none'}
+    return {...(windowPositions[name] || {}),zIndex:activeWindow===name?45:10,display:windowOpen[name]?undefined:'none'}
+  }
+  function beginDrag(event,name) {
+    if (event.target.closest('button') || window.innerWidth<=760 || maximized===name) return
+    const element=event.currentTarget.closest('.desktop-window')
+    const desktop=event.currentTarget.closest('.desktop')
+    if (!element || !desktop) return
+    const rect=element.getBoundingClientRect(),parent=desktop.getBoundingClientRect()
+    dragRef.current={name,startX:event.clientX,startY:event.clientY,left:rect.left-parent.left,top:rect.top-parent.top,maxLeft:parent.width-rect.width,maxTop:parent.height-rect.height-38}
+    event.currentTarget.setPointerCapture(event.pointerId)
+    focusWindow(name)
+  }
+  function moveDrag(event) {
+    const d=dragRef.current
+    if (!d) return
+    const left=Math.max(0,Math.min(d.maxLeft,d.left+event.clientX-d.startX))
+    const top=Math.max(36,Math.min(d.maxTop,d.top+event.clientY-d.startY))
+    setWindowPositions(prev=>({...prev,[d.name]:{left:left+'px',top:top+'px',right:'auto',rotate:'0deg'}}))
+  }
+  function endDrag(){dragRef.current=null}
+  function openDesktopFile(name){setOpenFile(name);showWindow('files')}
+  function openShortcut(name){
+    if(name==='secret'){setOpenFile('SECRET');return}
+    if(name==='recycle'){setOpenFile('RECYCLE');return}
+    if(name==='control'){setControlPanelOpen(true);setStartOpen(false);return}
+    if(name==='find'){setFinderOpen(true);setStartOpen(false);return}
+    if(name==='screensaver'){setScreensaver(true);setStartOpen(false);return}
+    showWindow(name)
+  }
+  function desktopIconClick(event,name,action){
+    event.stopPropagation();setSelectedIcon(name)
+    if(event.detail===0||event.detail>=2||window.matchMedia('(pointer: coarse)').matches)action()
+  }
+  function runCommand(raw){
+    const command=raw.trim().toLowerCase()
+    if(!command)return
+    let output=''
+    if(command==='help')output='COMMANDS: HELP, DIR, SCAN, WHOAMI, HINT, READ ONLINE_ALIAS.TXT, BENEDICT, CLEAR, EXIT'
+    else if(command==='dir'||command==='ls')output='C:\\CLAR\\ NOTES.TXT  ONLINE_ALIAS.TXT  ARCHIVE\\  MUSIC\\  [LOCKED]'
+    else if(command==='whoami')output='USER: CLAR // STATUS: CHRONICALLY ONLINE // CLEARANCE: PENDING'
+    else if(command==='scan')output='SCAN COMPLETE. 22 YEARS INDEXED. PASSWORD STILL REQUIRED.'
+    else if(command==='hint')output='The answer is closer to your online life than your offline one.'
+    else if(command==='read online_alias.txt'||command==='cat online_alias.txt')output='Not the main account. The other username. You know the one.'
+    else if(command==='benedict'||command==='sherlock')output='Benedict cumberbatch lowkey would have solved this in 1 sec.'
+    else if(command==='clear'||command==='cls'){setTerminalHistory([]);setTerminalCommand('');return}
+    else if(command==='exit'){hideWindow('terminal');setTerminalCommand('');return}
+    else output='Bad command or file name. Type HELP.'
+    setTerminalHistory(prev=>[...prev.slice(-10),'C:\\CLAR> '+raw,output]);setTerminalCommand('')
   }
 
   function changePhoto(step) {
@@ -347,12 +421,12 @@ export default function HomePage() {
 
               <div className="monitor-inner">
 
-                <div className="desktop">
+                <div className={`desktop wallpaper-${wallpaper} accent-${accent} ${crtOn ? "" : "crt-off"}`}>
 
                   {/* CRT overlays */}
 
-                  <div className="scanlines" />
-                  <div className="screen-noise" />
+                  {crtOn && <div className="scanlines" />}
+                  {crtOn && <div className="screen-noise" />}
                   <div className="screen-vignette" />
 
                   {/* ================= DESKTOP HEADER ================= */}
@@ -383,12 +457,18 @@ export default function HomePage() {
                     className={`desktop-window notes-window ${
                       activeWindow === 'notes' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("notes")}
                     onClick={() => focusWindow('notes')}
                   >
                     <WindowBar
                       title="notes.txt"
                       icon="▤"
                       active={activeWindow === 'notes'}
+                      onClose={() => hideWindow("notes")}
+                      onMaximize={() => setMaximized(maximized === "notes" ? null : "notes")}
+                      onPointerDown={(event) => beginDrag(event, "notes")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="notes-paper">
@@ -426,6 +506,8 @@ export default function HomePage() {
                         <div className="scribble">
                           — your extremely normal friend
                         </div>
+                        <p className="note-postscript">(click around, I know you well enough you’ll look every goddamn place so I trust your instincts that you’d be able to find the password ehehe)</p>
+                        <p className="note-whisper">it’s kinddaaa related to your social media, that’s all I can give you</p>
 
                       </div>
                     </div>
@@ -439,12 +521,18 @@ export default function HomePage() {
                     className={`desktop-window files-window ${
                       activeWindow === 'files' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("files")}
                     onClick={() => focusWindow('files')}
                   >
                     <WindowBar
                       title="ARCHIVE / FILES"
                       icon="▦"
                       active={activeWindow === 'files'}
+                      onClose={() => hideWindow("files")}
+                      onMaximize={() => setMaximized(maximized === "files" ? null : "files")}
+                      onPointerDown={(event) => beginDrag(event, "files")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="file-grid">
@@ -500,12 +588,18 @@ export default function HomePage() {
                     className={`desktop-window cd-window ${
                       activeWindow === 'cd' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("cd")}
                     onClick={() => focusWindow('cd')}
                   >
                     <WindowBar
                       title="CD PLAYER.exe"
                       icon="◉"
                       active={activeWindow === 'cd'}
+                      onClose={() => hideWindow("cd")}
+                      onMaximize={() => setMaximized(maximized === "cd" ? null : "cd")}
+                      onPointerDown={(event) => beginDrag(event, "cd")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="cd-player-body">
@@ -576,12 +670,18 @@ export default function HomePage() {
                     className={`desktop-window photos-window ${
                       activeWindow === 'photos' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("photos")}
                     onClick={() => focusWindow('photos')}
                   >
                     <WindowBar
                       title="PHOTOS / IMG_VIEWER"
                       icon="▣"
                       active={activeWindow === 'photos'}
+                      onClose={() => hideWindow("photos")}
+                      onMaximize={() => setMaximized(maximized === "photos" ? null : "photos")}
+                      onPointerDown={(event) => beginDrag(event, "photos")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="photo-viewer">
@@ -653,12 +753,18 @@ export default function HomePage() {
                     className={`desktop-window recording-window ${
                       activeWindow === 'recording' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("recording")}
                     onClick={() => focusWindow('recording')}
                   >
                     <WindowBar
                       title="VOICE_NOTE.wav"
                       icon="♫"
                       active={activeWindow === 'recording'}
+                      onClose={() => hideWindow("recording")}
+                      onMaximize={() => setMaximized(maximized === "recording" ? null : "recording")}
+                      onPointerDown={(event) => beginDrag(event, "recording")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="recording-body">
@@ -716,13 +822,18 @@ export default function HomePage() {
                     className={`desktop-window terminal-window ${
                       activeWindow === 'terminal' ? 'window-active' : ''
                     }`}
-                    style={{ display: terminalOpen ? undefined : 'none' }}
-                     onClick={() => focusWindow('terminal')}
+                    style={windowStyle("terminal")}
+                    onClick={() => focusWindow('terminal')}
                   >
                     <WindowBar
                       title="SYSTEM_TERMINAL"
                       icon=">"
                       active={activeWindow === 'terminal'}
+                      onClose={() => hideWindow("terminal")}
+                      onMaximize={() => setMaximized(maximized === "terminal" ? null : "terminal")}
+                      onPointerDown={(event) => beginDrag(event, "terminal")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="terminal-body">
@@ -740,8 +851,13 @@ export default function HomePage() {
                       </div>
 
                       <div className="terminal-output">
-                        {terminalText}
+                        {terminalHistory.map((line,index) => <div key={index}>{line}</div>)}
+                        <div className="terminal-last">{terminalText}</div>
                       </div>
+                      <form className="terminal-command-form" onSubmit={event => {event.preventDefault();runCommand(terminalCommand)}}>
+                        <span>C:\CLAR&gt;</span>
+                        <input aria-label="Terminal command" value={terminalCommand} onChange={event=>setTerminalCommand(event.target.value)} placeholder="type HELP" spellCheck="false" />
+                      </form>
 
                       <button
                         className="terminal-button"
@@ -837,47 +953,126 @@ export default function HomePage() {
                   </div>
 
                   <div className="retro-taskbar">
-                    <button type="button" className="retro-start" onClick={() => setShowRecycle(true)}>✦ START</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('notes')}>▤ notes.txt</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('cd')}>◉ CD PLAYER.exe</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('files')}>📁 FILES</button>
-                     <button type="button" className="retro-terminal" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}>⌘ terminal</button>
+                    <button type="button" className="retro-start" onClick={() => setStartOpen(value => !value)}>▦ START</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('notes')}>▤ notes.txt</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('cd')}>◉ CD PLAYER.exe</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('files')}>📁 FILES</button>
+                     <button type="button" className="retro-terminal" onClick={() => showWindow('terminal')}>⌘ terminal</button>
                     <span className="retro-clock">CLAR_OS 22:04</span>
                   </div>
 
                   <div className="desktop-shortcuts" aria-label="Desktop shortcuts">
-                    <button type="button" onClick={() => setShowRecycle(true)}><span>🗑️</span>recycle bin</button>
-                    <button type="button" onClick={() => openDesktopFile('DO_NOT_OPEN')}><span>💌</span>secret.txt</button>
-                     <button type="button" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}><span>💻</span>terminal.exe</button>
+                    {[
+                      ['📁','archive','files'],['♫','voice_note.wav','recording'],
+                      ['⚙','control panel','control'],['⌕','find files','find'],
+                      ['💌','secret.txt','secret'],['💻','terminal.exe','terminal'],
+                      ['🗑️','recycle bin','recycle']
+                    ].map(([icon,label,action]) => (
+                      <button key={label} type="button" className={selectedIcon===label?'selected':''} onClick={event=>desktopIconClick(event,label,()=>openShortcut(action))} onDoubleClick={()=>openShortcut(action)} title="Double-click on computer, tap on mobile">
+                        <span>{icon}</span>{label}
+                      </button>
+                    ))}
                   </div>
 
                   {openFile && (
                     <div className="retro-dialog-backdrop" onClick={() => setOpenFile(null)}>
-                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label={openFile} onClick={(event) => event.stopPropagation()}>
-                        <div className="retro-dialog-title"><span>📁 {openFile.toLowerCase()}.exe</span><button type="button" onClick={() => setOpenFile(null)} aria-label="Close file">×</button></div>
+                      <section className="retro-dialog file-dialog" role="dialog" aria-modal="true" aria-label={openFile} onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title">
+                          <span>▣ C:\CLAR\{openFile.toLowerCase()}</span>
+                          <button type="button" onClick={() => setOpenFile(null)} aria-label="Close">×</button>
+                        </div>
                         <div className="retro-dialog-body">
-                          <div className="retro-dialog-icon">{openFile === 'DO_NOT_OPEN' ? '💌' : '📂'}</div>
-                          <strong>{openFile === 'DO_NOT_OPEN' ? 'YOU OPENED IT ANYWAY???' : openFile + ' FOUND!'}</strong>
-                          <p>{openFile === 'EGGS' ? '🥚 classified egg files. highly suspicious.' : openFile === 'FEETGANG' ? '🦶 the gang is all here. unfortunately.' : openFile === 'GRADUATION' ? '🎓 evidence of surviving the chaos.' : openFile === 'MEMORIES' ? '📸 so many moments worth keeping. unlock the archive to see them all.' : openFile === 'MESSAGES' ? '💌 some people have things to tell you. unlock the archive first.' : 'you were specifically told not to open this. happy birthday, menace ♡'}</p>
-                          <button type="button" className="retro-ok" onClick={() => setOpenFile(null)}>OK ♡</button>
+                          {['EGGS','GRADUATION','MEMORIES'].includes(openFile) ? (
+                            <div className="file-locked"><div className="file-lock-icon">🔒</div><strong>ACCESS DENIED</strong><p>Enter password to access.</p><small>THIS DIRECTORY IS LOCKED UNTIL ARCHIVE LOGIN.</small></div>
+                          ) : openFile === 'DO_NOT_OPEN' ? (
+                            <div className="file-locked"><div className="file-lock-icon">☒</div><strong>NO ACCESS</strong><p>Be patient.</p></div>
+                          ) : openFile === 'FEETGANG' ? (
+                            <div className="feetgang-content"><div className="file-lock-icon">🦶</div><strong>FEETGANG / CASE FILE 001</strong><p>Somewhere along the way, Clar and Yanaal decided there needed to be an investigation into who had a thing for feet.</p><p>There was no evidence. There was no conclusion. There was, unfortunately, a group name.</p><small>STATUS: THE ALLEGATIONS REMAIN UNPROVEN.</small></div>
+                          ) : openFile === 'MESSAGES' ? (
+                            <div className="message-archive">
+                              <div className="message-archive-header">✉ messages.log <small>recovered chat fragments</small></div>
+                              {[
+                                ['Clar','if you were an egg what color egg would you be',true],
+                                ['Clar','open ended question since am in a mood',true],
+                                ['Naidu','is he the one who holds the sandwich and says idiot sand which',false],
+                                ['Clar','HELP',true],
+                                ['Naidu','Century egg',false],
+                                ['Naidu','with or without the wrapper part',false],
+                                ['Clar','Black on the outside\nGreen on the inside',true]
+                              ].map(([sender,body,forwarded],index) => (
+                                <div key={index} className={'chat-bubble ' + (sender === 'Naidu' ? 'chat-naidu' : 'chat-clar')}>
+                                  <small>{sender}{forwarded ? ' · Forwarded' : ''}</small>
+                                  <p>{body}</p><span>11:39 AM</span>
+                                </div>
+                              ))}
+                              <div className="chat-end">END OF RECOVERED MESSAGES</div>
+                            </div>
+                          ) : openFile === 'SECRET' ? (
+                            <div className="secret-file"><strong>secret.txt</strong><p>not everything worth keeping lives on the main account.</p><p className="secret-muted">file origin: SOCIAL / ALTERNATE PROFILE</p></div>
+                          ) : (
+                            <div className="file-locked"><div className="file-lock-icon">🗑️</div><strong>RECYCLE BIN</strong><p>Nothing here. The embarrassing memories are still backed up.</p></div>
+                          )}
+                          <button type="button" className="retro-ok" onClick={() => setOpenFile(null)}>OK</button>
                         </div>
                       </section>
                     </div>
                   )}
 
-                  {showRecycle && (
-                    <div className="retro-dialog-backdrop" onClick={() => setShowRecycle(false)}>
-                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label="Start menu secret" onClick={(event) => event.stopPropagation()}>
-                        <div className="retro-dialog-title"><span>✦ CLAR_OS — start menu</span><button type="button" onClick={() => setShowRecycle(false)} aria-label="Close menu">×</button></div>
-                        <div className="retro-dialog-body">
-                          <div className="retro-dialog-icon">🗑️</div>
-                          <strong>RECYCLE BIN: EMPTY</strong>
-                          <p>no memories deleted. unfortunately, all embarrassing moments are permanently backed up. ♡</p>
-                          <button type="button" className="retro-ok" onClick={() => setShowRecycle(false)}>CLOSE</button>
+                  {startOpen && (
+                    <div className="start-menu" role="menu" aria-label="CLAR OS Start menu">
+                      <div className="start-menu-side">CLAR_OS <span>22.04</span></div>
+                      <div className="start-menu-items">
+                        <div className="start-menu-heading">CLAR'S COMPUTER</div>
+                        {[
+                          ['▣','My Computer','files'],['▤','My Documents','notes'],
+                          ['◉','CD Player','cd'],['♫','Voice Recorder','recording'],
+                          ['▧','Photo Viewer','photos'],['>_','Terminal','terminal'],
+                          ['⚙','Control Panel','control'],['⌕','Find Files','find'],
+                          ['🗑','Recycle Bin','recycle'],['☾','Screen Saver','screensaver']
+                        ].map(([icon,label,action]) => (
+                          <button key={label} type="button" onClick={() => {setStartOpen(false);openShortcut(action)}}><span>{icon}</span>{label}<small>›</small></button>
+                        ))}
+                        <div className="start-menu-footer">CLAR_OS · ALL RIGHTS RESERVED (probably)</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {controlPanelOpen && (
+                    <div className="retro-dialog-backdrop" onClick={() => setControlPanelOpen(false)}>
+                      <section className="retro-dialog control-panel" role="dialog" aria-modal="true" aria-label="Control Panel" onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>⚙ CONTROL_PANEL.exe</span><button type="button" onClick={() => setControlPanelOpen(false)}>×</button></div>
+                        <div className="control-tabs">
+                          {['appearance','display','audio','screensaver'].map(tab => <button key={tab} type="button" className={controlTab===tab?'chosen':''} onClick={() => setControlTab(tab)}>{tab.toUpperCase()}</button>)}
+                        </div>
+                        <div className="control-content">
+                          {controlTab === 'appearance' && <><strong>DESKTOP PERSONALISATION</strong><p>Choose your wallpaper.</p><div className="control-options">{['nebula','stars','plain'].map(value => <button type="button" key={value} className={wallpaper===value?'chosen':''} onClick={() => setWallpaper(value)}>{value}</button>)}</div><p>Window colour</p><div className="control-options">{['violet','rose','blue'].map(value => <button type="button" key={value} className={accent===value?'chosen':''} onClick={() => setAccent(value)}>{value}</button>)}</div><small>Changes are applied immediately.</small></>}
+                          {controlTab === 'display' && <><strong>MONITOR SETTINGS</strong><p>CRT scanlines &amp; screen grain</p><button type="button" className="control-toggle" onClick={() => setCrtOn(!crtOn)}>{crtOn?'☑ ENABLED':'☐ DISABLED'}</button><p>For the full 2000s computer feeling, leave this on.</p></>}
+                          {controlTab === 'audio' && <><strong>SOUND SETTINGS</strong><p>Audio output</p><button type="button" className="control-toggle" onClick={() => setSoundOn(!soundOn)}>{soundOn?'♫ UNMUTED':'♫ MUTED'}</button><p>This controls the CD player and voice note.</p></>}
+                          {controlTab === 'screensaver' && <><strong>SCREEN SAVER</strong><p>CLAR_OS / floating stars / deep violet</p><button type="button" className="control-toggle" onClick={() => {setControlPanelOpen(false);setScreensaver(true)}}>▶ PREVIEW</button><p>Move back to the desktop by clicking anywhere.</p></>}
+                        </div>
+                        <div className="control-bottom"><button type="button" className="retro-ok" onClick={() => setControlPanelOpen(false)}>CLOSE</button></div>
+                      </section>
+                    </div>
+                  )}
+
+                  {finderOpen && (
+                    <div className="retro-dialog-backdrop" onClick={() => setFinderOpen(false)}>
+                      <section className="retro-dialog finder-dialog" role="dialog" aria-modal="true" aria-label="Find Files" onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>⌕ FIND_FILES.exe</span><button type="button" onClick={() => setFinderOpen(false)}>×</button></div>
+                        <div className="finder-content">
+                          <label htmlFor="clar-file-search">Search Clar's computer</label>
+                          <input id="clar-file-search" value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Type a file or folder name..." />
+                          {['notes','files','cd','photos','recording','terminal','secret','EGGS','FEETGANG','GRADUATION','MEMORIES','MESSAGES','DO_NOT_OPEN'].filter(name => name.toLowerCase().includes(searchTerm.toLowerCase())).map(name =>
+                            <button type="button" key={name} onClick={() => {setFinderOpen(false);['EGGS','FEETGANG','GRADUATION','MEMORIES','MESSAGES','DO_NOT_OPEN'].includes(name)?openDesktopFile(name):openShortcut(name)}}>▣ {name}</button>
+                          )}
                         </div>
                       </section>
                     </div>
                   )}
+
+                  {screensaver && <div className="clar-screensaver" role="button" tabIndex={0} onClick={() => setScreensaver(false)} onKeyDown={event => {if(event.key==='Enter'||event.key==='Escape')setScreensaver(false)}}>
+                    <div className="screensaver-stars">✧ · ✦ · ✧</div><div className="screensaver-logo">CLAR_OS</div><p>press anywhere to return</p>
+                  </div>}
 
                   {/* =================================================
                       HINT POPUP — ALSO INSIDE CRT
@@ -913,8 +1108,7 @@ export default function HomePage() {
                               </strong>
 
                               <p>
-                                hint it’s a nickname I gave you after
-                                learning a funny meaning of your name
+                                it’s kinddaaa related to your social media, that’s all I can give you
                               </p>
                             </>
                           ) : (
@@ -924,7 +1118,7 @@ export default function HomePage() {
                               </strong>
 
                               <p>
-                                it has something to do with a cliff
+                                it’s your instagram username
                               </p>
                             </>
                           )}
@@ -1201,7 +1395,7 @@ export default function HomePage() {
    WINDOW COMPONENT
 ============================================================= */
 
-function WindowBar({ title, icon, active }) {
+function WindowBar({ title, icon, active, onClose, onMaximize, onPointerDown, onPointerMove, onPointerUp }) {
   return (
     <div
       className={
@@ -1209,6 +1403,10 @@ function WindowBar({ title, icon, active }) {
           ? 'window-titlebar window-titlebar-active'
           : 'window-titlebar'
       }
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
 
       <div className="window-title-left">
@@ -1222,9 +1420,9 @@ function WindowBar({ title, icon, active }) {
       </div>
 
       <div className="window-controls">
-        <span>—</span>
-        <span>□</span>
-        <span>×</span>
+        <button type="button" title="Minimise" onClick={event => {event.stopPropagation();onClose?.()}}>—</button>
+        <button type="button" title="Maximise or restore" onClick={event => {event.stopPropagation();onMaximize?.()}}>□</button>
+        <button type="button" title="Close" onClick={event => {event.stopPropagation();onClose?.()}}>×</button>
       </div>
 
     </div>
@@ -1241,8 +1439,9 @@ function FakeFile({ icon, name, onOpen }) {
     <button
       className="fake-file"
       type="button"
-      onClick={(event) => { event.stopPropagation(); onOpen?.() }}
-      title={`Open ${name}`}
+      onClick={(event) => { event.stopPropagation(); if (event.detail === 0 || event.detail >= 2 || window.matchMedia('(pointer: coarse)').matches) onOpen?.() }}
+      onDoubleClick={(event) => { event.stopPropagation(); onOpen?.() }}
+      title={`Double-click to open ${name} (tap on mobile)`}
     >
 
       <div className="fake-file-icon">
@@ -4752,6 +4951,177 @@ button {
   .birthday-shell .password-intro,.birthday-shell .password-subtext {font-size:13px;}
   .birthday-shell .enter-button {min-width:105px;}
   .birthday-shell .photo-toolbar button {font-size:9px;padding:4px;}
+}
+
+/* ============================================================
+   CLAR_OS FINAL PASSWORD DESKTOP — OCTOBER 2026
+   These styles intentionally affect only the login CRT.
+   ============================================================ */
+.birthday-shell .desktop {
+  background:
+    radial-gradient(ellipse at 54% 16%,rgba(137,79,204,.21),transparent 36%),
+    radial-gradient(ellipse at 12% 82%,rgba(103,35,175,.32),transparent 43%),
+    radial-gradient(ellipse at 90% 73%,rgba(68,33,134,.3),transparent 39%),
+    repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.045) 3px 4px),
+    linear-gradient(130deg,#1b0b33 0%,#10071f 55%,#230f40 100%);
+}
+.birthday-shell .desktop.wallpaper-stars {
+  background:radial-gradient(#d3afff80 1px,transparent 1.4px) 0 0/31px 31px,
+  radial-gradient(#9a71d680 .6px,transparent 1.2px) 12px 9px/19px 19px,
+  linear-gradient(125deg,#140b28,#080414 70%,#2c174e);
+}
+.birthday-shell .desktop.wallpaper-plain {background:linear-gradient(130deg,#21143c,#100920 65%,#271646);}
+.birthday-shell .desktop.accent-rose .window-titlebar,
+.birthday-shell .desktop.accent-rose .notes-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .cd-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .photos-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .files-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .recording-window .window-titlebar,
+.birthday-shell .desktop.accent-rose .terminal-window .window-titlebar {background:linear-gradient(90deg,#7a295d,#bc6098)!important;}
+.birthday-shell .desktop.accent-blue .window-titlebar,
+.birthday-shell .desktop.accent-blue .notes-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .cd-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .photos-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .files-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .recording-window .window-titlebar,
+.birthday-shell .desktop.accent-blue .terminal-window .window-titlebar {background:linear-gradient(90deg,#273c86,#527dc3)!important;}
+.birthday-shell .desktop-window {rotate:0deg!important;border:2px solid #b88cdd;box-shadow:5px 6px 0 #070313b3,0 14px 28px #0009;}
+.birthday-shell .window-titlebar {
+  touch-action:none;cursor:grab;user-select:none;
+  background:linear-gradient(90deg,#4e267f,#7941a7 60%,#a16ad0)!important;
+  color:#f9f2ff;letter-spacing:.4px;
+}
+.birthday-shell .window-titlebar:active {cursor:grabbing;}
+.birthday-shell .window-titlebar-active {background:linear-gradient(90deg,#7133ad,#a35bc8)!important;}
+.birthday-shell .window-controls {display:flex;gap:3px;}
+.birthday-shell .window-controls button {
+  width:17px;height:16px;min-width:17px;padding:0;line-height:12px;
+  color:#291341;background:#d6b7ee;border:2px outset #f7e8ff;
+  font:700 11px 'Courier New',monospace;cursor:pointer;
+}
+.birthday-shell .window-controls button:active {border-style:inset;}
+.birthday-shell .desktop-header {background:linear-gradient(90deg,#391a66,#291447 55%,#47246e);}
+.birthday-shell .notes-window {left:3%;top:10%;width:30%;height:38%;}
+.birthday-shell .cd-window {right:3%;top:10%;width:29%;height:29%;}
+.birthday-shell .photos-window {left:3%;top:56%;width:31%;height:35%;}
+.birthday-shell .files-window {right:3%;top:54%;width:31%;height:35%;}
+.birthday-shell .recording-window {right:35%;top:11%;width:29%;height:22%;}
+.birthday-shell .terminal-window {left:36%;top:73%;width:29%;height:19%;}
+.birthday-shell .password-panel {left:50%;top:41%;width:31%;z-index:80;}
+.birthday-shell .desktop-shortcuts {
+  position:absolute;left:35%;top:10%;width:30%;max-width:30%;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px 4px;justify-items:center;align-content:start;z-index:13;
+}
+.birthday-shell .desktop-shortcuts button {
+  min-width:0;width:100%;max-width:95px;min-height:52px;
+  padding:5px 2px;color:#f1e4ff;font:10px/1.2 'Courier New',monospace;
+  overflow-wrap:anywhere;
+}
+.birthday-shell .desktop-shortcuts button span {font-size:22px;line-height:25px;}
+.birthday-shell .desktop-shortcuts button.selected {background:#ad73ec55;border:1px dotted #f4d8ff;}
+.birthday-shell .notes-paper {overflow-y:auto;}
+.birthday-shell .handwriting {padding-bottom:12px;}
+.birthday-shell .note-postscript {font-size:11px;line-height:1.45;color:#72557e;margin-top:17px;}
+.birthday-shell .note-whisper {font-size:11px;font-style:italic;color:#6e368d;border-top:1px dashed #bc9fb6;padding-top:10px;}
+.birthday-shell .terminal-window .terminal-body {overflow:auto;max-height:calc(100% - 29px);padding:9px;font-size:9px;}
+.birthday-shell .terminal-output {white-space:pre-wrap;overflow-wrap:anywhere;max-height:95px;overflow-y:auto;font:9px/1.5 'Courier New',monospace;}
+.birthday-shell .terminal-output div {margin-bottom:2px;}
+.birthday-shell .terminal-last {color:#8ef1ca;}
+.birthday-shell .terminal-command-form {display:flex;gap:4px;align-items:center;color:#b5f9d6;margin:5px 0;}
+.birthday-shell .terminal-command-form input {
+  background:#0d0b17;border:1px solid #528f79;color:#b4ffd5;
+  width:100%;min-width:0;padding:4px;font:10px 'Courier New',monospace;
+}
+.birthday-shell .terminal-button {margin-top:4px;}
+.birthday-shell .retro-dialog-backdrop {z-index:125;}
+.birthday-shell .file-dialog {width:min(475px,96%);}
+.birthday-shell .file-dialog .retro-dialog-body {max-height:min(60vh,560px);overflow-y:auto;}
+.birthday-shell .file-lock-icon {font-size:34px;margin:8px 0 15px;}
+.birthday-shell .file-locked small,.birthday-shell .feetgang-content small {font:9px 'Courier New',monospace;color:#80648d;}
+.birthday-shell .feetgang-content p {line-height:1.5;}
+.birthday-shell .message-archive {text-align:left;max-height:370px;overflow-y:auto;padding:4px;}
+.birthday-shell .message-archive-header {font:700 12px 'Courier New',monospace;padding:8px;border-bottom:1px solid #c6a3d9;margin-bottom:10px;}
+.birthday-shell .message-archive-header small {display:block;font-size:9px;font-weight:400;margin-top:4px;}
+.birthday-shell .chat-bubble {width:85%;max-width:340px;padding:9px 11px;margin:9px 0;border:1px solid #c6a7d5;background:#e3d1f2;border-radius:5px;}
+.birthday-shell .chat-naidu {margin-left:auto;background:#c7a6e6;}
+.birthday-shell .chat-bubble small {display:block;font:700 10px 'Courier New',monospace;color:#54316f;}
+.birthday-shell .chat-bubble p {white-space:pre-line;margin:5px 0 2px;line-height:1.35;}
+.birthday-shell .chat-bubble span {display:block;text-align:right;font:9px 'Courier New',monospace;color:#725883;}
+.birthday-shell .chat-end {text-align:center;font:9px 'Courier New',monospace;color:#8d709b;margin:12px;}
+.birthday-shell .secret-muted {font:10px 'Courier New',monospace;color:#826895;}
+.birthday-shell .start-menu {
+  position:absolute;bottom:37px;left:8px;z-index:125;
+  width:min(330px,calc(100% - 16px));max-height:calc(100% - 60px);
+  display:flex;background:#e9dcf2;color:#352148;border:3px ridge #c5a5e2;
+  box-shadow:6px 8px 0 #0009;font:12px 'Trebuchet MS',sans-serif;
+}
+.birthday-shell .start-menu-side {
+  writing-mode:vertical-rl;transform:rotate(180deg);text-align:right;
+  padding:12px 9px;background:linear-gradient(#341359,#7446a3);
+  color:#fff;font:bold 19px 'Courier New',monospace;letter-spacing:2px;
+}
+.birthday-shell .start-menu-side span {font-size:11px;opacity:.7;}
+.birthday-shell .start-menu-items {flex:1;min-width:0;overflow-y:auto;padding:6px;}
+.birthday-shell .start-menu-heading {padding:8px;font:700 10px 'Courier New',monospace;color:#7a5894;border-bottom:1px solid #b79ec8;}
+.birthday-shell .start-menu-items button {
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  background:transparent;border:0;padding:8px 10px;color:#39224d;font-size:12px;
+}
+.birthday-shell .start-menu-items button:hover,.birthday-shell .start-menu-items button:focus-visible {background:#8654b5;color:white;outline:0;}
+.birthday-shell .start-menu-items button span {font-size:17px;width:23px;text-align:center;}
+.birthday-shell .start-menu-items button small {margin-left:auto;}
+.birthday-shell .start-menu-footer {border-top:1px solid #b69acb;margin-top:5px;padding:8px 4px;font:9px 'Courier New',monospace;color:#765e8a;}
+.birthday-shell .control-panel {width:min(530px,96%);text-align:left;}
+.birthday-shell .control-tabs {display:flex;gap:2px;flex-wrap:wrap;padding:10px 12px 0;border-bottom:1px solid #d1b8df;}
+.birthday-shell .control-tabs button,.birthday-shell .control-options button,.birthday-shell .control-toggle {
+  padding:8px 10px;background:#e3d2f0;border:2px outset #fff;color:#51336a;
+  font:11px 'Courier New',monospace;
+}
+.birthday-shell .control-tabs button.chosen,.birthday-shell .control-options button.chosen {background:#9a67c6;color:white;border-style:inset;}
+.birthday-shell .control-content {padding:17px 20px;min-height:205px;font-size:13px;}
+.birthday-shell .control-content p {margin:13px 0 7px;}
+.birthday-shell .control-content small {display:block;margin-top:15px;color:#80638f;}
+.birthday-shell .control-options {display:flex;flex-wrap:wrap;gap:7px;}
+.birthday-shell .control-bottom {padding:8px 15px 14px;text-align:right;}
+.birthday-shell .finder-dialog {width:min(430px,96%);}
+.birthday-shell .finder-content {padding:15px;display:flex;flex-direction:column;gap:7px;max-height:60vh;overflow-y:auto;}
+.birthday-shell .finder-content label {font:700 12px 'Courier New',monospace;}
+.birthday-shell .finder-content input {padding:9px;border:2px inset #bda5cc;font-size:12px;}
+.birthday-shell .finder-content button {text-align:left;padding:8px;background:#e5d5f1;border:1px solid #b89ad0;color:#4c3164;}
+.birthday-shell .finder-content button:hover {background:#c6a6e0;}
+.birthday-shell .clar-screensaver {
+  position:absolute;inset:0;z-index:160;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 40%,#3d1972,#090412 75%);
+  color:#d8bbff;overflow:hidden;
+}
+.birthday-shell .screensaver-stars {font:60px Georgia,serif;animation:clarSaverFloat 6s ease-in-out infinite alternate;color:#dfb6ff;}
+.birthday-shell .screensaver-logo {font:700 clamp(45px,9vw,120px) 'Courier New',monospace;letter-spacing:.12em;text-shadow:0 0 25px #b077ff;}
+.birthday-shell .clar-screensaver p {font:11px 'Courier New',monospace;opacity:.7;}
+@keyframes clarSaverFloat {from{transform:translate(-45px,-25px) rotate(-8deg)}to{transform:translate(45px,35px) rotate(8deg)}}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop-shortcuts {left:35%;top:10%;width:30%;max-width:30%;display:grid;}
+  .birthday-shell .desktop-shortcuts button {font-size:9px;min-height:47px;}
+  .birthday-shell .password-panel {width:36%;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop {min-height:0;padding:54px 12px 58px;display:flex;flex-direction:column;gap:14px;}
+  .birthday-shell .desktop-window {position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;max-width:100%;height:auto!important;rotate:0deg!important;}
+  .birthday-shell .password-panel {position:relative;top:auto;left:auto;width:100%;order:0;transform:none;}
+  .birthday-shell .notes-window {order:1;min-height:320px;max-height:380px;}
+  .birthday-shell .cd-window {order:2;min-height:215px;}
+  .birthday-shell .photos-window {order:3;min-height:325px;}
+  .birthday-shell .files-window {order:4;min-height:250px;}
+  .birthday-shell .recording-window {order:5;min-height:170px;}
+  .birthday-shell .terminal-window {order:6;min-height:230px;}
+  .birthday-shell .desktop-shortcuts {position:relative;left:auto;top:auto;right:auto;order:7;width:100%;max-width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;}
+  .birthday-shell .desktop-shortcuts button {font-size:9px;min-height:58px;}
+  .birthday-shell .retro-taskbar {order:8;position:sticky;bottom:0;z-index:70;}
+  .birthday-shell .window-titlebar {touch-action:auto;cursor:default;}
+  .birthday-shell .start-menu {position:fixed;bottom:35px;left:10px;max-height:65vh;z-index:155;}
+  .birthday-shell .retro-dialog-backdrop {position:fixed;inset:0;z-index:155;}
+  .birthday-shell .clar-screensaver {position:fixed;}
 }
 
 `;
