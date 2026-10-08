@@ -16,11 +16,38 @@ export default function BirthdayPage() {
   const [terminalOpen, setTerminalOpen] = useState(false)
   const [photoOpen, setPhotoOpen] = useState(true)
   const [videoOpen, setVideoOpen] = useState(false)
+  const [startOpen, setStartOpen] = useState(false)
+  const [photoIndex, setPhotoIndex] = useState(0)
+  const [photoPaused, setPhotoPaused] = useState(false)
+  const [photoMissing, setPhotoMissing] = useState({})
+  const [videoIndex, setVideoIndex] = useState(0)
+  const [videoMissing, setVideoMissing] = useState(false)
+  const [launching, setLaunching] = useState(null)
+  const [terminalInput, setTerminalInput] = useState('')
+  const [terminalLog, setTerminalLog] = useState(['CLAR_OS [Version 22.0]','Personal Archive Recovery System','[OK] Identity verified','[OK] Memory database mounted','Type HELP to begin.'])
+  const [windowOrder, setWindowOrder] = useState({})
+  const [windowPositions, setWindowPositions] = useState({})
+  const dragRef = useRef(null)
+  const nextZRef = useRef(20)
+  const launchTimerRef = useRef(null)
 
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [time, setTime] = useState(new Date())
 
   const audioRef = useRef(null)
+  const videoRef = useRef(null)
+  const resumeAfterVideoRef = useRef(false)
+  const archivePhotos = Array.from({length:8},(_,i)=>'/images/archive-'+String(i+1).padStart(2,'0')+'.jpg')
+  const archiveVideos = Array.from({length:3},(_,i)=>'/media/clar-tape-'+String(i+1).padStart(2,'0')+'.mp4')
+  const bringFront = (id) => { nextZRef.current += 1; setWindowOrder(p=>({...p,[id]:nextZRef.current})) }
+  const openProgram = (section) => { setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100) }
+  const resetDesktop = () => { setNotesOpen(true);setMusicOpen(true);setFilesOpen(true);setPhotoOpen(true);setTerminalOpen(false);setVideoOpen(false);setWindowPositions({});setStartOpen(false) }
+  useEffect(()=>()=>clearTimeout(launchTimerRef.current),[])
+  useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%8),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
+  useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;setWindowPositions(p=>({...p,[d.id]:{x:Math.max(0,d.x+e.clientX-d.startX),y:Math.max(0,d.y+e.clientY-d.startY)}}))};const stop=()=>dragRef.current=null;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop)}},[])
+  const startDrag=(e,id)=>{if(window.innerWidth<=850||e.target.closest('button'))return;const rect=e.currentTarget.parentElement.getBoundingClientRect();const desk=document.querySelector('.desktop').getBoundingClientRect();bringFront(id);dragRef.current={id,startX:e.clientX,startY:e.clientY,x:rect.left-desk.left,y:rect.top-desk.top};e.preventDefault()}
+  const winProps=(id)=>({style:{zIndex:windowOrder[id]||10,...(windowPositions[id]?{left:windowPositions[id].x,top:windowPositions[id].y,right:'auto',bottom:'auto'}:{})},onPointerDown:()=>bringFront(id)})
+  const terminalCommand=e=>{e.preventDefault();const cmd=terminalInput.trim().toUpperCase();setTerminalInput('');if(!cmd)return;if(cmd==='CLEAR'){setTerminalLog([]);return}if(cmd==='EXIT'){setTerminalOpen(false);return}if(cmd==='MEMORY'){openProgram(sections[0]);return}if(cmd==='CONNECTIONS'){openProgram(sections[5]);return}const responses={HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY CONNECTIONS CLEAR EXIT',DIR:'MEMORIES MESSAGES SOUNDTRACK CHAOS QUIZ CONNECTIONS',WHOAMI:'CLAR // ARCHIVE OWNER',DATE:'19.11.2026 // ARCHIVE DATE',TIME:'Time passed. Some things stayed.',RECOVER:'Recovery complete. Nothing important was ever lost.',HOME:"Home is not always a place."};setTerminalLog(p=>[...p,'C:\\CLAR\\ARCHIVE> '+cmd,responses[cmd]||'Command not found. Type HELP.'].slice(-20))}
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('birthday_authenticated')
@@ -81,10 +108,10 @@ export default function BirthdayPage() {
     },
     {
       number: '06',
-      title: 'JOURNEY',
+      title: 'CONNECTIONS',
       sub: 'everywhere somehow led to here',
       link: '/birthday/journey',
-      icon: '🗺️',
+      icon: '🌐',
       colour: 'red',
     },
   ]
@@ -123,7 +150,7 @@ export default function BirthdayPage() {
 
       <audio
         ref={audioRef}
-        src="/audio/birthday-song.mp3"
+        src="/audio/archive-song.mp3"
         loop
       />
 
@@ -194,22 +221,22 @@ export default function BirthdayPage() {
 
         <div className="desktop-icons">
 
-          <div className="desktop-icon">
+          <div className="desktop-icon" onClick={() => setFilesOpen(true)}>
             <div className="icon-box purple">📁</div>
             <span>MEMORY</span>
           </div>
 
-          <div className="desktop-icon">
+          <div className="desktop-icon" onClick={() => setMusicOpen(true)}>
             <div className="icon-box pink">💿</div>
             <span>SOUND</span>
           </div>
 
-          <div className="desktop-icon">
+          <div className="desktop-icon" onClick={() => setVideoOpen(true)}>
             <div className="icon-box blue">📼</div>
             <span>VIDEO</span>
           </div>
 
-          <div className="desktop-icon">
+          <div className="desktop-icon" onClick={() => setNotesOpen(true)}>
             <div className="icon-box yellow">TXT</div>
             <span>NOTES</span>
           </div>
@@ -220,9 +247,9 @@ export default function BirthdayPage() {
             WELCOME WINDOW
         ===================================================== */}
 
-        <div className="window welcome-window">
+        <div className="window welcome-window" {...winProps("welcome")}>
 
-          <div className="window-title purple-title">
+          <div className="window-title purple-title" onPointerDown={e=>startDrag(e,"welcome")}>
             <span>WELCOME.EXE</span>
 
             <div className="window-buttons">
@@ -240,21 +267,21 @@ export default function BirthdayPage() {
             </div>
 
             <div className="glitch-title">
-              WELCOME
-              <span>CLAR</span>
+              ACCESS
+              <span>GRANTED.</span>
             </div>
 
             <p className="welcome-copy">
-              you've entered the archive.
+              Welcome back, Clar.
               <br />
-              please explore responsibly.
+              We've recovered 22 years of memories, questionable decisions, and things that probably should've stayed in the group chat.
               <br />
-              <span>...or don't.</span>
+              <span>Some things are worth keeping forever, though.</span>
             </p>
 
             <div className="terminal-line">
               <span>&gt;</span>
-              SYSTEM HAS BEEN WAITING FOR YOU
+              22 YEARS OF DATA RECOVERED
               <span className="cursor">_</span>
             </div>
 
@@ -267,9 +294,9 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {notesOpen && (
-          <div className="window notes-window">
+          <div className="window notes-window" {...winProps("notes")}>
 
-            <div className="window-title yellow-title">
+            <div className="window-title yellow-title" onPointerDown={e=>startDrag(e,"notes")}>
               <span>notes.txt</span>
 
               <button onClick={() => setNotesOpen(false)}>
@@ -277,48 +304,17 @@ export default function BirthdayPage() {
               </button>
             </div>
 
-            <div className="notes-paper">
-
-              <div className="paper-tape" />
-
-              <p className="scribble big">
-                READ BEFORE
-                <br />
-                PROCEEDING
-              </p>
-
-              <p className="scribble">
-                Hi Clar,
-              </p>
-
-              <p className="scribble">
-                this is sort of an archive for you
-                to look back on your past 22 years.
-              </p>
-
-              <p className="scribble">
-                as much as it is a memory book for you,
-                don't think I didn't add a liiittlee bit
-                of hidden stuff in here HAHAHAH
-              </p>
-
-              <p className="scribble">
-                I took a heck of a long time to make
-                sure you spend a long time on this
-                so good LUCCCKKK :)
-              </p>
-
-              <div className="scribble-arrow">
-                ↓↓↓
-              </div>
-
-              <div className="tiny-warning">
-                <span>WARNING:</span>
-                hidden objects detected
-              </div>
-
+            <div className="notes-paper archive-note">
+              <p className="scribble big">to whoever finds this.</p>
+              <p className="scribble">This computer has been holding onto things for a very long time.</p>
+              <p className="scribble">Photographs, conversations, familiar faces, forgotten moments. Little pieces of a life that somehow found their way here.</p>
+              <p className="scribble">Some files may seem insignificant. Some might bring back things you haven't thought about in years.</p>
+              <p className="scribble">Nothing here is in any particular order. That's the thing about memories, isn't it?</p>
+              <p className="scribble">They're never quite where you expect them to be.</p>
+              <p className="scribble">Take your time. There's no rush to reach the end.</p>
+              <p className="scribble">— an old friend</p>
+              <div className="tiny-warning">LAST MODIFIED: 19.11.2026</div>
             </div>
-
           </div>
         )}
 
@@ -327,9 +323,9 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {musicOpen && (
-          <div className="window music-window">
+          <div className="window music-window" {...winProps("music")}>
 
-            <div className="window-title pink-title">
+            <div className="window-title pink-title" onPointerDown={e=>startDrag(e,"music")}>
 
               <span>CD_PLAYER.EXE</span>
 
@@ -355,11 +351,11 @@ export default function BirthdayPage() {
                 </span>
 
                 <strong>
-                  birthday.exe
+                  untitled_memory.mp3
                 </strong>
 
                 <small>
-                  something chosen specifically for you
+                  main archive soundtrack
                 </small>
 
                 <div className="music-progress">
@@ -385,9 +381,9 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {photoOpen && (
-          <div className="window photo-window">
+          <div className="window photo-window" {...winProps("photos")}>
 
-            <div className="window-title blue-title">
+            <div className="window-title blue-title" onPointerDown={e=>startDrag(e,"photos")}>
 
               <span>PHOTOS / RANDOM</span>
 
@@ -397,27 +393,17 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="photo-collage">
-
-              <div className="photo-placeholder photo-a">
-                <span>YOUR<br />PHOTO<br />HERE</span>
+            <div className="archive-photo-viewer">
+              <div className="archive-photo-frame">
+                {!photoMissing[photoIndex] ? <img src={archivePhotos[photoIndex]} alt={'Archive photo '+(photoIndex+1)} onError={()=>setPhotoMissing(p=>({...p,[photoIndex]:true}))}/> : <div className="archive-photo-pending">▧<br/>IMAGE {String(photoIndex+1).padStart(3,'0')} NOT YET RESTORED<br/><small>ADD PHOTO LATER</small></div>}
               </div>
-
-              <div className="photo-placeholder photo-b">
-                <span>DROP<br />PHOTO</span>
+              <div className="archive-photo-controls">
+                <button onClick={()=>setPhotoIndex(i=>(i+7)%8)}>◀ PREV</button>
+                <button onClick={()=>setPhotoPaused(p=>!p)}>{photoPaused?'▶ PLAY':'Ⅱ PAUSE'}</button>
+                <button onClick={()=>setPhotoIndex(i=>(i+1)%8)}>NEXT ▶</button>
               </div>
-
-              <div className="photo-placeholder photo-c">
-                <span>IMG_0022</span>
-              </div>
-
-              <div className="photo-caption">
-                FIG. 022 — SOMEONE WAS DEFINITELY
-                NOT SUPPOSED TO TAKE THIS PHOTO
-              </div>
-
+              <div className="archive-photo-meta">{String(photoIndex+1).padStart(2,'0')} / 08 <button onClick={()=>openProgram(sections[0])}>OPEN FULL ARCHIVE ↗</button></div>
             </div>
-
           </div>
         )}
 
@@ -426,11 +412,11 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {videoOpen && (
-          <div className="window video-window">
+          <div className="window video-window" {...winProps("video")}>
 
-            <div className="window-title purple-title">
+            <div className="window-title purple-title" onPointerDown={e=>startDrag(e,"video")}>
 
-              <span>VIDEO_001.MOV</span>
+              <span>VIDEO_ARCHIVE.exe</span>
 
               <button onClick={() => setVideoOpen(false)}>
                 ×
@@ -438,22 +424,11 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="video-placeholder">
-
-              <div className="play-circle">
-                ▶
-              </div>
-
-              <span>
-                ADD VIDEO
-              </span>
-
-              <small>
-                /public/media/video.mp4
-              </small>
-
+            <div className="archive-video-viewer">
+              <div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
+              {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
+              <small>SP / VHS / TRACKING AUTO</small>
             </div>
-
           </div>
         )}
 
@@ -462,9 +437,9 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {filesOpen && (
-          <div className="window files-window">
+          <div className="window files-window" {...winProps("files")}>
 
-            <div className="window-title green-title">
+            <div className="window-title green-title" onPointerDown={e=>startDrag(e,"files")}>
 
               <span>ARCHIVE / FILES</span>
 
@@ -477,9 +452,9 @@ export default function BirthdayPage() {
             <div className="file-grid">
 
               {sections.map((section) => (
-                <Link
+                <button
                   key={section.number}
-                  href={section.link}
+                  onClick={() => openProgram(section)}
                   className="mini-file"
                 >
 
@@ -495,7 +470,7 @@ export default function BirthdayPage() {
                     {section.title}
                   </div>
 
-                </Link>
+                </button>
               ))}
 
             </div>
@@ -508,11 +483,11 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         {terminalOpen && (
-          <div className="window terminal-window">
+          <div className="window terminal-window" {...winProps("terminal")}>
 
             <div className="window-title green-title">
 
-              <span>TERMINAL</span>
+              <span>SYSTEM_TERMINAL.exe</span>
 
               <button onClick={() => setTerminalOpen(false)}>
                 ×
@@ -520,19 +495,11 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="terminal">
-
-              <p>&gt; booting CLAR_OS...</p>
-              <p>&gt; memories found: 22</p>
-              <p>&gt; secrets found: ???</p>
-              <p>&gt; birthday detected.</p>
-              <p>&gt; good luck.</p>
-              <p className="terminal-green">
-                &gt; _
-              </p>
-
+            <div className="terminal archive-terminal">
+              {terminalLog.map((line,i)=><p key={i}>&gt; {line}</p>)}
+              <form onSubmit={terminalCommand}><label>C:\\CLAR\\ARCHIVE&gt; <input value={terminalInput} onChange={e=>setTerminalInput(e.target.value)} spellCheck={false}/></label><button type="submit">↵</button></form>
+              <div className="terminal-suggestions">{['HELP','DIR','WHOAMI','TIME'].map(x=><button key={x} onClick={()=>setTerminalInput(x)}>{x}</button>)}</div>
             </div>
-
           </div>
         )}
 
@@ -541,6 +508,7 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         <div className="dock">
+          <button onClick={()=>setStartOpen(p=>!p)} title="Start menu">⊞</button>
 
           <button
             onClick={() => setNotesOpen(true)}
@@ -637,6 +605,7 @@ export default function BirthdayPage() {
             BOTTOM STATUS BAR
         ===================================================== */}
 
+        {startOpen && <div className="archive-start-menu"><strong>CLAR_OS // START</strong>{[['WELCOME',null],['FILES',setFilesOpen],['NOTES',setNotesOpen],['MUSIC',setMusicOpen],['PHOTOS',setPhotoOpen],['VIDEOS',setVideoOpen],['TERMINAL',setTerminalOpen]].map(([label,setter])=><button key={label} onClick={()=>{if(setter)setter(true);setStartOpen(false)}}>▸ {label}</button>)}<button onClick={resetDesktop}>↺ RESET DESKTOP</button><button onClick={handleLogout}>⇥ LOG OUT</button></div>}
         <div className="bottom-status">
 
           <span>
@@ -649,7 +618,7 @@ export default function BirthdayPage() {
           </span>
 
           <span>
-            MEMORY SPACE: 87%
+            ARCHIVE v22.0 // MEMORY PRESERVED
           </span>
 
           <span>
@@ -659,6 +628,8 @@ export default function BirthdayPage() {
         </div>
 
       </section>
+
+      {launching && <div className="archive-launch"><div><small>CLAR_OS // EXECUTING PROGRAM</small><div className="launch-icon">{launching.icon}</div><h2>{launching.title}.exe</h2><p>RECOVERING ARCHIVED DATA...</p><div className="launch-bar"><span/></div><small>PLEASE WAIT // ESTABLISHING CONNECTION</small></div></div>}
 
       {/* =========================================================
           EASTER EGG MODAL
@@ -2196,6 +2167,23 @@ export default function BirthdayPage() {
           }
 
         }
+
+/* Redesigned unlocked archive: functional media and draggable windows */
+.window{touch-action:auto}.window-title{cursor:grab;touch-action:none;user-select:none}
+.welcome-copy{line-height:1.7!important}.glitch-title{font-size:clamp(24px,3vw,42px)!important}
+.archive-note{min-height:0!important;padding:20px!important}.archive-note .scribble{line-height:1.5!important;margin:0 0 13px!important}.archive-note .scribble.big{font-size:22px!important}
+.archive-photo-viewer{padding:12px}.archive-photo-frame{aspect-ratio:4/3;background:#090614;border:4px solid #795c98;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.archive-photo-frame img{width:100%;height:100%;object-fit:cover}.archive-photo-pending{text-align:center;font:13px/1.8 monospace;color:#e2b8ef;padding:15px}
+.archive-photo-controls{display:flex;gap:6px;margin-top:10px}.archive-photo-controls button,.archive-photo-meta button{background:#623984;color:#f2d5ff;border:1px solid #a87ac8;padding:7px;font:11px monospace;cursor:pointer}
+.archive-photo-controls button{flex:1}.archive-photo-meta{display:flex;justify-content:space-between;align-items:center;margin-top:9px;font:11px monospace;color:#8de5e3}
+.archive-video-viewer{padding:12px}.archive-tapes{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}.archive-tapes button{background:#2b183d;border:1px solid #8055a3;color:#edd0fa;padding:7px;font:10px monospace}.archive-tapes button.active{background:#77499d}
+.archive-video-viewer video{width:100%;aspect-ratio:16/9;background:#080511}.archive-video-pending{min-height:170px;background:#080511;display:grid;place-items:center;text-align:center;color:#e0b5ed;font:12px monospace}.archive-video-viewer>small{font:10px monospace;color:#9fdedc}
+.archive-terminal{max-height:340px;overflow:auto}.archive-terminal form{display:flex;gap:8px;align-items:center}.archive-terminal input{background:#090613;color:#9ce8d8;border:0;border-bottom:1px solid #5a4774;max-width:155px;outline:none}.archive-terminal button{background:#38204f;color:#a6e7e2;border:1px solid #6e4d87}
+.terminal-suggestions{display:flex;gap:6px;margin-top:10px}
+.archive-start-menu{position:fixed;bottom:74px;left:15px;width:240px;background:#20112f;border:1px solid #b47ddd;z-index:300;display:flex;flex-direction:column;padding:9px;box-shadow:0 0 25px #08040c}
+.archive-start-menu strong{padding:10px;background:#633886;font:12px monospace}.archive-start-menu button{background:transparent;border:0;color:#e4c8f1;text-align:left;padding:8px;font:12px monospace}.archive-start-menu button:hover{background:#613986}
+.archive-launch{position:fixed;inset:0;z-index:1200;background:#080511ed;display:grid;place-items:center;color:#e9c9ff;font-family:monospace}.archive-launch>div{border:1px solid #b482d8;background:#1d1030;box-shadow:0 0 50px #8e45bf55;padding:35px;text-align:center;width:min(90vw,470px)}.archive-launch small{color:#8be8dc}.launch-icon{font-size:55px;margin:22px}.archive-launch h2{font-size:24px}.launch-bar{height:9px;border:1px solid #a76acb;margin:20px 0}.launch-bar span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#7de9e3,#d18cf0,#ffaad8);transform-origin:left;animation:archive-load 1.1s linear forwards}@keyframes archive-load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media(max-width:850px){.window-title{touch-action:auto}.archive-start-menu{bottom:90px}.archive-photo-viewer{padding:10px}}
 
       `}</style>
 
