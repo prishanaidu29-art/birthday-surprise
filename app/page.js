@@ -457,12 +457,18 @@ export default function HomePage() {
                     className={`desktop-window notes-window ${
                       activeWindow === 'notes' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("notes")}
                     onClick={() => focusWindow('notes')}
                   >
                     <WindowBar
                       title="notes.txt"
                       icon="▤"
                       active={activeWindow === 'notes'}
+                      onClose={() => hideWindow("notes")}
+                      onMaximize={() => setMaximized(maximized === "notes" ? null : "notes")}
+                      onPointerDown={(event) => beginDrag(event, "notes")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="notes-paper">
@@ -515,12 +521,18 @@ export default function HomePage() {
                     className={`desktop-window files-window ${
                       activeWindow === 'files' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("files")}
                     onClick={() => focusWindow('files')}
                   >
                     <WindowBar
                       title="ARCHIVE / FILES"
                       icon="▦"
                       active={activeWindow === 'files'}
+                      onClose={() => hideWindow("files")}
+                      onMaximize={() => setMaximized(maximized === "files" ? null : "files")}
+                      onPointerDown={(event) => beginDrag(event, "files")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="file-grid">
@@ -576,12 +588,18 @@ export default function HomePage() {
                     className={`desktop-window cd-window ${
                       activeWindow === 'cd' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("cd")}
                     onClick={() => focusWindow('cd')}
                   >
                     <WindowBar
                       title="CD PLAYER.exe"
                       icon="◉"
                       active={activeWindow === 'cd'}
+                      onClose={() => hideWindow("cd")}
+                      onMaximize={() => setMaximized(maximized === "cd" ? null : "cd")}
+                      onPointerDown={(event) => beginDrag(event, "cd")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="cd-player-body">
@@ -652,12 +670,18 @@ export default function HomePage() {
                     className={`desktop-window photos-window ${
                       activeWindow === 'photos' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("photos")}
                     onClick={() => focusWindow('photos')}
                   >
                     <WindowBar
                       title="PHOTOS / IMG_VIEWER"
                       icon="▣"
                       active={activeWindow === 'photos'}
+                      onClose={() => hideWindow("photos")}
+                      onMaximize={() => setMaximized(maximized === "photos" ? null : "photos")}
+                      onPointerDown={(event) => beginDrag(event, "photos")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="photo-viewer">
@@ -729,12 +753,18 @@ export default function HomePage() {
                     className={`desktop-window recording-window ${
                       activeWindow === 'recording' ? 'window-active' : ''
                     }`}
+                    style={windowStyle("recording")}
                     onClick={() => focusWindow('recording')}
                   >
                     <WindowBar
                       title="VOICE_NOTE.wav"
                       icon="♫"
                       active={activeWindow === 'recording'}
+                      onClose={() => hideWindow("recording")}
+                      onMaximize={() => setMaximized(maximized === "recording" ? null : "recording")}
+                      onPointerDown={(event) => beginDrag(event, "recording")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="recording-body">
@@ -792,13 +822,18 @@ export default function HomePage() {
                     className={`desktop-window terminal-window ${
                       activeWindow === 'terminal' ? 'window-active' : ''
                     }`}
-                    style={{ display: terminalOpen ? undefined : 'none' }}
-                     onClick={() => focusWindow('terminal')}
+                    style={windowStyle("terminal")}
+                    onClick={() => focusWindow('terminal')}
                   >
                     <WindowBar
                       title="SYSTEM_TERMINAL"
                       icon=">"
                       active={activeWindow === 'terminal'}
+                      onClose={() => hideWindow("terminal")}
+                      onMaximize={() => setMaximized(maximized === "terminal" ? null : "terminal")}
+                      onPointerDown={(event) => beginDrag(event, "terminal")}
+                      onPointerMove={moveDrag}
+                      onPointerUp={endDrag}
                     />
 
                     <div className="terminal-body">
@@ -816,8 +851,13 @@ export default function HomePage() {
                       </div>
 
                       <div className="terminal-output">
-                        {terminalText}
+                        {terminalHistory.map((line,index) => <div key={index}>{line}</div>)}
+                        <div className="terminal-last">{terminalText}</div>
                       </div>
+                      <form className="terminal-command-form" onSubmit={event => {event.preventDefault();runCommand(terminalCommand)}}>
+                        <span>C:\CLAR&gt;</span>
+                        <input aria-label="Terminal command" value={terminalCommand} onChange={event=>setTerminalCommand(event.target.value)} placeholder="type HELP" spellCheck="false" />
+                      </form>
 
                       <button
                         className="terminal-button"
@@ -913,18 +953,25 @@ export default function HomePage() {
                   </div>
 
                   <div className="retro-taskbar">
-                    <button type="button" className="retro-start" onClick={() => setShowRecycle(true)}>✦ START</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('notes')}>▤ notes.txt</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('cd')}>◉ CD PLAYER.exe</button>
-                    <button type="button" className="retro-tab" onClick={() => focusWindow('files')}>📁 FILES</button>
-                     <button type="button" className="retro-terminal" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}>⌘ terminal</button>
+                    <button type="button" className="retro-start" onClick={() => setStartOpen(value => !value)}>▦ START</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('notes')}>▤ notes.txt</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('cd')}>◉ CD PLAYER.exe</button>
+                    <button type="button" className="retro-tab" onClick={() => showWindow('files')}>📁 FILES</button>
+                     <button type="button" className="retro-terminal" onClick={() => showWindow('terminal')}>⌘ terminal</button>
                     <span className="retro-clock">CLAR_OS 22:04</span>
                   </div>
 
                   <div className="desktop-shortcuts" aria-label="Desktop shortcuts">
-                    <button type="button" onClick={() => setShowRecycle(true)}><span>🗑️</span>recycle bin</button>
-                    <button type="button" onClick={() => openDesktopFile('DO_NOT_OPEN')}><span>💌</span>secret.txt</button>
-                     <button type="button" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}><span>💻</span>terminal.exe</button>
+                    {[
+                      ['📁','archive','files'],['♫','voice_note.wav','recording'],
+                      ['⚙','control panel','control'],['⌕','find files','find'],
+                      ['💌','secret.txt','secret'],['💻','terminal.exe','terminal'],
+                      ['🗑️','recycle bin','recycle']
+                    ].map(([icon,label,action]) => (
+                      <button key={label} type="button" className={selectedIcon===label?'selected':''} onClick={event=>desktopIconClick(event,label,()=>openShortcut(action))} onDoubleClick={()=>openShortcut(action)} title="Double-click on computer, tap on mobile">
+                        <span>{icon}</span>{label}
+                      </button>
+                    ))}
                   </div>
 
                   {openFile && (
@@ -1276,7 +1323,7 @@ export default function HomePage() {
    WINDOW COMPONENT
 ============================================================= */
 
-function WindowBar({ title, icon, active }) {
+function WindowBar({ title, icon, active, onClose, onMaximize, onPointerDown, onPointerMove, onPointerUp }) {
   return (
     <div
       className={
@@ -1284,6 +1331,10 @@ function WindowBar({ title, icon, active }) {
           ? 'window-titlebar window-titlebar-active'
           : 'window-titlebar'
       }
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerCancel={onPointerUp}
     >
 
       <div className="window-title-left">
@@ -1297,9 +1348,9 @@ function WindowBar({ title, icon, active }) {
       </div>
 
       <div className="window-controls">
-        <span>—</span>
-        <span>□</span>
-        <span>×</span>
+        <button type="button" title="Minimise" onClick={event => {event.stopPropagation();onClose?.()}}>—</button>
+        <button type="button" title="Maximise or restore" onClick={event => {event.stopPropagation();onMaximize?.()}}>□</button>
+        <button type="button" title="Close" onClick={event => {event.stopPropagation();onClose?.()}}>×</button>
       </div>
 
     </div>
@@ -1316,8 +1367,9 @@ function FakeFile({ icon, name, onOpen }) {
     <button
       className="fake-file"
       type="button"
-      onClick={(event) => { event.stopPropagation(); onOpen?.() }}
-      title={`Open ${name}`}
+      onClick={(event) => { event.stopPropagation(); if (event.detail === 0 || event.detail >= 2 || window.matchMedia('(pointer: coarse)').matches) onOpen?.() }}
+      onDoubleClick={(event) => { event.stopPropagation(); onOpen?.() }}
+      title={`Double-click to open ${name} (tap on mobile)`}
     >
 
       <div className="fake-file-icon">
