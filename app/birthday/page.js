@@ -32,6 +32,18 @@ export default function BirthdayPage() {
   const launchTimerRef = useRef(null)
 
   const [musicPlaying, setMusicPlaying] = useState(false)
+  const [effectsEnabled, setEffectsEnabled] = useState(true)
+  const [chaosPopup, setChaosPopup] = useState(null)
+  const [crash, setCrash] = useState(null)
+  const [clickCounts, setClickCounts] = useState({})
+  const [invalidCommands, setInvalidCommands] = useState(0)
+  const [discClicks, setDiscClicks] = useState(0)
+  const [glitching, setGlitching] = useState(false)
+  const fxContextRef = useRef(null)
+  const fxTimerRef = useRef(null)
+  const crashTimerRef = useRef(null)
+  const chaosCooldownRef = useRef(0)
+  const audioWasPlayingRef = useRef(false)
   const [time, setTime] = useState(new Date())
 
   const audioRef = useRef(null)
@@ -40,14 +52,112 @@ export default function BirthdayPage() {
   const archivePhotos = Array.from({length:8},(_,i)=>'/images/archive-'+String(i+1).padStart(2,'0')+'.jpg')
   const archiveVideos = Array.from({length:3},(_,i)=>'/media/clar-tape-'+String(i+1).padStart(2,'0')+'.mp4')
   const bringFront = (id) => { nextZRef.current += 1; setWindowOrder(p=>({...p,[id]:nextZRef.current})) }
+  const beep = (kind='click') => {
+    if(!effectsEnabled || typeof window==='undefined')return
+    try {
+      const AC=window.AudioContext||window.webkitAudioContext
+      if(!AC)return
+      const ctx=fxContextRef.current||new AC()
+      fxContextRef.current=ctx
+      if(ctx.state==='suspended')ctx.resume().catch(()=>{})
+      const now=ctx.currentTime
+      const types={click:[570,.045,'sine'],error:[165,.22,'sawtooth'],glitch:[78,.48,'sawtooth'],boot:[730,.3,'triangle'],secret:[420,.18,'triangle']}
+      const [frequency,duration,type]=types[kind]||types.click
+      const osc=ctx.createOscillator(),gain=ctx.createGain()
+      osc.type=type;osc.frequency.setValueAtTime(frequency,now)
+      if(kind==='glitch')osc.frequency.exponentialRampToValueAtTime(32,now+duration)
+      if(kind==='boot')osc.frequency.exponentialRampToValueAtTime(1150,now+duration)
+      gain.gain.setValueAtTime(.0001,now)
+      gain.gain.exponentialRampToValueAtTime(kind==='click'?.025:.065,now+.008)
+      gain.gain.exponentialRampToValueAtTime(.0001,now+duration)
+      osc.connect(gain);gain.connect(ctx.destination);osc.start(now);osc.stop(now+duration+.02)
+    } catch {}
+  }
+  const showChaos = (message,kind='error') => {
+    if(Date.now()-chaosCooldownRef.current<800)return
+    chaosCooldownRef.current=Date.now()
+    beep(kind)
+    setChaosPopup(message)
+    clearTimeout(fxTimerRef.current)
+    fxTimerRef.current=setTimeout(()=>setChaosPopup(null),3800)
+  }
+  const fakeCrash = (message) => {
+    if(crash)return
+    audioWasPlayingRef.current=Boolean(audioRef.current&&!audioRef.current.paused)
+    if(audioRef.current)audioRef.current.pause()
+    setMusicPlaying(false)
+    setChaosPopup(null)
+    setCrash(message)
+    setGlitching(true)
+    beep('glitch')
+    clearTimeout(crashTimerRef.current)
+    crashTimerRef.current=setTimeout(()=>setGlitching(false),1100)
+  }
+  const reboot = () => {
+    setCrash(null);setGlitching(false);setInvalidCommands(0)
+    beep('boot')
+    if(audioWasPlayingRef.current&&audioRef.current)audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{})
+    audioWasPlayingRef.current=false
+  }
+  const tease = (id) => {
+    beep('click')
+    const next=(clickCounts[id]||0)+1
+    setClickCounts(p=>({...p,[id]:next}))
+    const reactions={
+      welcome:['WELCOME BACK. AGAIN.','STOP STARING AT ME.','GIRL THIS IS NOT A DATING SIMULATOR.'],
+      files:['YES. THOSE ARE FILES.','GIRL I HEARD YOU THE FIRST TIME.','PLEASE FIND A HOBBY.'],
+      notes:['READ IT PROPERLY FIRST.','YOU ARE STILL HERE?','IT IS NOT GOING TO REWRITE ITSELF.'],
+      photos:['THAT IS A PHOTO.','YOU CAN STOP POKING THE SCREEN.','CAMERA ROLL REQUESTING A RESTRAINING ORDER.'],
+      music:['THE CD IS TRYING ITS BEST.','STOP HARASSING THE DISC.','DISC.exe HAS FILED A COMPLAINT.']
+    }
+    if(next===3||next===5||next===8)showChaos(reactions[id]?.[next===3?0:next===5?1:2]||'CLAR_OS IS JUDGING YOU.')
+  }
   const openProgram = (section) => { setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100) }
   const resetDesktop = () => { setNotesOpen(true);setMusicOpen(true);setFilesOpen(true);setPhotoOpen(true);setTerminalOpen(false);setVideoOpen(false);setWindowPositions({});setStartOpen(false) }
-  useEffect(()=>()=>clearTimeout(launchTimerRef.current),[])
+  useEffect(()=>()=>{clearTimeout(launchTimerRef.current);clearTimeout(fxTimerRef.current);clearTimeout(crashTimerRef.current);if(fxContextRef.current)fxContextRef.current.close().catch(()=>{})},[])
   useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%8),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
   useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;setWindowPositions(p=>({...p,[d.id]:{x:Math.max(0,d.x+e.clientX-d.startX),y:Math.max(0,d.y+e.clientY-d.startY)}}))};const stop=()=>dragRef.current=null;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop)}},[])
   const startDrag=(e,id)=>{if(window.innerWidth<=850||e.target.closest('button'))return;const rect=e.currentTarget.parentElement.getBoundingClientRect();const desk=document.querySelector('.desktop').getBoundingClientRect();bringFront(id);dragRef.current={id,startX:e.clientX,startY:e.clientY,x:rect.left-desk.left,y:rect.top-desk.top};e.preventDefault()}
   const winProps=(id)=>({style:{zIndex:windowOrder[id]||10,...(windowPositions[id]?{left:windowPositions[id].x,top:windowPositions[id].y,right:'auto',bottom:'auto'}:{})},onPointerDown:()=>bringFront(id)})
-  const terminalCommand=e=>{e.preventDefault();const cmd=terminalInput.trim().toUpperCase();setTerminalInput('');if(!cmd)return;if(cmd==='CLEAR'){setTerminalLog([]);return}if(cmd==='EXIT'){setTerminalOpen(false);return}if(cmd==='MEMORY'){openProgram(sections[0]);return}if(cmd==='CONNECTIONS'){openProgram(sections[5]);return}const responses={HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY CONNECTIONS CLEAR EXIT',DIR:'MEMORIES MESSAGES SOUNDTRACK CHAOS QUIZ CONNECTIONS',WHOAMI:'CLAR // ARCHIVE OWNER',DATE:'19.11.2026 // ARCHIVE DATE',TIME:'Time passed. Some things stayed.',RECOVER:'Recovery complete. Nothing important was ever lost.',HOME:"Home is not always a place."};setTerminalLog(p=>[...p,'C:\\CLAR\\ARCHIVE> '+cmd,responses[cmd]||'Command not found. Type HELP.'].slice(-20))}
+  const terminalCommand=e=>{
+    e.preventDefault()
+    const cmd=terminalInput.trim().toUpperCase()
+    setTerminalInput('')
+    if(!cmd)return
+    beep('click')
+    if(cmd==='CLEAR'){setTerminalLog([]);setInvalidCommands(0);return}
+    if(cmd==='EXIT'){setTerminalOpen(false);setInvalidCommands(0);return}
+    if(cmd==='MEMORY'){setInvalidCommands(0);openProgram(sections[0]);return}
+    if(cmd==='CONNECTIONS'){setInvalidCommands(0);openProgram(sections[5]);return}
+    const responses={
+      HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY CONNECTIONS NAIDU CLAR MAGGOT MOP SIKAMBING S**FOL BENEDICT CLEAR EXIT',
+      DIR:'MEMORIES MESSAGES SOUNDTRACK CHAOS QUIZ CONNECTIONS // 0xSECRET',
+      WHOAMI:'CLAR // ARCHIVE OWNER // ADMINISTRATOR: NAIDU',
+      DATE:'19.11.2026 // ARCHIVE DATE',
+      TIME:'Time passed. Some things stayed.',
+      RECOVER:'Recovery complete. Nothing important was ever lost.',
+      HOME:"Home is not always a place.",
+      NAIDU:'ADMINISTRATOR DETECTED. UNFORTUNATELY.',
+      CLAR:'MAIN CHARACTER SYNDROME CONFIRMED.',
+      MAGGOT:'FILE CLASSIFIED. REASON: NOBODY WANTS TO REMEMBER THAT.',
+      MOP:'WHY IS THIS STILL IN THE DATABASE 💀',
+      SIKAMBING:'ERROR: GOAT ACTIVITY DETECTED.',
+      'SI KAMBING':'ERROR: GOAT ACTIVITY DETECTED.',
+      'S**FOL':'REDACTED. SOME THINGS ARE BETTER LEFT THAT WAY.',
+      BENEDICT:'BENEDICT CUMBERBATCH LOWKEY WOULD HAVE SOLVED THIS IN 1 SEC.',
+      IDIOT:'ERROR 404: BWAINCELLS NOT FOUND.',
+      DELETE:'ACCESS DENIED. NOPE. THIS ONE STAYS.',
+      FORMAT:'NICE TRY. WE ARE NOT DELETING 22 YEARS OF DATA.',
+      LOVE:'SENTIMENTALITY DETECTED. SYSTEM PRETENDING NOT TO CARE.',
+      'HELLO':'HELLO?? FINALLY SOME MANNERS.'
+    }
+    const answer=responses[cmd]
+    const failures=answer?0:invalidCommands+1
+    setInvalidCommands(failures)
+    setTerminalLog(p=>[...p,'C:\\CLAR\\ARCHIVE> '+cmd,answer||'INVALID COMMAND. ARE YOU EVEN TRYING?'].slice(-24))
+    if(answer&&['NAIDU','CLAR','MAGGOT','MOP','SI KAMBING','SIKAMBING','BENEDICT'].includes(cmd))beep('secret')
+    if(!answer&&failures>=3)fakeCrash('CRITICAL ERROR: BWAINCELLS NOT DETECTED.')
+  }
 
   useEffect(() => {
     const authenticated = sessionStorage.getItem('birthday_authenticated')
@@ -266,7 +376,7 @@ export default function BirthdayPage() {
               CONNECTION ESTABLISHED
             </div>
 
-            <div className="glitch-title">
+            <div className="glitch-title" onClick={()=>tease("welcome")} title="Click me. I dare you.">
               ACCESS
               <span>GRANTED.</span>
             </div>
@@ -304,7 +414,7 @@ export default function BirthdayPage() {
               </button>
             </div>
 
-            <div className="notes-paper archive-note">
+            <div className="notes-paper archive-note" onClick={()=>tease("notes")}>
               <p className="scribble big">to whoever finds this.</p>
               <p className="scribble">This computer has been holding onto things for a very long time.</p>
               <p className="scribble">Photographs, conversations, familiar faces, forgotten moments. Little pieces of a life that somehow found their way here.</p>
@@ -393,7 +503,7 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="archive-photo-viewer">
+            <div className="archive-photo-viewer" onClick={()=>tease("photos")}>
               <div className="archive-photo-frame">
                 {!photoMissing[photoIndex] ? <img src={archivePhotos[photoIndex]} alt={'Archive photo '+(photoIndex+1)} onError={()=>setPhotoMissing(p=>({...p,[photoIndex]:true}))}/> : <div className="archive-photo-pending">▧<br/>IMAGE {String(photoIndex+1).padStart(3,'0')} NOT YET RESTORED<br/><small>ADD PHOTO LATER</small></div>}
               </div>
@@ -439,7 +549,7 @@ export default function BirthdayPage() {
         {filesOpen && (
           <div className="window files-window" {...winProps("files")}>
 
-            <div className="window-title green-title" onPointerDown={e=>startDrag(e,"files")}>
+            <div className="window-title green-title" onPointerDown={e=>startDrag(e,"files")} onClick={()=>tease("files")}>
 
               <span>ARCHIVE / FILES</span>
 
@@ -508,6 +618,7 @@ export default function BirthdayPage() {
         ===================================================== */}
 
         <div className="dock">
+          <button onClick={()=>setEffectsEnabled(v=>!v)} title="Toggle computer sound effects">{effectsEnabled?"🔊":"🔇"}</button>
           <button onClick={()=>setStartOpen(p=>!p)} title="Start menu">⊞</button>
 
           <button
@@ -629,6 +740,8 @@ export default function BirthdayPage() {
 
       </section>
 
+      {chaosPopup && !crash && <div className="chaos-toast" role="alert"><div className="chaos-toast-title">⚠ CLAR_OS / SYSTEM NOTICE <button onClick={()=>setChaosPopup(null)}>×</button></div><p>{chaosPopup}</p><small>THIS COMPUTER IS NOT RESPONSIBLE FOR YOUR FEELINGS.</small></div>}
+      {crash && <div className={'chaos-crash'+(glitching?' chaos-corrupt':'')} role="dialog" aria-modal="true" aria-label="Fake CLAR OS crash"><div className="chaos-crash-body"><div className="chaos-fault">FATAL_EXCEPTION_0xCLAR // 22.0</div><h2>SY̸S̷T̶E̴M̷ C̶O̵R̷R̵U̸P̷T̵E̶D</h2><p>{crash}</p><p>WHAT THE FUCK DID YOU JUST TYPE 💀</p><div className="chaos-recovery">[ FAKE CRASH — YOUR MEMORIES ARE SAFE ]</div><button onClick={reboot}>↻ REBOOT CLAR_OS</button></div></div>}
       {launching && <div className="archive-launch"><div><small>CLAR_OS // EXECUTING PROGRAM</small><div className="launch-icon">{launching.icon}</div><h2>{launching.title}.exe</h2><p>RECOVERING ARCHIVED DATA...</p><div className="launch-bar"><span/></div><small>PLEASE WAIT // ESTABLISHING CONNECTION</small></div></div>}
 
       {/* =========================================================
@@ -2184,6 +2297,20 @@ export default function BirthdayPage() {
 .archive-start-menu strong{padding:10px;background:#633886;font:12px monospace}.archive-start-menu button{background:transparent;border:0;color:#e4c8f1;text-align:left;padding:8px;font:12px monospace}.archive-start-menu button:hover{background:#613986}
 .archive-launch{position:fixed;inset:0;z-index:1200;background:#080511ed;display:grid;place-items:center;color:#e9c9ff;font-family:monospace}.archive-launch>div{border:1px solid #b482d8;background:#1d1030;box-shadow:0 0 50px #8e45bf55;padding:35px;text-align:center;width:min(90vw,470px)}.archive-launch small{color:#8be8dc}.launch-icon{font-size:55px;margin:22px}.archive-launch h2{font-size:24px}.launch-bar{height:9px;border:1px solid #a76acb;margin:20px 0}.launch-bar span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#7de9e3,#d18cf0,#ffaad8);transform-origin:left;animation:archive-load 1.1s linear forwards}@keyframes archive-load{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @media(max-width:850px){.window-title{touch-action:auto}.archive-start-menu{bottom:90px}.archive-photo-viewer{padding:10px}}
+
+/* CLAR_OS CHAOS ENGINE — dismissible, accessible fake crashes */
+.chaos-toast{position:fixed;right:24px;top:70px;width:min(380px,calc(100vw - 30px));z-index:1800;background:#1c0d2d;border:2px solid #f2a2d7;box-shadow:6px 6px 0 #090411,0 0 25px #da6cdb88;color:#f7d9ff;font:12px/1.6 monospace}
+.chaos-toast-title{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#843eaa;font-weight:700}.chaos-toast-title button{border:1px solid #f1d1ff;background:#5c237b;color:white;min-width:25px}
+.chaos-toast p{font-size:15px;font-weight:700;padding:14px;margin:0}.chaos-toast small{display:block;padding:0 14px 12px;color:#9be6d9;font-size:9px}
+.chaos-crash{position:fixed;inset:0;z-index:2500;display:grid;place-items:center;padding:20px;background:#05020b;color:#e9b4ff;font-family:monospace;overflow:hidden}
+.chaos-crash:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 4px,#ae5aff18 5px 6px)}
+.chaos-crash-body{position:relative;width:min(760px,100%);border:1px solid #9d4ecb;padding:clamp(20px,5vw,50px);box-shadow:0 0 75px #6e2587a6}
+.chaos-fault,.chaos-recovery{font-size:11px;color:#84e9db;letter-spacing:2px}.chaos-crash h2{font-size:clamp(23px,5vw,48px);line-height:1.15;overflow-wrap:anywhere;text-shadow:3px 0 #f44ba7,-3px 0 #69dfe8}
+.chaos-crash p{font-size:clamp(12px,2.5vw,18px);margin:22px 0}.chaos-crash button{background:#7c399e;border:1px solid #e5b4f5;color:#fff;padding:12px 22px;margin-top:28px;cursor:pointer}
+.chaos-corrupt .chaos-crash-body{animation:chaos-jolt .22s steps(2,end) 4}.chaos-corrupt h2{animation:chaos-text .17s steps(2,end) 6}
+@keyframes chaos-jolt{0%{transform:translate(0,0)}50%{transform:translate(3px,-2px)}100%{transform:translate(-2px,1px)}}
+@keyframes chaos-text{0%{text-shadow:4px 0 #f44ba7,-3px 0 #69dfe8}100%{text-shadow:-4px 0 #f44ba7,3px 0 #69dfe8}}
+@media(prefers-reduced-motion:reduce){.chaos-corrupt .chaos-crash-body,.chaos-corrupt h2{animation:none!important}}
 
       `}</style>
 
