@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
 
-const PASSWORD = 'royal cliff'
+const PASSWORD = 'thee.archivess'
 
 const PHOTOS = [
   '/images/clar-01.jpg',
@@ -84,6 +84,23 @@ export default function HomePage() {
   const [photoPaused, setPhotoPaused] = useState(false)
   const [showRecycle, setShowRecycle] = useState(false)
   const [terminalOpen, setTerminalOpen] = useState(false)
+  const [windowOpen, setWindowOpen] = useState({notes:true, cd:true, photos:true, files:false, recording:false, terminal:false})
+  const [windowPositions, setWindowPositions] = useState({})
+  const [maximized, setMaximized] = useState(null)
+  const [startOpen, setStartOpen] = useState(false)
+  const [controlPanelOpen, setControlPanelOpen] = useState(false)
+  const [controlTab, setControlTab] = useState('appearance')
+  const [wallpaper, setWallpaper] = useState('nebula')
+  const [accent, setAccent] = useState('violet')
+  const [crtOn, setCrtOn] = useState(true)
+  const [soundOn, setSoundOn] = useState(true)
+  const [screensaver, setScreensaver] = useState(false)
+  const [finderOpen, setFinderOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedIcon, setSelectedIcon] = useState('')
+  const [terminalCommand, setTerminalCommand] = useState('')
+  const [terminalHistory, setTerminalHistory] = useState(['CLAR_OS TERMINAL [Version 22.04]', 'Type HELP to list commands.'])
+  const dragRef = useRef(null)
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -218,6 +235,8 @@ export default function HomePage() {
      RECORDING
   --------------------------------------------------------- */
 
+  useEffect(() => {if(audioRef.current)audioRef.current.muted=!soundOn;if(recordingRef.current)recordingRef.current.muted=!soundOn},[soundOn])
+
   useEffect(() => {
     const recording = recordingRef.current
 
@@ -274,12 +293,12 @@ export default function HomePage() {
     setError(true)
     setPassword('')
 
-    if (newAttempts <= 3) {
+    if (newAttempts === 2) {
       setHintType(1)
       setShowHint(true)
     }
 
-    if (newAttempts === 5) {
+    if (newAttempts >= 4) {
       setHintType(2)
       setShowHint(true)
     }
@@ -289,13 +308,68 @@ export default function HomePage() {
     setShowHint(false)
   }
 
-  function focusWindow(name) {
+  function focusWindow(name) { setActiveWindow(name) }
+  function showWindow(name) {
+    setWindowOpen(prev => ({...prev, [name]:true}))
+    if (name === 'terminal') setTerminalOpen(true)
     setActiveWindow(name)
+    setStartOpen(false)
   }
-
-  function openDesktopFile(name) {
-    setOpenFile(name)
-    focusWindow('files')
+  function hideWindow(name) {
+    setWindowOpen(prev => ({...prev, [name]:false}))
+    if (name === 'terminal') setTerminalOpen(false)
+    if (maximized === name) setMaximized(null)
+  }
+  function windowStyle(name) {
+    if (maximized === name) return {left:'2%',top:'6%',right:'auto',width:'96%',height:'87%',rotate:'0deg',zIndex:98,display:windowOpen[name]?undefined:'none'}
+    return {...(windowPositions[name] || {}),zIndex:activeWindow===name?45:10,display:windowOpen[name]?undefined:'none'}
+  }
+  function beginDrag(event,name) {
+    if (event.target.closest('button') || window.innerWidth<=760 || maximized===name) return
+    const element=event.currentTarget.closest('.desktop-window')
+    const desktop=event.currentTarget.closest('.desktop')
+    if (!element || !desktop) return
+    const rect=element.getBoundingClientRect(),parent=desktop.getBoundingClientRect()
+    dragRef.current={name,startX:event.clientX,startY:event.clientY,left:rect.left-parent.left,top:rect.top-parent.top,maxLeft:parent.width-rect.width,maxTop:parent.height-rect.height-38}
+    event.currentTarget.setPointerCapture(event.pointerId)
+    focusWindow(name)
+  }
+  function moveDrag(event) {
+    const d=dragRef.current
+    if (!d) return
+    const left=Math.max(0,Math.min(d.maxLeft,d.left+event.clientX-d.startX))
+    const top=Math.max(36,Math.min(d.maxTop,d.top+event.clientY-d.startY))
+    setWindowPositions(prev=>({...prev,[d.name]:{left:left+'px',top:top+'px',right:'auto',rotate:'0deg'}}))
+  }
+  function endDrag(){dragRef.current=null}
+  function openDesktopFile(name){setOpenFile(name);showWindow('files')}
+  function openShortcut(name){
+    if(name==='secret'){setOpenFile('SECRET');return}
+    if(name==='recycle'){setOpenFile('RECYCLE');return}
+    if(name==='control'){setControlPanelOpen(true);setStartOpen(false);return}
+    if(name==='find'){setFinderOpen(true);setStartOpen(false);return}
+    if(name==='screensaver'){setScreensaver(true);setStartOpen(false);return}
+    showWindow(name)
+  }
+  function desktopIconClick(event,name,action){
+    event.stopPropagation();setSelectedIcon(name)
+    if(event.detail===0||event.detail>=2||window.matchMedia('(pointer: coarse)').matches)action()
+  }
+  function runCommand(raw){
+    const command=raw.trim().toLowerCase()
+    if(!command)return
+    let output=''
+    if(command==='help')output='COMMANDS: HELP, DIR, SCAN, WHOAMI, HINT, READ ONLINE_ALIAS.TXT, BENEDICT, CLEAR, EXIT'
+    else if(command==='dir'||command==='ls')output='C:\\CLAR\\ NOTES.TXT  ONLINE_ALIAS.TXT  ARCHIVE\\  MUSIC\\  [LOCKED]'
+    else if(command==='whoami')output='USER: CLAR // STATUS: CHRONICALLY ONLINE // CLEARANCE: PENDING'
+    else if(command==='scan')output='SCAN COMPLETE. 22 YEARS INDEXED. PASSWORD STILL REQUIRED.'
+    else if(command==='hint')output='The answer is closer to your online life than your offline one.'
+    else if(command==='read online_alias.txt'||command==='cat online_alias.txt')output='Not the main account. The other username. You know the one.'
+    else if(command==='benedict'||command==='sherlock')output='Benedict cumberbatch lowkey would have solved this in 1 sec.'
+    else if(command==='clear'||command==='cls'){setTerminalHistory([]);setTerminalCommand('');return}
+    else if(command==='exit'){hideWindow('terminal');setTerminalCommand('');return}
+    else output='Bad command or file name. Type HELP.'
+    setTerminalHistory(prev=>[...prev.slice(-10),'C:\\CLAR> '+raw,output]);setTerminalCommand('')
   }
 
   function changePhoto(step) {
@@ -347,12 +421,12 @@ export default function HomePage() {
 
               <div className="monitor-inner">
 
-                <div className="desktop">
+                <div className={`desktop wallpaper-${wallpaper} accent-${accent} ${crtOn ? "" : "crt-off"}`}>
 
                   {/* CRT overlays */}
 
-                  <div className="scanlines" />
-                  <div className="screen-noise" />
+                  {crtOn && <div className="scanlines" />}
+                  {crtOn && <div className="screen-noise" />}
                   <div className="screen-vignette" />
 
                   {/* ================= DESKTOP HEADER ================= */}
@@ -426,6 +500,8 @@ export default function HomePage() {
                         <div className="scribble">
                           — your extremely normal friend
                         </div>
+                        <p className="note-postscript">(click around, I know you well enough you’ll look every goddamn place so I trust your instincts that you’d be able to find the password ehehe)</p>
+                        <p className="note-whisper">it’s kinddaaa related to your social media, that’s all I can give you</p>
 
                       </div>
                     </div>
@@ -913,8 +989,7 @@ export default function HomePage() {
                               </strong>
 
                               <p>
-                                hint it’s a nickname I gave you after
-                                learning a funny meaning of your name
+                                it’s kinddaaa related to your social media, that’s all I can give you
                               </p>
                             </>
                           ) : (
@@ -924,7 +999,7 @@ export default function HomePage() {
                               </strong>
 
                               <p>
-                                it has something to do with a cliff
+                                it’s your instagram username
                               </p>
                             </>
                           )}
