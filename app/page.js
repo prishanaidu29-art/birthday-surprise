@@ -4977,14 +4977,14 @@ button {
 .birthday-shell .desktop.accent-rose .photos-window .window-titlebar,
 .birthday-shell .desktop.accent-rose .files-window .window-titlebar,
 .birthday-shell .desktop.accent-rose .recording-window .window-titlebar,
-.birthday-shell .desktop.accent-rose .terminal-window .window-titlebar {background:linear-gradient(90deg,#7a295d,#bc6098);}
+.birthday-shell .desktop.accent-rose .terminal-window .window-titlebar {background:linear-gradient(90deg,#7a295d,#bc6098)!important;}
 .birthday-shell .desktop.accent-blue .window-titlebar,
 .birthday-shell .desktop.accent-blue .notes-window .window-titlebar,
 .birthday-shell .desktop.accent-blue .cd-window .window-titlebar,
 .birthday-shell .desktop.accent-blue .photos-window .window-titlebar,
 .birthday-shell .desktop.accent-blue .files-window .window-titlebar,
 .birthday-shell .desktop.accent-blue .recording-window .window-titlebar,
-.birthday-shell .desktop.accent-blue .terminal-window .window-titlebar {background:linear-gradient(90deg,#273c86,#527dc3);}
+.birthday-shell .desktop.accent-blue .terminal-window .window-titlebar {background:linear-gradient(90deg,#273c86,#527dc3)!important;}
 .birthday-shell .desktop-window {rotate:0deg!important;border:2px solid #b88cdd;box-shadow:5px 6px 0 #070313b3,0 14px 28px #0009;}
 .birthday-shell .window-titlebar {
   touch-action:none;cursor:grab;user-select:none;
