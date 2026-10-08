@@ -14,7 +14,6 @@ const PHOTOS = [
   '/images/clar-04.jpg',
   '/images/clar-05.jpg',
   '/images/clar-06.jpg',
-  '/images/clar-07.jpg',
 ]
 
 const SECTIONS = [
