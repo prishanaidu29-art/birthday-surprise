@@ -357,6 +357,10 @@ export default function HomePage() {
                     </div>
                   </div>
 
+                  <div className="desktop-doodle" aria-hidden="true">clar's computer ♡<small>22 YEARS OF CHAOS</small></div>
+                  <div className="desktop-sticker sticker-a" aria-hidden="true">✿</div>
+                  <div className="desktop-sticker sticker-b" aria-hidden="true">♡</div>
+
                   {/* =================================================
                       NOTES WINDOW
                   ================================================= */}
@@ -801,6 +805,14 @@ export default function HomePage() {
                         : 'WAITING FOR USER INPUT...'}
                     </div>
 
+                  </div>
+
+                  <div className="retro-taskbar" aria-hidden="true">
+                    <span className="retro-start">✦ START</span>
+                    <span className="retro-tab">▤ notes.txt</span>
+                    <span className="retro-tab">◉ CD PLAYER.exe</span>
+                    <span className="retro-tab selected">🔒 ACCESS REQUIRED</span>
+                    <span className="retro-clock">CLAR_OS 22:04</span>
                   </div>
 
                   {/* =================================================
@@ -4227,6 +4239,138 @@ button {
       rotate(180deg);
     opacity: 1;
   }
+}
+
+
+/* Password-entry desktop redesign only; the loading state stays unchanged. */
+.birthday-shell {background:radial-gradient(ellipse at 50% 32%,#46215c55,transparent 60%),#090713;}
+.birthday-shell .computer-wrapper {width:min(1510px,100%);}
+.birthday-shell .monitor-bezel {
+  background:linear-gradient(145deg,#afa5b3,#5c5363 16%,#2c2732 50%,#726878);
+  box-shadow:inset 0 2px #ffffff55,inset 0 -10px 20px #0008,0 35px 80px #000b;
+}
+.birthday-shell .desktop {
+  min-height:850px;
+  background:radial-gradient(ellipse at 18% 80%,#dd468a22,transparent 40%),
+    radial-gradient(ellipse at 80% 20%,#50a9cd22,transparent 45%),
+    repeating-linear-gradient(0deg,#ffffff03 0 1px,transparent 1px 4px),
+    linear-gradient(135deg,#26152e,#0f0a1b 50%,#26132e);
+}
+.birthday-shell .desktop::before {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(#eab4ff33 .8px,transparent .8px);
+  background-size:22px 22px;
+}
+.birthday-shell .desktop-header {
+  left:0;right:0;top:0;height:36px;padding:0 16px;
+  background:linear-gradient(90deg,#752e85,#3b2053 65%,#2b2a59);
+  border-bottom:2px solid #25112d;color:#fff0fa;font-size:10px;z-index:40;
+}
+.birthday-shell .desktop-status {color:#a8ffda;}
+.birthday-shell .desktop-window {
+  border:2px solid #d7a9e5;
+  background:#140b20f7;
+  box-shadow:5px 6px 0 #07030b99,0 15px 36px #0008;
+  transition:box-shadow .18s,filter .18s;
+}
+.birthday-shell .desktop-window:hover {transform:none;filter:brightness(1.06);}
+.birthday-shell .window-active {z-index:35;box-shadow:7px 8px 0 #07030b88,0 0 25px #b65fff55;}
+.birthday-shell .window-titlebar {
+  height:30px;padding:0 10px;font-size:11px;color:#fff0fa;
+  background:linear-gradient(90deg,#7d337e,#4b2b6b 75%,#292047);
+}
+.birthday-shell .window-titlebar-active {background:linear-gradient(90deg,#bd459a,#7a368c 60%,#4a2a73);}
+.birthday-shell .window-controls span {width:14px;height:14px;font-size:9px;border-color:#ffffff77;}
+
+/* Scattered Windows 2000 layout with a clear password area */
+.birthday-shell .notes-window {left:3%;top:11%;width:29%;height:34%;rotate:-1deg;z-index:7;}
+.birthday-shell .recording-window {right:36%;top:12%;width:25%;height:20%;rotate:1deg;z-index:8;}
+.birthday-shell .cd-window {left:auto;right:3%;top:10%;width:32%;height:30%;rotate:1deg;z-index:9;}
+.birthday-shell .photos-window {left:3.5%;top:53%;width:29%;height:35%;rotate:1deg;z-index:7;}
+.birthday-shell .files-window {left:auto;right:3%;top:54%;width:32%;height:34%;rotate:-.7deg;z-index:9;}
+.birthday-shell .terminal-window {left:37%;top:73%;width:25%;height:15%;rotate:1deg;z-index:7;}
+.birthday-shell .password-panel {
+  left:50%;top:39%;width:32%;min-width:0;padding:17px 19px;
+  background:linear-gradient(150deg,#291535,#130b22 75%);
+  border:2px solid #ed8cda;z-index:80;
+  box-shadow:6px 7px 0 #0008,0 0 30px #ff6bca44;
+}
+.birthday-shell .password-panel::before {
+  content:'✦  password_required.exe';display:block;
+  margin:-17px -19px 13px;padding:8px 12px;
+  color:#fff0fa;background:linear-gradient(90deg,#b43d88,#5e2b86);
+  font:bold 11px 'Courier New',monospace;
+}
+.birthday-shell .password-title {font-size:clamp(18px,1.8vw,28px);margin:9px 0 10px;}
+.birthday-shell .password-intro {font-size:clamp(11px,.95vw,14px);line-height:1.4;}
+.birthday-shell .password-subtext {font-size:clamp(10px,.8vw,12px);line-height:1.4;}
+.birthday-shell .password-topline {font-size:9px;}
+.birthday-shell .password-form {margin-top:13px;gap:8px;}
+.birthday-shell .password-input-wrap {height:38px;}
+.birthday-shell .password-input-wrap input {font-size:12px;letter-spacing:1px;}
+.birthday-shell .enter-button {height:38px;font-size:10px;padding:0 11px;}
+.birthday-shell .password-status {font-size:10px;margin-top:10px;}
+.birthday-shell .notes-paper {background:linear-gradient(115deg,#f9eaf3,#fff7eb);overflow-y:auto;padding:17px 17px 14px 30px;}
+.birthday-shell .handwriting {font-size:clamp(11px,.95vw,14px);line-height:1.4;}
+.birthday-shell .note-heading {font-size:clamp(11px,1vw,15px);}
+.birthday-shell .hint-window {right:15%;top:48%;width:min(290px,33%);}
+.birthday-shell .hint-content {font-size:12px;}
+.birthday-shell .hint-titlebar {font-size:10px;}
+.birthday-shell .desktop-doodle {
+  position:absolute;top:36%;left:36%;rotate:-6deg;
+  font:18px 'Comic Sans MS',cursive;color:#ed99d9a0;pointer-events:none;
+}
+.birthday-shell .desktop-doodle small {display:block;font:10px 'Courier New',monospace;color:#af94bc;}
+.birthday-shell .desktop-sticker {position:absolute;pointer-events:none;z-index:3;font:42px Georgia,serif;text-shadow:0 0 12px currentColor;}
+.birthday-shell .sticker-a {left:32%;top:9%;color:#f49cce;rotate:-20deg;}
+.birthday-shell .sticker-b {right:34%;top:55%;color:#ffa3d5;rotate:15deg;}
+.birthday-shell .retro-taskbar {
+  position:absolute;left:0;right:0;bottom:0;height:38px;z-index:60;
+  display:flex;align-items:center;gap:5px;padding:4px 9px;
+  background:linear-gradient(#633d75,#312041);border-top:2px solid #bc8ec7;
+  color:#f8e1ff;font:10px 'Courier New',monospace;
+}
+.birthday-shell .retro-start {padding:6px 11px;font-weight:bold;background:linear-gradient(135deg,#e062a6,#8542b2);border:1px outset #ffb4e2;}
+.birthday-shell .retro-tab {padding:6px 10px;border:1px solid #9b71b2;background:#24152f;white-space:nowrap;}
+.birthday-shell .retro-tab.selected {background:#793b81;border-color:#ffabd7;}
+.birthday-shell .retro-clock {margin-left:auto;white-space:nowrap;color:#efb9dc;}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop {min-height:910px;}
+  .birthday-shell .notes-window {left:2%;width:31%;top:9%;}
+  .birthday-shell .recording-window {right:34%;width:30%;top:9%;}
+  .birthday-shell .cd-window {right:2%;width:31%;top:9%;}
+  .birthday-shell .password-panel {top:39%;width:37%;}
+  .birthday-shell .photos-window {left:2%;width:32%;top:56%;height:32%;}
+  .birthday-shell .files-window {right:2%;width:32%;top:56%;height:32%;}
+  .birthday-shell .terminal-window {left:36%;width:28%;top:74%;height:14%;}
+  .birthday-shell .handwriting {font-size:11px;}
+  .birthday-shell .password-form {flex-wrap:wrap;}
+  .birthday-shell .enter-button {flex:1;}
+  .birthday-shell .desktop-doodle {display:none;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop {min-height:0;padding:54px 12px 58px;display:flex;flex-direction:column;gap:16px;overflow:visible;}
+  .birthday-shell .desktop-header {height:36px;font-size:8px;}
+  .birthday-shell .desktop-status {display:none;}
+  .birthday-shell .desktop-window,.birthday-shell .password-panel {
+    position:relative;top:auto;bottom:auto;left:auto;right:auto;
+    width:100%;min-width:0;height:auto;rotate:none;transform:none;flex:none;margin:0;
+  }
+  .birthday-shell .password-panel {order:0;padding:16px;}
+  .birthday-shell .password-panel::before {margin:-16px -16px 12px;}
+  .birthday-shell .notes-window {order:1;height:300px;}
+  .birthday-shell .cd-window {order:2;min-height:225px;}
+  .birthday-shell .photos-window {order:3;height:320px;}
+  .birthday-shell .files-window {order:4;min-height:245px;}
+  .birthday-shell .recording-window {order:5;min-height:160px;}
+  .birthday-shell .terminal-window {order:6;min-height:145px;}
+  .birthday-shell .handwriting {font-size:12px;}
+  .birthday-shell .desktop-sticker,.birthday-shell .desktop-doodle {display:none;}
+  .birthday-shell .retro-taskbar {height:35px;}
+  .birthday-shell .retro-tab {display:none;}
+  .birthday-shell .hint-window {position:fixed;width:min(320px,calc(100vw - 32px));top:30%;right:16px;z-index:150;}
+  .birthday-shell .password-form {flex-wrap:wrap;}
+  .birthday-shell .enter-button {flex:1;}
 }
 
 `;
