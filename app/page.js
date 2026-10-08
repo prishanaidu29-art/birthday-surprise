@@ -558,14 +558,20 @@ export default function HomePage() {
 
                       <FakeFile
                         icon="📸"
-                        name="MEMORIES"
-                        onOpen={() => openDesktopFile('MEMORIES')}
+                        name="BWAINCELLS"
+                        onOpen={() => openDesktopFile('BWAINCELLS')}
                       />
 
                       <FakeFile
                         icon="💌"
                         name="MESSAGES"
                         onOpen={() => openDesktopFile('MESSAGES')}
+                      />
+
+                      <FakeFile
+                        icon="🗂️"
+                        name="S**FOL"
+                        onOpen={() => openDesktopFile('S**FOL')}
                       />
 
                       <FakeFile
@@ -577,7 +583,7 @@ export default function HomePage() {
                     </div>
 
                     <div className="files-footer">
-                      6 OBJECTS / UNKNOWN CONTENT
+                      7 OBJECTS / UNKNOWN CONTENT
                     </div>
                   </div>
 
@@ -983,10 +989,30 @@ export default function HomePage() {
                           <button type="button" onClick={() => setOpenFile(null)} aria-label="Close">×</button>
                         </div>
                         <div className="retro-dialog-body">
-                          {['EGGS','GRADUATION','MEMORIES'].includes(openFile) ? (
+                          {['EGGS','GRADUATION','BWAINCELLS'].includes(openFile) ? (
                             <div className="file-locked"><div className="file-lock-icon">🔒</div><strong>ACCESS DENIED</strong><p>Enter password to access.</p><small>THIS DIRECTORY IS LOCKED UNTIL ARCHIVE LOGIN.</small></div>
                           ) : openFile === 'DO_NOT_OPEN' ? (
-                            <div className="file-locked"><div className="file-lock-icon">☒</div><strong>NO ACCESS</strong><p>Be patient.</p></div>
+                            <div className="joke-vault">
+                              <div className="file-lock-icon">☒</div>
+                              <strong>DO_NOT_OPEN / CLASSIFIED</strong>
+                              <p>NO ACCESS. Be patient. Or don't. Apparently you opened it anyway.</p>
+                              <small>RECOVERED FILES // CLICK TO INSPECT</small>
+                              <div className="joke-file-grid">
+                                {['MAGGOT','MOP','SI_KAMBING','PEOPLE_WE_HATE'].map(name => (
+                                  <button key={name} type="button" className="joke-file" onClick={() => setOpenFile('JOKE:' + name)}>
+                                    <span aria-hidden="true">📄</span>
+                                    <span>{name}.txt</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          ) : openFile === 'S**FOL' || openFile.startsWith('JOKE:') ? (
+                            <div className="file-locked">
+                              <div className="file-lock-icon">💀</div>
+                              <strong>{openFile === 'S**FOL' ? 'S**FOL' : openFile.slice(5) + '.txt'}</strong>
+                              <p>it's your birthday , who gives a fuck about these losers 💀</p>
+                              <button type="button" className="retro-ok" onClick={() => setOpenFile('DO_NOT_OPEN')}>BACK TO FILES</button>
+                            </div>
                           ) : openFile === 'FEETGANG' ? (
                             <div className="feetgang-content"><div className="file-lock-icon">🦶</div><strong>FEETGANG / CASE FILE 001</strong><p>Somewhere along the way, Clar and Yanaal decided there needed to be an investigation into who had a thing for feet.</p><p>There was no evidence. There was no conclusion. There was, unfortunately, a group name.</p><small>STATUS: THE ALLEGATIONS REMAIN UNPROVEN.</small></div>
                           ) : openFile === 'MESSAGES' ? (
@@ -4722,6 +4748,12 @@ button {
 .birthday-shell .retro-dialog-title {background:linear-gradient(90deg,#a35c9b,#7661a1);color:white;display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font:bold 11px 'Courier New',monospace;}
 .birthday-shell .retro-dialog-title button {background:#ead3e7;color:#4b3150;border:2px outset #fff;font-size:15px;line-height:1;}
 .birthday-shell .retro-dialog-body {padding:20px;text-align:center;}
+.birthday-shell .joke-file-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px auto 12px;max-width:420px;}
+.birthday-shell .joke-file {display:flex;align-items:center;flex-direction:column;justify-content:center;gap:7px;min-width:0;min-height:82px;padding:12px 6px;background:#241432;border:1px solid #b487d9;box-shadow:inset 1px 1px #e8c5ff;color:#f7eaff;font-family:monospace;cursor:pointer;overflow-wrap:anywhere;}
+.birthday-shell .joke-file span:first-child {font-size:27px;}
+.birthday-shell .joke-file:hover,.birthday-shell .joke-file:focus-visible {background:#5d2c78;outline:2px solid #e7b8ff;}
+.birthday-shell .joke-vault small {color:#a977bc;font-family:monospace;letter-spacing:1px;}
+.birthday-shell .file-locked .retro-ok {margin-top:12px;cursor:pointer;}
 .birthday-shell .retro-dialog-icon {font-size:40px;margin-bottom:9px;}
 .birthday-shell .retro-dialog-body strong {display:block;font-size:16px;}
 .birthday-shell .retro-dialog-body p {line-height:1.5;}
