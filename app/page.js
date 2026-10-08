@@ -156,6 +156,23 @@ export default function HomePage() {
   }, [musicPlaying])
 
   /* ---------------------------------------------------------
+     TRY TO AUTOPLAY MUSIC WHEN THE PAGE OPENS
+     Browsers may require a tap before allowing sound.
+  --------------------------------------------------------- */
+
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    audio.play()
+      .then(() => setMusicPlaying(true))
+      .catch(() => {
+        // Keep the existing PLAY button available if autoplay is blocked.
+        setMusicPlaying(false)
+      })
+  }, [])
+
+  /* ---------------------------------------------------------
      RECORDING
   --------------------------------------------------------- */
 
