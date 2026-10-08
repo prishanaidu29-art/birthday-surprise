@@ -83,6 +83,7 @@ export default function HomePage() {
   const [openFile, setOpenFile] = useState(null)
   const [photoPaused, setPhotoPaused] = useState(false)
   const [showRecycle, setShowRecycle] = useState(false)
+  const [terminalOpen, setTerminalOpen] = useState(false)
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -716,7 +717,8 @@ export default function HomePage() {
                     className={`desktop-window terminal-window ${
                       activeWindow === 'terminal' ? 'window-active' : ''
                     }`}
-                    onClick={() => focusWindow('terminal')}
+                    style={{ display: terminalOpen ? undefined : 'none' }}
+                     onClick={() => focusWindow('terminal')}
                   >
                     <WindowBar
                       title="SYSTEM_TERMINAL"
@@ -840,12 +842,14 @@ export default function HomePage() {
                     <button type="button" className="retro-tab" onClick={() => focusWindow('notes')}>▤ notes.txt</button>
                     <button type="button" className="retro-tab" onClick={() => focusWindow('cd')}>◉ CD PLAYER.exe</button>
                     <button type="button" className="retro-tab" onClick={() => focusWindow('files')}>📁 FILES</button>
+                     <button type="button" className="retro-terminal" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}>⌘ terminal</button>
                     <span className="retro-clock">CLAR_OS 22:04</span>
                   </div>
 
                   <div className="desktop-shortcuts" aria-label="Desktop shortcuts">
                     <button type="button" onClick={() => setShowRecycle(true)}><span>🗑️</span>recycle bin</button>
                     <button type="button" onClick={() => openDesktopFile('DO_NOT_OPEN')}><span>💌</span>secret.txt</button>
+                     <button type="button" onClick={() => { setTerminalOpen(true); focusWindow('terminal') }}><span>💻</span>terminal.exe</button>
                   </div>
 
                   {openFile && (
@@ -4549,6 +4553,99 @@ button {
   .birthday-shell .retro-tab {display:none;}
   .birthday-shell .retro-dialog-backdrop {position:fixed;inset:0;}
   .birthday-shell .photo-toolbar span {display:none;}
+}
+
+
+
+/* Deep violet Y2K desktop refinements: password page only. */
+.birthday-shell {background:radial-gradient(ellipse at 48% 24%,#54278b55,transparent 62%),#090515;}
+.birthday-shell .desktop {
+  min-height:850px;
+  background:radial-gradient(ellipse at 16% 74%,#853cc944,transparent 43%),
+    radial-gradient(ellipse at 85% 19%,#a642d62e,transparent 41%),
+    radial-gradient(ellipse at 53% 43%,#4020793b,transparent 58%),
+    linear-gradient(140deg,#28104a,#140b2c 52%,#241043);
+}
+.birthday-shell .desktop::before {background-image:radial-gradient(#d6a9ff44 .8px,transparent .8px);background-size:23px 23px;}
+.birthday-shell .desktop-header {background:linear-gradient(90deg,#512384,#30185b 58%,#54257f);border-bottom:2px solid #8f57bb;color:#eee0ff;}
+.birthday-shell .desktop-window {border:2px solid #a97bd7;background:#170b2bf5;box-shadow:5px 7px 0 #06030b99,0 14px 34px #0009,0 0 13px #7b37bf2b;}
+.birthday-shell .window-active {box-shadow:6px 8px 0 #06030b88,0 0 25px #b16cfb55;}
+.birthday-shell .window-titlebar,
+.birthday-shell .notes-window .window-titlebar,
+.birthday-shell .recording-window .window-titlebar,
+.birthday-shell .cd-window .window-titlebar,
+.birthday-shell .photos-window .window-titlebar,
+.birthday-shell .files-window .window-titlebar,
+.birthday-shell .terminal-window .window-titlebar {
+  background:linear-gradient(90deg,#65369c,#8a5cbd 65%,#a77bd0);
+  color:#fff5ff;border-bottom:1px solid #d7b6f0;
+}
+.birthday-shell .window-titlebar-active {background:linear-gradient(90deg,#9b4bd0,#6832a7);color:#fff;}
+.birthday-shell .window-controls span {border:1px solid #e5c5ffb5;background:#3d1e6a66;color:#f5e7ff;}
+.birthday-shell .notes-window {left:4%;top:11%;width:29%;height:37%;rotate:-1.4deg;}
+.birthday-shell .notes-paper {background:linear-gradient(110deg,#fff8e8,#f3e6d9);padding:19px 18px 16px 30px;}
+.birthday-shell .note-heading {color:#8b3889;}
+.birthday-shell .recording-window {right:35%;top:12%;width:25%;height:19%;rotate:.9deg;}
+.birthday-shell .cd-window {right:3.5%;top:11%;width:29%;height:29%;rotate:1.2deg;}
+.birthday-shell .photos-window {left:4.5%;top:55%;width:31%;height:36%;rotate:1.3deg;}
+.birthday-shell .photo-main {border:5px solid #d9c1eb;box-shadow:3px 3px 0 #0008;}
+.birthday-shell .photo-toolbar button {background:#d3b4ef;color:#3e235f;border:1px outset #f2e2ff;}
+.birthday-shell .files-window {right:4%;top:56%;width:30%;height:33%;rotate:-1deg;}
+.birthday-shell .fake-file-icon {background:linear-gradient(145deg,#b58be8,#573184);border:1px outset #ddc2ff;}
+.birthday-shell .terminal-window {left:38%;top:75%;width:26%;height:17%;rotate:.7deg;}
+.birthday-shell .password-panel {
+  left:50%;top:41%;width:30%;min-width:0;border:3px ridge #bb90ed;
+  background:#efe7f8;color:#332047;box-shadow:7px 9px 0 #000a,0 0 26px #a65dff66;
+}
+.birthday-shell .password-panel::before {background:linear-gradient(90deg,#7135ae,#4b247f);border-bottom:2px solid #cba8ed;color:#f9f0ff;}
+.birthday-shell .password-title {color:#48226e;}
+.birthday-shell .password-title .glitch {color:#502776;}
+.birthday-shell .password-intro {color:#3e3051;}
+.birthday-shell .password-subtext {color:#775e89;}
+.birthday-shell .password-input-wrap {border:2px inset #a88cc8;}
+.birthday-shell .enter-button {background:linear-gradient(#e4c7ff,#b98ce8);border:2px outset #f4e6ff;color:#452268;}
+.birthday-shell .enter-button:hover {background:#ead6ff;}
+.birthday-shell .password-status {color:#715887;}
+.birthday-shell .desktop-doodle {left:36%;top:37%;font-size:18px;color:#d5a4f2;rotate:-5deg;}
+.birthday-shell .desktop-doodle small {color:#b497d0;}
+.birthday-shell .desktop-shortcuts {left:35%;top:32%;gap:9px;display:flex;flex-wrap:wrap;max-width:30%;}
+.birthday-shell .desktop-shortcuts button {min-width:68px;max-width:90px;padding:5px 3px;color:#e6d2ff;text-shadow:1px 1px #170a2d;}
+.birthday-shell .desktop-shortcuts button:hover,
+.birthday-shell .desktop-shortcuts button:focus-visible {background:#a46bdf44;border-color:#dfbdff;}
+.birthday-shell .retro-taskbar {background:linear-gradient(#674093,#32195b);border-top:2px solid #ad77d8;color:#f4e6ff;}
+.birthday-shell .retro-start {background:linear-gradient(#bb8ae9,#7c43b5);color:#fff;border:2px outset #e3c5ff;}
+.birthday-shell .retro-tab {background:#492673;color:#f2e5ff;border:2px outset #9c6fc5;}
+.birthday-shell .retro-tab:hover {background:#6937a1;}
+.birthday-shell .retro-terminal {background:#422366;color:#e8d6ff;border:1px solid #a778d6;padding:5px 8px;cursor:pointer;font:10px 'Courier New',monospace;}
+.birthday-shell .retro-terminal:hover {background:#683a96;}
+.birthday-shell .retro-dialog-title {background:linear-gradient(90deg,#753ab3,#4b247f);}
+.birthday-shell .retro-dialog {border-color:#a57ad1;}
+.birthday-shell .retro-ok {background:#d8b4f5;color:#432267;}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop {min-height:900px;}
+  .birthday-shell .notes-window {left:3%;top:10%;width:31%;height:37%;}
+  .birthday-shell .recording-window {right:34%;top:11%;width:29%;height:18%;}
+  .birthday-shell .cd-window {right:2%;top:11%;width:31%;height:28%;}
+  .birthday-shell .password-panel {top:41%;width:35%;}
+  .birthday-shell .photos-window {left:3%;top:55%;width:32%;height:35%;}
+  .birthday-shell .files-window {right:2%;top:55%;width:32%;height:34%;}
+  .birthday-shell .desktop-shortcuts {display:flex;left:35%;top:32%;max-width:30%;}
+  .birthday-shell .desktop-doodle {display:none;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop {min-height:0;}
+  .birthday-shell .password-panel {top:auto;left:auto;width:100%;transform:none;}
+  .birthday-shell .notes-window,
+  .birthday-shell .cd-window,
+  .birthday-shell .recording-window,
+  .birthday-shell .photos-window,
+  .birthday-shell .files-window,
+  .birthday-shell .terminal-window {top:auto;left:auto;right:auto;width:100%;rotate:none;}
+  .birthday-shell .notes-window {height:310px;}
+  .birthday-shell .photos-window {height:350px;}
+  .birthday-shell .files-window {min-height:255px;}
+  .birthday-shell .desktop-shortcuts {display:none;}
+  .birthday-shell .retro-terminal {font-size:9px;padding:5px 7px;}
 }
 
 `;
