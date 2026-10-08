@@ -77,6 +77,8 @@ export default function HomePage() {
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [recordingPlaying, setRecordingPlaying] = useState(false)
   const [photoIndex, setPhotoIndex] = useState(0)
+  const [photoDataGlitch, setPhotoDataGlitch] = useState(false)
+  const photoGlitchTimerRef = useRef(null)
 
   const [activeWindow, setActiveWindow] = useState('notes')
   const [terminalText, setTerminalText] = useState('SYSTEM READY')
@@ -101,6 +103,8 @@ export default function HomePage() {
   const [terminalCommand, setTerminalCommand] = useState('')
   const [terminalHistory, setTerminalHistory] = useState(['CLAR_OS TERMINAL [Version 22.04]', 'Type HELP to list commands.'])
   const dragRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(photoGlitchTimerRef.current), [])
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -150,14 +154,14 @@ export default function HomePage() {
   --------------------------------------------------------- */
 
   useEffect(() => {
-    if (screen !== 'boot' || photoPaused) return
+    if (screen !== 'boot' || photoPaused || photoDataGlitch) return
 
     const timer = setInterval(() => {
       setPhotoIndex((previous) => (previous + 1) % PHOTOS.length)
     }, 2600)
 
     return () => clearInterval(timer)
-  }, [screen, photoPaused])
+  }, [screen, photoPaused, photoDataGlitch])
 
   /* ---------------------------------------------------------
      MUSIC
@@ -290,6 +294,12 @@ export default function HomePage() {
     const newAttempts = attempts + 1
 
     setAttempts(newAttempts)
+    if (newAttempts === 3) {
+      clearTimeout(photoGlitchTimerRef.current)
+      setPhotoDataGlitch(true)
+      setWindowOpen(prev => ({ ...prev, photos: true }))
+      photoGlitchTimerRef.current = setTimeout(() => setPhotoDataGlitch(false), 8000)
+    }
     setError(true)
     setPassword('')
 
@@ -693,7 +703,7 @@ export default function HomePage() {
 
                     <div className="photo-viewer">
 
-                      <div className="photo-main">
+                      <div className={`photo-main ${photoDataGlitch ? "data-glitch-active" : ""}`}>
                         <img
                           src={PHOTOS[photoIndex]}
                           alt={`Clar memory ${photoIndex + 1}`}
@@ -704,6 +714,15 @@ export default function HomePage() {
                             )
                           }}
                         />
+
+                        {photoDataGlitch && (
+                          <div className="lost-data-overlay" role="status" aria-live="polite">
+                            <div className="lost-data-static" aria-hidden="true" />
+                            <div className="lost-data-code" aria-hidden="true">00110010 0x4A ERROR_404 DATA_CORRUPTED</div>
+                            <div className="lost-data-title" data-text="lost data : th**.***hivess*">lost data : th**.***hivess*</div>
+                            <div className="lost-data-footer">SIGNAL LOST // RECOVERING MEMORY...</div>
+                          </div>
+                        )}
 
                         <div className="photo-placeholder">
                           <div className="placeholder-camera">
@@ -5207,6 +5226,74 @@ button {
   .birthday-shell .terminal-window .terminal-body {min-height:270px;max-height:none;}
   .birthday-shell .terminal-output {max-height:150px;}
   .birthday-shell .password-title,.birthday-shell .password-title .glitch {font-size:20px!important;}
+}
+
+
+/* Password failure: 8-second corrupted photo feed. */
+.photo-main.data-glitch-active img,
+.photo-main.data-glitch-active .photo-placeholder,
+.photo-main.data-glitch-active .photo-counter { visibility: hidden !important; }
+.photo-main .lost-data-overlay {
+  position:absolute;inset:0;z-index:20;overflow:hidden;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:14px;text-align:center;background:#07030e;color:#f4d7ff;
+  isolation:isolate;
+  animation:lostFeedFlicker .18s steps(2,end) infinite;
+}
+.photo-main .lost-data-overlay::before {
+  content:"";position:absolute;inset:-25%;z-index:-1;opacity:.6;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,#a548ff44 4px 5px,transparent 6px 10px);
+  animation:lostScan 1.1s linear infinite;
+}
+.photo-main .lost-data-overlay::after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(transparent 40%,#ff2ec833 50%,transparent 58%);
+  animation:lostSweep 1.4s linear infinite;
+}
+.photo-main .lost-data-title {
+  position:relative;z-index:2;max-width:100%;overflow-wrap:anywhere;
+  font:900 clamp(12px,1.6vw,23px)/1.3 "Lucida Console","Courier New",monospace;
+  letter-spacing:-.025em;color:#f4d4ff;text-shadow:-3px 0 #31dfff,3px 0 #ff36b8;
+  animation:lostJitter .23s steps(2,end) infinite;
+}
+.photo-main .lost-data-title::before,
+.photo-main .lost-data-title::after {
+  content:attr(data-text);position:absolute;inset:0;pointer-events:none;
+}
+.photo-main .lost-data-title::before {
+  color:#36eaff;clip-path:inset(10% 0 66% 0);
+  animation:lostSlice .48s steps(2,end) infinite;
+}
+.photo-main .lost-data-title::after {
+  color:#ff4bc4;clip-path:inset(64% 0 10% 0);
+  animation:lostSlice .36s steps(2,end) infinite reverse;
+}
+.photo-main .lost-data-code,.photo-main .lost-data-footer {
+  z-index:2;font:10px/1.4 "Courier New",monospace;letter-spacing:.12em;color:#72e7ef;
+}
+.photo-main .lost-data-static {
+  position:absolute;inset:0;opacity:.18;pointer-events:none;
+  background:repeating-linear-gradient(90deg,#ff51da 0 1px,transparent 1px 7px,#6ff6ff 8px 9px,transparent 9px 13px);
+  animation:lostJitter .12s steps(3,end) infinite;
+}
+@keyframes lostJitter {
+  0%,100%{transform:translate(0,0) skew(0)}
+  25%{transform:translate(-4px,2px) skew(3deg)}
+  50%{transform:translate(5px,-2px) skew(-2deg)}
+  75%{transform:translate(-2px,1px) skew(1deg)}
+}
+@keyframes lostSlice {
+  0%,100%{transform:translateX(-5px)}
+  50%{transform:translateX(8px)}
+}
+@keyframes lostScan {to{transform:translateY(40px)}}
+@keyframes lostSweep {0%{transform:translateY(-130%)}100%{transform:translateY(130%)}}
+@keyframes lostFeedFlicker {0%,100%{opacity:1}50%{opacity:.93}}
+@media (prefers-reduced-motion:reduce) {
+  .photo-main .lost-data-overlay,.photo-main .lost-data-overlay::before,
+  .photo-main .lost-data-overlay::after,.photo-main .lost-data-title,
+  .photo-main .lost-data-title::before,.photo-main .lost-data-title::after,
+  .photo-main .lost-data-static {animation:none!important}
 }
 
 `;
