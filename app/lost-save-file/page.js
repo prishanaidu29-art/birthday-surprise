@@ -65,6 +65,69 @@ function sprite(ctx,x,y,color,dir,walk,variant=0){
  p(-7,19,6,9+s,'#332638');p(1,19,6,11-s,'#332638');p(-8,27+s,8,4,'#161322');p(1,29-s,8,4,'#161322')
  ctx.restore()
 }
+
+const TOWN_BUILDINGS=[
+ {x:3,y:3,w:5,h:3,name:'BAKERY',roof:'#a46c91'},
+ {x:18,y:3,w:5,h:3,name:'RECORDS',roof:'#6c78a2'},
+ {x:4,y:16,w:5,h:3,name:'HOME',roof:'#8e699c'},
+ {x:24,y:16,w:5,h:3,name:'CLOSED',roof:'#66577c'}
+]
+function townSolid(x,y){
+ const tx=x/TILE,ty=y/TILE
+ return TOWN_BUILDINGS.some(h=>tx>h.x-.15&&tx<h.x+h.w+.15&&ty>h.y-.15&&ty<h.y+h.h+.15)
+}
+function drawTown(ctx,s){
+ const t=s.elapsed
+ const tile=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(x*TILE,y*TILE,w*TILE,h*TILE)}
+ // Pavement borders, staggered cobblestones, and recessed curbs
+ tile(0,9,WW,1,'#51465d');tile(0,13,WW,1,'#51465d')
+ for(let x=0;x<WW;x++){tile(x,9,.8,.08,'#8b7a92');tile(x,13,.8,.08,'#8b7a92')}
+ for(let x=0;x<WW;x++)for(let y=10;y<13;y++){
+  const px=x*TILE+(y%2)*11,py=y*TILE
+  ctx.strokeStyle='#3c354d';ctx.lineWidth=2;ctx.strokeRect(px,py,30,29)
+ }
+ // Gardens, shrubs, flowers and short wooden fences
+ for(let x=1;x<31;x+=2){
+  if(x>=12&&x<=17)continue
+  for(const y of [2,20]){
+   tile(x,y,.8,.3,'#352a42');tile(x+.1,y-.3,.12,.7,'#b28b75');tile(x+.7,y-.3,.12,.7,'#b28b75')
+  }
+ }
+ for(let x=1;x<WW-1;x++)for(let y=1;y<HH-1;y++){
+  if((x*13+y*17)%29===0&&!(y>=9&&y<=13)){tile(x+.25,y+.3,.12,.18,'#d8a0c9');tile(x+.48,y+.44,.1,.12,'#f0d38b')}
+ }
+ TOWN_BUILDINGS.forEach((h,i)=>{
+  const px=h.x*TILE,py=h.y*TILE,w=h.w*TILE,height=h.h*TILE
+  ctx.fillStyle='#1b1427';ctx.fillRect(px+7,py+18,w,height)
+  ctx.fillStyle=i%2?'#82748f':'#94738c';ctx.fillRect(px,py+24,w,height-24)
+  ctx.fillStyle='#382b48';ctx.fillRect(px-8,py+5,w+16,24)
+  ctx.fillStyle=h.roof;ctx.fillRect(px-8,py+5,w+16,6)
+  for(let j=0;j<2;j++){
+   const wx=px+24+j*(w-55);ctx.fillStyle='#392841';ctx.fillRect(wx,py+42,24,28)
+   ctx.fillStyle='#f6d29c';ctx.fillRect(wx+3,py+45,18,22)
+   ctx.fillStyle='#e8b878';ctx.globalAlpha=.15+.1*Math.sin(t*1.2+i);ctx.fillRect(wx-6,py+39,36,37);ctx.globalAlpha=1
+   ctx.fillStyle='#614660';ctx.fillRect(wx+11,py+45,2,22)
+  }
+  ctx.fillStyle='#25192f';ctx.fillRect(px+w/2-14,py+height-34,28,34)
+  ctx.fillStyle='#d7a0bc';ctx.fillRect(px+w/2+7,py+height-18,3,3)
+  ctx.fillStyle='#281b37';ctx.fillRect(px+w/2-31,py+22,62,14)
+  ctx.fillStyle='#f6d4e8';ctx.textAlign='center';ctx.font='bold 9px monospace';ctx.fillText(h.name,px+w/2,py+32)
+ })
+ // Lamp posts and halos, drawn behind the characters
+ for(const [x,y] of [[2,8],[16,8],[29,8],[2,15],[16,15],[29,15]]){
+  const px=x*TILE+16,py=y*TILE+16
+  ctx.fillStyle='#231c2e';ctx.fillRect(px-3,py-37,6,43)
+  ctx.fillStyle='#efcf91';ctx.fillRect(px-7,py-44,14,12)
+  const g=ctx.createRadialGradient(px,py-37,4,px,py-37,65)
+  g.addColorStop(0,'#f6d78a55');g.addColorStop(1,'#f6d78a00')
+  ctx.fillStyle=g;ctx.fillRect(px-65,py-102,130,130)
+ }
+ // A small pond and stepping stones, well away from the main path
+ tile(24,3,5,3,'#253e58')
+ for(let i=0;i<7;i++){const x=24*TILE+10+(i*37)%145,y=3*TILE+12+(i*19)%75;ctx.fillStyle='#79a8c1';ctx.fillRect(x,y,12,3)}
+ for(let i=0;i<7;i++){const x=(1+i*4)*TILE,y=(i%2?18:7)*TILE;ctx.fillStyle='#253b37';ctx.fillRect(x+2,y+10,28,20);ctx.fillStyle='#547c65';ctx.fillRect(x-5,y-6,40,24);ctx.fillStyle='#719b7c';ctx.fillRect(x,y-11,28,11)}
+}
+
 function scene(ctx,s,hair,outfit){
  const z=ZONES[s.zone],vw=ctx.canvas.width,vh=ctx.canvas.height,camX=Math.max(0,Math.min(WW*TILE-vw,s.x-vw/2)),camY=Math.max(0,Math.min(HH*TILE-vh,s.y-vh/2))
  ctx.fillStyle=z.color;ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-Math.round(camX),-Math.round(camY))
@@ -73,8 +136,9 @@ function scene(ctx,s,hair,outfit){
   ctx.fillStyle=path?z.path:((x+y)%2?z.color:z.ground);ctx.fillRect(x*TILE,y*TILE,TILE,TILE)
   if(!path&&(x*17+y*23)%19===0){ctx.fillStyle='#ffffff24';ctx.fillRect(x*TILE+10,y*TILE+13,3,4)}
  }
+ if(s.zone===0)drawTown(ctx,s)
  const draw=(x,y,emoji)=>{ctx.font='25px monospace';ctx.textAlign='center';ctx.fillText(emoji,x*TILE+16,y*TILE+23)}
- if(s.zone===0){[[5,4],[18,4],[24,15]].forEach(([x,y],i)=>{ctx.fillStyle='#61466e';ctx.fillRect(x*TILE,y*TILE,5*TILE,3*TILE);ctx.fillStyle='#2a1a35';ctx.fillRect(x*TILE-9,y*TILE-10,5*TILE+18,18);draw(x+2,y+2,'🚪')})}
+ 
  if(s.zone===1){for(let x=3;x<29;x++){ctx.fillStyle='#9b879d';ctx.fillRect(x*TILE,5*TILE,27,5);ctx.fillRect(x*TILE,17*TILE,27,5)}draw(17,4,'🚉')}
  if(s.zone===2){[[5,5],[15,6],[24,7],[6,16],[19,16]].forEach(([x,y])=>draw(x,y,'🕹️'))}
  if(s.zone===3){for(let x=3;x<30;x+=4)for(let y=3;y<19;y+=5){if((x+y)%3)draw(x,y,'🌲')}}
@@ -124,7 +188,7 @@ export default function Game(){
  const restart=()=>{state.current=initial();setDialog(null);setEnding(null);setEndingMenu(false);setJournal(false);update();setStarted(true)}
  useEffect(()=>{const down=e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' ','e'].includes(k))e.preventDefault();keyboard.current[k]=true;if(k==='e'||k===' ')interact()};const up=e=>{keyboard.current[e.key.toLowerCase()]=false};const blur=()=>{keyboard.current={};pressed.current={}};window.addEventListener('keydown',down);window.addEventListener('keyup',up);window.addEventListener('blur',blur);return()=>{window.removeEventListener('keydown',down);window.removeEventListener('keyup',up);window.removeEventListener('blur',blur)}})
  useEffect(()=>{if(!started)return;let raf;const frame=t=>{const ctx=ref.current?.getContext('2d');if(!ctx)return;const dt=Math.min((t-(clock.current||t))/1000,.04);clock.current=t;const s=state.current;s.elapsed+=dt;s.blackout=Math.max(0,s.blackout-dt*1.5)
- if(!dialogRef.current&&!ending&&!endingMenu&&!journal){const k=keyboard.current,b=pressed.current;let dx=Number(!!(k.arrowright||k.d||b.right))-Number(!!(k.arrowleft||k.a||b.left)),dy=Number(!!(k.arrowdown||k.s||b.down))-Number(!!(k.arrowup||k.w||b.up));const len=Math.hypot(dx,dy);s.walk=len>0;if(len){dx/=len;dy/=len;s.dir=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';const speed=SPEED*dt;const free=(x,y)=>x>26&&x<(WW-1)*TILE&&y>30&&y<(HH-1)*TILE
+ if(!dialogRef.current&&!ending&&!endingMenu&&!journal){const k=keyboard.current,b=pressed.current;let dx=Number(!!(k.arrowright||k.d||b.right))-Number(!!(k.arrowleft||k.a||b.left)),dy=Number(!!(k.arrowdown||k.s||b.down))-Number(!!(k.arrowup||k.w||b.up));const len=Math.hypot(dx,dy);s.walk=len>0;if(len){dx/=len;dy/=len;s.dir=Math.abs(dx)>Math.abs(dy)?dx>0?'right':'left':dy>0?'down':'up';const speed=SPEED*dt;const free=(x,y)=>x>26&&x<(WW-1)*TILE&&y>30&&y<(HH-1)*TILE&&(s.zone!==0||![[x-9,y-9],[x+9,y-9],[x-9,y+10],[x+9,y+10]].some(([a,b])=>townSolid(a,b)))
  if(free(s.x+dx*speed,s.y))s.x+=dx*speed;if(free(s.x,s.y+dy*speed))s.y+=dy*speed}
  COINS[s.zone].forEach((c,i)=>{const key=s.zone+':'+i;if(!s.collected.includes(key)&&distance({x:s.x,y:s.y},at(c))<22){s.collected.push(key);s.gold++;update()}})
  if(s.zone>=3&&Math.sin(s.elapsed*.45)>0.96&&!s.haunt){s.haunt=true;s.blackout=.8;s.haunts++;update();say('SIGNAL INTERRUPTED','Something is following you. The air smells like old cassette tape.')}
@@ -133,7 +197,7 @@ export default function Game(){
  const btn={background:'#72418e',border:'2px solid #bd85d7',color:'#fff',borderRadius:8,padding:'13px 17px',fontFamily:'inherit',cursor:'pointer',touchAction:'manipulation',WebkitTapHighlightColor:'transparent'}
  const control=(d,symbol)=><button type="button" aria-label={'Move '+d} onContextMenu={e=>e.preventDefault()} onSelectStart={e=>e.preventDefault()} onDragStart={e=>e.preventDefault()} onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);pressed.current[d]=true}} onPointerUp={()=>pressed.current[d]=false} onPointerCancel={()=>pressed.current[d]=false} onLostPointerCapture={()=>pressed.current[d]=false} style={{...btn,width:67,height:62,padding:0,fontSize:23,touchAction:'none',userSelect:'none',WebkitUserSelect:'none',WebkitTouchCallout:'none',WebkitTapHighlightColor:'transparent'}}>{symbol}</button>
  return <main style={{minHeight:'100dvh',background:'radial-gradient(circle at top,#382047,#0d0916 75%)',color:'#f0d8fb',fontFamily:'ui-monospace,Menlo,monospace',padding:'15px 12px 40px',boxSizing:'border-box',WebkitUserSelect:'none',userSelect:'none'}}>
- <div style={{maxWidth:850,margin:'auto'}}><p style={{color:'#9be8e0',letterSpacing:3,fontSize:11}}>CLAR_OS / ARCADE / FULL CAMPAIGN BUILD_004</p><h1 style={{fontSize:'clamp(19px,4vw,29px)',margin:'5px 0'}}>THE LOST SAVE FILE.exe</h1><p style={{fontSize:12,color:'#d4b8df'}}>🪙 {status.gold||0} COINS　👥 {status.met||0}/18 FRIENDS　📼 {status.fragments||0} FRAGMENTS　🏁 {status.finished||0}/6 ENDINGS</p>
+ <div style={{maxWidth:850,margin:'auto'}}><p style={{color:'#9be8e0',letterSpacing:3,fontSize:11}}>CLAR_OS / ARCADE / FAMILIAR TOWN ART BUILD_005</p><h1 style={{fontSize:'clamp(19px,4vw,29px)',margin:'5px 0'}}>THE LOST SAVE FILE.exe</h1><p style={{fontSize:12,color:'#d4b8df'}}>🪙 {status.gold||0} COINS　👥 {status.met||0}/18 FRIENDS　📼 {status.fragments||0} FRAGMENTS　🏁 {status.finished||0}/6 ENDINGS</p>
  {!started?<section style={{border:'2px solid #ae77d1',background:'#23132e',padding:24,marginTop:20}}><h2>CREATE_PLAYER.exe</h2><p>Six places. Eighteen familiar faces. Six ways this story could end.</p><label>HAIR　<select value={hair} onChange={e=>setHair(e.target.value)} style={btn}><option value="#3b233d">Dark</option><option value="#96533f">Auburn</option><option value="#dfbc83">Blonde</option></select></label><br/><br/><label>OUTFIT　<select value={outfit} onChange={e=>setOutfit(e.target.value)} style={btn}><option value="#b479d2">Purple</option><option value="#78c8b9">Teal</option><option value="#e4a0ba">Pink</option></select></label><p><button style={btn} onClick={()=>{setStarted(true);update();say('SAVE FILE 001','The clock stopped at 11:19. Find the rusted key, collect memories, and meet your friends. Your choices decide which of six endings you unlock.')}}>▶ START GAME</button></p></section>:<>
  <p style={{fontSize:12,color:'#b8a3c9'}}>{ZONES[status.zone||0].name}　//　{ZONES[status.zone||0].music}</p>
  <div style={{border:'3px solid #a86cc7',maxWidth:768,margin:'auto',boxShadow:'0 0 22px #7d3b9c44'}}><canvas ref={ref} width={768} height={448} style={{width:'100%',display:'block',imageRendering:'pixelated',touchAction:'none'}}/></div>
