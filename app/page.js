@@ -372,7 +372,6 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  <div className="desktop-doodle" aria-hidden="true">clar's computer ♡<small>22 YEARS OF CHAOS</small></div>
                   <div className="desktop-sticker sticker-a" aria-hidden="true">✿</div>
                   <div className="desktop-sticker sticker-b" aria-hidden="true">♡</div>
 
@@ -4646,6 +4645,113 @@ button {
   .birthday-shell .files-window {min-height:255px;}
   .birthday-shell .desktop-shortcuts {display:none;}
   .birthday-shell .retro-terminal {font-size:9px;padding:5px 7px;}
+}
+
+
+
+/* Retro login polish — only the password desktop, not loading/archive. */
+.birthday-shell .desktop-shortcuts {
+  left:37%;top:84%;max-width:26%;width:26%;justify-content:center;
+  gap:12px;z-index:12;
+}
+.birthday-shell .desktop-shortcuts button {
+  min-width:73px;max-width:94px;
+  padding:7px 4px 5px;border:1px solid transparent;
+  font:11px/1.25 'Courier New',monospace;
+  text-shadow:0 1px 2px #000,1px 1px #1b0835;
+}
+.birthday-shell .desktop-shortcuts button span {
+  font-size:26px;filter:drop-shadow(1px 2px 2px #070310);
+}
+.birthday-shell .desktop-shortcuts button:hover,
+.birthday-shell .desktop-shortcuts button:focus-visible {
+  border:1px dotted #eed7ff;
+  background:#ad73ec38;
+}
+.birthday-shell .password-panel {
+  top:41%;width:30%;overflow:visible;
+  border:3px ridge #c9a5ef;
+  background:#eee6f8;
+  box-shadow:7px 8px 0 #0a0416c9,0 0 28px #ac67e177, inset 0 0 0 2px #fff8;
+}
+.birthday-shell .password-panel::before {
+  content:'🔒  PASSWORD_REQUIRED.EXE    _  □  ×';
+  padding:10px 12px 9px;
+  background:linear-gradient(90deg,#59218e,#8d4bbf 75%,#ae7bd3);
+  border-bottom:2px solid #d9b7f1;
+  color:#fff6ff;
+  font:700 11px 'Courier New',monospace;
+  letter-spacing:.15px;
+}
+.birthday-shell .password-panel::after {
+  content:'✦';
+  position:absolute;right:-15px;top:31px;
+  color:#f4b4ee;font-size:26px;
+  text-shadow:0 0 10px #d671e9;
+  rotate:14deg;pointer-events:none;
+}
+.birthday-shell .password-topline {
+  margin:0;padding:14px 18px 2px;
+  color:#8461a2;font-size:10px;
+}
+.birthday-shell .password-title {
+  margin:7px 0 10px;padding:0 18px;
+  color:#492272;
+  font:bold clamp(19px,1.9vw,28px) 'Trebuchet MS',sans-serif;
+  letter-spacing:.35px;
+}
+.birthday-shell .password-intro {
+  padding:0 18px;
+  font:clamp(12px,1.02vw,15px)/1.48 'Trebuchet MS',sans-serif;
+}
+.birthday-shell .password-subtext {
+  padding:0 18px;
+  font:clamp(12px,.92vw,14px)/1.5 'Trebuchet MS',sans-serif;
+}
+.birthday-shell .password-form {padding:6px 18px 0;gap:8px;}
+.birthday-shell .password-input-wrap {
+  height:44px;background:#fffaff;border:2px inset #ab82c9;
+  box-shadow:inset 1px 1px 3px #49226a44;
+}
+.birthday-shell .password-input-wrap input {font-size:13px;}
+.birthday-shell .enter-button {
+  height:44px;min-width:115px;
+  background:linear-gradient(#e8cbfa,#bc91e5);
+  border:2px outset #fff0ff;color:#402062;
+  font:bold 11px 'Trebuchet MS',sans-serif;
+  box-shadow:1px 2px 0 #6c4592;
+}
+.birthday-shell .enter-button:active {border-style:inset;box-shadow:none;}
+.birthday-shell .password-status {padding:12px 18px 15px;font-size:10px;}
+.birthday-shell .photo-toolbar {font-size:10px;gap:5px;}
+.birthday-shell .photo-toolbar button {
+  font:10px 'Courier New',monospace;
+  padding:5px 6px;min-height:24px;
+}
+.birthday-shell .fake-file-name {font:10px/1.35 'Courier New',monospace;max-width:110px;}
+.birthday-shell .fake-file {font-size:10px;}
+.birthday-shell .window-titlebar {font-size:10px;letter-spacing:.55px;height:27px;}
+.birthday-shell .window-controls span {width:13px;height:13px;font-size:9px;}
+.birthday-shell .desktop-sticker {opacity:.55;}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop-shortcuts {
+    display:flex;left:35%;top:84%;width:30%;max-width:30%;gap:3px;
+  }
+  .birthday-shell .desktop-shortcuts button {min-width:62px;font-size:9px;}
+  .birthday-shell .password-panel {top:41%;width:35%;}
+  .birthday-shell .password-title {font-size:21px;}
+  .birthday-shell .password-intro {font-size:12px;}
+  .birthday-shell .password-subtext {font-size:12px;}
+  .birthday-shell .photo-toolbar button {font-size:9px;padding:4px;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop-shortcuts {display:none;}
+  .birthday-shell .password-panel {top:auto;left:auto;width:100%;overflow:visible;}
+  .birthday-shell .password-panel::after {right:6px;top:30px;}
+  .birthday-shell .password-title {font-size:21px;}
+  .birthday-shell .password-intro,.birthday-shell .password-subtext {font-size:13px;}
+  .birthday-shell .enter-button {min-width:105px;}
+  .birthday-shell .photo-toolbar button {font-size:9px;padding:4px;}
 }
 
 `;
