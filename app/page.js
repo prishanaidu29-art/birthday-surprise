@@ -83,6 +83,7 @@ export default function HomePage() {
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
+  const musicStartedRef = useRef(false)
 
   /* ---------------------------------------------------------
      LOADING SCREEN
@@ -147,9 +148,9 @@ export default function HomePage() {
     if (!audio) return
 
     if (musicPlaying) {
-      audio.play().catch(() => {
-        setMusicPlaying(false)
-      })
+      audio.play()
+        .then(() => { musicStartedRef.current = true })
+        .catch(() => { setMusicPlaying(false) })
     } else {
       audio.pause()
     }
@@ -165,12 +166,49 @@ export default function HomePage() {
     if (!audio) return
 
     audio.play()
-      .then(() => setMusicPlaying(true))
+      .then(() => {
+        musicStartedRef.current = true
+        setMusicPlaying(true)
+      })
       .catch(() => {
         // Keep the existing PLAY button available if autoplay is blocked.
         setMusicPlaying(false)
       })
   }, [])
+
+  /* ---------------------------------------------------------
+     FIRST-TAP MUSIC FALLBACK FOR SAFARI / MOBILE BROWSERS
+  --------------------------------------------------------- */
+
+  useEffect(() => {
+    if (screen !== 'boot' || musicPlaying || musicStartedRef.current) return
+
+    function startMusicOnInteraction(event) {
+      // Let the existing CD button control music without double-toggling.
+      if (event.target?.closest?.('.music-button')) return
+
+      const audio = audioRef.current
+      if (!audio || musicStartedRef.current) return
+
+      // play() must be called synchronously inside the user gesture.
+      audio.play()
+        .then(() => {
+          musicStartedRef.current = true
+          setMusicPlaying(true)
+        })
+        .catch(() => {
+          // If the browser refuses, keep listening for another gesture.
+        })
+    }
+
+    document.addEventListener('pointerdown', startMusicOnInteraction, true)
+    document.addEventListener('keydown', startMusicOnInteraction, true)
+
+    return () => {
+      document.removeEventListener('pointerdown', startMusicOnInteraction, true)
+      document.removeEventListener('keydown', startMusicOnInteraction, true)
+    }
+  }, [screen, musicPlaying])
 
   /* ---------------------------------------------------------
      RECORDING
