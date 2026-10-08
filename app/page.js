@@ -14,6 +14,7 @@ const PHOTOS = [
   '/images/clar-04.jpg',
   '/images/clar-05.jpg',
   '/images/clar-06.jpg',
+  '/images/clar-07.jpg',
 ]
 
 const SECTIONS = [
@@ -2189,8 +2190,10 @@ button {
   display: block;
 
   filter:
-    saturate(1.1)
-    contrast(1.05);
+    saturate(0.76)
+    sepia(0.16)
+    contrast(1.09)
+    brightness(0.96);
 }
 
 .photo-placeholder {
@@ -3493,8 +3496,10 @@ button {
   object-fit: cover;
 
   filter:
-    saturate(1.2)
-    contrast(1.08);
+    saturate(0.76)
+    sepia(0.16)
+    contrast(1.09)
+    brightness(0.96);
 
   animation:
     photoAppear 0.35s ease-out;
@@ -4159,6 +4164,50 @@ button {
 
 }
 
+
+/* =========================================================
+   VINTAGE DIGICAM PHOTO TREATMENT
+   Applies to the CRT viewer and loading slideshow only.
+   Original images remain unchanged.
+========================================================= */
+
+.photo-main::after,
+.loading-photo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.24;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(15, 6, 18, 0.18) 0px,
+      rgba(15, 6, 18, 0.18) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-radial-gradient(
+      circle at 17% 39%,
+      rgba(255, 245, 220, 0.25) 0px,
+      rgba(255, 245, 220, 0.25) 0.65px,
+      transparent 0.9px,
+      transparent 3px
+    );
+  mix-blend-mode: screen;
+}
+
+.photo-main::before,
+.loading-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 12% 8%, rgba(255, 190, 105, 0.15), transparent 55%),
+    radial-gradient(ellipse at center, transparent 45%, rgba(20, 8, 24, 0.38) 100%);
+}
 
 /* =========================================================
    ANIMATIONS
