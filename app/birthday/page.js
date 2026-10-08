@@ -447,7 +447,7 @@ export default function BirthdayPage() {
 
             <div className="music-body">
 
-              <div className={`cd ${musicPlaying ? 'spinning' : ''}`}>
+              <div className={`cd ${musicPlaying ? 'spinning' : ''} ${glitching?'chaos-disc-glitch':''}`} role="button" tabIndex={0} aria-label="Poke the CD" onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tease('music');setDiscClicks(n=>{const next=n+1;if(next%3===0){showChaos('DISC.exe HAS STOPPED WORKING. STOP POKING IT 💀','glitch');setGlitching(true);clearTimeout(crashTimerRef.current);crashTimerRef.current=setTimeout(()=>setGlitching(false),1000)}return next})}}} onClick={()=>{tease('music');setDiscClicks(n=>{const next=n+1;if(next%3===0){showChaos('DISC.exe HAS STOPPED WORKING. STOP POKING IT 💀','glitch');setGlitching(true);clearTimeout(crashTimerRef.current);crashTimerRef.current=setTimeout(()=>setGlitching(false),1000)}return next})}}> 
                 <div className="cd-shine" />
                 <div className="cd-hole" />
                 <div className="cd-label">
@@ -2311,6 +2311,9 @@ export default function BirthdayPage() {
 @keyframes chaos-jolt{0%{transform:translate(0,0)}50%{transform:translate(3px,-2px)}100%{transform:translate(-2px,1px)}}
 @keyframes chaos-text{0%{text-shadow:4px 0 #f44ba7,-3px 0 #69dfe8}100%{text-shadow:-4px 0 #f44ba7,3px 0 #69dfe8}}
 @media(prefers-reduced-motion:reduce){.chaos-corrupt .chaos-crash-body,.chaos-corrupt h2{animation:none!important}}
+
+.cd[role="button"]{cursor:pointer}.chaos-disc-glitch{filter:hue-rotate(160deg) contrast(2);animation:chaos-jolt .18s steps(2,end) 4!important}
+@media(prefers-reduced-motion:reduce){.chaos-disc-glitch{animation:none!important}}
 
       `}</style>
 
