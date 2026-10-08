@@ -80,6 +80,9 @@ export default function HomePage() {
 
   const [activeWindow, setActiveWindow] = useState('notes')
   const [terminalText, setTerminalText] = useState('SYSTEM READY')
+  const [openFile, setOpenFile] = useState(null)
+  const [photoPaused, setPhotoPaused] = useState(false)
+  const [showRecycle, setShowRecycle] = useState(false)
 
   const audioRef = useRef(null)
   const recordingRef = useRef(null)
@@ -129,14 +132,14 @@ export default function HomePage() {
   --------------------------------------------------------- */
 
   useEffect(() => {
-    if (screen !== 'boot') return
+    if (screen !== 'boot' || photoPaused) return
 
     const timer = setInterval(() => {
       setPhotoIndex((previous) => (previous + 1) % PHOTOS.length)
     }, 2600)
 
     return () => clearInterval(timer)
-  }, [screen])
+  }, [screen, photoPaused])
 
   /* ---------------------------------------------------------
      MUSIC
@@ -289,6 +292,17 @@ export default function HomePage() {
     setActiveWindow(name)
   }
 
+  function openDesktopFile(name) {
+    setOpenFile(name)
+    focusWindow('files')
+  }
+
+  function changePhoto(step) {
+    setPhotoPaused(true)
+    setPhotoIndex((previous) => (previous + step + PHOTOS.length) % PHOTOS.length)
+    focusWindow('photos')
+  }
+
   function runSystemScan() {
     setTerminalText('SCANNING ARCHIVE...')
 
@@ -438,31 +452,37 @@ export default function HomePage() {
                       <FakeFile
                         icon="🥚"
                         name="EGGS"
+                        onOpen={() => openDesktopFile('EGGS')}
                       />
 
                       <FakeFile
                         icon="🦶"
                         name="FEETGANG"
+                        onOpen={() => openDesktopFile('FEETGANG')}
                       />
 
                       <FakeFile
                         icon="🎓"
                         name="GRADUATION"
+                        onOpen={() => openDesktopFile('GRADUATION')}
                       />
 
                       <FakeFile
                         icon="📸"
                         name="MEMORIES"
+                        onOpen={() => openDesktopFile('MEMORIES')}
                       />
 
                       <FakeFile
                         icon="💌"
                         name="MESSAGES"
+                        onOpen={() => openDesktopFile('MESSAGES')}
                       />
 
                       <FakeFile
                         icon="☠"
                         name="DO_NOT_OPEN"
+                        onOpen={() => openDesktopFile('DO_NOT_OPEN')}
                       />
 
                     </div>
@@ -595,6 +615,13 @@ export default function HomePage() {
                         </div>
                       </div>
 
+                      <div className="photo-toolbar">
+                        <button type="button" onClick={(event) => { event.stopPropagation(); changePhoto(-1) }} aria-label="Previous memory photo">◀ PREV</button>
+                        <span>CAMERA_ROLL / 2004—2026</span>
+                        <button type="button" onClick={(event) => { event.stopPropagation(); setPhotoPaused((value) => !value) }}>{photoPaused ? '▶ AUTO' : '❚❚ PAUSE'}</button>
+                        <button type="button" onClick={(event) => { event.stopPropagation(); changePhoto(1) }} aria-label="Next memory photo">NEXT ▶</button>
+                      </div>
+
                       <div className="photo-thumbnails">
                         {PHOTOS.map((_, index) => (
                           <button
@@ -607,6 +634,7 @@ export default function HomePage() {
                             onClick={(event) => {
                               event.stopPropagation()
                               setPhotoIndex(index)
+                              setPhotoPaused(true)
                             }}
                           >
                             {String(index + 1).padStart(2, '0')}
@@ -807,13 +835,46 @@ export default function HomePage() {
 
                   </div>
 
-                  <div className="retro-taskbar" aria-hidden="true">
-                    <span className="retro-start">✦ START</span>
-                    <span className="retro-tab">▤ notes.txt</span>
-                    <span className="retro-tab">◉ CD PLAYER.exe</span>
-                    <span className="retro-tab selected">🔒 ACCESS REQUIRED</span>
+                  <div className="retro-taskbar">
+                    <button type="button" className="retro-start" onClick={() => setShowRecycle(true)}>✦ START</button>
+                    <button type="button" className="retro-tab" onClick={() => focusWindow('notes')}>▤ notes.txt</button>
+                    <button type="button" className="retro-tab" onClick={() => focusWindow('cd')}>◉ CD PLAYER.exe</button>
+                    <button type="button" className="retro-tab" onClick={() => focusWindow('files')}>📁 FILES</button>
                     <span className="retro-clock">CLAR_OS 22:04</span>
                   </div>
+
+                  <div className="desktop-shortcuts" aria-label="Desktop shortcuts">
+                    <button type="button" onClick={() => setShowRecycle(true)}><span>🗑️</span>recycle bin</button>
+                    <button type="button" onClick={() => openDesktopFile('DO_NOT_OPEN')}><span>💌</span>secret.txt</button>
+                  </div>
+
+                  {openFile && (
+                    <div className="retro-dialog-backdrop" onClick={() => setOpenFile(null)}>
+                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label={openFile} onClick={(event) => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>📁 {openFile.toLowerCase()}.exe</span><button type="button" onClick={() => setOpenFile(null)} aria-label="Close file">×</button></div>
+                        <div className="retro-dialog-body">
+                          <div className="retro-dialog-icon">{openFile === 'DO_NOT_OPEN' ? '💌' : '📂'}</div>
+                          <strong>{openFile === 'DO_NOT_OPEN' ? 'YOU OPENED IT ANYWAY???' : openFile + ' FOUND!'}</strong>
+                          <p>{openFile === 'EGGS' ? '🥚 classified egg files. highly suspicious.' : openFile === 'FEETGANG' ? '🦶 the gang is all here. unfortunately.' : openFile === 'GRADUATION' ? '🎓 evidence of surviving the chaos.' : openFile === 'MEMORIES' ? '📸 so many moments worth keeping. unlock the archive to see them all.' : openFile === 'MESSAGES' ? '💌 some people have things to tell you. unlock the archive first.' : 'you were specifically told not to open this. happy birthday, menace ♡'}</p>
+                          <button type="button" className="retro-ok" onClick={() => setOpenFile(null)}>OK ♡</button>
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {showRecycle && (
+                    <div className="retro-dialog-backdrop" onClick={() => setShowRecycle(false)}>
+                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label="Start menu secret" onClick={(event) => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>✦ CLAR_OS — start menu</span><button type="button" onClick={() => setShowRecycle(false)} aria-label="Close menu">×</button></div>
+                        <div className="retro-dialog-body">
+                          <div className="retro-dialog-icon">🗑️</div>
+                          <strong>RECYCLE BIN: EMPTY</strong>
+                          <p>no memories deleted. unfortunately, all embarrassing moments are permanently backed up. ♡</p>
+                          <button type="button" className="retro-ok" onClick={() => setShowRecycle(false)}>CLOSE</button>
+                        </div>
+                      </section>
+                    </div>
+                  )}
 
                   {/* =================================================
                       HINT POPUP — ALSO INSIDE CRT
@@ -1172,11 +1233,13 @@ function WindowBar({ title, icon, active }) {
    FILE COMPONENT
 ============================================================= */
 
-function FakeFile({ icon, name }) {
+function FakeFile({ icon, name, onOpen }) {
   return (
     <button
       className="fake-file"
-      onClick={(event) => event.stopPropagation()}
+      type="button"
+      onClick={(event) => { event.stopPropagation(); onOpen?.() }}
+      title={`Open ${name}`}
     >
 
       <div className="fake-file-icon">
@@ -4371,6 +4434,121 @@ button {
   .birthday-shell .hint-window {position:fixed;width:min(320px,calc(100vw - 32px));top:30%;right:16px;z-index:150;}
   .birthday-shell .password-form {flex-wrap:wrap;}
   .birthday-shell .enter-button {flex:1;}
+}
+
+
+/* ==============================================================
+   PERSONAL 2000s COMPUTER: ENTRY SCREEN ONLY.
+   The password, loading transition and post-login pages are intact.
+================================================================ */
+.birthday-shell .desktop {background:radial-gradient(ellipse at 23% 76%,#ed7bb022,transparent 44%),radial-gradient(ellipse at 74% 16%,#7cbfdb22,transparent 42%),linear-gradient(140deg,#281a35,#151022 58%,#2b1a38);}
+.birthday-shell .desktop-header {background:linear-gradient(90deg,#775a96,#4b517c 54%,#77548b);border-bottom:2px solid #b5a3c4;}
+.birthday-shell .desktop-window {border:2px solid #d2bddb;box-shadow:5px 6px 0 #0008,0 16px 28px #0007;}
+.birthday-shell .window-titlebar {color:#2e233c;background:linear-gradient(90deg,#b8a9d8,#e6c4dc);border-bottom:1px solid #8b7098;font-weight:bold;}
+.birthday-shell .window-titlebar-active {background:linear-gradient(90deg,#b5e4de,#a5bcd6);color:#213b49;}
+.birthday-shell .notes-window {left:4%;top:12%;width:29%;height:37%;rotate:-1.8deg;z-index:9;}
+.birthday-shell .notes-window .window-titlebar {background:linear-gradient(90deg,#c4a064,#e5c58f);}
+.birthday-shell .notes-paper {background:linear-gradient(110deg,#fff4dc,#f7e8d2);padding:19px 18px 16px 30px;}
+.birthday-shell .note-heading {color:#9b416f;}
+.birthday-shell .handwriting {font-size:clamp(11px,.94vw,15px);line-height:1.45;}
+.birthday-shell .cd-window {left:auto;right:4%;top:13%;width:29%;height:28%;rotate:1.5deg;z-index:12;}
+.birthday-shell .cd-window .window-titlebar {background:linear-gradient(90deg,#a2d9e3,#c6a9d8);}
+.birthday-shell .cd-player-body {gap:10px;padding:13px;}
+.birthday-shell .cd-spin-container {width:min(125px,42%);}
+.birthday-shell .cd-information {min-width:0;}
+.birthday-shell .recording-window {right:34%;top:12%;width:25%;height:19%;rotate:-1deg;z-index:8;}
+.birthday-shell .recording-window .window-titlebar {background:linear-gradient(90deg,#c6aed5,#a6bddf);}
+.birthday-shell .recording-body {gap:7px;padding:8px;}
+.birthday-shell .photos-window {left:6%;top:60%;width:27%;height:31%;rotate:2.2deg;z-index:9;}
+.birthday-shell .photos-window .window-titlebar {background:linear-gradient(90deg,#e5b1c9,#f1d5bc);}
+.birthday-shell .photo-main {border:5px solid #f1e5d6;background:#241825;box-shadow:3px 3px 0 #0006;}
+.birthday-shell .photo-main img {filter:sepia(.18) saturate(.73) contrast(1.09);}
+.birthday-shell .photo-viewer {padding:8px;}
+.birthday-shell .photo-toolbar {display:flex;align-items:center;justify-content:space-between;gap:3px;padding:5px 0 1px;color:#c7abc8;font:7px 'Courier New',monospace;}
+.birthday-shell .photo-toolbar button {background:#e5c5da;color:#4d304c;border:1px outset #fff;padding:3px 4px;font:7px 'Courier New',monospace;}
+.birthday-shell .files-window {left:auto;right:4%;top:56%;width:30%;height:32%;rotate:-1.4deg;z-index:9;}
+.birthday-shell .files-window .window-titlebar {background:linear-gradient(90deg,#b5cda3,#d3d9b3);}
+.birthday-shell .fake-file {font-size:9px;gap:6px;padding:8px 4px;border:1px solid transparent;}
+.birthday-shell .fake-file:hover,.birthday-shell .fake-file:focus-visible {background:#d4a7e433;border-color:#b5a6cd;outline:none;}
+.birthday-shell .fake-file-icon {width:44px;height:35px;background:linear-gradient(145deg,#b998c9,#6e517d);font-size:20px;border:1px outset #dac4e8;}
+.birthday-shell .fake-file-name {max-width:96px;color:#eee0f4;}
+.birthday-shell .terminal-window {left:39%;top:78%;width:24%;height:13%;rotate:.7deg;z-index:7;}
+.birthday-shell .terminal-window .window-titlebar {background:linear-gradient(90deg,#adb1bb,#d0c5d1);}
+.birthday-shell .password-panel {
+  left:50%;top:43%;width:34%;min-width:0;padding:0;
+  border:3px ridge #f7d7ef;background:#f5ebef;color:#35283e;
+  box-shadow:8px 9px 0 #0009,0 14px 38px #0009;
+  animation:none;z-index:80;
+}
+.birthday-shell .password-panel::before {
+  content:'🔒  password_required.exe      _  □  ×';
+  margin:0 0 0;padding:9px 12px;background:linear-gradient(90deg,#b56a9f,#8069a4);
+  color:#fff9fe;font:bold 11px 'Courier New',monospace;letter-spacing:0;
+  border-bottom:2px solid #fff6;
+}
+.birthday-shell .password-topline {padding:13px 17px 0;margin:0;color:#80677f;font-size:9px;}
+.birthday-shell .password-title {padding:0 17px;margin:8px 0 8px;color:#422d4b;font:bold clamp(17px,1.7vw,26px) 'Trebuchet MS',sans-serif;text-shadow:none;}
+.birthday-shell .password-title .glitch {color:#563a62;text-shadow:none;animation:none;}
+.birthday-shell .password-title .glitch::before,.birthday-shell .password-title .glitch::after {display:none;}
+.birthday-shell .password-intro {padding:0 17px;color:#402f40;font:clamp(12px,.97vw,15px)/1.45 'Trebuchet MS',sans-serif;}
+.birthday-shell .password-subtext {padding:0 17px;color:#765e74;font:clamp(11px,.85vw,13px)/1.45 'Trebuchet MS',sans-serif;}
+.birthday-shell .password-form {padding:4px 17px 0;margin-top:9px;gap:7px;}
+.birthday-shell .password-input-wrap {height:41px;background:#fff;border:2px inset #b6a0b4;}
+.birthday-shell .password-input-wrap input {color:#38223b;background:#fff;font-size:12px;}
+.birthday-shell .password-input-wrap input::placeholder {color:#907e90;}
+.birthday-shell .input-prefix {color:#84688b;}
+.birthday-shell .cursor-block {color:#ac72a4;}
+.birthday-shell .enter-button {height:41px;background:linear-gradient(#f3c4dc,#dca3c5);color:#492d48;border:2px outset #fff;box-shadow:none;font:bold 10px 'Trebuchet MS',sans-serif;}
+.birthday-shell .enter-button:hover {background:#f8d8e9;}
+.birthday-shell .password-status {margin:0;padding:12px 17px 14px;color:#7b697e;font:10px 'Courier New',monospace;}
+.birthday-shell .password-status.status-error {color:#af366b;}
+.birthday-shell .desktop-doodle {top:36%;left:38%;color:#e7b5d0;font:20px 'Comic Sans MS',cursive;}
+.birthday-shell .desktop-sticker {opacity:.7;}
+.birthday-shell .retro-taskbar {background:linear-gradient(#9c85b2,#5c4878);border-top:2px solid #d7c3df;gap:5px;}
+.birthday-shell .retro-taskbar button {cursor:pointer;font-size:10px;}
+.birthday-shell .retro-start {background:linear-gradient(#e9c3da,#b57dba);color:#402b50;border:2px outset #f8e2ef;}
+.birthday-shell .retro-tab {background:#e1c9e2;color:#473852;border:2px outset #fff2;}
+.birthday-shell .retro-tab:hover {background:#f4e0f0;}
+.birthday-shell .desktop-shortcuts {position:absolute;left:36%;top:33%;display:flex;gap:12px;z-index:7;}
+.birthday-shell .desktop-shortcuts button {border:1px solid transparent;background:transparent;color:#e9d6f1;display:flex;flex-direction:column;align-items:center;gap:3px;font:9px 'Courier New',monospace;cursor:pointer;}
+.birthday-shell .desktop-shortcuts button span {font-size:25px;}
+.birthday-shell .desktop-shortcuts button:hover {background:#ffffff24;border-color:#ffffff77;}
+.birthday-shell .retro-dialog-backdrop {position:absolute;inset:36px 0 38px;z-index:120;background:#10071988;display:flex;align-items:center;justify-content:center;padding:15px;}
+.birthday-shell .retro-dialog {width:min(360px,95%);background:#f4eaf1;border:3px ridge #d6b4d3;box-shadow:9px 11px 0 #0008;color:#412c42;font:13px 'Trebuchet MS',sans-serif;}
+.birthday-shell .retro-dialog-title {background:linear-gradient(90deg,#a35c9b,#7661a1);color:white;display:flex;align-items:center;justify-content:space-between;padding:7px 10px;font:bold 11px 'Courier New',monospace;}
+.birthday-shell .retro-dialog-title button {background:#ead3e7;color:#4b3150;border:2px outset #fff;font-size:15px;line-height:1;}
+.birthday-shell .retro-dialog-body {padding:20px;text-align:center;}
+.birthday-shell .retro-dialog-icon {font-size:40px;margin-bottom:9px;}
+.birthday-shell .retro-dialog-body strong {display:block;font-size:16px;}
+.birthday-shell .retro-dialog-body p {line-height:1.5;}
+.birthday-shell .retro-ok {background:#eac8e1;color:#50314e;border:2px outset #fff;padding:7px 20px;font-weight:bold;}
+@media (min-width:761px) and (max-width:1150px) {
+  .birthday-shell .desktop {min-height:900px;}
+  .birthday-shell .notes-window {left:3%;top:10%;width:31%;height:37%;}
+  .birthday-shell .cd-window {right:2%;top:11%;width:31%;height:28%;}
+  .birthday-shell .recording-window {right:34%;top:11%;width:30%;height:18%;}
+  .birthday-shell .password-panel {top:44%;width:37%;}
+  .birthday-shell .photos-window {left:3%;top:60%;width:31%;height:31%;}
+  .birthday-shell .files-window {right:2%;top:58%;width:31%;height:30%;}
+  .birthday-shell .terminal-window {left:37%;top:80%;width:28%;height:12%;}
+  .birthday-shell .desktop-shortcuts {display:none;}
+  .birthday-shell .photo-toolbar span {display:none;}
+}
+@media (max-width:760px) {
+  .birthday-shell .desktop {padding:54px 12px 58px;min-height:0;display:flex;flex-direction:column;gap:16px;}
+  .birthday-shell .password-panel {order:0;width:100%;padding:0;top:auto;left:auto;transform:none;rotate:none;}
+  .birthday-shell .password-panel::before {margin:0;}
+  .birthday-shell .notes-window {order:1;height:310px;rotate:none;}
+  .birthday-shell .cd-window {order:2;min-height:230px;rotate:none;}
+  .birthday-shell .photos-window {order:3;height:350px;rotate:none;}
+  .birthday-shell .files-window {order:4;min-height:255px;rotate:none;}
+  .birthday-shell .recording-window {order:5;min-height:170px;rotate:none;}
+  .birthday-shell .terminal-window {order:6;min-height:160px;rotate:none;}
+  .birthday-shell .desktop-shortcuts,.birthday-shell .desktop-doodle {display:none;}
+  .birthday-shell .retro-taskbar {position:sticky;bottom:0;min-height:38px;}
+  .birthday-shell .retro-tab {display:none;}
+  .birthday-shell .retro-dialog-backdrop {position:fixed;inset:0;}
+  .birthday-shell .photo-toolbar span {display:none;}
 }
 
 `;
