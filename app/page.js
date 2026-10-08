@@ -976,31 +976,103 @@ export default function HomePage() {
 
                   {openFile && (
                     <div className="retro-dialog-backdrop" onClick={() => setOpenFile(null)}>
-                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label={openFile} onClick={(event) => event.stopPropagation()}>
-                        <div className="retro-dialog-title"><span>📁 {openFile.toLowerCase()}.exe</span><button type="button" onClick={() => setOpenFile(null)} aria-label="Close file">×</button></div>
+                      <section className="retro-dialog file-dialog" role="dialog" aria-modal="true" aria-label={openFile} onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title">
+                          <span>▣ C:\CLAR\{openFile.toLowerCase()}</span>
+                          <button type="button" onClick={() => setOpenFile(null)} aria-label="Close">×</button>
+                        </div>
                         <div className="retro-dialog-body">
-                          <div className="retro-dialog-icon">{openFile === 'DO_NOT_OPEN' ? '💌' : '📂'}</div>
-                          <strong>{openFile === 'DO_NOT_OPEN' ? 'YOU OPENED IT ANYWAY???' : openFile + ' FOUND!'}</strong>
-                          <p>{openFile === 'EGGS' ? '🥚 classified egg files. highly suspicious.' : openFile === 'FEETGANG' ? '🦶 the gang is all here. unfortunately.' : openFile === 'GRADUATION' ? '🎓 evidence of surviving the chaos.' : openFile === 'MEMORIES' ? '📸 so many moments worth keeping. unlock the archive to see them all.' : openFile === 'MESSAGES' ? '💌 some people have things to tell you. unlock the archive first.' : 'you were specifically told not to open this. happy birthday, menace ♡'}</p>
-                          <button type="button" className="retro-ok" onClick={() => setOpenFile(null)}>OK ♡</button>
+                          {['EGGS','GRADUATION','MEMORIES'].includes(openFile) ? (
+                            <div className="file-locked"><div className="file-lock-icon">🔒</div><strong>ACCESS DENIED</strong><p>Enter password to access.</p><small>THIS DIRECTORY IS LOCKED UNTIL ARCHIVE LOGIN.</small></div>
+                          ) : openFile === 'DO_NOT_OPEN' ? (
+                            <div className="file-locked"><div className="file-lock-icon">☒</div><strong>NO ACCESS</strong><p>Be patient.</p></div>
+                          ) : openFile === 'FEETGANG' ? (
+                            <div className="feetgang-content"><div className="file-lock-icon">🦶</div><strong>FEETGANG / CASE FILE 001</strong><p>Somewhere along the way, Clar and Yanaal decided there needed to be an investigation into who had a thing for feet.</p><p>There was no evidence. There was no conclusion. There was, unfortunately, a group name.</p><small>STATUS: THE ALLEGATIONS REMAIN UNPROVEN.</small></div>
+                          ) : openFile === 'MESSAGES' ? (
+                            <div className="message-archive">
+                              <div className="message-archive-header">✉ messages.log <small>recovered chat fragments</small></div>
+                              {[
+                                ['Clar','if you were an egg what color egg would you be',true],
+                                ['Clar','open ended question since am in a mood',true],
+                                ['Naidu','is he the one who holds the sandwich and says idiot sand which',false],
+                                ['Clar','HELP',true],
+                                ['Naidu','Century egg',false],
+                                ['Naidu','with or without the wrapper part',false],
+                                ['Clar','Black on the outside\nGreen on the inside',true]
+                              ].map(([sender,body,forwarded],index) => (
+                                <div key={index} className={'chat-bubble ' + (sender === 'Naidu' ? 'chat-naidu' : 'chat-clar')}>
+                                  <small>{sender}{forwarded ? ' · Forwarded' : ''}</small>
+                                  <p>{body}</p><span>11:39 AM</span>
+                                </div>
+                              ))}
+                              <div className="chat-end">END OF RECOVERED MESSAGES</div>
+                            </div>
+                          ) : openFile === 'SECRET' ? (
+                            <div className="secret-file"><strong>secret.txt</strong><p>not everything worth keeping lives on the main account.</p><p className="secret-muted">file origin: SOCIAL / ALTERNATE PROFILE</p></div>
+                          ) : (
+                            <div className="file-locked"><div className="file-lock-icon">🗑️</div><strong>RECYCLE BIN</strong><p>Nothing here. The embarrassing memories are still backed up.</p></div>
+                          )}
+                          <button type="button" className="retro-ok" onClick={() => setOpenFile(null)}>OK</button>
                         </div>
                       </section>
                     </div>
                   )}
 
-                  {showRecycle && (
-                    <div className="retro-dialog-backdrop" onClick={() => setShowRecycle(false)}>
-                      <section className="retro-dialog" role="dialog" aria-modal="true" aria-label="Start menu secret" onClick={(event) => event.stopPropagation()}>
-                        <div className="retro-dialog-title"><span>✦ CLAR_OS — start menu</span><button type="button" onClick={() => setShowRecycle(false)} aria-label="Close menu">×</button></div>
-                        <div className="retro-dialog-body">
-                          <div className="retro-dialog-icon">🗑️</div>
-                          <strong>RECYCLE BIN: EMPTY</strong>
-                          <p>no memories deleted. unfortunately, all embarrassing moments are permanently backed up. ♡</p>
-                          <button type="button" className="retro-ok" onClick={() => setShowRecycle(false)}>CLOSE</button>
+                  {startOpen && (
+                    <div className="start-menu" role="menu" aria-label="CLAR OS Start menu">
+                      <div className="start-menu-side">CLAR_OS <span>22.04</span></div>
+                      <div className="start-menu-items">
+                        <div className="start-menu-heading">CLAR'S COMPUTER</div>
+                        {[
+                          ['▣','My Computer','files'],['▤','My Documents','notes'],
+                          ['◉','CD Player','cd'],['♫','Voice Recorder','recording'],
+                          ['▧','Photo Viewer','photos'],['>_','Terminal','terminal'],
+                          ['⚙','Control Panel','control'],['⌕','Find Files','find'],
+                          ['🗑','Recycle Bin','recycle'],['☾','Screen Saver','screensaver']
+                        ].map(([icon,label,action]) => (
+                          <button key={label} type="button" onClick={() => {setStartOpen(false);openShortcut(action)}}><span>{icon}</span>{label}<small>›</small></button>
+                        ))}
+                        <div className="start-menu-footer">CLAR_OS · ALL RIGHTS RESERVED (probably)</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {controlPanelOpen && (
+                    <div className="retro-dialog-backdrop" onClick={() => setControlPanelOpen(false)}>
+                      <section className="retro-dialog control-panel" role="dialog" aria-modal="true" aria-label="Control Panel" onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>⚙ CONTROL_PANEL.exe</span><button type="button" onClick={() => setControlPanelOpen(false)}>×</button></div>
+                        <div className="control-tabs">
+                          {['appearance','display','audio','screensaver'].map(tab => <button key={tab} type="button" className={controlTab===tab?'chosen':''} onClick={() => setControlTab(tab)}>{tab.toUpperCase()}</button>)}
+                        </div>
+                        <div className="control-content">
+                          {controlTab === 'appearance' && <><strong>DESKTOP PERSONALISATION</strong><p>Choose your wallpaper.</p><div className="control-options">{['nebula','stars','plain'].map(value => <button type="button" key={value} className={wallpaper===value?'chosen':''} onClick={() => setWallpaper(value)}>{value}</button>)}</div><p>Window colour</p><div className="control-options">{['violet','rose','blue'].map(value => <button type="button" key={value} className={accent===value?'chosen':''} onClick={() => setAccent(value)}>{value}</button>)}</div><small>Changes are applied immediately.</small></>}
+                          {controlTab === 'display' && <><strong>MONITOR SETTINGS</strong><p>CRT scanlines &amp; screen grain</p><button type="button" className="control-toggle" onClick={() => setCrtOn(!crtOn)}>{crtOn?'☑ ENABLED':'☐ DISABLED'}</button><p>For the full 2000s computer feeling, leave this on.</p></>}
+                          {controlTab === 'audio' && <><strong>SOUND SETTINGS</strong><p>Audio output</p><button type="button" className="control-toggle" onClick={() => setSoundOn(!soundOn)}>{soundOn?'♫ UNMUTED':'♫ MUTED'}</button><p>This controls the CD player and voice note.</p></>}
+                          {controlTab === 'screensaver' && <><strong>SCREEN SAVER</strong><p>CLAR_OS / floating stars / deep violet</p><button type="button" className="control-toggle" onClick={() => {setControlPanelOpen(false);setScreensaver(true)}}>▶ PREVIEW</button><p>Move back to the desktop by clicking anywhere.</p></>}
+                        </div>
+                        <div className="control-bottom"><button type="button" className="retro-ok" onClick={() => setControlPanelOpen(false)}>CLOSE</button></div>
+                      </section>
+                    </div>
+                  )}
+
+                  {finderOpen && (
+                    <div className="retro-dialog-backdrop" onClick={() => setFinderOpen(false)}>
+                      <section className="retro-dialog finder-dialog" role="dialog" aria-modal="true" aria-label="Find Files" onClick={event => event.stopPropagation()}>
+                        <div className="retro-dialog-title"><span>⌕ FIND_FILES.exe</span><button type="button" onClick={() => setFinderOpen(false)}>×</button></div>
+                        <div className="finder-content">
+                          <label htmlFor="clar-file-search">Search Clar's computer</label>
+                          <input id="clar-file-search" value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Type a file or folder name..." />
+                          {['notes','files','cd','photos','recording','terminal','secret','EGGS','FEETGANG','GRADUATION','MEMORIES','MESSAGES','DO_NOT_OPEN'].filter(name => name.toLowerCase().includes(searchTerm.toLowerCase())).map(name =>
+                            <button type="button" key={name} onClick={() => {setFinderOpen(false);['EGGS','FEETGANG','GRADUATION','MEMORIES','MESSAGES','DO_NOT_OPEN'].includes(name)?openDesktopFile(name):openShortcut(name)}}>▣ {name}</button>
+                          )}
                         </div>
                       </section>
                     </div>
                   )}
+
+                  {screensaver && <div className="clar-screensaver" role="button" tabIndex={0} onClick={() => setScreensaver(false)} onKeyDown={event => {if(event.key==='Enter'||event.key==='Escape')setScreensaver(false)}}>
+                    <div className="screensaver-stars">✧ · ✦ · ✧</div><div className="screensaver-logo">CLAR_OS</div><p>press anywhere to return</p>
+                  </div>}
 
                   {/* =================================================
                       HINT POPUP — ALSO INSIDE CRT
