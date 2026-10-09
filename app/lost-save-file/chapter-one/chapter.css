@@ -28,3 +28,16 @@
 .ch1-clock i.second{width:2px;height:108px;background:#a95169;transform:translate(-50%,-100%) rotate(0deg);animation:ch1stuck 1.3s steps(2) infinite}
 @keyframes ch1stuck{80%{transform:translate(-50%,-100%) rotate(0deg)}90%{transform:translate(-50%,-100%) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.ch1-clock i.second{animation:none}}
+
+/* Four-second corrupted warning; watcher crosses once for one second. */
+.ch1-glitch{overflow:hidden;isolation:isolate;background:repeating-linear-gradient(0deg,#060513aa 0px,#060513aa 2px,#130b2755 3px,transparent 6px)}
+.ch1-glitch strong{position:relative;z-index:2;letter-spacing:.035em;animation:ch1shake .12s steps(2) infinite,ch1warnsplit .43s steps(3) infinite}
+.ch1-glitch strong::before,.ch1-glitch strong::after{content:attr(data-text);position:absolute;inset:0;white-space:nowrap;overflow:hidden;pointer-events:none}
+.ch1-glitch strong::before{color:#73f4ee;clip-path:inset(12% 0 62% 0);transform:translate(-9px,4px);animation:ch1tear .22s steps(2) infinite}
+.ch1-glitch strong::after{color:#ff3e96;clip-path:inset(55% 0 18% 0);transform:translate(10px,-5px);animation:ch1tear .31s steps(2) infinite reverse}
+.ch1-watcher{position:absolute;left:-25%;top:8%;width:18%;height:88%;z-index:1;opacity:0;filter:blur(7px) drop-shadow(0 0 20px #12091c);animation:ch1shadowcross 4s linear both}
+.ch1-watcher-head{position:absolute;top:6%;left:25%;width:50%;height:27%;border-radius:48%;background:#07050d}
+.ch1-watcher-body{position:absolute;top:29%;left:8%;width:84%;height:70%;border-radius:45% 45% 8% 8%;background:linear-gradient(#08060e,#03030b)}
+@keyframes ch1shadowcross{0%,43%{left:-25%;opacity:0}47%{opacity:.94}65%{opacity:.94}72%{left:112%;opacity:0}100%{left:112%;opacity:0}}
+@keyframes ch1tear{0%{transform:translate(-10px,2px)}50%{transform:translate(12px,-3px)}100%{transform:translate(-4px,5px)}}
+@keyframes ch1warnsplit{0%,100%{filter:contrast(1)}50%{filter:contrast(2.2) hue-rotate(45deg)}}
