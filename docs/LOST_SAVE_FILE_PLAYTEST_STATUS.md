@@ -2,35 +2,30 @@
 
 Branch: `rpg-experiment` only. Route: `/lost-save-file`.
 
-## Implemented in foundation milestone 006
-- Six explorable existing regions and 18 existing NPCs retained.
-- Existing movement, coins, character creator and six provisional endings retained.
-- Browser-local autosave and resume for active timeline and appearance.
-- Global ending unlocks retained after New Game+.
-- Per-region recovered-log tracking (six slots, placeholder log content).
-- Narrative notebook with Notes, Friends, Lost Logs and Endings tabs.
-- Checkpoint recorded on region transitions; manual restore from notebook.
-- Explicit confirmation before selecting a final ending.
-- Link from ending screen to existing CLAR_OS `/birthday` page.
+## Implemented in integrated full-story first-pass prototype
+- Six explorable regions with distinct procedural pixel-art scenery, architecture, atmospheric lighting and animated characters.
+- Four-way movement, iPad hold-to-move controls, keyboard interaction, save terminals, checkpoints, autosave and export/import.
+- Cosmetic character creator: hair, skin, outfits and accessories.
+- All 18 named friends with placeholder conversations, choices, joke responses, memory hints and quest flags.
+- Collectible keepsakes, coin inventory, inspectable objects, secret room investigation and progressive chapter puzzles.
+- Six recovered logs and seventh-record story reveal.
+- Undertale-inspired nonviolent encounters (ACT, TALK, DEFEND, MEMORY) and touch-friendly dodge arena.
+- Watcher silhouette pursuit, hiding, adaptive movement, visual warning and checkpoint recovery.
+- Narrative journal, friend files, ECHOES dialogue transcript, noncanonical comedy sandbox, world map, chapter replay and fast travel.
+- Six confirmed ending protocols, persistent ending gallery, last critical-choice undo and New Game+.
+- Birthday reunion with 18 friends, reaction selection, cake, group photo, humorous Watcher farewell and CLAR_OS link.
+- Synthesized retro melody and settings for audio, effects and dialogue timers.
 
-## Still planned — not yet implemented
-- Six detailed chapter quests, true seventh-record story reveal and puzzle sequences.
-- Meaningful choice-based ending requirements and alternate chapter timelines.
-- Undertale-inspired encounter engine and dodge arena.
-- Environmental Watcher AI/chases, hiding and capture recovery.
-- Richer world art for all regions, building interiors and map fast travel.
-- Dynamic 18-friend quests, portraits, group scenes and ECHOES.exe archive.
-- Final gathering, cake, group photo, and full interactive recovered desktop.
-- Soundtrack playback, adaptive audio and user volume controls.
-- Export/import save, robust migration and accessibility settings.
+## Placeholder or still needing a deeper production pass
+- Bespoke premium pixel-art sprite sheets, distinctive expressive portraits, sophisticated animation and walkable furnished interiors (currently interactive room panels).
+- Detailed personal quest arcs, multi-character branching dialogue, timed reactions, more extensive secret quest network.
+- Professional layered chiptune/lo-fi/horror tracks, sophisticated audio mixing and voice effects (currently synthesized).
+- Long-form ending cinematics, rich Watcher encounter variation and complex interconnected puzzle chains.
+- Personalised messages/photos/audio supplied by the creator, and thorough iPad Safari runtime testing.
 
-## Important
-The existing endings are **provisional placeholders** and currently selectable from the final terminal, subject to existing basic checks. This is **not yet** the promised complete story prototype. This milestone establishes a safer foundation for further development. Production and `master` are unchanged by these branch-only commits.
+## Playtest path
+Open an experimental Vercel preview and visit `/lost-save-file`. Create Clar's character, hold the movement buttons, use INTERACT, recover each chapter log, solve the southeast puzzle pedestal, pass the east gate, complete encounters and discover an ending. Visit the reunion, then open CLAR_OS.
 
-## iPad testing
-1. Open the preview deployment's `/lost-save-file` route.
-2. Start, move, meet a friend, inspect an object, open Journal.
-3. Reload the page; confirm the player resumes.
-4. Travel to the next region; test Restore Checkpoint.
-5. Reach the final terminal; confirm ending warning and CLAR_OS link.
-6. Report unexpected behaviour; do not delete Safari website data during the test.
+The save key is `clar_lost_save_full_v3` so it does not overwrite earlier experimental progress. Browser storage may be cleared; export your save for backup.
+
+No `master` or production changes were made.
