@@ -14,26 +14,49 @@ function text(c,s,x,y,size=15,color='#fff0d7'){c.textAlign='center';c.font='bold
 function light(c,x,y){const g=c.createRadialGradient(x,y,5,x,y,110);g.addColorStop(0,'#ffe7a588');g.addColorStop(1,'#ffe7a500');fill(c,x-110,y-110,220,220,g);box(c,x-4,y-36,8,51,'#52445c');box(c,x-12,y-49,24,22,'#ffe0a0')}
 function bush(c,x,y){box(c,x-34,y-7,68,28,'#3d725b','#325549');box(c,x-24,y-22,43,25,'#679e79','#426e60');box(c,x+4,y-26,30,30,'#83b68b','#426e60');for(let i=0;i<5;i++)fill(c,x-19+i*9,y-19-i%2*6,4,4,'#f2c7dc')}
 function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0){c.save();c.translate(x,y+Math.sin(t/300+x)*1.5);c.fillStyle='#271b3066';c.beginPath();c.ellipse(0,19,17,6,0,0,Math.PI*2);c.fill();box(c,-14,-1,28,23,shirt);box(c,-11,20,8,7,'#393246');box(c,4,20,8,7,'#393246');box(c,-12,-30,24,30,skin);box(c,-15,-35,30,13,hair);fill(c,-15,-25,5,15,hair);fill(c,10,-25,5,11,hair);fill(c,-7,-17,4,3,'#302238');fill(c,5,-17,4,3,'#302238');if(glasses){c.strokeStyle='#32253c';c.lineWidth=2;c.strokeRect(-10,-19,10,9);c.strokeRect(3,-19,10,9);fill(c,0,-16,4,2,'#32253c')}c.restore()}
-function shop(c,p,t){const s=p.scene;const bg=c.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#47364f');bg.addColorStop(.62,'#78617a');bg.addColorStop(.63,'#b59a9b');bg.addColorStop(1,'#66576e');fill(c,0,0,W,H,bg);box(c,35,25,W-70,348,'#5c4966','#b59bb2');for(let i=0;i<9;i++){box(c,75+i*108,65,81,286,'#675470','#927f98');if(s==='record')for(let j=0;j<3;j++){box(c,85+i*108,110+j*71,61,55,['#d3a1b7','#91b9cb','#e2c99c'][j]);c.strokeStyle='#3e3151';c.lineWidth=4;c.beginPath();c.arc(115+i*108,137+j*71,18,0,Math.PI*2);c.stroke()}if(s==='bakery')for(let j=0;j<3;j++){box(c,86+i*108,133+j*70,58,25,'#d9a87d','#f3d0a0');text(c,'◡',115+i*108,147+j*70,22)}if(s==='game'){box(c,82+i*108,125,65,104,'#3c4964','#c3bed8');text(c,'1UP',114+i*108,183,17,'#a5e7d7')}}text(c,s==='bakery'?'MOONCRUMB · BAKERY':s==='record'?'SIDE B · RECORDS':'PIXEL PALACE · GAME STORE',560,44,25);if(s==='record'){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}if(s==='record'&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}else{const ids=s==='bakery'?['naidu']:s==='record'?['riri','trisha']:['aaron','lakshay'];for(const id of ids){const n=NPCS[id];person(c,n.x,n.y,n.hair,n.skin,n.outfit,false,t);text(c,n.name,n.x,n.y-54,16)}}// Distinctive foreground dressing; decorations do not change walkability or puzzles.
-if(s==='bakery'){
-  box(c,48,381,260,100,'#926c69','#e5b7a4');box(c,58,391,240,10,'#eac4a4');
-  for(let i=0;i<5;i++){const x=88+i*43;box(c,x-17,360,34,23,'#b67b55','#f0c49a');text(c,i%2?'♡':'✦',x,378,17,'#fff0c6')}
-  box(c,770,380,290,95,'#8b6375','#d9b6bd');box(c,784,393,262,9,'#f4d4ba');
-  for(let i=0;i<4;i++){const x=815+i*65;box(c,x-17,365,34,28,i%2?'#d8a2ad':'#d9b07e');text(c,i%2?'♥':'✦',x,384,16)}
-  box(c,55,70,210,48,'#634457','#e0b3c4');text(c,'TODAY\'S SPECIAL',160,100,18);
-  text(c,'FRESHLY BAKED • 11:19',560,468,14,'#f3d2bd');
+function shop(c,p,t){
+ const s=p.scene, bakery=s==='bakery',record=s==='record',game=s==='game';
+ const bg=c.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#41354e');bg.addColorStop(.63,'#766477');bg.addColorStop(.64,'#b9a2a0');bg.addColorStop(1,'#786477');fill(c,0,0,W,H,bg);
+ // Floor planks and patterned wallpaper.
+ for(let y=405;y<H;y+=31){fill(c,0,y,W,2,'#e6c6b32a');for(let x=(y%62)*11;x<W;x+=108)fill(c,x,y,2,31,'#2d233329')}
+ for(let x=55;x<W-40;x+=120){fill(c,x,55,2,330,'#eed6ce17')}
+ box(c,34,28,W-68,364,'#65506b','#d3b3c6');
+ const sign=bakery?'MOONCRUMB  /  BAKERY':record?'SIDE B  /  RECORDS':'PIXEL PALACE  /  GAMES';
+ box(c,325,30,470,51,'#332a45','#bfa1bb');text(c,sign,560,65,23,'#ffe4c9');
+ if(bakery){
+   // Glass patisserie counter with three actual shelves and individual desserts.
+   box(c,60,230,520,248,'#ad7880','#ead2be');fill(c,69,240,502,196,'#9dc7c755');
+   for(let y of [298,365,430]){fill(c,72,y,494,7,'#f7e2d0');fill(c,72,y+7,494,3,'#6b5367')}
+   for(let i=0;i<7;i++){let x=105+i*66;
+     // Cakes, cupcakes, macarons and fruit tarts, with readable silhouettes.
+     if(i%3===0){box(c,x-20,263,40,30,'#f6c8bf','#f6e1cb');fill(c,x-17,256,34,11,'#fff0e5');fill(c,x-3,249,7,9,'#d76d7f')}
+     else if(i%3===1){fill(c,x-17,275,34,15,'#b9795f');fill(c,x-12,260,24,18,'#f4c4ce');text(c,'♥',x,271,12)}
+     else{for(let j=0;j<3;j++){fill(c,x-20+j*14,270,13,14,['#d6a0b5','#e7c48e','#a5bda8'][j]);fill(c,x-20+j*14,267,13,3,'#fff0dc')}}
+     fill(c,x-22,337,44,16,'#d59d6f');fill(c,x-19,333,38,6,'#f6d7aa');fill(c,x-20,402,40,15,'#c8845b');fill(c,x-13,393,26,11,'#fff1d9');
+   }
+   for(let x of [115,285,455])fill(c,x,240,3,195,'#fff7ed66');
+   box(c,630,132,426,323,'#755666','#e3bdac');
+   for(let y of [216,315,410]){fill(c,650,y,390,12,'#d9ae87');for(let i=0;i<6;i++){let x=680+i*65;fill(c,x-24,y-31,49,28,'#bd7b4e');fill(c,x-19,y-38,39,12,'#e4af74');fill(c,x-18,y-35,36,3,'#ffe4ad')}}
+   box(c,660,90,362,34,'#694656','#f2c5b8');text(c,'BREADS  •  PASTRIES  •  CAKES',841,114,17);
+   text(c,'FRESH FROM THE OVEN',820,486,16,'#ffdfbc');
+ }else if(record){
+   for(let i=0;i<5;i++){let x=70+i*164;box(c,x,130,147,286,'#5c465f','#b899ad');
+     for(let j=0;j<3;j++){let y=165+j*78;box(c,x+13,y,118,65,['#d2a1b1','#9fb7b8','#d9b997'][j]);for(let k=0;k<3;k++){let xx=x+34+k*38;c.strokeStyle='#44374e';c.lineWidth=4;c.beginPath();c.arc(xx,y+30,16,0,Math.PI*2);c.stroke();fill(c,xx-4,y+26,8,8,'#ffe7c3')}}}
+   box(c,906,132,150,307,'#4d4057','#c6a5bf');box(c,922,154,117,75,'#87a6ad');text(c,'♫',980,203,37);text(c,'LISTEN',980,264,17);text(c,'STATION',980,290,17);
+   box(c,83,447,820,58,'#765367','#e5b4c7');text(c,'NEW ARRIVALS     •     VINYL     •     CASSETTES',493,482,18);
+ }else{
+   for(let i=0;i<6;i++){let x=65+i*165;box(c,x,133,140,307,'#34384f','#b39bc9');box(c,x+14,150,111,111,'#456d80');fill(c,x+22,159,94,87,['#6a9f9c','#8773a4','#c68f99'][i%3]);text(c,['1UP','PIXEL','BOSS','PLAY','CO-OP','HIGH'][i],x+70,210,18,'#ffe9b9');box(c,x+19,282,100,66,'#51405e');fill(c,x+44,308,16,9,'#e5b0bf');fill(c,x+72,306,11,11,'#a7d6c7');box(c,x+24,368,92,10,'#7a6389')}
+   box(c,60,451,450,53,'#46374f','#c7a5d1');text(c,'TOP SCORE  CLAR  01119',285,484,18,'#b8f2df');
+   box(c,575,451,480,53,'#46374f','#c7a5d1');text(c,'RETRO CONSOLES  •  ARCADE',815,484,17);
+ }
+ if(record){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}
+ if(record&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}
+ else{const ids=bakery?['naidu']:record?['riri','trisha']:['aaron','lakshay'];for(const id of ids){const n=NPCS[id];if(id==='naidu'){person(c,n.x,n.y,'#33252b','#bb856c','#252b28',false,t); // dark wavy hair framing the face
+   for(const dx of [-15,12]){c.fillStyle='#32242b';c.beginPath();c.ellipse(n.x+dx,n.y-12,9,24,dx<0?-.18:.18,0,Math.PI*2);c.fill()}
+ }else person(c,n.x,n.y,n.hair,n.skin,n.outfit,false,t);text(c,n.name,n.x,n.y-54,16)}}
+ drawClar(c,p,t);box(c,470,543,183,70,'#705679','#e3bcd2');text(c,'← LEAVE SHOP',562,582,18);
+ const g=c.createRadialGradient(560,270,180,560,320,700);g.addColorStop(0,'#0000');g.addColorStop(1,'#170e2666');fill(c,0,0,W,H,g)
 }
-if(s==='record'){
-  box(c,50,382,290,93,'#43364e','#b58fae');
-  for(let i=0;i<5;i++){const x=82+i*50;box(c,x,399,36,55,['#c98a9e','#9eb3b2','#d5b18c'][i%3]);text(c,'♫',x+18,435,19)}
-  box(c,420,82,270,38,'#302a47','#b9a5bb');text(c,'NOW SPINNING · SIDE B',555,108,18);
-}
-if(s==='game'){
-  box(c,45,386,300,91,'#3c3b59','#a98ebc');text(c,'HIGH SCORES',194,414,19);
-  text(c,'CLAR  1119',195,445,17,'#b1ead7');
-  for(let i=0;i<4;i++){const x=765+i*74;box(c,x,370,58,100,'#34354f','#a98ec5');box(c,x+7,381,44,42,'#507a88');text(c,'★',x+29,410,22,'#f4c8d7');box(c,x+18,439,22,6,'#c989a9')}
-}
-drawClar(c,p,t);box(c,470,543,183,70,'#705679','#e3bcd2');text(c,'← LEAVE SHOP',562,582,18);const g=c.createRadialGradient(560,270,180,560,320,700);g.addColorStop(0,'#0000');g.addColorStop(1,'#170e26b0');fill(c,0,0,W,H,g)}
 function Icon({id}){return <svg viewBox="0 0 80 80" width="64" height="64" aria-label={id}>{id==='letter'?<><rect x="11" y="22" width="58" height="39" rx="3" fill="#f8e6c9" stroke="#a68185" strokeWidth="3"/><path d="M12 24L40 46 68 24" fill="none" stroke="#a68185" strokeWidth="3"/><rect x="36" y="43" width="11" height="9" fill="#c27893"/></>:id==='key'?<><circle cx="25" cy="27" r="13" fill="none" stroke="#efd28e" strokeWidth="9"/><path d="M35 37L66 66 72 59 63 51 66 45 58 40 54 47 42 34" fill="#efd28e"/></>:id==='flashlight'?<><path d="M20 40L42 26 56 37 41 52 35 69 22 65Z" fill="#c5d9dc" stroke="#6c7d8d" strokeWidth="4"/><path d="M42 24L60 14 73 31 56 43Z" fill="#f1d997"/><circle cx="64" cy="27" r="7" fill="#fff9bc"/></>:id==='headphones'?<><path d="M17 48V35C17 5 63 5 63 35V48" fill="none" stroke="#e5b4d9" strokeWidth="10"/><rect x="10" y="40" width="18" height="28" rx="6" fill="#9277b6"/><rect x="52" y="40" width="18" height="28" rx="6" fill="#9277b6"/></>:id==='journal'?<><rect x="16" y="10" width="51" height="60" rx="5" fill="#9176ad" stroke="#e6c9e7" strokeWidth="4"/><rect x="24" y="12" width="6" height="56" fill="#524075"/><path d="M37 30H56M37 40H56M37 50H51" stroke="#fff0dd" strokeWidth="3"/></>:<><path d="M56 8L68 9 64 21 38 53 30 44Z" fill="#d7e5e5" stroke="#839ba4" strokeWidth="3"/><path d="M22 39L43 60" stroke="#d2a7cc" strokeWidth="8"/><path d="M28 52L14 66" stroke="#9c7966" strokeWidth="9"/></>}</svg>}
 function ClarPortrait(){const el=useRef(null);useEffect(()=>{const c=el.current.getContext('2d');c.clearRect(0,0,168,220);drawClar(c,{x:84,y:203,facing:'down'},0,2.25)},[]);return <canvas className="ch1-clar-portrait" width="168" height="220" ref={el} aria-label="Clar: wavy brown hair, round gold glasses, dark outfit and patterned bag"/>}
 function Portrait({id}){const n=NPCS[id];if(id==='CLAR')return <ClarPortrait/>;if(!n)return <div className="ch1-symbol">✦</div>;return <div className="ch1-portrait" style={{background:'linear-gradient(145deg,'+n.color+',#40324e)'}}><div className="ch1-portrait-hair" style={{background:n.hair}}/><div className="ch1-portrait-face" style={{background:n.skin}}><div className="ch1-portrait-eyes">▪　▪</div><div className="ch1-portrait-mouth">{n.expression==='animated'?'◡':n.expression==='worried'?'﹏':'—'}</div></div><div className="ch1-portrait-body" style={{background:n.outfit}}/><div className="ch1-portrait-name">{n.name}</div></div>}
