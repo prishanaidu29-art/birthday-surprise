@@ -257,8 +257,8 @@ export default function FullPrototype(){
   sync();persist()
  }
  const solve=(i)=>{const s=world.current,steps=PUZZLE_STEPS[s.zone],stage=steps[puzzleStep],z=ZONES[s.zone]
-  if(stage.requires&&!s.collected.includes(stage.requires)){setHint(h=>h+1);say('MEMORY SEAL','The pedestal needs evidence before it can respond. '+stage.need);return}
-  if(i!==stage.answer){setHint(h=>h+1);play(180,.16,'square');say('MEMORY SEAL','The mechanism rejects that answer. '+(hint>=1?stage.clue:'Something nearby holds the clue.'));return}
+  if(stage.requires&&!s.collected.includes(stage.requires)){setHint(h=>h+1);notify('Evidence missing: '+stage.need);return}
+  if(i!==stage.answer){setHint(h=>h+1);play(180,.16,'square');notify('Wrong sequence. '+(hint>=1?stage.clue:'Look for clues nearby.'));return}
   play(620+puzzleStep*90,.17);setHint(0)
   if(puzzleStep<steps.length-1){setPuzzleStep(v=>v+1);addNote('The memory seal shifts. '+stage.title+' is complete.');return}
   if(!s.solved.includes(s.zone)){s.solved.push(s.zone);s.coins+=6;addNote('I restored the memory of '+z.name+'. The scenery is changing. The eastern gate is opening.');echo('RESTORED MEMORY',z.memory,'log');checkpoint()}
@@ -290,9 +290,9 @@ export default function FullPrototype(){
  }
  interactRef.current=interact
  const recoverLog=()=>{const s=world.current;if(s.logs.includes(s.zone))return;const z=ZONES[s.zone];if(!s.solved.includes(s.zone)){say('CORRUPTED LOG','Restore the chapter memory seal before the recording can be recovered.');return}s.logs.push(s.zone);if(s.logs.length===3&&!s.secret.includes('crash-01')&&!s.settings.reduced){s.secret.push('crash-01');setCrash(true);play(80,.55,'sawtooth')}addNote('Recovered log '+(s.zone+1)+'/6: '+z.log);echo('RECOVERED LOG',z.log,'log');play(523,.25);sync();persist();say('LOG '+String(s.zone+1).padStart(2,'0')+' / 06',z.log)}
- const chooseEnding=(id)=>{const s=world.current;if(id==='true'&&(s.logs.length<6||s.met.length<12)){say('LOCKED PROTOCOL','The true file requires six logs and at least twelve friends.');return}
-  if(id==='shadow'&&s.watcherSeen<1){say('LOCKED PROTOCOL','You must first encounter the Watcher.');return}
-  if(id==='escape'&&s.coins<20){say('LOCKED PROTOCOL','The emergency exit requires 20 coins.');return}
+ const chooseEnding=(id)=>{const s=world.current;if(id==='true'&&(s.logs.length<6||s.met.length<12)){notify('True ending needs six logs and at least twelve friends.');return}
+  if(id==='shadow'&&s.watcherSeen<1){notify('Face the Watcher at least once before choosing this ending.');return}
+  if(id==='escape'&&s.coins<20){notify('The emergency exit requires 20 coins.');return}
   s.lastDecision={zone:s.zone,ending:s.ending,coins:s.coins}
   setEndingChoice(id)
  }
