@@ -13,7 +13,24 @@ function box(c,x,y,w,h,color,edge='#44334c'){c.fillStyle=edge;c.fillRect(x-3,y-3
 function text(c,s,x,y,size=15,color='#fff0d7'){c.textAlign='center';c.font='bold '+size+'px monospace';c.fillStyle='#23172e';c.fillText(s,x+2,y+2);c.fillStyle=color;c.fillText(s,x,y)}
 function light(c,x,y){const g=c.createRadialGradient(x,y,5,x,y,110);g.addColorStop(0,'#ffe7a588');g.addColorStop(1,'#ffe7a500');fill(c,x-110,y-110,220,220,g);box(c,x-4,y-36,8,51,'#52445c');box(c,x-12,y-49,24,22,'#ffe0a0')}
 function bush(c,x,y){box(c,x-34,y-7,68,28,'#3d725b','#325549');box(c,x-24,y-22,43,25,'#679e79','#426e60');box(c,x+4,y-26,30,30,'#83b68b','#426e60');for(let i=0;i<5;i++)fill(c,x-19+i*9,y-19-i%2*6,4,4,'#f2c7dc')}
-function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0){c.save();c.translate(x,y+Math.sin(t/300+x)*1.5);c.fillStyle='#271b3066';c.beginPath();c.ellipse(0,19,17,6,0,0,Math.PI*2);c.fill();box(c,-14,-1,28,23,shirt);box(c,-11,20,8,7,'#393246');box(c,4,20,8,7,'#393246');box(c,-12,-30,24,30,skin);box(c,-15,-35,30,13,hair);fill(c,-15,-25,5,15,hair);fill(c,10,-25,5,11,hair);fill(c,-7,-17,4,3,'#302238');fill(c,5,-17,4,3,'#302238');if(glasses){c.strokeStyle='#32253c';c.lineWidth=2;c.strokeRect(-10,-19,10,9);c.strokeRect(3,-19,10,9);fill(c,0,-16,4,2,'#32253c')}c.restore()}
+function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0){
+ c.save();c.translate(x,y+Math.sin(t/390+x)*1.3);
+ c.fillStyle='#21152e55';c.beginPath();c.ellipse(0,24,22,7,0,0,Math.PI*2);c.fill();
+ // Layered shoes, trousers, sleeves and garment highlights.
+ box(c,-13,7,11,17,'#393446');box(c,3,7,11,17,'#393446');
+ box(c,-15,21,14,6,'#252435');box(c,2,21,14,6,'#252435');
+ box(c,-19,-17,38,28,shirt);box(c,-22,-13,7,22,shirt);box(c,15,-13,7,22,shirt);
+ box(c,-22,7,7,6,skin);box(c,15,7,7,6,skin);
+ box(c,-15,-14,3,21,'#ffffff20');box(c,-18,9,36,4,'#241c3555');
+ box(c,-15,-45,30,32,skin);box(c,-16,-43,32,12,hair);
+ for(let i=0;i<5;i++){const dx=-15+i*7;fill(c,dx,-47-(i%2)*4,8,10,hair)}
+ fill(c,-18,-37,7,20,hair);fill(c,12,-37,7,17,hair);
+ fill(c,-9,-27,4,3,'#32243c');fill(c,5,-27,4,3,'#32243c');
+ fill(c,-1,-22,3,3,'#ae735e');fill(c,-3,-17,8,2,'#a46870');
+ if(glasses){c.strokeStyle='#cdbf9c';c.lineWidth=2;for(const gx of [-9,9]){c.beginPath();c.arc(gx,-26,8,0,Math.PI*2);c.stroke()}box(c,-2,-27,4,2,'#cdbf9c')}
+ c.restore()
+}
+
 function shop(c,p,t){
  const s=p.scene, bakery=s==='bakery',record=s==='record',game=s==='game';
  const bg=c.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#41354e');bg.addColorStop(.63,'#766477');bg.addColorStop(.64,'#b9a2a0');bg.addColorStop(1,'#786477');fill(c,0,0,W,H,bg);
@@ -51,9 +68,9 @@ function shop(c,p,t){
  }
  if(record){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}
  if(record&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}
- else{const ids=bakery?['naidu']:record?['riri','trisha']:['aaron','lakshay'];for(const id of ids){const n=NPCS[id];if(id==='naidu'){person(c,n.x,n.y,'#33252b','#bb856c','#252b28',false,t); // dark wavy hair framing the face
-   for(const dx of [-15,12]){c.fillStyle='#32242b';c.beginPath();c.ellipse(n.x+dx,n.y-12,9,24,dx<0?-.18:.18,0,Math.PI*2);c.fill()}
- }else person(c,n.x,n.y,n.hair,n.skin,n.outfit,false,t);text(c,n.name,n.x,n.y-54,16)}}
+ else{const ids=bakery?['naidu']:record?['riri','trisha']:['aaron','lakshay'];for(const id of ids){const n=NPCS[id];if(id==='naidu'){person(c,n.x,n.y,'#30232d','#bb856c','#252b28',false,t); // dark wavy hair framing the face
+   for(const dx of [-15,12]){c.fillStyle='#32242b';c.beginPath();c.ellipse(n.x+dx,n.y-29,9,24,dx<0?-.18:.18,0,Math.PI*2);c.fill()}
+ }else person(c,n.x,n.y,n.hair,n.skin,n.outfit,false,t);text(c,n.name,n.x,n.y-64,16)}}
  drawClar(c,p,t);box(c,470,543,183,70,'#705679','#e3bcd2');text(c,'← LEAVE SHOP',562,582,18);
  const g=c.createRadialGradient(560,270,180,560,320,700);g.addColorStop(0,'#0000');g.addColorStop(1,'#170e2666');fill(c,0,0,W,H,g)
 }
