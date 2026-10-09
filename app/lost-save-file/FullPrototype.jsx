@@ -81,19 +81,19 @@ function sprite(c,x,y,color,dir,frame,variant=0,character=null){
  c.restore()
 }
 function draw(c,s,time){
- const z=ZONES[s.zone],vw=c.canvas.width,vh=c.canvas.height,camX=Math.max(0,Math.min(W*T-vw,s.x-vw/2)),camY=Math.max(0,Math.min(H*T-vh,s.y-vh/2))
+ const z=ZONES[s.zone],restored=s.solved.includes(s.zone),vw=c.canvas.width,vh=c.canvas.height,camX=Math.max(0,Math.min(W*T-vw,s.x-vw/2)),camY=Math.max(0,Math.min(H*T-vh,s.y-vh/2))
  c.imageSmoothingEnabled=false;c.fillStyle='#0f0a18';c.fillRect(0,0,vw,vh);c.save();c.translate(-Math.floor(camX),-Math.floor(camY))
  const rect=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h)}
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const road=(y>=10&&y<=12)||(x>=15&&x<=18)
   const xx=x*T,yy=y*T
-  rect(xx,yy,T,T,road?z.road:(x+y)%3===0?z.dark:z.floor)
+  rect(xx,yy,T,T,road?(restored?'#8a7e91':z.road):(x+y)%3===0?(restored?z.floor:z.dark):z.floor)
   if(road){rect(xx+2,yy+T-3,T-5,2,'#241c3460');if((x+y)%2===0)rect(xx+T-3,yy+4,2,T-9,'#bfa3b225')}
   else {if((x*17+y*23+s.zone*7)%11===0)rect(xx+9,yy+13,3,4,'#e8d2e13a');if((x*13+y*11)%29===0){rect(xx+12,yy+11,3,4,'#e4a4c6');rect(xx+18,yy+14,3,3,'#f5d3a1')}}
  }
  // Background architecture is different in every region; doors can be entered.
  for(let i=0;i<5;i++){
-  const bx=(3+i*6)*T, by=(i%2?15:2)*T, bw=4*T,bh=4*T
+  const bx=(3+i*6)*T, by=(i%2?18:2)*T, bw=4*T,bh=4*T
   if(s.zone===3){ // thick trunks and layered canopies
    rect(bx+52,by+30,24,105,'#332c3a');rect(bx+40,by+20,48,40,'#456d59')
    rect(bx+8,by+2,112,46,'#35654f');rect(bx+28,by-16,80,26,'#5c8468')
@@ -119,6 +119,14 @@ function draw(c,s,time){
    rect(bx+51,by+83,26,41,'#281d32');rect(bx+60,by+105,3,3,'#f3c99d')
    rect(bx+47,by+120,35,5,'#b9a4a9')
   }
+ }
+ // Memory restoration is a real environmental transformation: light, plants and landmarks return.
+ if(restored){
+  for(let i=0;i<15;i++){const xx=((i*83+40)%(W*T)),yy=((i*109+28)%(H*T));rect(xx,yy,5,12,'#567e70');rect(xx-6,yy-6,17,10,i%2?'#f3bbd8':'#e7d8a3');rect(xx+3,yy-11,3,3,'#fff2c8')}
+  for(let i=0;i<6;i++){const x=(3+i*5)*T+16,y=(i%2?14:8)*T+16;rect(x-12,y-6,24,10,'#d8a5b8');rect(x-4,y-14,8,8,'#f7e3be')}
+  c.fillStyle='#b9e8d518';c.fillRect(0,0,W*T,H*T)
+ }else if(s.zone>=2){
+  for(let i=0;i<11;i++){const x=((i*103+39)%(W*T)),y=((i*79+68)%(H*T));rect(x,y,18,2,'#bb7ccf');rect(x+6,y-5,3,12,'#d5a2e3')}
  }
  // Streetlights, shrubs and animated motes
  for(const [lx,ly] of [[2,8],[14,8],[29,8],[2,15],[17,15],[31,15]]){
@@ -148,7 +156,7 @@ function draw(c,s,time){
  rect(gx-2,gy-6,4,7,'#f6d8b0')
  PEOPLE.filter(p=>p.zone===s.zone).forEach(p=>{
   sprite(c,p.x*T+16,p.y*T+16+Math.sin(time*2+p.id)*2,p.color,p.id%2?'left':'down',Math.floor(time*2+p.id)%2,p.id)
-  c.fillStyle='#f7e8f5';c.font='bold 11px monospace';c.textAlign='center';c.fillText(p.name.toUpperCase(),p.x*T+16,p.y*T-14)
+  c.fillStyle='#f7e8f5';c.font='bold 11px monospace';c.textAlign='center';c.font='bold 9px monospace';c.fillText(p.name.toUpperCase(),p.x*T+16,p.y*T-(p.id===3?20:p.id===4?33:14))
  })
  if(s.watcherTime>0){
   const x=s.watcherX,y=s.watcherY
@@ -176,6 +184,8 @@ export default function FullPrototype(){
  const [ready,setReady]=useState(false),[started,setStarted]=useState(false),[view,setView]=useState(null),[dialog,setDialog]=useState(null),[hud,setHud]=useState({}),[tab,setTab]=useState('notes'),[choice,setChoice]=useState(null),[battle,setBattle]=useState(null),[arena,setArena]=useState(null),[endingChoice,setEndingChoice]=useState(null),[ending,setEnding]=useState(null),[finale,setFinale]=useState(false),[reaction,setReaction]=useState(null),[backup,setBackup]=useState(''),[hint,setHint]=useState(0),[message,setMessage]=useState('')
  const [global,setGlobal]=useState({endings:[],cosmetics:[],photos:0})
  const [interiorId,setInteriorId]=useState(0)
+ const [crash,setCrash]=useState(false)
+ useEffect(()=>{if(!crash)return;const id=window.setTimeout(()=>setCrash(false),2300);return()=>window.clearTimeout(id)},[crash])
  const [puzzleStep,setPuzzleStep]=useState(0),[endingBeat,setEndingBeat]=useState(0),[finalFriend,setFinalFriend]=useState(null),[finalTab,setFinalTab]=useState('party')
  uiRef.current={view,dialog,battle,arena,ending,finale,started}
  const notify=(v)=>{setMessage(v);window.setTimeout(()=>setMessage(m=>m===v?'':m),4000)}
@@ -264,7 +274,7 @@ export default function FullPrototype(){
   }
  }
  interactRef.current=interact
- const recoverLog=()=>{const s=world.current;if(s.logs.includes(s.zone))return;const z=ZONES[s.zone];if(!s.solved.includes(s.zone)){say('CORRUPTED LOG','Restore the chapter memory seal before the recording can be recovered.');return}s.logs.push(s.zone);addNote('Recovered log '+(s.zone+1)+'/6: '+z.log);echo('RECOVERED LOG',z.log,'log');play(523,.25);sync();persist();say('LOG '+String(s.zone+1).padStart(2,'0')+' / 06',z.log)}
+ const recoverLog=()=>{const s=world.current;if(s.logs.includes(s.zone))return;const z=ZONES[s.zone];if(!s.solved.includes(s.zone)){say('CORRUPTED LOG','Restore the chapter memory seal before the recording can be recovered.');return}s.logs.push(s.zone);if(s.logs.length===3&&!s.secret.includes('crash-01')&&!s.settings.reduced){s.secret.push('crash-01');setCrash(true);play(80,.55,'sawtooth')}addNote('Recovered log '+(s.zone+1)+'/6: '+z.log);echo('RECOVERED LOG',z.log,'log');play(523,.25);sync();persist();say('LOG '+String(s.zone+1).padStart(2,'0')+' / 06',z.log)}
  const chooseEnding=(id)=>{const s=world.current;if(id==='true'&&(s.logs.length<6||s.met.length<12)){say('LOCKED PROTOCOL','The true file requires six logs and at least twelve friends.');return}
   if(id==='shadow'&&s.watcherSeen<1){say('LOCKED PROTOCOL','You must first encounter the Watcher.');return}
   if(id==='escape'&&s.coins<20){say('LOCKED PROTOCOL','The emergency exit requires 20 coins.');return}
@@ -316,11 +326,20 @@ export default function FullPrototype(){
     <button style={{...btn,fontSize:12}} onClick={()=>setView('quests')}>♥ FRIEND QUESTS</button>
    </div>
   </>}
+  {crash&&<div role="alert" style={{position:'fixed',inset:0,zIndex:110,background:'#060509',display:'grid',placeItems:'center',padding:25,color:'#f0b5d8',fontFamily:'monospace'}}><div style={{textAlign:'left',maxWidth:520}}><h2 style={{letterSpacing:4}}>FATAL MEMORY ERROR_</h2><p>FILE_07: NOT FOUND</p><p>RECOVERING CHECKPOINT... DO NOT CLOSE THIS WINDOW.</p><div style={{height:12,background:'repeating-linear-gradient(90deg,#a25f9d 0 18px,#24102f 18px 29px)',margin:'25px 0'}}/><p style={{color:'#9dc9bb'}}>WATCHER: Relax. I am a professional at pretending this is fine.</p><button style={btn} onClick={()=>setCrash(false)}>RESTORE DISPLAY</button></div></div>}
   {message&&<div role="status" style={{position:'fixed',bottom:15,left:'50%',transform:'translateX(-50%)',zIndex:80,background:'#4d3164',padding:12,borderRadius:8}}>{message}</div>}
   {dialog&&modal(<><div style={{fontSize:11,color:'#a8ddd5',letterSpacing:2}}>{dialog.who}</div><p style={{lineHeight:1.8,textAlign:'left'}}>{dialog.line}</p><div style={{...rows,justifyContent:'flex-end'}}>{dialog.options?dialog.options.map(o=><button key={o.value} style={btn} onClick={()=>closeDialog(o.value)}>{o.label}</button>):<button style={btn} onClick={()=>closeDialog()}>CONTINUE ▸</button>}</div></>)}
   {view==='puzzle'&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>RESTORATION {puzzleStep+1} / {PUZZLE_STEPS[s.zone].length}</div><h2>{PUZZLE_STEPS[s.zone][puzzleStep].title}</h2><p style={{lineHeight:1.8}}>{PUZZLE_STEPS[s.zone][puzzleStep].prompt}</p>{PUZZLE_STEPS[s.zone][puzzleStep].requires&&!s.collected.includes(PUZZLE_STEPS[s.zone][puzzleStep].requires)&&<p style={{color:'#e8b6c8'}}>Evidence missing: {PUZZLE_STEPS[s.zone][puzzleStep].need}</p>}<div style={{display:'grid',gap:10}}>{PUZZLE_STEPS[s.zone][puzzleStep].choices.map((a,i)=><button style={btn} key={i} onClick={()=>solve(i)}>{a}</button>)}</div>{hint>=2&&<p style={{color:'#d6b9df'}}>HINT: {PUZZLE_STEPS[s.zone][puzzleStep].clue}</p>}<button style={{...btn,marginTop:15}} onClick={()=>setView(null)}>LEAVE PEDESTAL</button></>)}
-  {view==='interior'&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>ROOM FILE / {ZONES[s.zone].name}</div><h2>{['OLD HOME','RECORD SHOP','CLOSED CAFÉ','FORGOTTEN CLASSROOM','HIDDEN STORAGE'][interiorId]}</h2><div style={{height:155,background:'repeating-linear-gradient(90deg,#55455e 0 32px,#4c3c58 32px 64px)',border:'9px solid #31243c',position:'relative',margin:'12px auto',maxWidth:430}}><div style={{position:'absolute',top:18,left:22,width:76,height:45,background:'#9d739b',border:'5px solid #281b34'}}/><div style={{position:'absolute',top:18,right:30,width:60,height:50,background:'#e6c69b',border:'6px solid #5e475e'}}/><div style={{position:'absolute',bottom:12,left:'42%',width:75,height:29,background:'#866b90',border:'5px solid #2d2039'}}/></div><p>Dusty furniture, old photographs and a note that looks suspiciously recent. Something about this room changes after memory restoration.</p><div style={{...rows,justifyContent:'center'}}><button style={btn} onClick={()=>{const key=s.zone+':room:'+interiorId;if(!s.secret.includes(key)){s.secret.push(key);s.coins+=5;addNote('I searched a hidden room in '+z.name+'. The furniture remembered a different arrangement.');echo('ROOM MEMORY','A half-erased note: '+z.memory,'clue');play(659,.2);sync();notify('Hidden room discovered. +5 coins and a memory clue.')}else notify('You have already searched this room.')}}>✦ INVESTIGATE ROOM</button><button style={btn} onClick={()=>setView(null)}>LEAVE ROOM</button></div></>)}
-  {view==='map'&&modal(<><h2>WORLD_MAP.exe</h2><p>Previously visited regions can be revisited from a save terminal&apos;s memory map.</p><div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8}}>{ZONES.map((a,i)=><button key={a.id} style={{...btn,opacity:s.visited.includes(i)?1:.5}} disabled={!s.visited.includes(i)} onClick={()=>travel(i)}>{String(i+1).padStart(2,'0')} / {s.visited.includes(i)?a.name:'???'}</button>)}</div><button style={{...btn,marginTop:16}} onClick={()=>setView(null)}>CLOSE</button></>)}
+  {view==='interior'&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>EXPLORE / {ZONES[s.zone].name} / ROOM {interiorId+1}</div><h2>{ROOM_SCENES[interiorId].name}</h2><div style={{minHeight:195,background:'linear-gradient(180deg,#51405e 0 68%,#6f526c 68% 100%)',border:'9px ridge #2d2039',position:'relative',margin:'12px auto',maxWidth:500,overflow:'hidden'}}>
+   <div style={{position:'absolute',top:20,left:22,width:92,height:65,background:'#9d739b',border:'7px solid #281b34',boxShadow:'inset 0 0 0 5px #c3a0be'}}/>
+   <div style={{position:'absolute',top:20,right:30,width:75,height:70,background:s.solved.includes(s.zone)?'#f4d6a7':'#64536f',border:'6px solid #5e475e'}}/>
+   <div style={{position:'absolute',bottom:15,left:'38%',width:110,height:45,background:'#866b90',border:'5px solid #2d2039',boxShadow:'0 12px 0 #392940'}}/>
+   {Array.from({length:5},(_,i)=><div key={i} style={{position:'absolute',left:(i*19+4)+'%',bottom:0,width:9,height:25+(i%3)*10,background:i%2?'#4a3459':'#d0a4a6'}}/>)}
+   <div style={{position:'absolute',top:12,left:'40%',color:'#ffdcba',fontSize:12,background:'#281d39aa',padding:5}}>MEMORY {s.solved.includes(s.zone)?'RESTORED':'CORRUPTED'}</div>
+  </div><p style={{lineHeight:1.7}}>{s.solved.includes(s.zone)?ROOM_SCENES[interiorId].after:ROOM_SCENES[interiorId].before}</p>
+  <p style={{fontSize:12,color:'#cdb5d6'}}>Inspectable object: {ROOM_SCENES[interiorId].object}</p>
+  <div style={{...rows,justifyContent:'center'}}><button style={btn} onClick={()=>{const key=s.zone+':room:'+interiorId,phase=key+':restored';if(!s.secret.includes(key)){s.secret.push(key);s.coins+=5;addNote('I searched '+ROOM_SCENES[interiorId].name+'. '+ROOM_SCENES[interiorId].before);echo('ROOM MEMORY',z.memory,'clue');play(659,.2);sync();say('DISCOVERED',ROOM_SCENES[interiorId].before+' I found '+ROOM_SCENES[interiorId].object+'.')}else if(s.solved.includes(s.zone)&&!s.secret.includes(phase)){s.secret.push(phase);addNote('I returned to '+ROOM_SCENES[interiorId].name+' after restoring the memory. '+ROOM_SCENES[interiorId].after);play(784,.2);say('ROOM RESTORED',ROOM_SCENES[interiorId].after)}else notify('You have already searched this version of the room.')}}>✦ INSPECT {ROOM_SCENES[interiorId].object.toUpperCase()}</button><button style={btn} onClick={()=>setView(null)}>LEAVE ROOM</button></div></>)}
+ {view==='map'&&modal(<><h2>WORLD_MAP.exe</h2><p>Previously visited regions can be revisited from a save terminal&apos;s memory map.</p><div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8}}>{ZONES.map((a,i)=><button key={a.id} style={{...btn,opacity:s.visited.includes(i)?1:.5}} disabled={!s.visited.includes(i)} onClick={()=>travel(i)}>{String(i+1).padStart(2,'0')} / {s.visited.includes(i)?a.name:'???'}</button>)}</div><button style={{...btn,marginTop:16}} onClick={()=>setView(null)}>CLOSE</button></>)}
   {(view==='journal'||view==='quests'||view==='echoes')&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>CLAR_OS / PRIVATE FILES</div><h2 style={{marginTop:5}}>THINGS I REMEMBER.txt</h2><div style={{...rows,justifyContent:'center',marginBottom:15}}>{[['notes','MY NOTES'],['friends','FRIENDS'],['logs','LOST LOGS'],['quests','QUESTS'],['echoes','ECHOES'],['endings','ENDINGS'],['replay','REPLAY']].map(([id,name])=><button key={id} style={{...btn,padding:9,fontSize:11,background:tab===id?'#a16cb6':'#4d315e'}} onClick={()=>setTab(id)}>{name}</button>)}</div>
    {tab==='notes'&&<div style={{textAlign:'left'}}>{s.notes.slice().reverse().map((a,i)=><p key={i} style={{background:'#342440',padding:11,fontSize:13}}>✎ {a}</p>)}</div>}
    {tab==='friends'&&<div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:7}}>{PEOPLE.map(p=><div key={p.id} style={{padding:10,background:'#342440',fontSize:12}}>{s.met.includes(p.id)?p.name:'???'}{s.quests.includes(p.id)?' ♥':''}</div>)}</div>}
@@ -341,11 +360,25 @@ export default function FullPrototype(){
   {view==='endings'&&modal(<><div style={{fontSize:12,color:'#a8ddd5'}}>FINAL_SAVE_PROTOCOL.exe</div><h2>SIX POSSIBLE ENDINGS</h2><p>Critical decisions are confirmed. Each ending reveals a different part of the mystery. The birthday surprise is accessible after any ending.</p><div style={{display:'grid',gap:8}}>{ENDINGS.map(e=><button key={e.id} style={{...btn,textAlign:'left'}} onClick={()=>chooseEnding(e.id)}><b>{e.name}</b><div style={{fontSize:11,opacity:.85}}>{e.hint}</div></button>)}</div><button style={{...btn,marginTop:14}} onClick={()=>setView(null)}>RETURN TO WORLD</button></>)}
   {endingChoice&&modal(<><div style={{color:'#a8ddd5',letterSpacing:2,fontSize:12}}>CRITICAL TIMELINE DECISION</div><h2>{ENDINGS.find(e=>e.id===endingChoice)?.name}</h2><p>This choice determines this timeline&apos;s ending. A previous checkpoint and the last-decision undo option remain available.</p><div style={{...rows,justifyContent:'center'}}><button style={btn} onClick={commitEnding}>CONFIRM ENDING</button><button style={btn} onClick={()=>setEndingChoice(null)}>GO BACK</button></div></>)}
   {ending&&modal(<><div style={{color:'#a8ddd5',fontSize:12}}>ENDING RECOVERED / {global.endings.length} OF 6 · SCENE {endingBeat+1}/3</div><h2>{ENDINGS.find(e=>e.id===ending)?.name}</h2><div style={{minHeight:160,display:'grid',placeItems:'center',background:'radial-gradient(circle,#51345e,#140c21)',border:'1px solid #765187',padding:18,margin:'15px 0'}}><p style={{lineHeight:2,fontSize:16}}>{ENDING_SCENES[ending]?.[endingBeat]}</p></div><div style={{...rows,justifyContent:'center'}}>{endingBeat<2?<button style={btn} onClick={()=>{setEndingBeat(b=>b+1);play(392+endingBeat*110,.25)}}>CONTINUE SCENE ▸</button>:<><button style={btn} onClick={toFinale}>CONTINUE TO BIRTHDAY REUNION ♡</button><button style={btn} onClick={()=>newTimeline(0)}>NEW GAME+ / REPLAY</button></>}</div></>)}
-  {finale&&modal(<><div style={{color:'#b5dacf',fontSize:12}}>RECOVERED DESKTOP / BIRTHDAY.exe</div><h2>HAPPY BIRTHDAY, CLAR ♡</h2><p style={{fontSize:13}}>All eighteen friends are here. Someone hid the cake. Someone else already ate the decorations.</p><div style={{background:'#342440',padding:12,display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:7}}>{PEOPLE.map(p=><div key={p.id} style={{fontSize:10,padding:'8px 2px',background:p.color+'40',borderRadius:5}}><span style={{fontSize:20}}>♥</span><br/>{p.name}</div>)}</div>
-   {!reaction?<><p><b>LIMIN:</b> SURPRISE!! <b>NUT:</b> Please act surprised. We practised.</p><div style={{...rows,justifyContent:'center'}}>{['Scream','Laugh','Pretend to be shocked','Cry a little'].map(a=><button key={a} style={btn} onClick={()=>setReaction(a)}>{a}</button>)}</div></>:<p><b>CLAR:</b> {reaction}! <b>FRIENDS:</b> That is exactly the reaction we were hoping for.</p>}
-   <div style={{...rows,justifyContent:'center',marginTop:14}}><button style={btn} onClick={()=>{s.cake=true;play(523,.4);sync();notify('The candles go out. Everyone cheers. Make a wish!')}}>🎂 {s.cake?'CAKE CUT!':'MAKE A WISH'}</button><button style={btn} onClick={()=>{s.photo=true;setGlobal(g=>({...g,photos:g.photos+1}));notify('Group photo saved to your journal keepsakes.')}}>📸 GROUP PHOTO</button></div>
-   {s.cake&&s.photo&&<p style={{color:'#a8ddd5'}}>WATCHER: I arranged all of this. Well. I supervised. From a suspicious distance. Happy birthday, Clar.</p>}
-   <div style={{...rows,justifyContent:'center',marginTop:15}}><Link href="/birthday" style={{...btn,textDecoration:'none'}}>↗ OPEN RECOVERED CLAR_OS DESKTOP</Link><button style={btn} onClick={()=>{setFinale(false);setView('journal');setTab('replay')}}>RETURN TO RPG / REPLAY</button></div>
+  {finale&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>CLAR_OS / BIRTHDAY / FINAL MEMORY</div><h2 style={{margin:'7px 0'}}>HAPPY BIRTHDAY, CLAR ♡</h2><p style={{fontSize:12}}>The doors swing open. Somebody yells SURPRISE three seconds too early. Somebody else yells at them for ruining it.</p>
+  <div style={{...rows,justifyContent:'center',marginBottom:12}}>{[['party','THE GATHERING'],['cake','CAKE + PHOTO'],['desktop','RECOVERED DESKTOP']].map(([id,label])=><button key={id} style={{...btn,fontSize:11,background:finalTab===id?'#a16cb6':'#4d315e'}} onClick={()=>{setFinalTab(id);setFinalFriend(null)}}>{label}</button>)}</div>
+  {finalTab==='party'&&<><div style={{background:'linear-gradient(135deg,#59406d,#332346)',border:'2px solid #d2a2ca',padding:13,borderRadius:12,position:'relative'}}>
+    <p style={{color:'#f4d9a8',letterSpacing:2,fontSize:12}}>★ ALL EIGHTEEN FRIENDS ARE HERE ★</p>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(6,minmax(0,1fr))',gap:5}}>{PEOPLE.map(p=><button key={p.id} onClick={()=>setFinalFriend(p.id)} style={{border:finalFriend===p.id?'2px solid #fff0c4':'1px solid #b28ab6',background:p.color+'45',color:'#fff0ff',borderRadius:6,padding:'8px 1px',fontSize:10,cursor:'pointer',fontFamily:'inherit'}}><span style={{fontSize:18,display:'block',color:p.color}}>♥</span>{p.name}</button>)}</div>
+   </div>
+   {finalFriend!==null?<div style={{textAlign:'left',background:'#382646',padding:12,marginTop:10,borderLeft:'4px solid '+PEOPLE[finalFriend].color}}><b>{PEOPLE[finalFriend].name}</b><p style={{fontSize:13}}>{FRIEND_ARCS[finalFriend].finish}</p><p style={{fontSize:12,color:'#e6c6df'}}>A little more from me is waiting in CLAR_OS. Don't skip it.</p></div>:<p style={{fontSize:12}}>Tap any friend to hear their personal birthday teaser.</p>}
+   {!reaction?<><p><b>LIMIN:</b> SURPRISE!! <b>NUT:</b> Please act surprised. We practised.</p><div style={{...rows,justifyContent:'center'}}>{['Scream','Laugh','Pretend to be shocked','Cry a little'].map(a=><button key={a} style={btn} onClick={()=>{setReaction(a);play(659,.2)}}>{a}</button>)}</div></>:<p style={{background:'#46314e',padding:10}}><b>CLAR:</b> {reaction}! <b>TRISHA:</b> Someone document this. <b>RIRI:</b> I already am. <b>NUT:</b> We rehearsed three versions of this and somehow none of them happened.</p>}
+  </>}
+  {finalTab==='cake'&&<><div style={{fontSize:60,margin:12}}>🎂</div><h3>MAKE A WISH</h3><p>The room grows quiet for a second. Eighteen people are waiting, badly pretending they are not emotional.</p><div style={{...rows,justifyContent:'center'}}><button style={btn} onClick={()=>{s.cake=true;play(523,.4);sync();notify('The candles go out. Everyone cheers. Make a wish!')}}>{s.cake?'✓ CANDLES BLOWN OUT':'BLOW OUT THE CANDLES'}</button><button style={btn} onClick={()=>{if(!s.photo){s.photo=true;setGlobal(g=>({...g,photos:g.photos+1}));addNote('We took a birthday group photo together. All eighteen friends made it into the frame.');persist()}notify('Group photo added to your keepsakes.')}}>{s.photo?'✓ PHOTO SAVED':'TAKE THE GROUP PHOTO'}</button></div>{s.photo&&<div style={{margin:'14px auto',background:'#f1e6d9',color:'#48394e',padding:'12px 12px 24px',maxWidth:370,transform:'rotate(-1deg)'}}><div style={{background:'#695477',display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:3,padding:12}}>{PEOPLE.map(p=><span key={p.id} style={{background:p.color,height:30,borderRadius:'50% 50% 6px 6px',fontSize:10,display:'grid',placeItems:'center',color:'#21162e'}}>♥</span>)}</div><b style={{fontSize:13}}>CLAR + THE WHOLE GANG · 19 NOV ♡</b></div>}</>}
+  {finalTab==='desktop'&&<><div style={{background:'linear-gradient(145deg,#826c9d,#51446f)',padding:15,border:'6px solid #c6a7c8',borderRadius:12,boxShadow:'inset 0 0 0 3px #342640'}}>
+   <div style={{fontSize:11,textAlign:'left',background:'#3e315b',padding:7,marginBottom:12}}>RECOVERED_DRIVE (C:) / CLAR_OS ▣ ▣ ▣</div><div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:9}}>{[['SEVENTH_RECORD.sys','seventh'],['FRIEND_TEASERS.txt','teasers'],['WATCHER_LAST_MSG.wav','watcher'],['BIRTHDAY_NOTE.txt','note']].map(([label,id])=><button key={id} style={{...btn,fontSize:11,minHeight:64,background:finalFriend===id?'#ad7fc0':'#59416f'}} onClick={()=>{setFinalFriend(id);play(523,.12)}}>▣ {label}</button>)}</div>
+   </div>{finalFriend==='seventh'&&<p style={{padding:12,background:'#3a2a4a'}}>ERROR: FILE 07 WAS NEVER LOST. USER: CLAR. The seventh record is the person who carried all six memories to the end.</p>}
+   {finalFriend==='teasers'&&<p style={{padding:12,background:'#3a2a4a'}}>18 messages detected. They have been preserved for the original CLAR_OS birthday archive. This file contains only previews. ♡</p>}
+   {finalFriend==='watcher'&&<p style={{padding:12,background:'#3a2a4a'}}>WATCHER: I arranged this. Well, I supervised. From a suspicious distance. Happy birthday, Clar. Please leave me a five-star review.</p>}
+   {finalFriend==='note'&&<p style={{padding:12,background:'#3a2a4a'}}>You were never a missing save file. You were the reason everyone kept saving the game. Happy birthday. ♡</p>}
+   <Link href="/birthday" style={{...btn,textDecoration:'none',display:'inline-block',marginTop:12}}>↗ OPEN THE REAL CLAR_OS DESKTOP</Link>
+  </>}
+  <div style={{...rows,justifyContent:'center',marginTop:16}}><button style={btn} onClick={()=>{setFinale(false);setView('journal');setTab('replay')}}>RETURN TO RPG / CHAPTER REPLAY</button></div>
   </>)}
- </main>
+  </main>
 }
