@@ -1,18 +1,18 @@
 // Chapter One: bespoke short-story RPG slice. Original experimental build remains at /lost-save-file.
 export const W=1120,H=640;
 export const BUILDINGS=[
- {id:'bakery',name:'MOONCRUMB BAKERY',x:105,y:65,w:245,h:176,doorX:224,color:'#d88d88',roof:'#9e536d',accent:'#ffe4b5'},
- {id:'record',name:'SIDE B RECORDS',x:420,y:55,w:258,h:186,doorX:552,color:'#9677b8',roof:'#614b89',accent:'#f2d3ec'},
- {id:'game',name:'PIXEL PALACE',x:750,y:70,w:255,h:172,doorX:873,color:'#76aeb3',roof:'#3e738a',accent:'#c5f7ec'}
+ {id:'bakery',name:'MOONCRUMB BAKERY',x:340,y:330,w:310,h:270,doorX:500,color:'#c48273',roof:'#85465e',accent:'#efc69c'},
+ {id:'record',name:'SIDE B RECORDS',x:1000,y:190,w:320,h:270,doorX:1160,color:'#887099',roof:'#4e416d',accent:'#c8b1cf'},
+ {id:'game',name:'PIXEL PALACE',x:1600,y:365,w:310,h:295,doorX:1755,color:'#578c88',roof:'#344e68',accent:'#a8d8cb'}
 ];
 export const WORLD_OBJECTS=[
- {id:'clock',x:558,y:324,r:43,label:'THE FROZEN CLOCK'},
- {id:'letter',x:166,y:452,r:25,label:'FOLDED LETTER'},
- {id:'bush',x:804,y:475,r:37,label:'A SUSPICIOUS BUSH'},
- {id:'mirror',x:80,y:552,r:38,label:'THE CORNER MIRROR'},
- {id:'exit',x:1066,y:367,r:42,label:'TOWN EXIT'},
- {id:'fountain',x:555,y:477,r:48,label:'DRY FOUNTAIN'},
- {id:'sign',x:363,y:340,r:26,label:'TOWN NOTICE'}
+ {id:'clock',x:1120,y:760,r:44,label:'THE FROZEN CLOCK'},
+ {id:'letter',x:665,y:850,r:22,label:'FOLDED LETTER'},
+ {id:'bush',x:1660,y:940,r:40,label:'LEAFY BUSH'},
+ {id:'mirror',x:310,y:1160,r:35,label:'THE CORNER MIRROR'},
+ {id:'exit',x:1990,y:785,r:48,label:'TOWN EXIT'},
+ {id:'fountain',x:1120,y:1030,r:66,label:'DRY FOUNTAIN'},
+ {id:'sign',x:850,y:680,r:28,label:'TOWN NOTICE'}
 ];
 export const NPCS={
  naidu:{name:'NAIDU',shop:'bakery',x:270,y:270,color:'#f4ad90',hair:'#372e42',skin:'#b97963',outfit:'#9b698b',expression:'worried'},
@@ -66,4 +66,4 @@ export const RIDDLE={
  correct:1,
  hint:'THE MIRROR WHISPERS: “The clock can stop, the lights can die, and the roads can loop. But the thing that opens the way is not time or a key. It is what you choose to remember.”'
 };
-export const START={x:558,y:548,scene:'town',letter:false,key:false,letterGiven:false,keyGiven:false,backRoom:false,mirror:false,clock:false,gear:{flashlight:false,headphones:false,journal:false,sword:false},flashOn:false,headphonesOn:false,swordOn:false,notes:[],talked:[],gateSolved:false,complete:false};
+export const START={mapVersion:2,x:1120,y:890,facing:'down',scene:'town',letter:false,key:false,letterGiven:false,keyGiven:false,backRoom:false,mirror:false,clock:false,gear:{flashlight:false,headphones:false,journal:false,sword:false},flashOn:false,headphonesOn:false,swordOn:false,notes:[],talked:[],gateSolved:false,complete:false};
