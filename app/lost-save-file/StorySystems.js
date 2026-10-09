@@ -1,3 +1,38 @@
+// First-contact dialogue. Each entry is four separate typewritten dialogue beats.
+// Personality flourishes are provisional until the gift creator supplies exact inside jokes.
+export const TOWN_INTROS={
+  Naidu:[
+    "CLAR?! Oh, thank goodness. Please tell me you came with coffee. I've been trapped in this town for what feels like six Mondays.",
+    "I went looking for a café and ended up walking past the same bakery three times. The fourth time, the sign said ERROR 404: CAFFEINE NOT FOUND.",
+    "The streetlights keep blinking when I say your name. And that clock? It hasn't moved once. I'm starting to think we're inside somebody's broken computer.",
+    "But I know you. I'd recognise you in any glitchy universe. Stay close, okay? And if we find an exit, we're stopping for coffee first."
+  ],
+  Yanaal:[
+    "Clar? CLAR! Wait—you're actually here? I thought the town was generating people to mess with me.",
+    "I've counted the same eleven footsteps between these two lamps six times. Every time I turn around, the road puts me right back here.",
+    "And the clock says 11:19. It doesn't tick, but I swear I heard it whisper your name when I got too close.",
+    "I don't know how we ended up trapped in this place, but at least you're real. Come on, let's figure out what the clock is trying to tell us."
+  ],
+  Nesma:[
+    "Oh. Clar. Of course you'd show up in the one town where the mirrors are more suspicious than the people.",
+    "Before you ask, yes, I'm fine. No, I don't know how I got here. And absolutely not, I am not touching that mirror again.",
+    "It showed this exact street, except you were standing behind me before you arrived. Then the reflection smiled when neither of us did.",
+    "Anyway. I recognised you instantly, which is more than I can say for this town. I've got a clue for you—but don't expect me to explain everything at once."
+  ],
+  Trisha:[
+    "CLAR! Finally! Riri, LOOK—it's actually Clar! Okay, now this is officially the weirdest group outing we've ever had.",
+    "We tried leaving through the main road. It just sent us back to the bakery. Then the bakery sign changed its name while we were looking at it.",
+    "I'm telling you, this whole place is glitched. One minute the windows are dark, the next there's somebody knocking from a room that doesn't exist.",
+    "But I'd know you anywhere, so at least we've got one normal thing left. Come help us investigate—and please don't let Riri say 'I told you so.'"
+  ],
+  Riri:[
+    "CLAR! Oh my god, it's you. Please tell me you have a sensible explanation for why we've been stuck in a town that keeps rearranging itself.",
+    "For the record, I told Trisha not to go into that bakery. Did she listen? Obviously not. Now the door opens into a different room every time.",
+    "I tried checking my phone, but the screen just said PLEASE WAIT and showed a little spinning heart. It's been doing that for ages.",
+    "I'm so glad you're here. I recognised you straight away. Now can we investigate together before Trisha decides to adopt the haunted bakery?"
+  ]
+}
+
 // Narrative data for the experimental RPG. Original placeholder story scenes.
 // No data is loaded from CLAR_OS, and no production files are changed.
 export const FRIEND_ARCS=[
