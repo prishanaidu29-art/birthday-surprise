@@ -11,11 +11,11 @@ export const WORLD_OBJECTS=[
  {id:'bush',x:1660,y:940,r:40,label:'LEAFY BUSH'},
  {id:'mirror',x:310,y:1160,r:35,label:'THE CORNER MIRROR'},
  {id:'exit',x:1990,y:785,r:48,label:'TOWN EXIT'},
- {id:'fountain',x:1120,y:1030,r:66,label:'DRY FOUNTAIN'},
+ {id:'fountain',x:1120,y:1030,r:66,label:'STILLWATER FOUNTAIN'},
  {id:'sign',x:850,y:680,r:28,label:'TOWN NOTICE'}
 ];
 export const NPCS={
- naidu:{name:'NAIDU',shop:'bakery',x:270,y:270,color:'#f4ad90',hair:'#372e42',skin:'#b97963',outfit:'#9b698b',expression:'worried'},
+ naidu:{name:'NAIDU',shop:'bakery',x:600,y:385,color:'#f4ad90',hair:'#372e42',skin:'#b97963',outfit:'#9b698b',expression:'worried'},
  riri:{name:'RIRI',shop:'record',x:380,y:290,color:'#d2b2ff',hair:'#402b43',skin:'#c48e7d',outfit:'#d98ba8',expression:'uneasy'},
  trisha:{name:'TRISHA',shop:'record',x:640,y:290,color:'#ffc4a3',hair:'#5b3247',skin:'#c98975',outfit:'#9f88d8',expression:'animated'},
  aaron:{name:'AARON',shop:'game',x:375,y:295,color:'#9fe0c9',hair:'#25293f',skin:'#d2a18a',outfit:'#7298c9',expression:'nervous'},
