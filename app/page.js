@@ -47,10 +47,10 @@ const SECTIONS = [
   },
   {
     number: '05',
-    title: 'THE QUIZ',
-    description: "let's see how well you actually know us",
-    link: '/birthday/quiz',
-    icon: '?',
+    title: 'THE RPG',
+    description: "clar's lost save file · chapter one",
+    link: '/lost-save-file/chapter-one',
+    icon: '✦',
   },
   {
     number: '06',
