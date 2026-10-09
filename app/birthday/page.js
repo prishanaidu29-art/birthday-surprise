@@ -210,10 +210,10 @@ export default function BirthdayPage() {
     },
     {
       number: '05',
-      title: 'QUIZ',
-      sub: 'how well do you actually know us?',
-      link: '/birthday/quiz',
-      icon: '❓',
+      title: 'THE RPG',
+      sub: "clar's lost save file · chapter one",
+      link: '/lost-save-file/chapter-one',
+      icon: '🎮',
       colour: 'green',
     },
     {
