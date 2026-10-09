@@ -1,7 +1,7 @@
 'use client'
 import {useEffect,useRef,useState,useCallback} from 'react'
 import Link from 'next/link'
-import {FRIEND_ARCS,ANCHORS,PUZZLE_STEPS,ROOM_SCENES,ENDING_SCENES} from './StorySystems'
+import {FRIEND_ARCS,ANCHORS,PUZZLE_STEPS,ROOM_SCENES,ENDING_SCENES,TOWN_INTROS} from './StorySystems'
 
 /* THE LOST SAVE FILE — full playable story prototype.
    Entirely isolated to /lost-save-file on rpg-experiment.
@@ -199,6 +199,8 @@ export default function FullPrototype(){
  const [ready,setReady]=useState(false),[started,setStarted]=useState(false),[view,setView]=useState(null),[dialog,setDialog]=useState(null),[hud,setHud]=useState({}),[tab,setTab]=useState('notes'),[choice,setChoice]=useState(null),[battle,setBattle]=useState(null),[arena,setArena]=useState(null),[endingChoice,setEndingChoice]=useState(null),[ending,setEnding]=useState(null),[finale,setFinale]=useState(false),[reaction,setReaction]=useState(null),[backup,setBackup]=useState(''),[hint,setHint]=useState(0),[message,setMessage]=useState('')
  const [global,setGlobal]=useState({endings:[],cosmetics:[],photos:0})
  const [interiorId,setInteriorId]=useState(0)
+ const [typedCount,setTypedCount]=useState(0)
+ useEffect(()=>{if(!dialog)return;setTypedCount(0);const id=window.setInterval(()=>setTypedCount(n=>Math.min(n+2,dialog.line.length)),24);return()=>window.clearInterval(id)},[dialog])
  const [crash,setCrash]=useState(false)
  useEffect(()=>{if(!crash)return;const id=window.setTimeout(()=>setCrash(false),2300);return()=>window.clearTimeout(id)},[crash])
  const [puzzleStep,setPuzzleStep]=useState(0),[endingBeat,setEndingBeat]=useState(0),[finalFriend,setFinalFriend]=useState(null),[finalTab,setFinalTab]=useState('party')
@@ -239,7 +241,7 @@ export default function FullPrototype(){
   if(active&&!ready&&!done)options.push({label:'Ask about the quest',value:'progress'})
   if(done)options.push({label:'Remember together ♥',value:'remember'})
   options.push({label:'Make a ridiculous joke',value:'joke'})
-  say(n.name,done?arc.finish:n.line,options,v=>{
+  const showOptions=()=>say(n.name,done?arc.finish:n.line,options,v=>{
    if(v==='memory'){addNote(n.name+' remembers: '+arc.clue);say(n.name,arc.clue);echo(n.name,arc.clue,'clue')}
    if(v==='accept'){if(!s.questActive.includes(n.id))s.questActive.push(n.id);addNote('I promised '+n.name+': '+arc.title+'. '+arc.request);say(n.name,arc.request);sync();persist()}
    if(v==='progress')say(n.name,arc.request+' Come back when you find it.')
@@ -247,6 +249,8 @@ export default function FullPrototype(){
    if(v==='remember')say(n.name,arc.finish)
    if(v==='joke')say(n.name,['That was terrible. Do it again.','I am reporting you to the town council.','Please never change, Clar.'][n.id%3])
   })
+  const intro=first&&n.zone===0?TOWN_INTROS[n.name]:null
+  if(intro){const playBeat=(i)=>{say(n.name,intro[i],null,()=>{if(i<intro.length-1)playBeat(i+1);else showOptions()})};playBeat(0)}else showOptions()
  }
  const collect=(o)=>{const s=world.current,key=s.zone+':'+o.type;if(s.collected.includes(key)){say('CLAR','I already checked this.');return}
   s.collected.push(key);s.inventory.push(o.name);s.coins+=4;addNote('I found '+o.name.toLowerCase()+' in '+ZONES[s.zone].name+'.');play(740,.17)
@@ -343,7 +347,7 @@ export default function FullPrototype(){
   </>}
   {crash&&<div role="alert" style={{position:'fixed',inset:0,zIndex:110,background:'#060509',display:'grid',placeItems:'center',padding:25,color:'#f0b5d8',fontFamily:'monospace'}}><div style={{textAlign:'left',maxWidth:520}}><h2 style={{letterSpacing:4}}>FATAL MEMORY ERROR_</h2><p>FILE_07: NOT FOUND</p><p>RECOVERING CHECKPOINT... DO NOT CLOSE THIS WINDOW.</p><div style={{height:12,background:'repeating-linear-gradient(90deg,#a25f9d 0 18px,#24102f 18px 29px)',margin:'25px 0'}}/><p style={{color:'#9dc9bb'}}>WATCHER: Relax. I am a professional at pretending this is fine.</p><button style={btn} onClick={()=>setCrash(false)}>RESTORE DISPLAY</button></div></div>}
   {message&&<div role="status" style={{position:'fixed',bottom:15,left:'50%',transform:'translateX(-50%)',zIndex:80,background:'#4d3164',padding:12,borderRadius:8}}>{message}</div>}
-  {dialog&&modal(<><div style={{display:'flex',gap:14,alignItems:'center',textAlign:'left'}}><DialoguePortrait who={dialog.who}/><div><div style={{fontSize:11,color:'#a8ddd5',letterSpacing:2}}>✦ {dialog.who.toUpperCase()}</div><p style={{lineHeight:1.65,margin:'9px 0'}}>{dialog.line}</p></div></div><div style={{...rows,justifyContent:'flex-end'}}>{dialog.options?dialog.options.map(o=><button key={o.value} style={btn} onClick={()=>closeDialog(o.value)}>{o.label}</button>):<button style={btn} onClick={()=>closeDialog()}>CONTINUE ▸</button>}</div></>)}
+  {dialog&&modal(<><div style={{display:'flex',gap:14,alignItems:'center',textAlign:'left'}}><DialoguePortrait who={dialog.who}/><div><div style={{fontSize:11,color:'#a8ddd5',letterSpacing:2}}>✦ {dialog.who.toUpperCase()}</div><p style={{lineHeight:1.65,margin:'9px 0',whiteSpace:'pre-wrap',minHeight:70}}>{dialog.line.slice(0,typedCount)}{typedCount<dialog.line.length&&<span aria-hidden="true" style={{color:'#f2c5de'}}>▌</span>}</p></div></div><div style={{...rows,justifyContent:'flex-end'}}>{typedCount<dialog.line.length?<button style={btn} onClick={()=>setTypedCount(dialog.line.length)}>SHOW FULL LINE ▸</button>:dialog.options?dialog.options.map(o=><button key={o.value} style={btn} onClick={()=>closeDialog(o.value)}>{o.label}</button>):<button style={btn} onClick={()=>closeDialog()}>CONTINUE ▸</button>}</div></>)}
   {view==='puzzle'&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>RESTORATION {puzzleStep+1} / {PUZZLE_STEPS[s.zone].length}</div><h2>{PUZZLE_STEPS[s.zone][puzzleStep].title}</h2><p style={{lineHeight:1.8}}>{PUZZLE_STEPS[s.zone][puzzleStep].prompt}</p>{PUZZLE_STEPS[s.zone][puzzleStep].requires&&!s.collected.includes(PUZZLE_STEPS[s.zone][puzzleStep].requires)&&<p style={{color:'#e8b6c8'}}>Evidence missing: {PUZZLE_STEPS[s.zone][puzzleStep].need}</p>}<div style={{display:'grid',gap:10}}>{PUZZLE_STEPS[s.zone][puzzleStep].choices.map((a,i)=><button style={btn} key={i} onClick={()=>solve(i)}>{a}</button>)}</div>{hint>=2&&<p style={{color:'#d6b9df'}}>HINT: {PUZZLE_STEPS[s.zone][puzzleStep].clue}</p>}<button style={{...btn,marginTop:15}} onClick={()=>setView(null)}>LEAVE PEDESTAL</button></>)}
   {view==='interior'&&modal(<><div style={{fontSize:11,color:'#a8ddd5'}}>EXPLORE / {ZONES[s.zone].name} / ROOM {interiorId+1}</div><h2>{ROOM_SCENES[interiorId].name}</h2><div style={{minHeight:195,background:'linear-gradient(180deg,#51405e 0 68%,#6f526c 68% 100%)',border:'9px ridge #2d2039',position:'relative',margin:'12px auto',maxWidth:500,overflow:'hidden'}}>
    <div style={{position:'absolute',top:20,left:22,width:92,height:65,background:'#9d739b',border:'7px solid #281b34',boxShadow:'inset 0 0 0 5px #c3a0be'}}/>
