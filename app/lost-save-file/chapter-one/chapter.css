@@ -15,3 +15,10 @@
 .ch1-toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:100;background:#382944;color:#fff1da;border:2px solid #d6afcb;border-radius:10px;padding:12px 20px;box-shadow:0 8px 30px #0009;font-size:12px;max-width:90vw}.ch1-footer{max-width:1120px;margin:20px auto 0;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:#bbaacb}.ch1-footer button{border:0;background:transparent;color:#d8c4e2;text-decoration:underline}.ch1-footer a{color:#d8c4e2}
 @media(max-width:700px){.ch1-portrait{width:106px;height:135px;flex-basis:106px}.ch1-portrait-hair{left:18px;top:12px;width:68px;height:84px}.ch1-portrait-face{left:29px;top:30px;width:48px;height:67px}.ch1-portrait-eyes{top:21px;left:4px;font-size:13px}.ch1-portrait-mouth{top:43px;left:18px;font-size:14px}.ch1-portrait-body{top:100px;left:8px;width:90px}.ch1-dialog{gap:10px}.ch1-dialog p{min-height:120px}.ch1-stage{width:100%}.ch1-bottom{justify-content:center}.ch1-objective{flex-basis:100%;text-align:center}.ch1-headright{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){.ch1-glitch,.ch1-glitch strong,.ch1-cursor{animation:none}}
+/* Ten-second corrupted state: the entire HUD and buttons become darker and unstable. */
+.ch1-corrupted{background:radial-gradient(ellipse at 50% 10%,#170c20,#070710 80%);animation:ch1-ui-shiver .19s steps(2) infinite}
+.ch1-corrupted .ch1-header,.ch1-corrupted .ch1-bottom,.ch1-corrupted .ch1-footer,.ch1-corrupted .ch1-tip{filter:brightness(.48) saturate(.35) hue-rotate(55deg)}
+.ch1-corrupted .ch1-button{background:#271629;border-color:#6d3764;color:#ef95b6;text-shadow:2px 0 #66c2b8;transform:skewX(-2deg)}
+.ch1-corrupted .ch1-stage{border-color:#823e76;box-shadow:0 0 50px #b1317333}
+@keyframes ch1-ui-shiver{50%{filter:contrast(1.15) hue-rotate(14deg)}}
+@media(prefers-reduced-motion:reduce){.ch1-corrupted{animation:none}}
