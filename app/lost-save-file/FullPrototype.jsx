@@ -302,7 +302,7 @@ export default function FullPrototype(){
  const undo=()=>{const s=world.current;if(!s.lastDecision){notify('No critical decision to undo.');return}const d=s.lastDecision;s.ending=d.ending;s.coins=d.coins;s.lastDecision=null;setEnding(null);setFinale(false);setView(null);sync();persist();notify('Last critical choice undone. Ending gallery remains unlocked.')}
  const exportSave=()=>{setBackup(JSON.stringify({version:3,state:world.current,global,started:true},null,2));notify('Copy the backup text and store it safely.')}
  const importSave=()=>{try{const d=JSON.parse(backup);if(d.version!==3||!d.state||!d.global||!Array.isArray(d.global.endings))throw Error('Invalid backup');world.current=cleanSave(d.state);setGlobal(d.global);setStarted(true);setFinale(!!d.state.finale);setEnding(d.state.ending||null);setView(null);sync();notify('Backup restored.');}catch{notify('Invalid save file. Nothing was changed.')}}
- const control=(dir,glyph)=><button key={dir} aria-label={'Move '+dir} style={{...btn,minWidth:64,minHeight:60,fontSize:23,background:'#694485',touchAction:'none',WebkitUserSelect:'none'}} onContextMenu={e=>e.preventDefault()} onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);held.current[dir]=true}} onPointerUp={()=>held.current[dir]=false} onPointerCancel={()=>held.current[dir]=false} onLostPointerCapture={()=>held.current[dir]=false}>{glyph}</button>
+ const control=(dir,glyph)=><button key={dir} aria-label={'Move '+dir} style={{...btn,minWidth:44,minHeight:'clamp(43px,5dvh,60px)',fontSize:21,padding:'4px 6px',background:'#694485',touchAction:'none',WebkitUserSelect:'none'}} onContextMenu={e=>e.preventDefault()} onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);held.current[dir]=true}} onPointerUp={()=>held.current[dir]=false} onPointerCancel={()=>held.current[dir]=false} onLostPointerCapture={()=>held.current[dir]=false}>{glyph}</button>
  const closeDialog=(value)=>{const d=dialog;setDialog(null);if(d?.done)d.done(value)}
  const s=world.current,z=ZONES[s.zone],canMove=!view&&!dialog&&!battle&&!arena&&!ending&&!finale
  const modal=(children)=><div style={{position:'fixed',inset:0,background:'#070410e8',zIndex:40,display:'grid',placeItems:'center',padding:12,overflow:'auto'}}><section style={{...panel,width:'min(730px,96vw)',maxHeight:'min(82dvh,780px)',overflowY:'auto'}}>{children}</section></div>
@@ -324,16 +324,16 @@ export default function FullPrototype(){
     <span>CH {s.zone+1}/6 · 🪙 {hud.coins??0} · ♥ {hud.hp??5}/5 · FRIENDS {hud.met??0}/18 · LOGS {hud.logs??0}/6</span>
     <span>{s.watcherTime>0?'◉ THE WATCHER IS NEAR':'◌ SIGNAL STABLE'}</span>
    </div>
-   <div style={{border:'3px solid #ac79c7',borderRadius:5,maxWidth:800,margin:'8px auto',boxShadow:'0 0 30px #8e48ad35',overflow:'hidden'}}>
+   <div style={{border:'3px solid #ac79c7',borderRadius:5,maxWidth:'min(800px, calc(78dvh * 1.6667))',width:'100%',margin:'6px auto',boxShadow:'0 0 30px #8e48ad35',overflow:'hidden'}}>
     <canvas ref={canvas} width={800} height={480} style={{width:'100%',height:'auto',display:'block',imageRendering:'pixelated',touchAction:'none'}}/>
    </div>
-   <p style={{fontSize:12,color:'#c8b0d0',maxWidth:800,margin:'8px auto'}}>CHAPTER OBJECTIVE: Help {PEOPLE[ANCHORS[s.zone]].name} finish their memory quest, find the evidence for the three-stage memory seal, recover the chapter log and reach the eastern gate. Hold arrows to move · INTERACT near objects.</p>
-   <div style={{...rows,justifyContent:'center',margin:'10px auto',maxWidth:820}}>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,64px)',gap:4}}><span/>{control('up','▲')}<span/>{control('left','◀')}{control('down','▼')}{control('right','▶')}</div>
-    <button style={{...btn,minHeight:63}} onClick={interact} disabled={!canMove}>✦ INTERACT</button>
-    <button style={{...btn,minHeight:63}} onClick={()=>{setView('journal');setTab('notes')}}>📓 JOURNAL</button>
-    <button style={{...btn,minHeight:63}} onClick={()=>setView('map')}>🗺 MAP</button>
-    <button style={{...btn,minHeight:63}} onClick={()=>setView('settings')}>⚙ SETTINGS</button>
+   <p style={{fontSize:11,color:'#c8b0d0',maxWidth:800,margin:'5px auto',lineHeight:1.45}}>CHAPTER OBJECTIVE: Help {PEOPLE[ANCHORS[s.zone]].name} finish their memory quest, find the evidence for the three-stage memory seal, recover the chapter log and reach the eastern gate. Hold arrows to move · INTERACT near objects.</p>
+   <div style={{...rows,justifyContent:'center',margin:'6px auto',maxWidth:820}}>
+    <div style={{display:'grid',gridTemplateColumns:'repeat(3,clamp(46px,5dvh,64px))',gap:4}}><span/>{control('up','▲')}<span/>{control('left','◀')}{control('down','▼')}{control('right','▶')}</div>
+    <button style={{...btn,minHeight:44,padding:'9px 12px'}} onClick={interact} disabled={!canMove}>✦ INTERACT</button>
+    <button style={{...btn,minHeight:44,padding:'9px 12px'}} onClick={()=>{setView('journal');setTab('notes')}}>📓 JOURNAL</button>
+    <button style={{...btn,minHeight:44,padding:'9px 12px'}} onClick={()=>setView('map')}>🗺 MAP</button>
+    <button style={{...btn,minHeight:44,padding:'9px 12px'}} onClick={()=>setView('settings')}>⚙ SETTINGS</button>
    </div>
    <div style={{...rows,justifyContent:'center',marginTop:12}}>
     <button style={{...btn,fontSize:12}} onClick={recoverLog} disabled={s.logs.includes(s.zone)}>📼 {s.logs.includes(s.zone)?'CHAPTER LOG RECOVERED':'RECOVER NEARBY LOG'}</button>
