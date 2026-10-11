@@ -66,6 +66,19 @@ function shop(c,p,t){
    box(c,60,451,450,53,'#46374f','#c7a5d1');text(c,'TOP SCORE  CLAR  01119',285,484,18,'#b8f2df');
    box(c,575,451,480,53,'#46374f','#c7a5d1');text(c,'RETRO CONSOLES  •  ARCADE',815,484,17);
  }
+ // Lived-in shop details: distinctive merchandise, light fixtures and movement.
+ if(bakery){
+  for(let i=0;i<7;i++){const x=105+i*66;fill(c,x-16,271,32,20,['#d990a0','#c68d57','#e5b887'][i%3]);fill(c,x-18,266,36,7,'#f7d6c7');for(let j=0;j<3;j++)fill(c,x-11+j*10,262-(j%2)*3,5,5,['#d26e7b','#f2d2a0','#a2c3a2'][j])}
+  for(let i=0;i<6;i++){const x=678+i*65;fill(c,x-19,185,38,18,'#ba7b4e');fill(c,x-14,180,28,8,'#f0c590');}
+  for(const x of [180,480,835]){fill(c,x-2,85,4,33,'#58435a');fill(c,x-17,116,34,9,'#c4959b');fill(c,x-11,125,22,6,'#ffe2b4')}
+  text(c,'HANDMADE CAKES',320,215,13,'#ffe4da');
+ }else if(record){
+  for(let i=0;i<5;i++){const x=70+i*164;for(let j=0;j<3;j++){const y=165+j*78;for(let k=0;k<3;k++){const xx=x+34+k*38;fill(c,xx-11,y+17,22,25,['#aa7395','#85aaa7','#d7ac88'][(i+j+k)%3]);fill(c,xx-8,y+20,16,13,'#e8d1bd');fill(c,xx-3,y+23,6,6,'#51425b')}}}
+  fill(c,929,347,110,8,'#d7b19a');fill(c,947,311,67,33,'#3d3349');c.save();c.translate(980,327);c.rotate(t/2400);c.strokeStyle='#f1d1d9';c.lineWidth=3;c.beginPath();c.arc(0,0,13,0,Math.PI*2);c.stroke();c.restore();
+ }else if(game){
+  for(let i=0;i<6;i++){const x=88+i*165;fill(c,x,162,92,81,'#242b42');for(let j=0;j<7;j++){const xx=x+8+j*11;fill(c,xx,213-(j%3)*13,9,9,['#f1bf9a','#b7d9c3','#d5a4cf'][(i+j)%3])}fill(c,x+34+Math.sin(t/430+i)*13,177,14,13,'#f4d6aa')}
+  text(c,'INSERT COIN  /  PRESS START',560,112,15,'#bdebdc');
+ }
  if(record){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}
  if(record&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}
  else{const ids=bakery?['naidu']:record?['riri','trisha']:['aaron','lakshay'];for(const id of ids){const n=NPCS[id];if(id==='naidu'){person(c,n.x,n.y,'#30232d','#bb856c','#252b28',false,t); // dark wavy hair framing the face
