@@ -78,7 +78,7 @@ function shop(c,p,t){
   for(const x of [180,480,835]){fill(c,x-2,85,4,33,'#58435a');fill(c,x-17,116,34,9,'#c4959b');fill(c,x-11,125,22,6,'#ffe2b4')}
   text(c,'HANDMADE CAKES',320,215,13,'#ffe4da');
  }else if(record){
-  for(let i=0;i<5;i++){const x=70+i*164;for(let j=0;j<3;j++){const y=165+j*78;for(let k=0;k<3;k++){const xx=x+34+k*38;fill(c,xx-11,y+17,22,25,['#aa7395','#85aaa7','#d7ac88'][(i+j+k)%3]);fill(c,xx-8,y+20,16,13,'#e8d1bd');fill(c,xx-3,y+23,6,6,'#51425b')}}}
+  for(let i=0;i<5;i++){const x=70+i*164;for(let j=0;j<3;j++){const y=165+j*78;for(let k=0;k<3;k++){const xx=x+34+k*38;fill(c,xx-10,y+18,20,23,['#aa7395','#85aaa7','#d7ac88'][(i+j+k)%3]);fill(c,xx-7,y+21,14,12,'#e8d1bd');fill(c,xx-2,y+24,4,4,'#51425b')}}}
   fill(c,929,347,110,8,'#d7b19a');fill(c,947,311,67,33,'#3d3349');c.save();c.translate(980,327);c.rotate(t/2400);c.strokeStyle='#f1d1d9';c.lineWidth=3;c.beginPath();c.arc(0,0,13,0,Math.PI*2);c.stroke();c.restore();
  }else if(game){
   for(let i=0;i<6;i++){const x=88+i*165;fill(c,x,162,92,81,'#242b42');for(let j=0;j<7;j++){const xx=x+8+j*11;fill(c,xx,213-(j%3)*13,9,9,['#f1bf9a','#b7d9c3','#d5a4cf'][(i+j)%3])}fill(c,x+34+Math.sin(t/430+i)*13,177,14,13,'#f4d6aa')}
@@ -86,7 +86,7 @@ function shop(c,p,t){
  }
  if(record){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}
  if(record&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}
- else{const ids=bakery?['jack']:record?['jay','sherlock']:['will','house'];for(const id of ids){const n=NPCS[id];person(c,n.x,n.y,n.hair,n.skin,n.outfit,id==='house',t,id);text(c,n.name,n.x,n.y-64,16)}}
+ else{const ids=bakery?['jack']:record?['jay','sherlock']:['will','house'];for(const id of ids){const n=NPCS[id];person(c,n.x,n.y,n.hair,n.skin,n.outfit,id==='house',t,id);box(c,n.x-80,n.y-100,160,28,'#292139dd','#d7b2d2');text(c,n.name,n.x,n.y-80,13,'#fff0df')}}
  drawClar(c,p,t);box(c,470,543,183,70,'#705679','#e3bcd2');text(c,'← LEAVE SHOP',562,582,18);
  const g=c.createRadialGradient(560,270,180,560,320,700);g.addColorStop(0,'#0000');g.addColorStop(1,'#170e2666');fill(c,0,0,W,H,g)
 }
