@@ -13,8 +13,8 @@ function box(c,x,y,w,h,color,edge='#44334c'){c.fillStyle=edge;c.fillRect(x-3,y-3
 function text(c,s,x,y,size=15,color='#fff0d7'){c.textAlign='center';c.font='bold '+size+'px monospace';c.fillStyle='#23172e';c.fillText(s,x+2,y+2);c.fillStyle=color;c.fillText(s,x,y)}
 function light(c,x,y){const g=c.createRadialGradient(x,y,5,x,y,110);g.addColorStop(0,'#ffe7a588');g.addColorStop(1,'#ffe7a500');fill(c,x-110,y-110,220,220,g);box(c,x-4,y-36,8,51,'#52445c');box(c,x-12,y-49,24,22,'#ffe0a0')}
 function bush(c,x,y){box(c,x-34,y-7,68,28,'#3d725b','#325549');box(c,x-24,y-22,43,25,'#679e79','#426e60');box(c,x+4,y-26,30,30,'#83b68b','#426e60');for(let i=0;i<5;i++)fill(c,x-19+i*9,y-19-i%2*6,4,4,'#f2c7dc')}
-function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0){
- c.save();c.translate(x,y+Math.sin(t/390+x)*1.3);
+function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0,kind=''){
+ c.save();c.translate(x,y+Math.sin(t/390+x)*1.3);c.scale(1.16,1.16);
  c.fillStyle='#21152e55';c.beginPath();c.ellipse(0,24,22,7,0,0,Math.PI*2);c.fill();
  // Layered shoes, trousers, sleeves and garment highlights.
  box(c,-13,7,11,17,'#393446');box(c,3,7,11,17,'#393446');
@@ -22,12 +22,17 @@ function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=fals
  box(c,-19,-17,38,28,shirt);box(c,-22,-13,7,22,shirt);box(c,15,-13,7,22,shirt);
  box(c,-22,7,7,6,skin);box(c,15,7,7,6,skin);
  box(c,-15,-14,3,21,'#ffffff20');box(c,-18,9,36,4,'#241c3555');
- box(c,-15,-45,30,32,skin);box(c,-16,-43,32,12,hair);
+ box(c,-18,-48,36,36,skin);box(c,-19,-46,38,12,hair);
  for(let i=0;i<5;i++){const dx=-15+i*7;fill(c,dx,-47-(i%2)*4,8,10,hair)}
  fill(c,-18,-37,7,20,hair);fill(c,12,-37,7,17,hair);
  fill(c,-9,-27,4,3,'#32243c');fill(c,5,-27,4,3,'#32243c');
  fill(c,-1,-22,3,3,'#ae735e');fill(c,-3,-17,8,2,'#a46870');
  if(glasses){c.strokeStyle='#cdbf9c';c.lineWidth=2;for(const gx of [-9,9]){c.beginPath();c.arc(gx,-26,8,0,Math.PI*2);c.stroke()}box(c,-2,-27,4,2,'#cdbf9c')}
+ if(kind==='jack'){fill(c,-16,-17,32,6,'#614232');fill(c,-14,-20,28,5,'#583a30');fill(c,-10,-45,20,4,'#5b352a');fill(c,-14,-7,28,5,'#23583d');fill(c,-3,-12,6,12,'#a4caa2')}
+ if(kind==='jay'){fill(c,-19,-49,38,7,'#22212d');fill(c,-19,-43,9,14,'#22212d');fill(c,12,-43,7,12,'#22212d');fill(c,-14,-9,28,5,'#302c40');fill(c,-7,-33,4,3,'#3c2a31');fill(c,5,-33,4,3,'#3c2a31')}
+ if(kind==='sherlock'){fill(c,-24,-21,9,30,'#272b3b');fill(c,15,-21,9,30,'#272b3b');fill(c,-16,-19,32,36,'#343b4e');fill(c,-5,-20,10,22,'#7c8190');for(let i=0;i<6;i++)O(c,-17+i*7,-49-(i%2)*5,7,6,'#29262e');fill(c,0,-9,3,3,'#c4b3a8')}
+ if(kind==='will'){fill(c,-15,-13,30,4,'#b0b4a0');for(let i=0;i<3;i++)fill(c,-13+i*11,-16,2,24,'#d4c5a0');fill(c,-17,-47,13,7,'#4b392e');fill(c,5,-49,13,8,'#4b392e');fill(c,-4,-11,8,7,'#d5bb9c')}
+ if(kind==='house'){fill(c,-21,-19,9,35,'#333b47');fill(c,12,-19,9,35,'#333b47');fill(c,-12,-18,24,30,'#606776');fill(c,-3,-17,6,23,'#a4a2a0');fill(c,-12,-23,24,5,'#77645d');fill(c,17,-13,3,42,'#b58e61');fill(c,15,25,8,3,'#b58e61');fill(c,-12,-21,24,4,'#665c5a')}
  c.restore()
 }
 
@@ -81,9 +86,7 @@ function shop(c,p,t){
  }
  if(record){box(c,952,270,125,185,'#3c2b50','#d4b3cf');text(c,'BACK ROOM',1014,316,15);text(c,p.keyGiven?'OPEN':'LOCKED',1014,392,16,p.keyGiven?'#b8e5ce':'#eab4c4')}
  if(record&&p.backRoom){box(c,225,85,670,262,'#332640','#dfb2d2');text(c,'BACK ROOM / CORRUPTED MESSAGE',560,125,22);text(c,'WHEN THE CLOCK STOPS,',560,202,21,'#ffe0bd');text(c,'FOLLOW THE REFLECTION.',560,242,21,'#ffe0bd')}
- else{const ids=bakery?['jack']:record?['jay','sherlock']:['will','house'];for(const id of ids){const n=NPCS[id];if(id==='jack'){person(c,n.x,n.y,'#30232d','#bb856c','#252b28',false,t); // dark wavy hair framing the face
-   for(const dx of [-15,12]){c.fillStyle='#32242b';c.beginPath();c.ellipse(n.x+dx,n.y-29,9,24,dx<0?-.18:.18,0,Math.PI*2);c.fill()}
- }else person(c,n.x,n.y,n.hair,n.skin,n.outfit,false,t);text(c,n.name,n.x,n.y-64,16)}}
+ else{const ids=bakery?['jack']:record?['jay','sherlock']:['will','house'];for(const id of ids){const n=NPCS[id];person(c,n.x,n.y,n.hair,n.skin,n.outfit,id==='house',t,id);text(c,n.name,n.x,n.y-64,16)}}
  drawClar(c,p,t);box(c,470,543,183,70,'#705679','#e3bcd2');text(c,'← LEAVE SHOP',562,582,18);
  const g=c.createRadialGradient(560,270,180,560,320,700);g.addColorStop(0,'#0000');g.addColorStop(1,'#170e2666');fill(c,0,0,W,H,g)
 }
