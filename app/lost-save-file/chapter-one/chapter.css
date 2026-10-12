@@ -41,3 +41,50 @@
 @keyframes ch1shadowcross{0%,43%{left:-25%;opacity:0}47%{opacity:.94}65%{opacity:.94}72%{left:112%;opacity:0}100%{left:112%;opacity:0}}
 @keyframes ch1tear{0%{transform:translate(-10px,2px)}50%{transform:translate(12px,-3px)}100%{transform:translate(-4px,5px)}}
 @keyframes ch1warnsplit{0%,100%{filter:contrast(1)}50%{filter:contrast(2.2) hue-rotate(45deg)}}
+
+/* Hand-layered chibi busts for conversations, with character-specific expressions. */
+.ch1-character-art{width:190px;height:222px;flex:0 0 190px;position:relative;overflow:hidden;border:4px solid #dbb6d4;border-radius:16px;background:radial-gradient(circle at 50% 35%,var(--accent),#41344e 77%);box-shadow:inset 0 0 0 4px #463453,0 7px 0 #281b37;isolation:isolate}
+.ch1-character-art *{position:absolute;box-sizing:border-box}
+.ch1-art-halo{inset:13px 21px 34px;border:2px solid #ffe5d060;border-radius:50%;box-shadow:0 0 32px #ffe2c347}
+.ch1-art-shoulders{width:172px;height:94px;left:5px;bottom:-22px;border-radius:55% 55% 10% 10%;background:linear-gradient(115deg,#fff3de33,transparent 40%),var(--clothes);border:4px solid #392c44;z-index:3}
+.ch1-art-neck{left:75px;top:123px;width:33px;height:35px;background:var(--skin);border:3px solid #9e736b;z-index:4}
+.ch1-art-backhair{left:35px;top:18px;width:113px;height:143px;background:var(--hair);border:3px solid #322735;border-radius:49% 49% 37% 37%;z-index:2}
+.ch1-art-face{left:46px;top:43px;width:91px;height:110px;border-radius:43% 43% 47% 47%;background:linear-gradient(105deg,#fff0d52e,transparent 55%),var(--skin);border:3px solid #8c6262;z-index:5}
+.ch1-art-brows{left:13px;right:13px;top:34px;height:7px;display:flex;justify-content:space-between}
+.ch1-art-brows i{position:relative;width:22px;height:4px;background:var(--hair);border-radius:100%;transform:rotate(-8deg)}
+.ch1-art-brows i:last-child{transform:rotate(8deg)}
+.ch1-art-eyes{left:15px;right:15px;top:46px;height:17px;display:flex;justify-content:space-between}
+.ch1-art-eyes i{position:relative;width:15px;height:16px;background:#2e2533;border-radius:48% 48% 55% 55%;box-shadow:inset 3px 1px #fff8e3}
+.ch1-art-nose{left:43px;top:66px;width:5px;height:9px;border-radius:60%;background:#bd817e66}
+.ch1-art-mouth{left:36px;top:83px;width:22px;height:9px;border:0;border-bottom:3px solid #9b5863;border-radius:0 0 50% 50%}
+.ch1-art-blush{top:69px;width:19px;height:8px;border-radius:50%;background:#e27f9070}
+.ch1-art-blush.left{left:5px}.ch1-art-blush.right{right:5px}
+.ch1-art-fringe{left:34px;top:21px;width:115px;height:48px;border-radius:53% 50% 36% 18%;background:var(--hair);border-top:4px solid #ffffff2b;transform:rotate(-8deg);z-index:7}
+.ch1-art-hair-lock{top:60px;width:23px;height:66px;background:var(--hair);z-index:7}
+.ch1-art-hair-lock.left{left:34px;border-radius:80% 10% 50% 60%;transform:rotate(12deg)}
+.ch1-art-hair-lock.right{right:32px;border-radius:10% 80% 60% 50%;transform:rotate(-12deg)}
+.ch1-art-tag{z-index:12;left:0;right:0;bottom:0;padding:6px 4px;background:#2c203ecf;text-align:center;font-size:12px;font-weight:800;letter-spacing:.12em;color:#fff2df}
+.ch1-art-beard{left:13px;bottom:4px;width:61px;height:27px;background:#754939;border-radius:14% 14% 50% 50%;opacity:.8}
+.ch1-art-stubble{left:12px;bottom:4px;width:63px;height:19px;background:#78675c65;border-radius:10% 10% 50% 50%}
+.ch1-art-wrinkles{left:12px;top:26px;width:62px;height:3px;background:#8f6d6666}
+.ch1-art-scarf{left:71px;top:146px;width:39px;height:43px;background:#8a929c;border-radius:7px;z-index:8;transform:rotate(12deg)}
+.ch1-art-cane{right:22px;top:126px;width:6px;height:92px;background:#bfa27e;border-radius:5px;z-index:9;transform:rotate(12deg)}
+.ch1-art-jack .ch1-art-fringe{border-radius:40% 60% 22% 48%;transform:rotate(7deg)}
+.ch1-art-jack .ch1-art-hair-lock{height:30px}
+.ch1-art-jay .ch1-art-fringe{height:38px;top:29px;transform:rotate(-5deg)}
+.ch1-art-jay .ch1-art-hair-lock{height:30px}
+.ch1-art-sherlock .ch1-art-fringe{height:62px;border-radius:45% 65% 45% 50%;box-shadow:-12px -7px 0 -2px var(--hair),15px -8px 0 -4px var(--hair)}
+.ch1-art-sherlock .ch1-art-hair-lock{height:58px}
+.ch1-art-will .ch1-art-fringe{transform:rotate(11deg);border-radius:65% 35% 45% 22%}
+.ch1-art-will .ch1-art-hair-lock{height:39px}
+.ch1-art-house .ch1-art-fringe{height:34px;top:30px;opacity:.86}
+.ch1-art-house .ch1-art-hair-lock{height:23px}
+.ch1-mood-uneasy .ch1-art-brows i:first-child{transform:rotate(17deg)}.ch1-mood-uneasy .ch1-art-brows i:last-child{transform:rotate(-17deg)}
+.ch1-mood-uneasy .ch1-art-mouth{width:13px;height:12px;left:39px;border:2px solid #9b5863;border-radius:50%}
+.ch1-mood-animated .ch1-art-mouth,.ch1-mood-bright .ch1-art-mouth,.ch1-mood-playful .ch1-art-mouth{height:14px;background:#913e57;border:3px solid #fff0d6;border-top:0;border-radius:0 0 55% 55%}
+.ch1-mood-focused .ch1-art-brows i{transform:rotate(-12deg)}.ch1-mood-focused .ch1-art-mouth,.ch1-mood-skeptical .ch1-art-mouth{border-radius:0;width:17px;height:3px}
+.ch1-mood-skeptical .ch1-art-brows i:first-child{top:-6px;transform:rotate(-15deg)}
+.ch1-mood-pensive .ch1-art-mouth{transform:rotate(-8deg)}
+.ch1-character-art .ch1-art-face{animation:ch1portraitbreath 3.5s ease-in-out infinite}
+@keyframes ch1portraitbreath{50%{transform:translateY(2px)}}
+@media(max-width:650px){.ch1-character-art{width:126px;height:162px;flex-basis:126px;transform-origin:top left}.ch1-character-art .ch1-art-face{transform:scale(.76);transform-origin:top left}.ch1-art-backhair{transform:scale(.77);transform-origin:top left}.ch1-art-fringe{transform:scale(.77);transform-origin:top left}.ch1-art-shoulders{transform:scale(.75);transform-origin:bottom left}.ch1-art-hair-lock{transform:scale(.78)}.ch1-art-tag{font-size:9px;letter-spacing:0}}
