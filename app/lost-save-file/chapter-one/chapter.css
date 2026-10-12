@@ -88,3 +88,29 @@
 .ch1-character-art .ch1-art-face{animation:ch1portraitbreath 3.5s ease-in-out infinite}
 @keyframes ch1portraitbreath{50%{transform:translateY(2px)}}
 @media(max-width:650px){.ch1-character-art{width:126px;height:162px;flex-basis:126px;transform-origin:top left}.ch1-character-art .ch1-art-face{transform:scale(.76);transform-origin:top left}.ch1-art-backhair{transform:scale(.77);transform-origin:top left}.ch1-art-fringe{transform:scale(.77);transform-origin:top left}.ch1-art-shoulders{transform:scale(.75);transform-origin:bottom left}.ch1-art-hair-lock{transform:scale(.78)}.ch1-art-tag{font-size:9px;letter-spacing:0}}
+
+
+/* Hybrid portrait pass: illustrated texture, layered locks, individual silhouettes. */
+.ch1-character-art{background:radial-gradient(ellipse at 53% 29%,#ffe3c555 0%,transparent 48%),linear-gradient(145deg,var(--accent),#31263e 85%);box-shadow:inset 0 0 0 4px #463453,inset 0 0 28px #170f2b88,0 7px 0 #281b37}
+.ch1-art-face{background:radial-gradient(ellipse at 42% 32%,#fff3dd99,transparent 50%),linear-gradient(108deg,#a2686470,transparent 28%,#f8cfaa44 61%,#85586166),var(--skin);box-shadow:inset -8px -6px 12px #704b5540,0 2px 0 #382839}
+.ch1-art-eyes i{box-shadow:inset 3px 1px #fff8e3,0 2px 0 #8e6660}
+.ch1-art-fringe{background:linear-gradient(152deg,#fff5df38,transparent 25%,#17101d50 83%),var(--hair);box-shadow:inset -12px -8px 12px #1a142a55}
+.ch1-art-hair-lock{background:linear-gradient(90deg,#1d162955,transparent 45%,#f9d5b524),var(--hair)}
+.ch1-art-shoulders{background:linear-gradient(110deg,#fff3de55,transparent 40%,#17152466 90%),var(--clothes)}
+.ch1-art-face:after{content:'';position:absolute;left:19px;right:16px;bottom:13px;height:4px;border-radius:50%;background:#fff2e522;filter:blur(3px)}
+.ch1-art-sherlock .ch1-art-backhair{border-radius:45% 50% 35% 35%;box-shadow:-9px -7px 0 -3px #29242d,11px -5px 0 -4px #29242d}
+.ch1-art-sherlock .ch1-art-fringe{box-shadow:-16px -8px 0 -5px var(--hair),12px -11px 0 -4px var(--hair),inset 8px 7px 9px #ffffff22}
+.ch1-art-sherlock .ch1-art-shoulders{border-radius:32% 32% 5% 5%;box-shadow:inset 18px 0 #242d3b,inset -18px 0 #242d3b}
+.ch1-art-will .ch1-art-eyes i{height:12px;border-radius:55% 55% 40% 40%}
+.ch1-art-will .ch1-art-brows{top:38px}
+.ch1-art-will .ch1-art-shoulders{box-shadow:inset 0 -18px #394e42,inset 13px 0 #a2ae8c33}
+.ch1-art-house .ch1-art-eyes i{height:11px;transform:translateY(3px)}
+.ch1-art-house .ch1-art-stubble{height:26px;bottom:2px;background:repeating-linear-gradient(105deg,#66524e66 0 2px,transparent 2px 5px);opacity:.9}
+.ch1-art-house .ch1-art-wrinkles{box-shadow:0 7px 0 #866d6266,0 -9px 0 #fff0d633}
+.ch1-art-house .ch1-art-shoulders{box-shadow:inset 18px 0 #394553,inset -18px 0 #394553}
+.ch1-art-jack .ch1-art-beard{background:linear-gradient(#5c3a33,#3d302e);border-bottom:3px solid #3d292c}
+.ch1-art-jack .ch1-art-shoulders{box-shadow:inset 13px 0 #265940,inset -13px 0 #265940}
+.ch1-art-jay .ch1-art-fringe{box-shadow:inset 0 12px #1b1825,inset 7px -4px #34303b}
+.ch1-art-jay .ch1-art-shoulders{box-shadow:inset 0 -15px #2d263d,inset 14px 0 #6a4b7b66}
+.ch1-mood-skeptical .ch1-art-mouth{transform:rotate(-6deg);border-bottom-width:2px}
+.ch1-mood-pensive .ch1-art-eyes i{transform:rotate(-8deg)}
