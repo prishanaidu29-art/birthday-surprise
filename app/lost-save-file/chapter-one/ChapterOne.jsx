@@ -105,19 +105,24 @@ function Portrait({id,line='',index=0}){
  const mood=id==='house'?'skeptical':id==='will'?(worried?'uneasy':'pensive'):worried?'uneasy':excited?'animated':id==='sherlock'?'focused':id==='jay'?'playful':'bright';
  const face={jack:'#e8b49a',jay:'#c99579',sherlock:'#e3b8a4',will:'#e3b9a0',house:'#dfb59e'}[id]||n.skin;
  const hair={jack:'#53362d',jay:'#24222a',sherlock:'#2b2730',will:'#513c31',house:'#72665e'}[id]||n.hair;
- return <div className={'ch1-character-art ch1-art-'+id+' ch1-mood-'+mood} role="img" aria-label={n.name+' illustrated chibi portrait, '+mood+' expression'} style={{'--hair':hair,'--skin':face,'--clothes':n.outfit,'--accent':n.color}}>
-  <div className="ch1-art-halo"/><div className="ch1-art-shoulders"/><div className="ch1-art-neck"/>
-  <div className="ch1-art-backhair"/><div className="ch1-art-face">
-   <div className="ch1-art-brows"><i/><i/></div><div className="ch1-art-eyes"><i/><i/></div>
-   <div className="ch1-art-nose"/><div className="ch1-art-mouth"/><div className="ch1-art-blush left"/><div className="ch1-art-blush right"/>
-   {id==='jack'&&<div className="ch1-art-beard"/>}
-   {id==='house'&&<><div className="ch1-art-stubble"/><div className="ch1-art-wrinkles"/></>}
-  </div>
-  <div className="ch1-art-fringe"/><div className="ch1-art-hair-lock left"/><div className="ch1-art-hair-lock right"/>
-  {id==='sherlock'&&<div className="ch1-art-scarf"/>}
-  {id==='house'&&<div className="ch1-art-cane"/>}
-  <div className="ch1-art-tag">{n.name}</div>
- </div>
+ const specs={
+ jack:{hair:'#3d282b',skin:'#e6ac8d',coat:'#192d2a',accent:'#49b38b',style:'spiky',beard:true},
+ jay:{hair:'#171720',skin:'#c88b6b',coat:'#211d2c',accent:'#e65b76',style:'cap',beard:false},
+ sherlock:{hair:'#191923',skin:'#e3b8a9',coat:'#171e2e',accent:'#8993a9',style:'curly',beard:false},
+ will:{hair:'#44332c',skin:'#dfb69d',coat:'#4a5744',accent:'#9eaa85',style:'messy',beard:true},
+ house:{hair:'#5b504c',skin:'#d7a992',coat:'#353d4a',accent:'#ac9c8d',style:'short',beard:true}
+ };
+ const a=specs[id];const eye=mood==='uneasy'?'M 75 110 Q 85 105 95 111 M 126 110 Q 136 105 146 111':mood==='skeptical'?'M 75 111 L 96 107 M 126 109 L 147 112':'M 75 108 Q 85 105 96 109 M 126 109 Q 137 105 147 108';
+ const hairShapes={
+ spiky:'M 57 96 Q 37 72 45 51 L 30 52 L 52 33 L 44 20 L 72 30 L 80 12 L 100 27 L 124 12 L 136 33 L 161 27 L 152 49 L 170 62 L 155 82 L 157 103 Q 147 79 130 72 Q 108 84 83 68 Q 67 79 57 96',
+ cap:'M 54 90 Q 47 54 78 39 Q 121 24 155 48 L 161 75 Q 137 67 114 74 L 66 81 Z',
+ curly:'M 53 100 Q 34 87 45 69 Q 32 52 53 42 Q 49 23 71 26 Q 81 7 103 22 Q 124 5 137 28 Q 160 22 163 44 Q 183 53 165 74 Q 171 91 157 106 L 148 82 Q 132 86 124 68 Q 100 92 84 70 Q 63 83 53 100',
+ messy:'M 56 92 Q 38 75 48 57 L 39 45 L 64 41 L 66 23 L 91 31 L 103 16 L 124 32 L 147 27 L 153 46 L 167 54 L 154 82 L 151 100 Q 136 73 117 79 Q 89 71 74 82 Z',
+ short:'M 55 91 Q 43 67 59 48 L 51 37 L 74 39 L 85 26 L 102 35 L 122 25 L 137 38 L 157 42 L 154 91 Q 142 72 123 73 L 81 77 Z'
+ };
+ const mouth=mood==='animated'||mood==='bright'||mood==='playful'?'M 97 153 Q 111 171 126 153 Q 111 163 97 153':mood==='uneasy'?'M 105 156 Q 113 149 120 156':'M 100 157 Q 113 160 125 155';
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 260"><defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="${a.accent}"/><stop offset="1" stop-color="#181527"/></linearGradient><linearGradient id="face"><stop stop-color="#f9d9b8"/><stop offset=".45" stop-color="${a.skin}"/><stop offset="1" stop-color="#9a706b"/></linearGradient><linearGradient id="coat"><stop stop-color="${a.accent}"/><stop offset=".25" stop-color="${a.coat}"/><stop offset="1" stop-color="#11121d"/></linearGradient></defs><rect width="220" height="260" fill="url(#bg)"/><circle cx="110" cy="105" r="93" fill="none" stroke="#f3d9d1" opacity=".22"/><path d="M 8 260 Q 15 189 77 188 L 145 188 Q 207 194 215 260" fill="url(#coat)" stroke="#171422" stroke-width="5"/><path d="M 88 189 L 111 221 L 134 188 L 124 178 L 98 178 Z" fill="#e6c5b5"/><path d="M 61 106 Q 39 42 95 38 Q 168 24 162 108 L 160 158 Q 145 187 109 189 Q 70 184 60 154 Z" fill="${a.hair}" stroke="#29202a" stroke-width="5"/><path d="M 67 97 Q 70 64 110 61 Q 151 64 155 99 L 152 147 Q 144 180 112 181 Q 78 179 68 146 Z" fill="url(#face)" stroke="#946d6b" stroke-width="2"/><path d="${hairShapes[a.style]}" fill="${a.hair}" stroke="#241d27" stroke-width="4" stroke-linejoin="round"/><path d="M 72 77 Q 92 50 114 63 M 116 59 Q 141 48 154 77" fill="none" stroke="#ffffff" opacity=".15" stroke-width="5"/><path d="${eye}" fill="none" stroke="#3a2832" stroke-width="4" stroke-linecap="round"/><ellipse cx="85" cy="119" rx="6" ry="9" fill="#29303d"/><ellipse cx="137" cy="119" rx="6" ry="9" fill="#29303d"/><circle cx="87" cy="116" r="2" fill="#fff8ec"/><circle cx="139" cy="116" r="2" fill="#fff8ec"/><path d="M 110 122 L 106 141 Q 112 144 117 140" fill="none" stroke="#a66e69" stroke-width="2"/><path d="${mouth}" fill="none" stroke="#78464c" stroke-width="3" stroke-linecap="round"/>${a.beard?'<path d="M 77 146 Q 88 183 112 181 Q 139 181 148 146 Q 139 169 112 174 Q 89 170 77 146" fill="#514039" opacity=".45"/>':''}${id==='house'?'<path d="M 72 128 L 94 130 M 126 130 L 148 128 M 76 145 L 94 149 M 129 149 L 147 145" stroke="#866c67" stroke-width="2" opacity=".55"/><path d="M 176 182 L 163 252" stroke="#c5a783" stroke-width="7"/>':''}${id==='sherlock'?'<path d="M 87 190 L 115 244 L 138 189" fill="#6f7686" stroke="#323a4b" stroke-width="4"/>':''}${id==='jay'?'<path d="M 46 61 Q 112 13 175 54 L 180 70 Q 108 58 50 80 Z" fill="#18171d" stroke="#292331" stroke-width="4"/><path d="M 157 70 L 188 75 Q 171 85 152 81" fill="#16151e"/><path d="M 38 184 Q 30 121 48 96" fill="none" stroke="#d54d64" stroke-width="9"/><path d="M 177 184 Q 192 124 170 97" fill="none" stroke="#d54d64" stroke-width="9"/>':''}${id==='jack'?'<path d="M 82 200 L 113 227 L 143 200" fill="none" stroke="#50b78b" stroke-width="8"/>':''}<path d="M 11 14 L 45 14 M 11 14 L 11 48 M 209 14 L 175 14 M 209 14 L 209 48" stroke="#f5d7e5" stroke-width="2" opacity=".5"/></svg>`;
+ return <div className="ch1-illustrated-portrait"><img src={'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)} alt={n.name+' 2D illustrated anime portrait, '+mood+' expression'}/><div className="ch1-illustrated-name">{n.name}</div></div>;
 }
 const labels={letter:'FOLDED LETTER',key:'BRASS KEY',flashlight:'FLASHLIGHT',headphones:'HEADPHONES',journal:'JOURNAL',sword:'PRACTICE SWORD'};
 export default function ChapterOne(){
