@@ -13,6 +13,8 @@ const FALLBACK = [
   {id:4,title:"Enchanted (Taylor's Version)",artist:'Taylor Swift',album:"Speak Now (Taylor's Version)",duration:'5:53',mood:'Dreamy',reason:'A song for those unforgettable first meetings.'},
   {id:5,title:'Beautiful In White',artist:'Shane Filan',album:'Love Always',duration:'3:52',mood:'Romantic',reason:'For the memories we have and the ones still waiting to happen.'},
 ]
+// Temporary YouTube test link for the first soundtrack track.
+const TEST_YOUTUBE_URL = 'https://youtu.be/3sB4Iv_tM7U?si=lrmNbe2dR-S1MnKp'
 const getVideoId = (url) => {
   if (!url) return ''
   try {
@@ -35,7 +37,7 @@ export default function PlaylistPage() {
       .catch(()=>{}).finally(()=>setReady(true))
   },[isAuthenticated])
   const song=songs[index]||FALLBACK[0]
-  const videoId=getVideoId(song.youtube_url)
+  const videoId=getVideoId(index===0 ? TEST_YOUTUBE_URL : song.youtube_url)
   const choose=(n)=>{setIndex((n+songs.length)%songs.length);setPlaying(false)}
   if(isLoading)return <div className="min-h-screen bg-[#10152c] text-white grid place-items-center font-mono">BOOTING SOUNDTRACK.EXE ...</div>
   if(!isAuthenticated)return <div className="min-h-screen bg-[#10152c] text-white grid place-items-center font-mono"><Link href="/">RETURN TO CLAR_OS LOGIN ↗</Link></div>
