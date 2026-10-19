@@ -139,6 +139,68 @@ function getMemoryYear(memory) {
 }
 
 /* -------------------------------------------------------------------------- */
+/* FRIENDSHIP TAPE — REAL PHOTO PLAYBACK                                      */
+/* -------------------------------------------------------------------------- */
+function FriendshipTape({ photos }) {
+  const [person,setPerson]=useState("ALL");
+  const [index,setIndex]=useState(0);
+  const [playing,setPlaying]=useState(false);
+  const [expanded,setExpanded]=useState(false);
+  const [sheet,setSheet]=useState(false);
+  const visible=useMemo(()=>photos.filter(p=>person==="ALL"||p.person===person),[photos,person]);
+  const current=visible[Math.min(index,visible.length-1)]||visible[0];
+  const choosePerson=(name)=>{setPerson(name);setIndex(0);setPlaying(false)};
+  const step=useCallback((delta)=>setIndex(i=>(i+delta+visible.length)%visible.length),[visible.length]);
+  useEffect(()=>{if(!playing||visible.length<2)return;const id=setInterval(()=>step(1),4400);return()=>clearInterval(id)},[playing,visible.length,step]);
+  useEffect(()=>{if(!expanded)return;const key=e=>{if(e.key==="Escape")setExpanded(false);if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[expanded,step]);
+  if(!current)return null;
+  const control={background:"rgba(25,19,41,.88)",border:"1px solid rgba(217,184,255,.35)",borderRadius:8,color:"#eee3ff",padding:"11px 13px",cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7};
+  return <section aria-label="Through their eyes photo memories" style={{margin:"36px 0 46px",padding:"clamp(16px,3vw,36px)",border:"1px solid rgba(183,162,230,.35)",borderRadius:18,background:"radial-gradient(ellipse at 80% 0%,rgba(93,56,130,.28),transparent 60%),linear-gradient(145deg,#191427,#0a0c17)",boxShadow:"0 22px 75px rgba(0,0,0,.28)"}}>
+    <div className="tiny-label">CLAR_OS // PERSONAL FOOTAGE // TAPE 001</div>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",flexWrap:"wrap",gap:12,margin:"12px 0 22px"}}>
+      <div><h2 style={{fontSize:"clamp(28px,4.6vw,54px)",letterSpacing:".045em",lineHeight:1.05,margin:"0 0 9px"}}>THROUGH THEIR EYES</h2><p style={{color:"#aaa1bc",margin:0}}>Different people. Different moments. The same Clar.</p></div>
+      <span style={{color:"#c9aaf0",fontSize:12,letterSpacing:".12em"}}>● RECOVERED // {String(visible.length).padStart(2,"0")} FRAMES</span>
+    </div>
+    <div role="group" aria-label="Select whose memories to watch" style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
+      {["ALL","AK","Arsha","Azrin"].map(name=><button key={name} type="button" aria-pressed={person===name} onClick={()=>choosePerson(name)} style={{...control,borderRadius:30,padding:"9px 17px",background:person===name?"#d8baff":"rgba(255,255,255,.04)",color:person===name?"#1a1129":"#e6d8f6",fontWeight:700}}>{name==="ALL"?"EVERYONE":name.toUpperCase()}</button>)}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr)",gap:0}}>
+      <div style={{background:"#050508",border:"8px solid #282235",borderRadius:12,overflow:"hidden",boxShadow:"inset 0 0 0 2px #5e5272,0 15px 40px rgba(0,0,0,.45)"}}>
+        <div style={{position:"relative",height:"clamp(280px,51vw,590px)",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          <img src={current.src} alt={`A memory with Clar, shared by ${current.person}`} style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}/>
+          <div style={{pointerEvents:"none",position:"absolute",inset:0,background:"repeating-linear-gradient(0deg,transparent 0px,rgba(255,255,255,.025) 2px,transparent 4px)",opacity:.35}}/>
+          <span style={{position:"absolute",top:16,left:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:12,fontWeight:800,letterSpacing:".15em"}}>● REC &nbsp; SP</span>
+          <span style={{position:"absolute",top:16,right:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:12}}>FRAME {String(index+1).padStart(2,"0")} / {String(visible.length).padStart(2,"0")}</span>
+          <span style={{position:"absolute",bottom:15,left:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:13,fontWeight:800,letterSpacing:".1em"}}>{current.person.toUpperCase()} // CLAR</span>
+          <button type="button" onClick={()=>setExpanded(true)} aria-label="Expand current photo" style={{...control,position:"absolute",bottom:12,right:14,padding:10}}><Search size={17}/></button>
+        </div>
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,margin:"16px 0 20px"}}>
+        <div style={{display:"flex",gap:8}}>
+          <button type="button" style={control} onClick={()=>step(-1)} aria-label="Previous photo"><SkipBack size={18}/></button>
+          <button type="button" style={{...control,background:"#d8baff",color:"#1b112a",fontWeight:800}} onClick={()=>setPlaying(v=>!v)}>{playing?<Pause size={18}/>:<Play size={18}/>} {playing?"PAUSE":"PLAY TAPE"}</button>
+          <button type="button" style={control} onClick={()=>step(1)} aria-label="Next photo"><SkipForward size={18}/></button>
+          <button type="button" style={control} onClick={()=>setIndex(Math.floor(Math.random()*visible.length))} aria-label="Random photo"><Shuffle size={18}/></button>
+        </div>
+        <button type="button" style={control} onClick={()=>setSheet(v=>!v)}><Camera size={16}/> {sheet?"HIDE CONTACT SHEET":"CONTACT SHEET"}</button>
+      </div>
+      <div aria-label="Filmstrip of memories" style={{display:"flex",gap:10,overflowX:"auto",padding:"7px 2px 15px",scrollSnapType:"x mandatory"}}>
+        {visible.map((photo,i)=><button key={photo.id} type="button" onClick={()=>{setIndex(i);setPlaying(false)}} aria-label={`Show ${photo.person} photo ${i+1}`} aria-current={index===i?"true":undefined} style={{flex:"0 0 104px",height:84,background:"#0b0a10",padding:4,border:index===i?"2px solid #dfbaff":"2px solid #433a55",borderRadius:3,opacity:index===i?1:.67,cursor:"pointer",scrollSnapAlign:"center"}}>
+          <img src={photo.src} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
+        </button>)}
+      </div>
+      {sheet&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(145px,1fr))",gap:12,marginTop:18}}>{visible.map((photo,i)=><button key={photo.id} type="button" onClick={()=>{setIndex(i);setSheet(false)}} style={{background:"#151121",padding:6,border:"1px solid #51436a",borderRadius:6,cursor:"pointer",color:"#ded2ef",textAlign:"left"}}><img src={photo.src} alt={`${photo.person} memory ${i+1}`} loading="lazy" style={{width:"100%",height:140,objectFit:"contain",background:"#07070b"}}/><span style={{fontSize:11}}>{photo.person.toUpperCase()} / {String(i+1).padStart(2,"0")}</span></button>)}</div>}
+    </div>
+    {expanded&&<div role="dialog" aria-modal="true" aria-label="Expanded memory" onClick={()=>setExpanded(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(3,2,8,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+      <button type="button" aria-label="Close enlarged photo" onClick={()=>setExpanded(false)} style={{...control,position:"absolute",right:20,top:20}}><X size={24}/></button>
+      <button type="button" aria-label="Previous enlarged photo" onClick={e=>{e.stopPropagation();step(-1)}} style={{...control,position:"absolute",left:10,bottom:18}}><ChevronLeft size={23}/></button>
+      <img src={current.src} alt={`Memory with Clar from ${current.person}`} onClick={e=>e.stopPropagation()} style={{maxWidth:"95%",maxHeight:"88vh",objectFit:"contain"}}/>
+      <button type="button" aria-label="Next enlarged photo" onClick={e=>{e.stopPropagation();step(1)}} style={{...control,position:"absolute",right:10,bottom:18}}><ChevronRight size={23}/></button>
+    </div>}
+  </section>;
+}
+
+/* -------------------------------------------------------------------------- */
 /* PAGE                                                                        */
 /* -------------------------------------------------------------------------- */
 
@@ -1037,28 +1099,9 @@ export default function MemoriesPage() {
           </span>
         </section>
 
-        {/* PERSON-BASED PHOTO ARCHIVE — one shared page, no extra folders */}
-        <section className="friend-archive" style={{margin:"32px 0",padding:"clamp(18px,3vw,32px)",border:"1px solid rgba(183,162,230,.35)",borderRadius:16,background:"linear-gradient(145deg,rgba(31,25,55,.95),rgba(13,14,29,.97))"}}>
-          <div className="tiny-label">RECOVERED FOOTAGE // FRIENDSHIP ARCHIVE</div>
-          <h2 style={{fontSize:"clamp(24px,4vw,42px)",margin:"10px 0 6px",letterSpacing:".04em"}}>THROUGH THEIR EYES</h2>
-          <p style={{color:"#b9b2cc",marginBottom:20}}>One story, different people. Select a name to see their moments with Clar.</p>
-          <div role="group" aria-label="Filter photos by person" style={{display:"flex",gap:9,flexWrap:"wrap",marginBottom:24}}>
-            {["ALL","AK","Arsha","Azrin"].map(name=><button key={name} type="button" onClick={()=>setPersonFilter(name)} aria-pressed={personFilter===name} style={{padding:"9px 16px",borderRadius:24,cursor:"pointer",border:"1px solid #80729e",background:personFilter===name?"#d7b5ff":"rgba(255,255,255,.06)",color:personFilter===name?"#171124":"#f4eaff",fontWeight:700}}>{name==="ALL"?"EVERYONE":name}</button>)}
-          </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,190px),1fr))",gap:16}}>
-            {FRIEND_PHOTOS.filter(photo=>personFilter==="ALL"||photo.person===personFilter).map((photo,i)=><button type="button" key={photo.id} onClick={()=>setFriendPhoto(photo)} aria-label={`Open ${photo.person} photo ${i+1}`} style={{cursor:"pointer",textAlign:"left",background:"#eee6dd",padding:"9px 9px 14px",border:"none",borderRadius:3,boxShadow:"0 8px 20px rgba(0,0,0,.3)",transform:`rotate(${i%2===0?-1.2:1.2}deg)`}}>
-              <img src={photo.src} alt={`Memory with Clar from ${photo.person}`} loading="lazy" style={{width:"100%",height:210,objectFit:"cover",display:"block",background:"#3a3347"}}/>
-              <span style={{display:"block",padding:"12px 6px 0",fontSize:12,color:"#3c2b4b",fontWeight:800,letterSpacing:".08em"}}>{photo.person.toUpperCase()} // {String(i+1).padStart(2,"0")}</span>
-            </button>)}
-          </div>
-          <div style={{marginTop:18,fontSize:12,color:"#aaa1bc"}}>{FRIEND_PHOTOS.filter(photo=>personFilter==="ALL"||photo.person===personFilter).length} PHOTOS RECOVERED · MORE TO COME</div>
-        </section>
-        {friendPhoto&&<div role="dialog" aria-modal="true" aria-label={`Photo from ${friendPhoto.person}`} onClick={()=>setFriendPhoto(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(5,4,12,.94)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"zoom-out"}}>
-          <button type="button" aria-label="Close photo" onClick={()=>setFriendPhoto(null)} style={{position:"absolute",right:22,top:22,background:"#322747",color:"white",border:"1px solid #9a87b9",borderRadius:30,padding:12,cursor:"pointer"}}><X size={24}/></button>
-          <img src={friendPhoto.src} alt={`Memory with Clar from ${friendPhoto.person}`} style={{maxWidth:"100%",maxHeight:"85vh",objectFit:"contain"}}/>
-          <span style={{position:"absolute",bottom:12,color:"#e3d6f6",fontSize:12}}>{friendPhoto.person.toUpperCase()} // CLAR_OS ARCHIVE</span>
-        </div>}
-
+        {/* CINEMATIC FRIENDSHIP TAPE — single player, person filters, filmstrip */}
+        <FriendshipTape photos={FRIEND_PHOTOS} />
+        
         {/* ---------------------------------------------------------------- */}
         {/* TIMELINE                                                         */}
         {/* ---------------------------------------------------------------- */}
