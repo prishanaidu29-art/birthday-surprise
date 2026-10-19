@@ -88,7 +88,7 @@ export default function MessagesPage(){
     <div className={'letter-zone '+(open?'is-open':'')}>
       {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
     </div>
-    <button className="background-book-hotspot" type="button" aria-label="Pick up the book of appreciation notes" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
+    <button className="background-book-hotspot" type="button" aria-label="Pick up the open book on the left" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
     <aside className={'journal '+(diary?'journal-open':'')} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&bookDrag.current-e.clientX>45){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}>
       <div className="journal-head" onClick={()=>{setDiary(true);setDiaryPage(active)}}><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
       <div className="journal-paper">
@@ -201,6 +201,14 @@ export default function MessagesPage(){
 .journal.journal-open .journal-head{color:#f2e4cb!important}
 @media(max-width:850px){.background-book-hotspot{top:0;right:0;width:42%;height:28%}.journal.journal-open{top:13%!important;left:7%!important;width:86%!important;height:75%!important}}
 @media(max-width:560px){.background-book-hotspot{width:58%;height:19%}.journal.journal-open{top:38%!important;left:3%!important;width:94%!important;height:48%!important}}
+
+
+/* Correct physical source: the photographed OPEN book on the UPPER LEFT, not right */
+.background-book-hotspot{top:0!important;left:0!important;right:auto!important;width:34%!important;height:42%!important;transform:none!important;clip-path:polygon(0 0,100% 0,100% 78%,70% 94%,0 100%)!important}
+.background-book-hotspot span{left:8%!important;right:auto!important;bottom:20%!important;transform:rotate(-12deg)!important;background:#e5d1aaee!important;color:#4a3322!important}
+.journal.journal-open{top:11%!important;left:13%!important;right:auto!important;width:78%!important;height:79%!important;transform:rotate(-1deg)!important;z-index:40!important;display:flex!important;background:linear-gradient(90deg,#67462d,#c4a37b 5%,#f1dfbc 8%,#ead4a8 47%,#97734c 50%,#e8d3a9 53%,#f0e0c0 95%,#745239)!important;border:9px solid #7c5a3d!important;box-shadow:0 26px 85px #24160cc7!important}
+.journal.journal-open .journal-paper{background:linear-gradient(90deg,#d0b187 0,#f4e4c5 6%,#f3e1bd 46%,#ac8d65 49%,#d0b58d 51%,#f6e8ca 55%,#eddbb7 97%,#c5a47b)!important}
+@media(max-width:850px){.background-book-hotspot{width:35%!important;height:37%!important}.journal.journal-open{top:14%!important;left:5%!important;width:90%!important;height:73%!important}}
 
   `}</style>
  </main>
