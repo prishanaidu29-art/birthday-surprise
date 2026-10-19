@@ -59,7 +59,7 @@ const INITIAL=LETTERS.map((_,i)=>({x:3+(i%2)*2,y:8+i*10.7,rotation:[-8,5,-4,7,-5
 export default function MessagesPage(){
  const {isAuthenticated,isLoading}=useAuth()
  const [active,setActive]=useState(0),[open,setOpen]=useState(false),[diary,setDiary]=useState(false),[diaryPage,setDiaryPage]=useState(0),[order,setOrder]=useState(LETTERS.map((_,i)=>i)),[positions,setPositions]=useState(INITIAL)
- const drag=useRef(null),deskRef=useRef(null),moved=useRef(false)
+ const drag=useRef(null),deskRef=useRef(null),moved=useRef(false),bookDrag=useRef(null)
  const current=LETTERS[active]
  const select=i=>{setActive(i);setOpen(false);setDiary(false)}
  const next=delta=>{let i=order.indexOf(active);select(order[(i+delta+order.length)%order.length])}
@@ -86,15 +86,15 @@ export default function MessagesPage(){
       {order.map(i=><button key={i} type="button" className={'scattered-envelope '+(active===i?'chosen':'')} style={{left:positions[i].x+'%',top:positions[i].y+'%',transform:'rotate('+positions[i].rotation+'deg)',zIndex:active===i?16:10+i}} onPointerDown={e=>pointerDown(e,i)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onClick={()=>{if(!moved.current){select(i);setOpen(true)}moved.current=false}} aria-label={'Move or open envelope from '+LETTERS[i].name}><span className="envelope-fold"/><span className="env-name">{LETTERS[i].name} ♡</span><span className="mini-sticker">{['✿','♡','✧','★','♥','☾','❀','✦'][i]}</span></button>)}
     </div>
     <div className={'letter-zone '+(open?'is-open':'')}>
-      {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">♡</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
+      {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
     </div>
-    <aside className={'journal '+(diary?'journal-open':'')}>
-      <div className="journal-head"><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
+    <aside className={'journal '+(diary?'journal-open':'')} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&bookDrag.current-e.clientX>45){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}>
+      <div className="journal-head" onClick={()=>{setDiary(true);setDiaryPage(active)}}><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
       <div className="journal-paper">
-        <div className="journal-doodle">♡ ✿ ☾</div>
+        <div className="journal-doodle">✦ NOVEMBER 19 ✦</div>
         {diary?<div className="journal-entry"><h3>{LETTERS[diaryPage].name} wrote...</h3><p>{LETTERS[diaryPage].appreciation||'This page is waiting for a little note.'}</p></div>:<div className="journal-prompt"><BookOpen size={32}/><p>A whole book of little things your friends love about you.</p><button onClick={()=>{setDiary(true);setDiaryPage(active)}}>OPEN THE DIARY ↗</button></div>}
       </div>
-      <div className="journal-tabs">{['LOVE NOTES','FRIENDS','♡'].map((t,i)=><span key={i}>{t}</span>)}</div>
+      {diary&&<button className="book-close" onClick={()=>setDiary(false)} aria-label="Close journal"><X size={20}/></button>}<div className="journal-tabs">{['LOVE NOTES','FRIENDS','♡'].map((t,i)=><span key={i}>{t}</span>)}</div>
       {diary&&<div className="journal-controls"><button onClick={()=>setDiaryPage(i=>(i+7)%8)}><ChevronLeft size={16}/></button><button onClick={()=>setDiary(false)}>CLOSE BOOK</button><button onClick={()=>setDiaryPage(i=>(i+1)%8)}><ChevronRight size={16}/></button></div>}
     </aside>
     <div className="bottom-nav"><button onClick={()=>next(-1)}><ChevronLeft size={18}/> PREVIOUS</button><button onClick={shuffle}><Shuffle size={16}/> SHUFFLE LETTERS</button><button onClick={()=>next(1)}>NEXT <ChevronRight size={18}/></button></div>
@@ -165,6 +165,27 @@ export default function MessagesPage(){
 .bottom-nav{z-index:22!important}
 @media(max-width:850px){.desktop{min-height:1120px!important;background-size:auto 100%!important}.envelope-pile{top:17%!important;left:2%!important}.letter-zone{top:29%!important;left:32%!important;width:41%!important;height:58%!important}.journal{top:39%!important;right:1%!important;width:25%!important;height:44%!important}}
 @media(max-width:560px){.desktop{min-height:1450px!important;background-size:auto 100%!important}.envelope-pile{top:15%!important;left:4%!important}.letter-zone{top:40%!important;left:5%!important;width:90%!important;height:33%!important}.journal{top:77%!important;left:8%!important;width:84%!important;height:18%!important}}
+
+
+/* Vintage stationery and a journal tucked beyond the desk edge */
+.scene,.pressed-flower{display:none!important}
+.desktop:before{opacity:0!important}
+.scattered-envelope{background:linear-gradient(145deg,#e5d3b0,#c5a77c)!important;filter:sepia(.35) saturate(.7)!important;border-radius:1px!important;box-shadow:2px 3px 0 #a48b66,5px 9px 15px #37291a70!important}
+.mini-sticker{background:#825943!important;color:#e8d9bc!important}
+.unfolded-letter,.paper-preview{background-image:repeating-linear-gradient(0deg,transparent 0 34px,#9d795524 35px),linear-gradient(90deg,#d6b98c,#f5e6c8 8%,#f0ddb8 94%,#cba97d)!important;border:1px solid #b99a70!important;box-shadow:2px 3px 0 #ceb28c,5px 7px 0 #bda17a,10px 18px 22px #46302166!important}
+.actual-letter{font-family:Georgia,serif!important;color:#443426!important;line-height:1.8!important}
+.journal{top:30%!important;left:auto!important;right:-15%!important;width:29%!important;height:56%!important;transform:rotate(8deg)!important;z-index:17!important;cursor:grab!important;transition:all .55s ease!important;background:linear-gradient(90deg,#513726,#9d7957 12%,#71503a)!important;border:8px solid #654630!important;border-left:18px ridge #66452f!important;border-radius:3px 13px 13px 3px!important;box-shadow:-9px 15px 25px #33211590!important}
+.journal:not(.journal-open):hover{right:-12%!important;transform:rotate(5deg)!important}
+.journal.journal-open{top:12%!important;left:22%!important;right:auto!important;width:66%!important;height:77%!important;transform:rotate(-1deg)!important;z-index:30!important;cursor:default!important;box-shadow:0 22px 75px #27170cb5!important}
+.journal-head{color:#f0ddbc!important;cursor:pointer!important}
+.journal-paper{background:repeating-linear-gradient(0deg,transparent 0 34px,#987c5a30 35px),linear-gradient(90deg,#c9ac85,#f2e4c7 10%,#ead6b3)!important;box-shadow:inset 13px 0 17px #74513c55!important}
+.journal-entry{overflow:auto!important;max-height:92%!important;padding:clamp(14px,2vw,34px)!important}
+.journal-entry h3{font-family:Georgia,serif!important;font-size:clamp(22px,2.2vw,36px)!important;color:#4c3425!important}
+.journal-entry p{font-family:Georgia,serif!important;font-size:clamp(17px,1.65vw,24px)!important;line-height:1.8!important;color:#493628!important}
+.journal-doodle{color:#826444!important}
+.book-close{position:absolute;top:-16px;right:-16px;z-index:35;border:1px solid #a68b66;background:#f0e1c3;color:#543928;border-radius:50%;padding:8px;cursor:pointer}
+@media(max-width:850px){.journal{top:31%!important;right:-19%!important;width:33%!important;height:52%!important}.journal.journal-open{top:16%!important;left:14%!important;width:79%!important;height:73%!important}}
+@media(max-width:560px){.journal{top:77%!important;right:-37%!important;width:69%!important;height:19%!important}.journal.journal-open{top:43%!important;left:4%!important;width:92%!important;height:48%!important}.journal-entry p{font-size:17px!important}}
 
   `}</style>
  </main>
