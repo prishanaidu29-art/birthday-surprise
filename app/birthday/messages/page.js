@@ -88,6 +88,7 @@ export default function MessagesPage(){
     <div className={'letter-zone '+(open?'is-open':'')}>
       {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
     </div>
+    <button className="background-book-hotspot" type="button" aria-label="Pick up the book of appreciation notes" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
     <aside className={'journal '+(diary?'journal-open':'')} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&bookDrag.current-e.clientX>45){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}>
       <div className="journal-head" onClick={()=>{setDiary(true);setDiaryPage(active)}}><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
       <div className="journal-paper">
@@ -186,6 +187,20 @@ export default function MessagesPage(){
 .book-close{position:absolute;top:-16px;right:-16px;z-index:35;border:1px solid #a68b66;background:#f0e1c3;color:#543928;border-radius:50%;padding:8px;cursor:pointer}
 @media(max-width:850px){.journal{top:31%!important;right:-19%!important;width:33%!important;height:52%!important}.journal.journal-open{top:16%!important;left:14%!important;width:79%!important;height:73%!important}}
 @media(max-width:560px){.journal{top:77%!important;right:-37%!important;width:69%!important;height:19%!important}.journal.journal-open{top:43%!important;left:4%!important;width:92%!important;height:48%!important}.journal-entry p{font-size:17px!important}}
+
+
+/* The original photograph's upper-right open book IS the journal when closed */
+.background-book-hotspot{position:absolute;top:1%;right:0;width:37%;height:32%;z-index:19;background:transparent;border:0;cursor:pointer;transform:rotate(5deg);touch-action:pan-y}
+.background-book-hotspot span{position:absolute;right:18%;bottom:12%;padding:9px 13px;background:#efe0bded;color:#513d2b;font:12px Georgia,serif;letter-spacing:.08em;border:1px solid #a88a63;box-shadow:2px 4px 8px #4e382c60;transform:rotate(-5deg);opacity:.88}
+.background-book-hotspot:hover span,.background-book-hotspot:focus-visible span{opacity:1;text-decoration:underline}
+.journal:not(.journal-open){display:none!important}
+.journal.journal-open{position:absolute!important;top:12%!important;left:17%!important;right:auto!important;width:75%!important;height:77%!important;transform:rotate(-1deg)!important;z-index:40!important;display:flex!important;background:linear-gradient(90deg,#60412c 0 3%,#e7d3ac 4%,#d2b78b 49%,#e6d0a5 52%,#ad885f 100%)!important;border:12px solid #765336!important;border-left:20px solid #60432d!important;box-shadow:0 26px 75px #24160cbb!important}
+.journal.journal-open .journal-paper{background:linear-gradient(90deg,#cbb08a,#f1e2c2 8%,#f4e6cb 47%,#bda078 49%,#f0dfbc 52%,#f5e7cc 97%,#c5a77f)!important}
+.journal.journal-open .journal-entry{padding:clamp(18px,3vw,48px)!important}
+.journal.journal-open .journal-entry p{font-size:clamp(18px,1.8vw,26px)!important;line-height:1.8!important}
+.journal.journal-open .journal-head{color:#f2e4cb!important}
+@media(max-width:850px){.background-book-hotspot{top:0;right:0;width:42%;height:28%}.journal.journal-open{top:13%!important;left:7%!important;width:86%!important;height:75%!important}}
+@media(max-width:560px){.background-book-hotspot{width:58%;height:19%}.journal.journal-open{top:38%!important;left:3%!important;width:94%!important;height:48%!important}}
 
   `}</style>
  </main>
