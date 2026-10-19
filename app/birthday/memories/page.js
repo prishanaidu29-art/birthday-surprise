@@ -73,6 +73,12 @@ const TIMELINE = [
   { tape: "22", year: 2026, age: 22, label: "THE NEXT CHAPTER" },
 ];
 
+const FRIEND_PHOTOS = [
+  ...["ClarAK1.jpeg","ClarAK2.jpeg","ClarAK5.jpeg","ClarAK67.jpeg"].map(file => ({person:"AK",file})),
+  ...["IMG_4480.png","IMG_4477.png","IMG_4482.png","IMG_4483.png"].map(file => ({person:"Arsha",file})),
+  ...["IMG_4034.jpeg","IMG_4035.jpeg","IMG_4036.jpeg","IMG_4037.jpeg"].map(file => ({person:"Azrin",file})),
+].map((item,i)=>({...item,id:"friend-"+i,src:"https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/"+encodeURIComponent(item.file)}));
+
 const FALLBACK_MEMORIES = [
   {
     id: "fallback-1",
@@ -162,6 +168,8 @@ export default function MemoriesPage() {
 
   const [viewMode, setViewMode] = useState("timeline");
   const [search, setSearch] = useState("");
+  const [personFilter,setPersonFilter] = useState("ALL");
+  const [friendPhoto,setFriendPhoto] = useState(null);
 
   /* ------------------------------ PLAYER --------------------------------- */
 
@@ -1028,6 +1036,28 @@ export default function MemoriesPage() {
               : "S"}
           </span>
         </section>
+
+        {/* PERSON-BASED PHOTO ARCHIVE — one shared page, no extra folders */}
+        <section className="friend-archive" style={{margin:"32px 0",padding:"clamp(18px,3vw,32px)",border:"1px solid rgba(183,162,230,.35)",borderRadius:16,background:"linear-gradient(145deg,rgba(31,25,55,.95),rgba(13,14,29,.97))"}}>
+          <div className="tiny-label">RECOVERED FOOTAGE // FRIENDSHIP ARCHIVE</div>
+          <h2 style={{fontSize:"clamp(24px,4vw,42px)",margin:"10px 0 6px",letterSpacing:".04em"}}>THROUGH THEIR EYES</h2>
+          <p style={{color:"#b9b2cc",marginBottom:20}}>One story, different people. Select a name to see their moments with Clar.</p>
+          <div role="group" aria-label="Filter photos by person" style={{display:"flex",gap:9,flexWrap:"wrap",marginBottom:24}}>
+            {["ALL","AK","Arsha","Azrin"].map(name=><button key={name} type="button" onClick={()=>setPersonFilter(name)} aria-pressed={personFilter===name} style={{padding:"9px 16px",borderRadius:24,cursor:"pointer",border:"1px solid #80729e",background:personFilter===name?"#d7b5ff":"rgba(255,255,255,.06)",color:personFilter===name?"#171124":"#f4eaff",fontWeight:700}}>{name==="ALL"?"EVERYONE":name}</button>)}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,190px),1fr))",gap:16}}>
+            {FRIEND_PHOTOS.filter(photo=>personFilter==="ALL"||photo.person===personFilter).map((photo,i)=><button type="button" key={photo.id} onClick={()=>setFriendPhoto(photo)} aria-label={`Open ${photo.person} photo ${i+1}`} style={{cursor:"pointer",textAlign:"left",background:"#eee6dd",padding:"9px 9px 14px",border:"none",borderRadius:3,boxShadow:"0 8px 20px rgba(0,0,0,.3)",transform:`rotate(${i%2===0?-1.2:1.2}deg)`}}>
+              <img src={photo.src} alt={`Memory with Clar from ${photo.person}`} loading="lazy" style={{width:"100%",height:210,objectFit:"cover",display:"block",background:"#3a3347"}}/>
+              <span style={{display:"block",padding:"12px 6px 0",fontSize:12,color:"#3c2b4b",fontWeight:800,letterSpacing:".08em"}}>{photo.person.toUpperCase()} // {String(i+1).padStart(2,"0")}</span>
+            </button>)}
+          </div>
+          <div style={{marginTop:18,fontSize:12,color:"#aaa1bc"}}>{FRIEND_PHOTOS.filter(photo=>personFilter==="ALL"||photo.person===personFilter).length} PHOTOS RECOVERED · MORE TO COME</div>
+        </section>
+        {friendPhoto&&<div role="dialog" aria-modal="true" aria-label={`Photo from ${friendPhoto.person}`} onClick={()=>setFriendPhoto(null)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(5,4,12,.94)",display:"flex",alignItems:"center",justifyContent:"center",padding:20,cursor:"zoom-out"}}>
+          <button type="button" aria-label="Close photo" onClick={()=>setFriendPhoto(null)} style={{position:"absolute",right:22,top:22,background:"#322747",color:"white",border:"1px solid #9a87b9",borderRadius:30,padding:12,cursor:"pointer"}}><X size={24}/></button>
+          <img src={friendPhoto.src} alt={`Memory with Clar from ${friendPhoto.person}`} style={{maxWidth:"100%",maxHeight:"85vh",objectFit:"contain"}}/>
+          <span style={{position:"absolute",bottom:12,color:"#e3d6f6",fontSize:12}}>{friendPhoto.person.toUpperCase()} // CLAR_OS ARCHIVE</span>
+        </div>}
 
         {/* ---------------------------------------------------------------- */}
         {/* TIMELINE                                                         */}
