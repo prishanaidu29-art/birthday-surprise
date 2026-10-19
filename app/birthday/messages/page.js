@@ -88,7 +88,7 @@ export default function MessagesPage(){
     <div className={'letter-zone '+(open?'is-open':'')}>
       {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
     </div>
-    <button className="background-book-hotspot" type="button" aria-label="Pick up the open book on the left" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
+    <div className="desk-book-replacement" aria-hidden="true"><div className="desk-book-left"><span>Things I love about you</span><i>your kindness<br/>your thoughtful heart<br/>the way you make us laugh<br/>your little surprises</i></div><div className="desk-book-right"><span>For Clarissa</span><i>Eight friends.<br/>Eight little notes.<br/>One very loved person.</i></div></div><button className="background-book-hotspot" type="button" aria-label="Pick up the open book on the left" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
     <aside className={'journal '+(diary?'journal-open':'')} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&bookDrag.current-e.clientX>45){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}>
       <div className="journal-head" onClick={()=>{setDiary(true);setDiaryPage(active)}}><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
       <div className="journal-paper">
@@ -209,6 +209,30 @@ export default function MessagesPage(){
 .journal.journal-open{top:11%!important;left:13%!important;right:auto!important;width:78%!important;height:79%!important;transform:rotate(-1deg)!important;z-index:40!important;display:flex!important;background:linear-gradient(90deg,#67462d,#c4a37b 5%,#f1dfbc 8%,#ead4a8 47%,#97734c 50%,#e8d3a9 53%,#f0e0c0 95%,#745239)!important;border:9px solid #7c5a3d!important;box-shadow:0 26px 85px #24160cc7!important}
 .journal.journal-open .journal-paper{background:linear-gradient(90deg,#d0b187 0,#f4e4c5 6%,#f3e1bd 46%,#ac8d65 49%,#d0b58d 51%,#f6e8ca 55%,#eddbb7 97%,#c5a47b)!important}
 @media(max-width:850px){.background-book-hotspot{width:35%!important;height:37%!important}.journal.journal-open{top:14%!important;left:5%!important;width:90%!important;height:73%!important}}
+
+
+/* Physical replacement of the upper-left photographed book */
+.desk-book-replacement{position:absolute;top:-3.5%;left:-4%;width:39%;height:42%;z-index:18;pointer-events:none;transform:rotate(-12deg);transform-origin:50% 60%;display:flex;filter:drop-shadow(8px 13px 9px #3320138c);border:7px solid #6c4b30;border-radius:7px 18px 20px 8px;background:#64452f}
+.desk-book-left,.desk-book-right{position:relative;flex:1;min-width:0;padding:12% 5% 6%;background:repeating-linear-gradient(0deg,transparent 0 23px,#8b735222 24px),linear-gradient(90deg,#c5a57b,#f0dfba 11%,#ead2a8 94%,#a88a65);color:#513c2d;font:italic clamp(10px,1.15vw,19px)/1.6 Georgia,serif;box-shadow:inset 0 0 25px #8d6c4560}
+.desk-book-left{border-radius:6px 0 0 8px;transform:perspective(600px) rotateY(7deg)}
+.desk-book-right{border-radius:0 10px 8px 0;transform:perspective(600px) rotateY(-8deg)}
+.desk-book-left:after{content:'✿';position:absolute;right:12%;bottom:8%;font-size:26px;color:#977957}
+.desk-book-right:after{content:'❧';position:absolute;right:12%;bottom:7%;font-size:34px;color:#977957}
+.desk-book-replacement span{display:block;font-size:clamp(11px,1.5vw,24px);margin-bottom:12px;text-decoration:underline;text-decoration-color:#967a59}
+.desk-book-replacement i{display:block;font-style:italic;letter-spacing:.025em}
+.background-book-hotspot{top:0!important;left:0!important;width:36%!important;height:37%!important;clip-path:none!important;z-index:20!important}
+.background-book-hotspot span{left:17%!important;bottom:4%!important;right:auto!important;transform:rotate(-10deg)!important;font:italic 14px Georgia,serif!important;background:#e6d1a8e8!important}
+.journal.journal-open{top:13%!important;left:11%!important;width:80%!important;height:75%!important;z-index:42!important;border-radius:8px 15px 15px 8px!important}
+.journal.journal-open .journal-paper{position:relative!important;background:linear-gradient(90deg,#c3a47d,#f0ddba 5%,#f4e4c4 46%,#b79b74 49%,#ebd8b5 53%,#f1e1c2 96%,#c6a580)!important}
+.journal.journal-open .journal-entry{position:relative!important;width:49%!important;margin-left:50%!important;height:88%!important;overflow-y:auto!important;padding:2% 4%!important}
+.journal.journal-open .journal-entry p{font:clamp(17px,1.6vw,24px)/1.85 Georgia,serif!important;color:#493728!important}
+.journal.journal-open .journal-entry h3{font:italic clamp(22px,2.2vw,35px) Georgia,serif!important}
+.journal.journal-open .journal-doodle{position:absolute!important;left:7%!important;top:10%!important;font:italic clamp(16px,1.6vw,25px) Georgia,serif!important;color:#72573f!important}
+.journal.journal-open .journal-doodle:after{content:'For Clarissa\\A little collection of all the things we appreciate about you.';white-space:pre-line;display:block;margin-top:45px;max-width:75%;line-height:1.8;font-size:clamp(16px,1.5vw,23px)}
+.journal.journal-open .journal-head{position:absolute!important;left:3%!important;top:1%!important;z-index:2!important;color:#765c43!important}
+.journal.journal-open .journal-tabs{display:none!important}
+.journal.journal-open .journal-controls{position:absolute!important;bottom:2%!important;right:5%!important;z-index:45!important}
+@media(max-width:850px){.desk-book-replacement{width:40%;height:36%;top:-1%}.journal.journal-open{left:5%!important;width:90%!important}.journal.journal-open .journal-entry{width:49%!important;margin-left:50%!important}}
 
   `}</style>
  </main>
