@@ -149,6 +149,23 @@ export default function MessagesPage(){
 @media(max-width:850px){.desktop{min-height:1200px;background-size:auto 100%!important;background-position:center!important}.envelope-pile{top:170px;height:390px}.letter-zone{top:43%;left:4%;width:57%;height:43%}.journal{top:49%;right:2%;width:33%;height:36%}.actual-letter{font-size:16px!important}.journal-entry p{font-size:15px!important}}
 @media(max-width:560px){.desktop{min-height:1500px}.envelope-pile{top:170px;height:350px}.letter-zone{top:38%;left:5%;width:90%;height:33%}.journal{top:74%;left:8%;width:84%;height:20%}.bottom-nav{bottom:1%}}
 
+
+/* Light archival writing desk, photographed background chosen by user */
+.desktop{background:#e2c8a0 url('https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/IMG_2320.jpeg') center center/100% 100% no-repeat!important;color:#382b27!important;min-height:1000px!important}
+.desktop:before,.desktop:after{opacity:0!important;pointer-events:none!important}
+.scene,.desk-text{display:none!important}
+.envelope-pile{left:4%!important;top:27%!important;width:27%!important;z-index:12!important;filter:sepia(.2)}
+.scattered-envelope{width:clamp(160px,21vw,300px)!important;height:clamp(60px,7vw,90px)!important;background:linear-gradient(145deg,#e4cba6,#c7a77f)!important;box-shadow:1px 2px 1px #9a7957,4px 9px 12px #503a2670!important;border:1px solid #b39872!important;transform:rotate(-3deg)}
+.letter-zone{top:25%!important;left:34%!important;width:37%!important;height:66%!important;z-index:15!important;transform:rotate(-1deg)!important}
+.unfolded-letter,.paper-preview{background:linear-gradient(95deg,#e1c69b,#f9ebd0 8%,#f4e3c4 92%,#d9b989)!important;color:#342821!important;box-shadow:2px 3px 1px #c8a97f,7px 12px 20px #4a34285c!important;border:1px solid #c6a77e!important}
+.actual-letter{color:#332820!important;font-family:Georgia,'Times New Roman',serif!important;font-size:clamp(16px,1.22vw,19px)!important;line-height:1.72!important}
+.journal{right:3%!important;top:34%!important;width:23%!important;height:52%!important;z-index:12!important;transform:rotate(3deg)!important;background:#9a7555!important;border:6px solid #856747!important;box-shadow:5px 8px 18px #39281955!important}
+.journal-paper{background:repeating-linear-gradient(0deg,#f3e5c9 0 28px,#d7c3a5 29px)!important;color:#493626!important}
+.journal-entry p{color:#423228!important;font-family:Georgia,serif!important;font-size:clamp(14px,1.05vw,17px)!important;font-style:normal!important;line-height:1.7!important}
+.bottom-nav{z-index:22!important}
+@media(max-width:850px){.desktop{min-height:1120px!important;background-size:auto 100%!important}.envelope-pile{top:17%!important;left:2%!important}.letter-zone{top:29%!important;left:32%!important;width:41%!important;height:58%!important}.journal{top:39%!important;right:1%!important;width:25%!important;height:44%!important}}
+@media(max-width:560px){.desktop{min-height:1450px!important;background-size:auto 100%!important}.envelope-pile{top:15%!important;left:4%!important}.letter-zone{top:40%!important;left:5%!important;width:90%!important;height:33%!important}.journal{top:77%!important;left:8%!important;width:84%!important;height:18%!important}}
+
   `}</style>
  </main>
 }
