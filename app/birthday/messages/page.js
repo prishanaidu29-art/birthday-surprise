@@ -64,7 +64,7 @@ const NAMES=LETTERS.map(x=>x.name)
 const INITIAL=LETTERS.map((_,i)=>({x:3+(i%2)*2,y:8+i*10.7,rotation:[-8,5,-4,7,-5,4,-6,3][i]}))
 export default function MessagesPage(){
  const {isAuthenticated,isLoading}=useAuth()
- const [section,setSection]=useState('friends'),[familyIndex,setFamilyIndex]=useState(0),[familyVideoError,setFamilyVideoError]=useState(false)
+ const [section,setSection]=useState('friends'),[familyIndex,setFamilyIndex]=useState(0),[familyVideoError,setFamilyVideoError]=useState(false),[familyPortrait,setFamilyPortrait]=useState(false)
  const [active,setActive]=useState(0),[open,setOpen]=useState(false),[diary,setDiary]=useState(false),[diaryPage,setDiaryPage]=useState(0),[order,setOrder]=useState(LETTERS.map((_,i)=>i)),[positions,setPositions]=useState(INITIAL)
  const drag=useRef(null),deskRef=useRef(null),moved=useRef(false),bookDrag=useRef(null)
  useEffect(()=>{document.documentElement.classList.toggle('clar-family-view',section==='family');return()=>document.documentElement.classList.remove('clar-family-view')},[section])
@@ -132,8 +132,8 @@ export default function MessagesPage(){
       <div className="family-television">
         <div className="family-tv-brandplate" aria-hidden="true">THE FAMILY ARCHIVE <span>✦</span> 19 NOV</div>
         <div className="family-tv-screenframe">
-          <div className="family-screen">
-            {FAMILY_VIDEOS.length?<video key={FAMILY_VIDEOS[familyIndex].src} src={FAMILY_VIDEOS[familyIndex].src} controls playsInline preload="metadata" onError={()=>setFamilyVideoError(true)} onLoadedData={()=>setFamilyVideoError(false)} aria-label={'Family video '+String(familyIndex+1)}/>:<div className="family-placeholder"><span>▣</span><h2>FAMILY ARCHIVE</h2><p>Video messages will appear here soon.</p><small>NO TAPES LOADED</small></div>}
+          <div className={'family-screen '+(familyPortrait?'family-screen-portrait':'family-screen-landscape')}>
+            {FAMILY_VIDEOS.length?<video key={FAMILY_VIDEOS[familyIndex].src} src={FAMILY_VIDEOS[familyIndex].src} controls playsInline preload="metadata" onError={()=>setFamilyVideoError(true)} onLoadedData={()=>setFamilyVideoError(false)} onLoadedMetadata={e=>setFamilyPortrait(e.currentTarget.videoHeight>e.currentTarget.videoWidth)} aria-label={'Family video '+String(familyIndex+1)}/>:<div className="family-placeholder"><span>▣</span><h2>FAMILY ARCHIVE</h2><p>Video messages will appear here soon.</p><small>NO TAPES LOADED</small></div>}
             <div className="family-screen-glass" aria-hidden="true"/>
             <div className="family-screen-label" aria-hidden="true">REC <span className="family-red-dot">●</span><span>CH {String(familyIndex+1).padStart(2,'0')}</span></div>
           </div>
@@ -141,7 +141,7 @@ export default function MessagesPage(){
         <div className="family-tv-controls">
           <div className="family-tv-caption"><span>HOME VIDEOS</span><strong>{FAMILY_VIDEOS.length?FAMILY_VIDEOS[familyIndex].name:'FOR CLAR ♡'}</strong><small>EST. WITH LOVE</small></div>
           <div className="family-tuning-notch" aria-hidden="true">VHF <span>· · · · ·</span></div>
-          <button className="family-channel-button" type="button" disabled={FAMILY_VIDEOS.length<2} onClick={()=>{setFamilyVideoError(false);setFamilyIndex(i=>(i+1)%FAMILY_VIDEOS.length)}} aria-label="Turn channel dial to next family video"><span className="tv-dial-rim"><span className="tv-dial" style={{transform:'rotate('+(familyIndex*48)+'deg)'}}><i/></span></span><small>TURN TO CHANGE<br/>THE CHANNEL ↻</small></button>
+          <button className="family-channel-button" type="button" disabled={FAMILY_VIDEOS.length<2} onClick={()=>{setFamilyVideoError(false);setFamilyPortrait(false);setFamilyIndex(i=>(i+1)%FAMILY_VIDEOS.length)}} aria-label="Turn channel dial to next family video"><span className="tv-dial-rim"><span className="tv-dial" style={{transform:'rotate('+(familyIndex*48)+'deg)'}}><i/></span></span><small>TURN TO CHANGE<br/>THE CHANNEL ↻</small></button>
           <div className="family-speaker" aria-hidden="true"/>
           <div className="family-tv-footer"><span className="tv-indicator"/> FAMILY CHANNEL <span>01 — 04</span></div>
         </div>
@@ -149,7 +149,7 @@ export default function MessagesPage(){
       </div>
       <div className="family-tape-drawer">
         <span className="family-collection-label">CHOOSE A HOME VIDEO</span>
-        {FAMILY_VIDEOS.length>0&&<div className="family-tapes">{FAMILY_VIDEOS.map((v,i)=><button key={v.src} type="button" className={'family-cassette '+(i===familyIndex?'selected':'')} onClick={()=>{setFamilyVideoError(false);setFamilyIndex(i)}} aria-current={i===familyIndex?'true':undefined}><span className="family-cassette-edge"/><span className="family-cassette-label"><small>HOME MOVIES · NO. {String(i+1).padStart(2,'0')}</small><strong>{v.name}</strong></span><span className="family-cassette-spools" aria-hidden="true">◎　◎</span></button>)}</div>}
+        {FAMILY_VIDEOS.length>0&&<div className="family-tapes">{FAMILY_VIDEOS.map((v,i)=><button key={v.src} type="button" className={'family-cassette '+(i===familyIndex?'selected':'')} onClick={()=>{setFamilyVideoError(false);setFamilyPortrait(false);setFamilyIndex(i)}} aria-current={i===familyIndex?'true':undefined}><span className="family-cassette-edge"/><span className="family-cassette-label"><small>HOME MOVIES · NO. {String(i+1).padStart(2,'0')}</small><strong>{v.name}</strong></span><span className="family-cassette-spools" aria-hidden="true">◎　◎</span></button>)}</div>}
       </div>
       {familyVideoError&&<p className="family-video-error">This .mov file may not play in every browser. <a href={FAMILY_VIDEOS[familyIndex].src} target="_blank" rel="noopener noreferrer">Open the original video ↗</a></p>}
       <div className="family-endnote">A LITTLE PIECE OF HOME, SAVED FOR YOU. ♡</div>
@@ -395,6 +395,34 @@ html.clar-family-view .fixed.inset-0.pointer-events-none.z-40{display:none!impor
 @media(max-width:740px){.family-room{padding:28px 10px 65px!important}.family-intro h1{font-size:35px!important}.family-intro p{font-size:15px!important}.family-television{grid-template-columns:minmax(0,1fr) 107px!important;padding:13px!important;border-radius:20px!important}.family-tv-screenframe{padding:5px;border-radius:22px}.family-screen{border-radius:17px/15px!important}.family-tv-controls{padding:12px 3px 10px 13px!important}.family-tv-caption{gap:6px;padding:6px 0}.family-tv-caption>span{font-size:11px!important}.family-tv-caption strong{font-size:9px!important}.family-tv-caption small,.family-tuning-notch,.family-tv-footer{display:none}.tv-dial-rim{width:53px;height:53px}.family-channel-button small{font-size:8px}.family-speaker{height:40px}.family-screen-label{top:8px;left:10px;right:10px;font-size:9px}.family-tapes{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}.family-tape-drawer{padding-top:36px}}
 @media(max-width:390px){.family-television{grid-template-columns:minmax(0,1fr) 83px!important}.family-tv-controls{padding:9px 2px 8px 9px!important}.family-tv-caption>span{font-size:10px!important}.family-channel-button small{font-size:7px}.family-speaker{height:30px}.family-cassette{padding:7px!important}}
 @media(prefers-reduced-motion:reduce){.family-cassette,.tv-dial{transition:none!important}.family-red-dot{animation:none!important}}
+
+
+/* iPad landscape refinement: whole archive readable without an enormous television */
+.family-room{padding:24px 16px 46px!important}
+.family-intro{margin-bottom:12px!important}
+.family-intro h1{font-size:clamp(33px,3.5vw,49px)!important;margin:8px 0!important}
+.family-intro p{margin:8px 0!important}
+.family-tv-scene{width:min(900px,100%)!important}
+.family-television{width:min(880px,100%)!important;padding:clamp(13px,1.6vw,22px)!important;grid-template-columns:minmax(0,1fr) clamp(115px,12vw,155px)!important;margin-top:15px!important;border-radius:22px!important}
+.family-tv-screenframe{border-radius:29px/25px!important;padding:8px!important}
+.family-screen{aspect-ratio:16/10!important;border-radius:22px/20px!important;background:radial-gradient(ellipse at center,#3a332a,#191915 70%,#101211)!important}
+.family-screen video{flex:none;min-width:0}
+.family-screen-portrait video{width:auto!important;max-width:100%!important;height:100%!important;object-fit:contain!important;background:#131311!important;box-shadow:0 0 20px #070504a8}
+.family-screen-portrait:before,.family-screen-portrait:after{position:absolute;top:13%;bottom:13%;width:17%;z-index:1;display:flex;align-items:center;justify-content:center;border-top:1px solid #c0a27533;border-bottom:1px solid #c0a27533;color:#c1a67c61;font:10px 'Courier New',monospace;letter-spacing:.25em;pointer-events:none;writing-mode:vertical-rl}
+.family-screen-portrait:before{content:'HOME VIDEO  •  19 NOVEMBER';left:8%;transform:rotate(180deg)}
+.family-screen-portrait:after{content:'SAVED WITH LOVE  •  CLAR_OS';right:8%}
+.family-tv-controls{padding:14px 4px 10px 20px!important;gap:7px!important}
+.family-tv-caption{padding:6px 0!important;gap:6px!important}
+.family-tv-caption>span{font-size:15px!important}
+.family-speaker{height:62px!important}
+.tv-dial-rim{width:67px!important;height:67px!important}
+.family-tape-drawer{padding:30px 3% 0!important}
+.family-collection-label{margin-bottom:10px!important}
+.family-cassette{padding:7px!important}
+.family-cassette-label{padding:6px!important;gap:5px!important}
+.family-endnote{margin-top:19px!important}
+@media(max-width:740px){.family-room{padding:24px 10px 40px!important}.family-tv-scene{width:100%!important}.family-television{width:100%!important;grid-template-columns:minmax(0,1fr) 99px!important;padding:11px!important}.family-screen{aspect-ratio:4/3!important}.family-tv-controls{padding:9px 2px 6px 12px!important}.family-tv-caption>span{font-size:11px!important}.tv-dial-rim{width:50px!important;height:50px!important}.family-speaker{height:35px!important}.family-tape-drawer{padding-top:32px!important}.family-screen-portrait:before,.family-screen-portrait:after{font-size:7px;letter-spacing:.1em}}
+@media(min-width:741px) and (max-height:850px){.family-room{padding-top:17px!important}.family-intro h1{font-size:38px!important}.family-tv-scene{width:min(840px,100%)!important}.family-television{width:min(820px,100%)!important;margin-top:10px!important}.family-tape-drawer{padding-top:25px!important}.family-intro p{font-size:15px!important}}
 
   `}</style>
  </main>
