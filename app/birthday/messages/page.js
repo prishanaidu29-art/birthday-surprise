@@ -97,14 +97,29 @@ export default function MessagesPage(){
       {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
     </div>
     <div className="desk-book-replacement" aria-hidden="true"><div className="desk-book-left"><span>Things I love about you</span><i>your kindness<br/>your thoughtful heart<br/>the way you make us laugh<br/>your little surprises</i></div><div className="desk-book-right"><span>For Clarissa</span><i>Eight friends.<br/>Eight little notes.<br/>One very loved person.</i></div></div><button className="background-book-hotspot" type="button" aria-label="Pick up the open book on the left" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
-    <aside className={'journal '+(diary?'journal-open':'')} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&bookDrag.current-e.clientX>45){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}>
-      <div className="journal-head" onClick={()=>{setDiary(true);setDiaryPage(active)}}><span>THINGS I LOVE ABOUT YOU ♡</span><span>{String(diaryPage+1).padStart(2,'0')} / 08</span></div>
+    {diary&&<div className="journal-dimmer" onClick={()=>setDiary(false)} aria-hidden="true"/>}
+    <aside className={'journal '+(diary?'journal-open':'')} role={diary?'dialog':undefined} aria-modal={diary?'true':undefined} aria-label="Things we love about Clarissa" onPointerDown={e=>{bookDrag.current={x:e.clientX,y:e.clientY}}} onPointerUp={e=>{const start=bookDrag.current;if(start&&typeof start==='object'&&Math.abs(e.clientX-start.x)>75&&Math.abs(e.clientY-start.y)<100){setDiaryPage(i=>(i+(e.clientX<start.x?1:LETTERS.length-1))%LETTERS.length)}bookDrag.current=null}}>
+      <div className="journal-head"><span>THE CLARISSA COLLECTION</span><span>19 NOVEMBER ♡</span></div>
       <div className="journal-paper">
-        <div className="journal-doodle">✦ NOVEMBER 19 ✦</div>
-        {diary?<div className="journal-entry"><h3>{LETTERS[diaryPage].name} wrote...</h3><p>{LETTERS[diaryPage].appreciation||'This page is waiting for a little note.'}</p></div>:<div className="journal-prompt"><BookOpen size={32}/><p>A whole book of little things your friends love about you.</p><button onClick={()=>{setDiary(true);setDiaryPage(active)}}>OPEN THE DIARY ↗</button></div>}
+        <div className="journal-spread">
+          <div className="journal-leftpage">
+            <div className="journal-ornament">❧</div>
+            <span className="journal-overline">A LITTLE KEEPSAKE · VOL. 01</span>
+            <h2>Things we love<br/><em>about you.</em></h2>
+            <div className="journal-note-scrap"><span>For Clarissa,</span><p>A collection of the little things that make you so very loved, written by your friends.</p></div>
+            <div className="journal-botanical" aria-hidden="true">✿<small>❦</small></div>
+            <span className="journal-leftfolio">WITH ALL OUR LOVE ♡</span>
+          </div>
+          {diary?<div className="journal-entry journal-rightpage" key={diaryPage}>
+            <div className="journal-entry-heading">A NOTE FROM {LETTERS[diaryPage].name.toUpperCase()}</div>
+            <h3>{LETTERS[diaryPage].name}<span> wrote...</span></h3>
+            <p>{LETTERS[diaryPage].appreciation||'A little note from '+LETTERS[diaryPage].name+' is coming soon.'}</p>
+            <span className="journal-rightfolio">PAGE {String(diaryPage+1).padStart(2,'0')} OF {String(LETTERS.length).padStart(2,'0')}</span>
+          </div>:<div className="journal-prompt journal-rightpage"><BookOpen size={32}/><p>Eight little pages of appreciation, just for you.</p><button onClick={()=>{setDiary(true);setDiaryPage(active)}}>OPEN THE BOOK ↗</button></div>}
+        </div>
       </div>
-      {diary&&<button className="book-close" onClick={()=>setDiary(false)} aria-label="Close journal"><X size={20}/></button>}<div className="journal-tabs">{['LOVE NOTES','FRIENDS','♡'].map((t,i)=><span key={i}>{t}</span>)}</div>
-      {diary&&<div className="journal-controls"><button onClick={()=>setDiaryPage(i=>(i+7)%8)}><ChevronLeft size={16}/></button><button onClick={()=>setDiary(false)}>CLOSE BOOK</button><button onClick={()=>setDiaryPage(i=>(i+1)%8)}><ChevronRight size={16}/></button></div>}
+      {diary&&<button className="book-close" onClick={()=>setDiary(false)} aria-label="Close appreciation book"><X size={20}/></button>}
+      {diary&&<div className="journal-controls"><button type="button" onClick={()=>setDiaryPage(i=>(i+LETTERS.length-1)%LETTERS.length)} aria-label="Previous appreciation note"><ChevronLeft size={17}/> PREVIOUS</button><span>{String(diaryPage+1).padStart(2,'0')} / {String(LETTERS.length).padStart(2,'0')}</span><button type="button" onClick={()=>setDiaryPage(i=>(i+1)%LETTERS.length)} aria-label="Next appreciation note">NEXT <ChevronRight size={17}/></button></div>}
     </aside>
     <div className="bottom-nav"><button onClick={()=>next(-1)}><ChevronLeft size={18}/> PREVIOUS</button><button onClick={shuffle}><Shuffle size={16}/> SHUFFLE LETTERS</button><button onClick={()=>next(1)}>NEXT <ChevronRight size={18}/></button></div>
   </section>
@@ -250,6 +265,40 @@ export default function MessagesPage(){
 
 
 .family-video-error{font:14px Georgia,serif;color:#ffe2bd;text-align:center}.family-video-error a{color:#fff4d2;text-decoration:underline}
+
+/* 26 Oct: two real pages, readable handwriting and an unclipped iPad journal */
+.journal-dimmer{position:fixed;inset:0;background:#24170d80;backdrop-filter:blur(3px);z-index:36}
+.journal.journal-open{position:fixed!important;top:50%!important;left:50%!important;right:auto!important;width:min(1190px,91vw)!important;height:min(760px,82dvh)!important;min-height:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;padding:13px 17px 56px!important;z-index:100!important;border:10px solid #715032!important;border-left:17px solid #67472b!important;border-radius:6px 16px 16px 7px!important;background:linear-gradient(100deg,#9a754e,#6d4b2d 5%,#a48057 96%,#553921)!important;box-shadow:0 22px 5px -14px #3d281d,0 36px 80px #160b08bc,inset 0 0 0 2px #d9bc8d!important}
+.journal.journal-open .journal-head{position:relative!important;top:auto!important;left:auto!important;width:100%!important;display:flex!important;flex:0 0 24px!important;align-items:center!important;justify-content:space-between!important;border:0!important;padding:0 8px 7px!important;margin:0!important;z-index:3!important;color:#e6d6b8!important;font:10px 'Courier New',monospace!important;letter-spacing:.17em!important;cursor:default!important}
+.journal.journal-open .journal-paper{position:relative!important;flex:1 1 auto!important;display:block!important;min-height:0!important;width:100%!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#eddbba!important;box-shadow:1px 1px 2px #563b29,inset 0 0 16px #6b50305c!important;border-radius:3px 9px 10px 3px!important}
+.journal-spread{position:relative;display:grid;grid-template-columns:1fr 1fr;width:100%;height:100%;isolation:isolate}
+.journal-spread:after{content:'';position:absolute;left:50%;top:0;bottom:0;width:25px;transform:translateX(-50%);z-index:6;pointer-events:none;background:linear-gradient(90deg,transparent,#7d593a44 23%,#3e291f66 43%,#f7ebd0b8 57%,transparent)}
+.journal-leftpage,.journal-rightpage{min-width:0;height:100%;position:relative;overflow:hidden;color:#4c3726!important;background-image:radial-gradient(circle at 90% 5%,#a17e5330 0 1px,transparent 2px),radial-gradient(ellipse at 7% 90%,#986b383b,transparent 48%),repeating-linear-gradient(0deg,transparent 0 29px,#9a75500b 30px),linear-gradient(90deg,#d4b78e 0%,#f1dfbd 8%,#f6e7c9 83%,#ddc49f 100%)!important;background-size:13px 17px,auto,auto,auto!important;box-shadow:inset 0 0 28px #7e5b3452!important}
+.journal-leftpage{padding:clamp(30px,4.2vw,65px) clamp(22px,4vw,62px) 28px!important;border-radius:3px 0 0 4px}
+.journal-leftpage .journal-overline{font:10px 'Courier New',monospace;letter-spacing:.2em;color:#8a6e4a}
+.journal-leftpage h2{font:normal clamp(32px,4.3vw,62px)/1.18 Georgia,serif!important;letter-spacing:-.04em;margin:22px 0 35px;color:#4e3926}
+.journal-leftpage h2 em{font-weight:normal;color:#7c523d}
+.journal-ornament{position:absolute;right:11%;top:8%;font:36px Georgia,serif;color:#a58b60;opacity:.7}
+.journal-note-scrap{position:relative;width:86%;max-width:340px;margin:5px 0 0 7%;padding:26px 29px 25px;background:linear-gradient(125deg,#ead5ad,#f5e5c7 60%,#d9ba8c);transform:rotate(-3deg);box-shadow:2px 4px 12px #704f3260;color:#654831;border:1px solid #c6aa81;clip-path:polygon(0 2%,12% 0,99% 1%,100% 98%,76% 100%,1% 99%)}
+.journal-note-scrap:before{content:'';position:absolute;left:30%;top:-2px;width:60px;height:19px;transform:rotate(5deg);background:#a38a6580}
+.journal-note-scrap span{font:italic 23px Georgia,serif}
+.journal-note-scrap p{font:italic clamp(15px,1.5vw,21px)/1.55 Georgia,serif;margin:12px 0 0}
+.journal-botanical{position:absolute;right:12%;bottom:11%;font:clamp(35px,5vw,66px) Georgia,serif;line-height:1;color:#87764d;transform:rotate(-23deg);opacity:.65;text-shadow:2px 1px 1px #dec7a1}
+.journal-botanical small{display:block;margin-left:25px;font-size:36px}
+.journal-leftfolio{position:absolute;bottom:26px;left:11%;font:10px 'Courier New',monospace;letter-spacing:.13em;color:#927351}
+.journal.journal-open .journal-entry.journal-rightpage{width:100%!important;max-height:none!important;height:100%!important;margin:0!important;padding:clamp(35px,4vw,62px) clamp(32px,4.5vw,70px) 65px!important;overflow-y:auto!important;scrollbar-width:thin;scrollbar-color:#aa906a transparent;animation:turningPage .35s ease-out both}
+.journal-entry-heading{font:10px 'Courier New',monospace;letter-spacing:.15em;color:#947553;border-bottom:1px solid #af936b75;padding-bottom:14px;margin-bottom:24px}
+.journal.journal-open .journal-entry h3{font:italic clamp(26px,2.6vw,39px) Georgia,serif!important;line-height:1.2!important;letter-spacing:-.015em!important;color:#523726!important;margin:0 0 19px!important}
+.journal.journal-open .journal-entry h3 span{font-size:.63em;color:#765641}
+.journal.journal-open .journal-entry p{font:normal clamp(16px,1.6vw,22px)/1.7 Georgia,serif!important;white-space:pre-line!important;color:#46382c!important;overflow-wrap:break-word;margin:0 0 25px}
+.journal-rightfolio{display:block;text-align:right;font:10px 'Courier New',monospace;letter-spacing:.1em;color:#967b58;margin-top:35px}
+.journal.journal-open .journal-controls{position:absolute!important;bottom:9px!important;left:30%!important;right:7%!important;z-index:50!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:13px!important}
+.journal.journal-open .journal-controls button{display:flex;align-items:center;gap:5px;border:1px solid #ba9770!important;border-radius:2px!important;background:#efdec0!important;color:#533b29!important;font:11px 'Courier New',monospace!important;letter-spacing:.07em!important;padding:8px 13px!important;box-shadow:0 2px 3px #26150a55!important}
+.journal.journal-open .journal-controls span{color:#ecddc4;font:12px 'Courier New',monospace;white-space:nowrap}
+.journal.journal-open .book-close{top:-21px!important;right:-19px!important;width:43px;height:43px;display:flex;justify-content:center;align-items:center;border:2px solid #8f704c!important;box-shadow:1px 3px 10px #301c13a0!important;z-index:55!important}
+@keyframes turningPage{from{opacity:.72;transform:perspective(800px) rotateY(-3deg)}to{opacity:1;transform:perspective(800px) rotateY(0)}}
+@media(max-width:700px){.journal.journal-open{width:96vw!important;height:min(740px,86dvh)!important;padding:9px 9px 57px!important;border-width:7px!important;border-left-width:10px!important}.journal-leftpage{padding:30px 14px 20px!important}.journal-leftpage h2{font-size:clamp(22px,5.6vw,35px)!important;margin:15px 0 20px}.journal-note-scrap{width:95%;margin-left:0;padding:13px!important}.journal-note-scrap span{font-size:18px}.journal-note-scrap p{font-size:14px}.journal.journal-open .journal-entry.journal-rightpage{padding:28px 16px 55px!important}.journal.journal-open .journal-entry h3{font-size:24px!important}.journal.journal-open .journal-entry p{font-size:15px!important;line-height:1.55!important}.journal-ornament,.journal-botanical{display:none}.journal.journal-open .journal-controls{left:7%!important;right:7%!important}.journal.journal-open .journal-controls button{font-size:10px!important;padding:9px 8px!important}}
+
   `}</style>
  </main>
 }
