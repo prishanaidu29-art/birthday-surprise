@@ -12,6 +12,7 @@ function fill(c,x,y,w,h,color){c.fillStyle=color;c.fillRect(x,y,w,h)}
 function box(c,x,y,w,h,color,edge='#44334c'){c.fillStyle=edge;c.fillRect(x-3,y-3,w+6,h+6);fill(c,x,y,w,h,color)}
 function text(c,s,x,y,size=15,color='#fff0d7'){c.textAlign='center';c.font='bold '+size+'px monospace';c.fillStyle='#23172e';c.fillText(s,x+2,y+2);c.fillStyle=color;c.fillText(s,x,y)}
 function light(c,x,y){const g=c.createRadialGradient(x,y,5,x,y,110);g.addColorStop(0,'#ffe7a588');g.addColorStop(1,'#ffe7a500');fill(c,x-110,y-110,220,220,g);box(c,x-4,y-36,8,51,'#52445c');box(c,x-12,y-49,24,22,'#ffe0a0')}
+function O(c,x,y,rx,ry,col){c.fillStyle=col;c.beginPath();c.ellipse(x,y,rx,ry,0,0,Math.PI*2);c.fill()}
 function bush(c,x,y){box(c,x-34,y-7,68,28,'#3d725b','#325549');box(c,x-24,y-22,43,25,'#679e79','#426e60');box(c,x+4,y-26,30,30,'#83b68b','#426e60');for(let i=0;i<5;i++)fill(c,x-19+i*9,y-19-i%2*6,4,4,'#f2c7dc')}
 function person(c,x,y,hair='#a47a57',skin='#c78c76',shirt='#6d8c9d',glasses=false,t=0,kind=''){
  c.save();c.translate(x,y+Math.sin(t/390+x)*1.3);c.scale(1.16,1.16);
