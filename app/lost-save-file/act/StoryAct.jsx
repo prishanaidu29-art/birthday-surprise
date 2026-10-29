@@ -2,13 +2,11 @@
 
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
 import {ACTS,GHOST_LETTER} from './actData';
 import {drawClar} from '../chapter-one/townRender';
 import './act.css';
 
 const CW=1120,CH=640;
-const storage=typeof window!=='undefined'?window.localStorage:null;
 const makeStart=act=>({x:act.spawn[0],y:act.spawn[1],facing:'right',started:false,solved:[],talked:[],notes:['I followed the broken save into '+act.title+'.'],gateSolved:false,letterOpened:false,letterKept:false,ghostSeen:false});
 const D=(a,b,x,y)=>Math.hypot(a-x,b-y);
 const rect=(c,x,y,w,h,col)=>{c.fillStyle=col;c.fillRect(x,y,w,h)};
@@ -121,7 +119,7 @@ function Face({person,id}){
  </svg><div>{person.name}</div></div>;
 }
 export default function StoryAct({chapter=2}){
- const act=ACTS[chapter],router=useRouter();
+ const act=ACTS[chapter];
  const [p,setP]=useState(()=>makeStart(act)),ref=useRef(p),[loaded,setLoaded]=useState(false);
  const [dialog,setDialog]=useState(null),[typed,setTyped]=useState(0),[panel,setPanel]=useState(null),[toast,setToast]=useState('');
  const [glitch,setGlitch]=useState(false),[music,setMusic]=useState(false),[reduced,setReduced]=useState(false);
@@ -152,8 +150,9 @@ export default function StoryAct({chapter=2}){
  const candidates=[...Object.entries(act.cast).map(([id,n])=>({kind:'npc',id,x:n.x,y:n.y})),...act.objects.map(o=>({kind:'object',...o}))].sort((a,b)=>D(x,y,a.x,a.y)-D(x,y,b.x,b.y));let hit=candidates[0];if(!hit||D(x,y,hit.x,hit.y)>130)return;if(hit.kind==='npc')talk(hit.id);else openObject(hit)};
  const submitAnswer=(which,kind,id)=>{const quest=kind==='gate'?act.gate:act.quests.find(q=>q.id===id);if(!quest||which!==quest.correct){setToast('Not quite. Try the hint — no attempts are lost.');sound(170,.24);return}
  sound(780,.32);
- if(kind==='gate'){patch(v=>({...v,gateSolved:true}));setPanel(null);flash(chapter===2?4000:1450);
- show('SYSTEM',act.outro,()=>setPanel({type:chapter===2?'transition':'ghost'}));return}
+ if(kind==='gate'){patch(v=>({...v,gateSolved:true}));setPanel(null);const ms=chapter===2?4000:1450;
+ if(!reduced)flash(ms);
+ window.setTimeout(()=>show('SYSTEM',act.outro,()=>setPanel({type:chapter===2?'transition':'ghost'})),reduced?0:ms);return}
  patch(v=>({...v,solved:[...v.solved,quest.id],notes:[...v.notes,quest.journal]}));setPanel({type:'success',id:quest.id});
  if(ref.current.solved.length===2&&!ref.current.ghostSeen){patch(v=>({...v,ghostSeen:true}));flash(1100)}
  };
