@@ -1,928 +1,429 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
-
-export const dynamic = 'force-dynamic'
-import { useRouter } from 'next/navigation'
+import React,{useState,useEffect,useRef} from 'react'
 import Link from 'next/link'
-import { supabase } from '../../../lib/supabase'
-import { ArrowLeft, Heart, Star, Sparkles, MessageCircle, User } from 'lucide-react'
-import { useAuth } from '../../../hooks/useAuth'
-import { useDarkMode } from '../../../hooks/useDarkMode'
-
-export default function MessagesPage() {
-  const router = useRouter()
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
-  const [currentMessage, setCurrentMessage] = useState(0)
-  const [showAll, setShowAll] = useState(false)
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(true)
-  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
-
-  // Helper function to detect and convert video URLs
-  const getVideoEmbedInfo = (url) => {
-    if (!url) return null
-    
-    // Check if it's a Google Drive URL
-    const googleDriveRegex = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/
-    const driveMatch = url.match(googleDriveRegex)
-    
-    if (driveMatch) {
-      return {
-        type: 'googledrive',
-        embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`,
-        fileId: driveMatch[1]
-      }
-    }
-    
-    // Check if it's a YouTube URL
-    const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
-    const youtubeMatch = url.match(youtubeRegex)
-    
-    if (youtubeMatch) {
-      return {
-        type: 'youtube',
-        embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}`,
-        videoId: youtubeMatch[1]
-      }
-    }
-    
-    // Check if it's a direct video file
-    const videoExtensions = /\.(mp4|webm|ogg|mov)(\?.*)?$/i
-    if (videoExtensions.test(url)) {
-      return {
-        type: 'direct',
-        url: url
-      }
-    }
-    
-    // Default to direct if not recognized
-    return {
-      type: 'direct',
-      url: url
-    }
+import {ArrowLeft,ChevronLeft,ChevronRight,Shuffle,X,Heart,BookOpen,Mail,PenLine} from 'lucide-react'
+import {useAuth} from '../../../hooks/useAuth'
+export const dynamic='force-dynamic'
+const LETTERS=[
+  {
+    "name": "Arsha",
+    "wish": "happy birthday dear clary! I love you so much and wish you the best years with endless blessings love and success, I don’t even know where to begin of how mcuh of a true blessing you have been in my life! I love you so much and wish you so much love and happiness bb❤️💗",
+    "appreciation": "",
+    "photo": ""
+  },
+  {
+    "name": "Hannah",
+    "wish": "happiest birthday clarry !!! i love you so much i truly wish i could be there to celebrate with you in person . i hope you have an amazing day surrounded by the people you love, and may the following year be full of abundance for you in every shape, way, and form. i’ll always be so grateful to have met you, you are always such a delight to be around. may you continue to light up every room you walk into <3",
+    "appreciation": "all the little gifts and messages she gives/sends. i suck at replying to them sometimes but im always so grateful to be reminded that people still think of me even when im not always around. plz never stop sending me tiktoks n reels ever ily clar",
+    "photo": ""
+  },
+  {
+    "name": "Cemmy",
+    "wish": "JOYEUX ANNIVERSAIRE BWAINCELL (I hope this is correct I used google French ADAHSJAKAFS) I don't know about you, but I'm feeling 22! I can't believe I'm blessed to be a part of your life even until now🥹You're still the same person I knew from the day I met you.The only difference now is that you've matured into the most Independent version of yourself you can be! Look at you! You have a stable job, a cool degree and so many friends who love you more than you can ever imagine❤️\n\nWhenever I look at you,I see the same girl who I grew up with in highschool- kind, patient, hilarious and most importantly, understanding. You see things from all perspectives and taught me that I need to understand people and problems from all angels.Through you, I became more open minded and accepting toward my differences with everyone else. I pray that our friendship will never end and that it will only become stronger.I want you in the most important milestones in my life- graduation, marriage,work, retirement,death HAHAHAHA EVERYTHING. Thank you for being my ½ bwaincell since day one.I love you so much Clar💝",
+    "appreciation": "Your attention to detail is WILD.What do you mean you remember everything everyone likes and make gifts that are so specific to that person? I've never ever met anyone else who does that.It makes everyone feel so seen and appreciated. None of your gifts were ever generic and that shows how much you really love your friends. None of us could ever replicate your gifts and surprises. But I bet you weren't expecting this surprise MWAHAHAHAHHA😈😈😈",
+    "photo": ""
+  },
+  {
+    "name": "Azrin",
+    "wish": "Happy birthday to the most down to earth friend I’ve met in my life. I’m so glad, fate played the game of making us friends because god knew I needed a genuine one in my life. I love how you listen, even when your brain is scattered in different directions. The way you make time for things, even after putting yourself through shit for it. Believe me when I say this, the more I got to know you, the more you became a person I admire. I’m so so lucky to have been a part of your life and I hope no matter whatever distance we have that stance never runs out. I love you clarrr❤️✨ you’re the best!",
+    "appreciation": "The way you make an effort, when you are already probably struggling with a zillion stuff. The way you smile, when you have a brainrot idea! Annnndd definitely how thoughtful and attentive you are to everyone. You’re so fucking brilliant and yet to humbled, that surprised me the most when I started to know you.",
+    "photo": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/IMG_4034.jpeg"
+  },
+  {
+    "name": "AK",
+    "wish": "the person who stuck by my side when SHIT hit the fan (and became fuckin diarrhea atp) and made a promise of “always” that still stands now, Clar, you’ve saved my life in so many ways than just being a good friend. i’m forever grateful for you, your kindness and your magical ability to heal people’s wounds with your warm presence and comfort. it’s insane how amidst the shithole called s*yfol, i found an angel so pure in heart (but not in thoughts). happiest birthday fren! you OUT OF EVERYONE deserve all the happiness and love from the people who truly adore you. i hope we show you how loved you are, just like how you show the same to us. (sending you a 1:1 cutout of shane and ilya brb)",
+    "appreciation": "i love how you always have the right thing to say in the moment. whether its a niche chronically-online reference about something even SLIGHTLY tangent to the topic that we’re discussing, or a comforting word of wisdom/reassurance when others need it most. i love how you get really giggly and excited whenever you talk about something you like, and how you talk so highly of your friends even when they’re not there.",
+    "photo": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/ClarAK1.jpeg"
+  },
+  {
+    "name": "Limini",
+    "wish": "Oh!! claryyy\nOur manhwa addiction concerning fairly\nWhen u caught my eye on first day of FIS, I knew it was you that quickly\nThank you for sending voice notes many-ly\nThough I may not always listen and reply to them - sorry\nI know you are thinking of me lovely\nAdmire you for giving your all with your current ability\nAs always get your resty\nHappy 22nd our fairy :3",
+    "appreciation": "Her gift-giving language and heart-touching letters - they truly bring tears to my eyes.\nWhen she makes sure no one is or feels excluded.\nWhen she sends me anything online like reels, tiktoks and voice notes - she reminds me that she loves, sees and hears me and I feel sooo warm that she thought of me at that time.",
+    "photo": ""
+  },
+  {
+    "name": "Mira",
+    "wish": "Happy Birthday Clarissaa!!! You are a warm hug and the sun that comes out after the rain. I'm thankful to have met you. You’ve taught me so many things, and one of them is how to appreciate the people you love. Have a blast on your birthday, and remember that I'm here for you, always. I hope to see you soon Clar! I miss you and I love you! <3",
+    "appreciation": "I love how you care for the people you love. You would spend sooo much time for the people you love. Besides that, you love animals so much! I miss Ash and Mei Mei !!! I also love the fact that im always comfortable around you. Whenever I need reassurance, I know who is the perfect person to find hehe <3. You are the best Clar!",
+    "photo": ""
+  },
+  {
+    "name": "Lak",
+    "wish": "JOYEUX ANNIVERSAIRE CLAR!!\n\nAs my very first friend in Uni, you’ve seen me during all the good and the struggling times. You were there was it was fun but most importantly never stopped being there to support, provide a helping hand, a listening ear and advice when shit went down. I cannot count the amount of times I would have missed assignments, deadlines and birthdays had you not been there.\n\nThank you for always bringing that positivity to wherever you go, always being there for others and simply just being you.\n\nHave loads of fun on this special day, I SHALL BE THERE FOR DA NEXT ONE.",
+    "appreciation": "The little attentions she always provides. The lil random gifts, the letters but above all that, the fact that she remembers all the little details noone else catches. She has that ability to make someone feel heard or seen in the most casual way possible.",
+    "photo": ""
   }
-
-  // Default fallback messages
-  const getDefaultMessages = () => [
-    {
-      id: '1',
-      author: 'Your Love',
-      message: "From the moment I saw you, I knew my life would never be the same. Your smile lit up the room, and your laugh became my favorite sound. Happy birthday to the person who changed everything for me. ❤️",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: '2', 
-      author: 'Your Admirer',
-      message: "You have the most beautiful soul I've ever encountered. Your kindness, your compassion, the way you see the world - it makes me fall in love with you more every single day. You inspire me to be better. ✨",
-      created_at: new Date().toISOString()
-    },
-    {
-      id: '3',
-      author: 'Your Partner',
-      message: "Even though we're apart right now, you're always in my heart and thoughts. Distance is just a number when love is this strong. I can't wait until we're together again. Until then, know that you're loved beyond measure. 💙",
-      created_at: new Date().toISOString()
-    }
-  ]
-
-  // Fetch messages from Supabase
-  const fetchMessages = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('is_visible', true)
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching messages:', error)
-        // Fallback to default messages if database fetch fails
-        setMessages(getDefaultMessages())
-      } else {
-        setMessages(data || getDefaultMessages())
-      }
-    } catch (err) {
-      console.error('Error:', err)
-      setMessages(getDefaultMessages())
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  // Use auth hook
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
-
-  // Check authentication and show loading screen
-  useEffect(() => {
-    if (!authLoading) {
-      if (isAuthenticated) {
-        setShowLoadingScreen(true)
-        
-        // Show loading screen for 1.5 seconds
-        setTimeout(() => {
-          setIsLoaded(true)
-          fetchMessages()
-        }, 1500)
-      }
-    }
-  }, [isAuthenticated, authLoading, fetchMessages])
-
-  // Enhanced loading screen with love theme
-  if (authLoading || (showLoadingScreen && !isLoaded)) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-pink-900 to-red-900' : 'bg-gradient-to-br from-pink-100 via-purple-50 to-red-100'} overflow-hidden relative`}>
-        {/* Floating love elements */}
-        <div className="absolute inset-0">
-          {/* Hearts and love symbols */}
-          <div className="absolute top-20 left-[15%] text-pink-400 opacity-45 animate-love-float-1">
-            💕
-          </div>
-          <div className="absolute top-32 right-[20%] text-red-400 opacity-40 animate-love-float-2">
-            <Heart size={28} fill="currentColor" />
-          </div>
-          <div className="absolute bottom-32 left-[25%] text-purple-400 opacity-50 animate-love-float-3">
-            💖
-          </div>
-          <div className="absolute top-1/3 left-[10%] text-pink-300 opacity-35 animate-love-float-4">
-            <MessageCircle size={26} />
-          </div>
-          <div className="absolute bottom-40 right-[15%] text-red-300 opacity-45 animate-love-float-5">
-            💌
-          </div>
-          <div className="absolute top-1/2 right-[35%] text-purple-300 opacity-40 animate-love-float-6">
-            ✨
-          </div>
-          
-          {/* Additional romantic elements */}
-          <div className="absolute top-16 right-[10%] text-pink-400 opacity-50 animate-romantic-float">
-            <Heart size={32} fill="currentColor" />
-          </div>
-          <div className="absolute bottom-24 left-[12%] text-red-400 opacity-45 animate-romantic-float-2">
-            💝
-          </div>
-        </div>
-
-        <div className="text-center z-10 max-w-lg mx-auto px-6">
-          {/* Main love letter animation */}
-          <div className="relative mb-8">
-            {/* Central love letter with glow */}
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-400 to-red-500 rounded-2xl animate-letter-pulse transform rotate-3"></div>
-              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl flex items-center justify-center`}>
-                <div className="text-3xl animate-letter-bounce">💕</div>
-              </div>
-              {/* Orbiting love elements */}
-              <div className="absolute inset-0 animate-spin-slow">
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 text-pink-500 animate-love-bounce">
-                  <MessageCircle size={20} />
-                </div>
-                <div className="absolute -right-3 top-1/2 transform -translate-y-1/2 text-red-500 animate-love-bounce" style={{ animationDelay: '0.5s' }}>
-                  <Heart size={18} fill="currentColor" />
-                </div>
-                <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 text-pink-400 animate-love-bounce" style={{ animationDelay: '1s' }}>
-                  ✨
-                </div>
-                <div className="absolute -left-3 top-1/2 transform -translate-y-1/2 text-red-400 animate-love-bounce" style={{ animationDelay: '1.5s' }}>
-                  <Star size={18} fill="currentColor" />
-                </div>
-              </div>
-            </div>
-
-            {/* Loading message */}
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-pink-500 via-red-600 to-purple-500 bg-clip-text text-transparent animate-love-glow">
-                  Reading Love Letters 💌
-                </span>
-              </h1>
-              <p className={`${isDarkMode ? 'text-red-400' : 'text-red-600'} text-lg animate-gentle-pulse mb-4`}>
-                Preparing heartfelt messages for you...
-              </p>
-              
-              {/* Animated love dots */}
-              <div className="flex justify-center items-center gap-3">
-                <span className="text-2xl animate-love-icon-1">💕</span>
-                <span className="text-2xl animate-love-icon-2">💖</span>
-                <span className="text-2xl animate-love-icon-3">💌</span>
-              </div>
-            </div>
-
-            {/* Love Progress indicator */}
-            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="w-3 h-3 bg-pink-500 rounded-full animate-gentle-pulse"></div>
-                <span className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Loading Sweet Messages</span>
-              </div>
-              <div className={`w-full ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'} rounded-full h-2 mb-2`}>
-                <div className="bg-gradient-to-r from-pink-500 to-red-600 h-2 rounded-full animate-love-progress"></div>
-              </div>
-              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Words from the heart just for you!</p>
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes love-float-1 {
-            0%, 100% { 
-              transform: translateY(0px) rotate(0deg) scale(1); 
-              opacity: 0.45;
-            }
-            33% {
-              transform: translateY(-18px) rotate(12deg) scale(1.1);
-              opacity: 0.8;
-            }
-            66% {
-              transform: translateY(-30px) rotate(-8deg) scale(0.9);
-              opacity: 0.6;
-            }
-          }
-          
-          @keyframes love-float-2 {
-            0%, 100% { 
-              transform: translateY(0px) rotateX(0deg); 
-              opacity: 0.4;
-            }
-            50% { 
-              transform: translateY(-22px) rotateX(180deg); 
-              opacity: 0.8;
-            }
-          }
-          
-          @keyframes love-float-3 {
-            0%, 100% { 
-              transform: translateY(0px) scale(1); 
-              opacity: 0.5;
-            }
-            25% {
-              transform: translateY(-12px) scale(1.2);
-              opacity: 0.8;
-            }
-            75% {
-              transform: translateY(-25px) scale(0.8);
-              opacity: 0.7;
-            }
-          }
-          
-          @keyframes love-float-4 {
-            0%, 100% { 
-              transform: translateY(0px) translateX(0px) rotate(0deg); 
-              opacity: 0.35;
-            }
-            50% { 
-              transform: translateY(-20px) translateX(8px) rotate(-15deg); 
-              opacity: 0.7;
-            }
-          }
-          
-          @keyframes love-float-5 {
-            0%, 100% { 
-              transform: translateY(0px) rotate(0deg); 
-              opacity: 0.45;
-            }
-            40% {
-              transform: translateY(-16px) rotate(25deg);
-              opacity: 0.9;
-            }
-            80% {
-              transform: translateY(-8px) rotate(-20deg);
-              opacity: 0.6;
-            }
-          }
-          
-          @keyframes love-float-6 {
-            0%, 100% { 
-              transform: translateY(0px) scale(1); 
-              opacity: 0.4;
-            }
-            60% { 
-              transform: translateY(-24px) scale(1.3); 
-              opacity: 0.8;
-            }
-          }
-          
-          @keyframes romantic-float {
-            0%, 100% { 
-              transform: translateY(0px) rotate(0deg); 
-              opacity: 0.5;
-            }
-            50% { 
-              transform: translateY(-18px) rotate(12deg); 
-              opacity: 0.8;
-            }
-          }
-          
-          @keyframes romantic-float-2 {
-            0%, 100% { 
-              transform: translateY(0px) scale(1); 
-              opacity: 0.45;
-            }
-            50% { 
-              transform: translateY(-22px) scale(1.2); 
-              opacity: 0.7;
-            }
-          }
-          
-          @keyframes letter-pulse {
-            0%, 100% {
-              transform: scale(1) rotate(3deg);
-              box-shadow: 0 0 25px rgba(236, 72, 153, 0.4);
-            }
-            50% {
-              transform: scale(1.1) rotate(3deg);
-              box-shadow: 0 0 40px rgba(236, 72, 153, 0.8);
-            }
-          }
-          
-          @keyframes letter-bounce {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-8px) scale(1.2); }
-          }
-          
-          @keyframes love-bounce {
-            0%, 100% { 
-              transform: translateY(0px) scale(1) rotate(0deg); 
-            }
-            50% { 
-              transform: translateY(-10px) scale(1.3) rotate(15deg); 
-            }
-          }
-          
-          @keyframes love-glow {
-            0%, 100% {
-              opacity: 1;
-              filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.3));
-            }
-            50% {
-              opacity: 1;
-              filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.6));
-            }
-          }
-          
-          @keyframes love-icon-1 {
-            0%, 100% { 
-              transform: translateY(0px) rotate(0deg); 
-              opacity: 0.7;
-            }
-            33% { 
-              transform: translateY(-6px) rotate(12deg); 
-              opacity: 1;
-            }
-            66% { 
-              transform: translateY(-3px) rotate(-8deg); 
-              opacity: 0.8;
-            }
-          }
-          
-          @keyframes love-icon-2 {
-            0%, 100% { 
-              transform: translateY(0px) scale(1); 
-              opacity: 0.8;
-            }
-            50% { 
-              transform: translateY(-8px) scale(1.4); 
-              opacity: 1;
-            }
-          }
-          
-          @keyframes love-icon-3 {
-            0%, 100% { 
-              transform: translateY(0px) rotate(0deg); 
-              opacity: 0.7;
-            }
-            40% { 
-              transform: translateY(-5px) rotate(-10deg); 
-              opacity: 0.9;
-            }
-            80% { 
-              transform: translateY(-7px) rotate(8deg); 
-              opacity: 1;
-            }
-          }
-          
-          @keyframes love-progress {
-            0% { width: 0%; }
-            100% { width: 100%; }
-          }
-          
-          @keyframes gentle-pulse {
-            0%, 100% { 
-              opacity: 0.7; 
-              transform: scale(1); 
-            }
-            50% { 
-              opacity: 1; 
-              transform: scale(1.05); 
-            }
-          }
-          
-          .animate-love-float-1 { 
-            animation: love-float-1 4s ease-in-out infinite; 
-            font-size: 28px;
-          }
-          .animate-love-float-2 { 
-            animation: love-float-2 5s ease-in-out infinite; 
-          }
-          .animate-love-float-3 { 
-            animation: love-float-3 6s ease-in-out infinite; 
-            font-size: 32px;
-          }
-          .animate-love-float-4 { 
-            animation: love-float-4 4.5s ease-in-out infinite; 
-          }
-          .animate-love-float-5 { 
-            animation: love-float-5 5.5s ease-in-out infinite; 
-            font-size: 30px;
-          }
-          .animate-love-float-6 { 
-            animation: love-float-6 3.5s ease-in-out infinite; 
-            font-size: 24px;
-          }
-          .animate-romantic-float { 
-            animation: romantic-float 6s ease-in-out infinite; 
-          }
-          .animate-romantic-float-2 { 
-            animation: romantic-float-2 7s ease-in-out infinite; 
-            font-size: 28px;
-          }
-          .animate-letter-pulse { 
-            animation: letter-pulse 2s ease-in-out infinite; 
-          }
-          .animate-letter-bounce { 
-            animation: letter-bounce 1.5s ease-in-out infinite; 
-          }
-          .animate-love-bounce { 
-            animation: love-bounce 1.8s ease-in-out infinite; 
-          }
-          .animate-love-glow { 
-            animation: love-glow 3s ease-in-out infinite; 
-          }
-          .animate-love-icon-1 { 
-            animation: love-icon-1 2s ease-in-out infinite; 
-          }
-          .animate-love-icon-2 { 
-            animation: love-icon-2 2.2s ease-in-out infinite 0.3s; 
-          }
-          .animate-love-icon-3 { 
-            animation: love-icon-3 1.8s ease-in-out infinite 0.6s; 
-          }
-          .animate-love-progress { 
-            animation: love-progress 1.5s ease-out; 
-          }
-          .animate-gentle-pulse { 
-            animation: gentle-pulse 3s ease-in-out infinite; 
-          }
-          .animate-spin-slow { 
-            animation: spin 15s linear infinite; 
-          }
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    )
-  }
-
-  if (!isLoaded || loading) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
-        {/* Floating message elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-16 left-12 text-pink-400 opacity-60">
-            <MessageCircle size={20} className="animate-message-pop" />
-          </div>
-          <div className="absolute top-1/4 right-16 text-purple-400 opacity-50">
-            <Heart size={18} fill="currentColor" className="animate-heart-beat" />
-          </div>
-          <div className="absolute bottom-28 left-20 text-yellow-400 opacity-70">
-            <Star size={16} fill="currentColor" className="animate-star-shine" />
-          </div>
-          <div className="absolute top-1/3 right-1/4 text-blue-300 opacity-40">
-            <Sparkles size={14} className="animate-sparkle-dance" />
-          </div>
-          <div className="absolute bottom-1/3 left-1/3 text-green-400 opacity-60">
-            <MessageCircle size={12} className="animate-bubble-float" />
-          </div>
-        </div>
-
-        <div className="text-center z-10">
-          {/* Message envelope loading animation */}
-          <div className="relative mb-8">
-            <div className="w-28 h-20 mx-auto bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg shadow-xl relative animate-envelope-bounce">
-              {/* Envelope flap */}
-              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-14 border-r-14 border-b-10 border-transparent border-b-purple-300"></div>
-              
-              {/* Envelope body */}
-              <div className={`absolute inset-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded flex items-center justify-center`}>
-                <MessageCircle className="w-8 h-8 text-purple-500 animate-pulse" />
-              </div>
-              
-              {/* Love letter hearts */}
-              <div className="absolute top-1 left-1/2 transform -translate-x-1/2">
-                <div className="flex space-x-1">
-                  <Heart size={8} className="text-pink-300" fill="currentColor" />
-                  <Heart size={6} className="text-red-300" fill="currentColor" />
-                  <Heart size={8} className="text-pink-300" fill="currentColor" />
-                </div>
-              </div>
-              
-              {/* Flying hearts */}
-              <div className="absolute -top-6 -right-4 text-pink-400 animate-heart-fly">
-                <Heart size={14} fill="currentColor" />
-              </div>
-              <div className="absolute -top-4 -left-3 text-purple-400 animate-heart-fly delay-500">
-                <Heart size={12} fill="currentColor" />
-              </div>
-            </div>
-          </div>
-
-          {/* Loading text */}
-          <div className="text-2xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Loading Messages
-            </span>
-          </div>
-          <div className={`${isDarkMode ? 'text-purple-400' : 'text-purple-600'} mb-6`}>
-            Reading your love letters...
-          </div>
-
-          {/* Message dots animation */}
-          <div className="flex justify-center space-x-2">
-            <div className="w-3 h-3 bg-purple-400 rounded-full animate-message-wave"></div>
-            <div className="w-3 h-3 bg-pink-400 rounded-full animate-message-wave delay-200"></div>
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-message-wave delay-400"></div>
-            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-message-wave delay-600"></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-message-wave delay-800"></div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes message-pop {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(10deg); }
-          }
-          @keyframes heart-beat {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-          }
-          @keyframes star-shine {
-            0%, 100% { opacity: 0.7; transform: rotate(0deg); }
-            50% { opacity: 1; transform: rotate(180deg); }
-          }
-          @keyframes sparkle-dance {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.4; }
-            50% { transform: translateY(-10px) rotate(180deg); opacity: 1; }
-          }
-          @keyframes bubble-float {
-            0%, 100% { transform: translateY(0px); opacity: 0.6; }
-            50% { transform: translateY(-20px); opacity: 1; }
-          }
-          @keyframes envelope-bounce {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-8px) rotate(2deg); }
-          }
-          @keyframes heart-fly {
-            0% { transform: translateY(0px) translateX(0px); opacity: 1; }
-            100% { transform: translateY(-40px) translateX(20px); opacity: 0; }
-          }
-          @keyframes message-wave {
-            0%, 100% { transform: translateY(0px); opacity: 1; }
-            50% { transform: translateY(-12px); opacity: 0.7; }
-          }
-          .animate-message-pop { animation: message-pop 2.5s ease-in-out infinite; }
-          .animate-heart-beat { animation: heart-beat 1.8s ease-in-out infinite; }
-          .animate-star-shine { animation: star-shine 3s ease-in-out infinite; }
-          .animate-sparkle-dance { animation: sparkle-dance 2.2s ease-in-out infinite; }
-          .animate-bubble-float { animation: bubble-float 3.5s ease-in-out infinite; }
-          .animate-envelope-bounce { animation: envelope-bounce 2s ease-in-out infinite; }
-          .animate-heart-fly { animation: heart-fly 4s ease-in-out infinite; }
-          .animate-message-wave { animation: message-wave 1.5s ease-in-out infinite; }
-        `}</style>
-      </div>
-    )
-  }
-
-  if (messages.length === 0) {
-    return (
-      <div className={`min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
-        <div className="container mx-auto px-4 py-8">
-          <Link 
-            href="/birthday" 
-            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-900/20' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium mb-6`}
-          >
-            <ArrowLeft size={20} className="mr-2" />
-            Back to Birthday Hub
-          </Link>
-          <div className="text-center mt-12">
-            <MessageCircle className="text-purple-300 w-16 h-16 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">No messages yet</h2>
-            <p className="text-gray-500">Messages will appear here when they&apos;re added to the database.</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 left-10 text-pink-300 opacity-60 animate-bounce">
-          <Heart size={20} fill="currentColor" />
-        </div>
-        <div className="absolute top-1/3 right-20 text-purple-400 opacity-50">
-          <Sparkles size={25} className="animate-spin-slow" />
-        </div>
-        <div className="absolute bottom-20 left-1/4 text-blue-300 opacity-60">
-          <Star size={18} fill="currentColor" className="animate-pulse" />
-        </div>
-        <div className="absolute top-1/2 right-1/4 text-pink-400 opacity-40">
-          <Heart size={15} fill="currentColor" className="animate-bounce" />
-        </div>
-      </div>
-
-      <div className="center-content relative z-10">
-        {/* Header */}
-        <div className="header-section">
-          <Link 
-            href="/birthday" 
-            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-gray-800/50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
-          >
-            <ArrowLeft size={20} className="mr-3" />
-            Back to Birthday Hub
-          </Link>
-          
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center mb-4">
-              <MessageCircle className="text-purple-500 w-8 h-8 mr-3" />
-              <Heart className="text-yellow-500 w-6 h-6" fill="currentColor" />
-              <MessageCircle className="text-purple-500 w-8 h-8 ml-3" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                Messages from the Heart
-              </span>
-            </h1>
-            <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Special words written just for you 💕
-            </p>
-          </div>
-        </div>
-
-        {/* Message Navigation */}
-        {!showAll && (
-          <div className="flex justify-center items-center gap-4 section-spacing">
-            <button
-              onClick={() => setCurrentMessage(Math.max(0, currentMessage - 1))}
-              disabled={currentMessage === 0}
-              className={`px-6 py-3 ${isDarkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-700'} backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[44px]`}
-            >
-              ← Previous
-            </button>
-            <div className="flex gap-2">
-              {messages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentMessage(index)}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentMessage 
-                      ? 'bg-purple-500 w-8' 
-                      : 'bg-purple-200 hover:bg-purple-300'
-                  }`}
-                />
-              ))}
-            </div>
-            <button
-              onClick={() => setCurrentMessage(Math.min(messages.length - 1, currentMessage + 1))}
-              disabled={currentMessage === messages.length - 1}
-              className={`px-4 py-2 ${isDarkMode ? 'bg-gray-800/80 text-gray-300' : 'bg-white/80 text-gray-700'} backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              Next →
-            </button>
-          </div>
-        )}
-
-        {/* Toggle View Button */}
-        <div className="text-center card-spacing">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-0.5 min-h-[48px] font-medium cursor-pointer"
-          >
-            {showAll ? 'Show One at a Time' : 'Show All Messages'}
-          </button>
-        </div>
-
-        {/* Messages Display */}
-        {showAll ? (
-          // All messages view
-          <div className="grid gap-6 sm:gap-8 max-w-5xl mx-auto w-full">
-            {messages.map((msg, index) => {
-              const gradients = [
-                'from-pink-400 to-rose-600',
-                'from-purple-400 to-indigo-600',
-                'from-blue-400 to-cyan-600',
-                'from-green-400 to-emerald-600',
-                'from-orange-400 to-red-600',
-                'from-teal-400 to-blue-600'
-              ]
-              const gradient = gradients[index % gradients.length]
-              
-              return (
-                <div
-                  key={msg.id}
-                  className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden animate-fade-in`}
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className={`h-1 bg-gradient-to-r ${gradient}`}></div>
-                  <div className="p-6 sm:p-8">
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className={`p-4 bg-gradient-to-br ${gradient} rounded-xl shadow-lg`}>
-                        <User className="text-white w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className={`text-xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{msg.author}</h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {new Date(msg.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                    <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} text-base sm:text-lg leading-relaxed`}>
-                      {msg.message}
-                    </p>
-                    {msg.video_url && (() => {
-                      const videoInfo = getVideoEmbedInfo(msg.video_url)
-                      if (!videoInfo) return null
-                      
-                      return (
-                        <div className="mt-6">
-                          <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-2`}>
-                            {videoInfo.type === 'youtube' ? (
-                              <iframe
-                                src={videoInfo.embedUrl}
-                                className="w-full max-w-md mx-auto rounded-lg"
-                                style={{ height: '200px', aspectRatio: '16/9' }}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                title="YouTube video"
-                              />
-                            ) : videoInfo.type === 'googledrive' ? (
-                              <iframe
-                                src={videoInfo.embedUrl}
-                                className="w-full max-w-md mx-auto rounded-lg"
-                                style={{ height: '200px', aspectRatio: '16/9' }}
-                                frameBorder="0"
-                                allow="autoplay"
-                                title="Google Drive video"
-                              />
-                            ) : (
-                              <video 
-                                controls 
-                                className="w-full max-w-md mx-auto rounded-lg"
-                                style={{ maxHeight: '300px' }}
-                                preload="metadata"
-                              >
-                                <source src={videoInfo.url} type="video/mp4" />
-                                <source src={videoInfo.url} type="video/webm" />
-                                Your browser does not support the video tag.
-                              </video>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })()}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        ) : (
-          // Single message view
-          <div className="max-w-2xl mx-auto px-2 sm:px-0">
-            {(() => {
-              const gradients = [
-                'from-pink-400 to-rose-600',
-                'from-purple-400 to-indigo-600',
-                'from-blue-400 to-cyan-600',
-                'from-green-400 to-emerald-600',
-                'from-orange-400 to-red-600',
-                'from-teal-400 to-blue-600'
-              ]
-              const currentGradient = gradients[currentMessage % gradients.length]
-              const currentMsg = messages[currentMessage]
-              
-              return (
-                <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden animate-fade-in`}>
-                  <div className={`h-2 bg-gradient-to-r ${currentGradient}`}></div>
-                  <div className="p-6 sm:p-8 md:p-12">
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className={`icon-container-lg bg-gradient-to-br ${currentGradient} rounded-xl shadow-lg`}>
-                        <User className="text-white w-8 h-8" />
-                      </div>
-                      <div>
-                        <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{currentMsg.author}</h3>
-                        <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {new Date(currentMsg.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                <p className={`text-base sm:text-lg md:text-xl leading-relaxed mb-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{currentMsg.message}</p>
-                    {currentMsg.video_url && (() => {
-                      const videoInfo = getVideoEmbedInfo(currentMsg.video_url)
-                      if (!videoInfo) return null
-                      
-                      return (
-                        <div className="mb-8">
-                          <div className={`rounded-xl overflow-hidden shadow-lg ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-50'} p-3`}>
-                            {videoInfo.type === 'youtube' ? (
-                              <iframe
-                                src={videoInfo.embedUrl}
-                                className="w-full max-w-lg mx-auto rounded-lg"
-                                style={{ height: '300px', aspectRatio: '16/9' }}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                                title="YouTube video"
-                              />
-                            ) : videoInfo.type === 'googledrive' ? (
-                              <iframe
-                                src={videoInfo.embedUrl}
-                                className="w-full max-w-lg mx-auto rounded-lg"
-                                style={{ height: '300px', aspectRatio: '16/9' }}
-                                frameBorder="0"
-                                allow="autoplay"
-                                title="Google Drive video"
-                              />
-                            ) : (
-                              <video 
-                                controls 
-                                className="w-full max-w-lg mx-auto rounded-lg"
-                                style={{ maxHeight: '400px' }}
-                                preload="metadata"
-                              >
-                                <source src={videoInfo.url} type="video/mp4" />
-                                <source src={videoInfo.url} type="video/webm" />
-                                Your browser does not support the video tag.
-                              </video>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })()}
-                    <div className="text-center">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 rounded-full">
-                        <Heart className="text-pink-500 w-4 h-4" fill="currentColor" />
-                        <span className="text-sm text-pink-700 font-medium">
-                          Message {currentMessage + 1} of {messages.length}
-                        </span>
-                        <Heart className="text-pink-500 w-4 h-4" fill="currentColor" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })()}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className={`text-center mt-12 mb-8 backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto ${
-    isDarkMode ? 'bg-gray-800/90 border border-gray-700' : 'bg-white/95 border border-white/20'}`}>
-          <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Every word written with love, every message crafted for you
-          </p>
-          <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Happy Birthday! 🎂✨
-          </p>
-        </div>
-      </div>
-
-      <style jsx global>{`
-        @keyframes scale-in {
-          from { transform: scale(0.9) translateY(20px); opacity: 0; }
-          to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-scale-in { animation: scale-in 0.6s ease-out; }
-        .animate-fade-in { animation: fade-in 0.6s ease-out; }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-      `}</style>
+]
+const FAMILY_VIDEOS=[
+  {name:'Family Tape 01',src:'/videos/family/f04bb3af04b549f091b260b987b23d63.mov'},
+  {name:'Family Tape 02',src:'/videos/family/ad318c00225248bd8264ec879f147c49.mov'},
+  {name:'Family Tape 03',src:'/videos/family/dee36f6ebdd24aa7a5aa308b452fe5de.mov'},
+  {name:'Family Tape 04',src:'/videos/family/51a5913341624bf6bb891a1353c3257e.mov'}
+]
+const NAMES=LETTERS.map(x=>x.name)
+const INITIAL=LETTERS.map((_,i)=>({x:3+(i%2)*2,y:8+i*10.7,rotation:[-8,5,-4,7,-5,4,-6,3][i]}))
+export default function MessagesPage(){
+ const {isAuthenticated,isLoading}=useAuth()
+ const [section,setSection]=useState('friends'),[familyIndex,setFamilyIndex]=useState(0),[familyVideoError,setFamilyVideoError]=useState(false),[familyPortrait,setFamilyPortrait]=useState(false)
+ const [active,setActive]=useState(0),[open,setOpen]=useState(false),[diary,setDiary]=useState(false),[diaryPage,setDiaryPage]=useState(0),[order,setOrder]=useState(LETTERS.map((_,i)=>i)),[positions,setPositions]=useState(INITIAL)
+ const drag=useRef(null),deskRef=useRef(null),moved=useRef(false),bookDrag=useRef(null)
+ useEffect(()=>{document.documentElement.classList.toggle('clar-family-view',section==='family');return()=>document.documentElement.classList.remove('clar-family-view')},[section])
+ const current=LETTERS[active]
+ const select=i=>{setActive(i);setOpen(false);setDiary(false)}
+ const next=delta=>{let i=order.indexOf(active);select(order[(i+delta+order.length)%order.length])}
+ const shuffle=()=>{let arr=[...order];for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}setOrder(arr);select(arr[0])}
+ const pointerDown=(e,i)=>{if(e.button!==0)return;drag.current={i,startX:e.clientX,startY:e.clientY,x:positions[i].x,y:positions[i].y};moved.current=false;e.currentTarget.setPointerCapture(e.pointerId)}
+ const pointerMove=e=>{if(!drag.current||!deskRef.current)return;const d=drag.current,rect=deskRef.current.getBoundingClientRect(),dx=(e.clientX-d.startX)/rect.width*100,dy=(e.clientY-d.startY)/rect.height*100;if(Math.abs(e.clientX-d.startX)+Math.abs(e.clientY-d.startY)>8)moved.current=true;setPositions(p=>p.map((v,i)=>i===d.i?{...v,x:Math.max(0,Math.min(24,d.x+dx)),y:Math.max(0,Math.min(85,d.y+dy))}:v))}
+ const pointerUp=()=>{drag.current=null}
+ useEffect(()=>{const handler=e=>{if(e.key==='Escape'){setOpen(false);setDiary(false)}else if(e.key==='ArrowRight')next(1);else if(e.key==='ArrowLeft')next(-1)};window.addEventListener('keydown',handler);return()=>window.removeEventListener('keydown',handler)},[active,order])
+ if(isLoading)return <main className="waiting">LOADING LETTERS...</main>
+ if(!isAuthenticated)return <main className="waiting"><Link href="/birthday">PRIVATE MAILBOX — RETURN TO CLAR_OS</Link></main>
+ return <main className="world">
+  <nav className="nav"><Link href="/birthday"><span className="pixel-heart">♥</span> CLAR_OS</Link><div className="nav-links"><Link href="/birthday">HOME</Link><Link href="/birthday/journey">JOURNEY</Link><Link href="/birthday/memories">MEMORIES</Link><b>MESSAGES ♥</b><Link href="/birthday/chaos">CHAOS</Link><Link href="/birthday/playlist">SOUNDTRACK</Link></div><span>19 NOV ♡</span></nav>
+  <div className="message-switch" role="group" aria-label="Message collection"><button className={section==='friends'?'selected':''} onClick={()=>setSection('friends')}>✉ LETTERS FROM FRIENDS</button><button className={section==='family'?'selected':''} onClick={()=>{setSection('family');setOpen(false);setDiary(false)}}>▣ MESSAGES FROM FAMILY</button></div>
+  {section==='friends'?<section className="desktop" ref={deskRef}>
+    <div className="desk-text"><div className="script-title">Letters<br/>for Clar. ♡</div><p>SOME THINGS ARE<br/>BETTER WRITTEN DOWN.</p><div className="sticky">Eight people left something for you.<br/>Pick a letter, open it, and take your time. ♡</div></div>
+    <div className="scene scene-cassette">♫<small>FOR LATER ♡</small></div>
+    <div className="scene scene-cup">☕<small>good friends<br/>brighter days</small></div>
+    <div className="scene scene-candle">✦</div>
+    <div className="scene scene-camera">▣<small>CLAR_ARCHIVE</small></div>
+    <div className="scene scene-flowers">✿ ✾ ✿</div><div className="scene scene-lace"/><div className="scene scene-postcards"/><div className="scene scene-wax">♥</div><div className="scene scene-stamps">✉<br/>✉</div>
+    <div className="scene scene-pen">✒</div>
+    <div className="scene scene-note">you are<br/>so loved ♡</div>
+    <div className="scene scene-tape">SIDE A / SIDE B</div>
+    <div className="envelope-pile">
+      {order.map(i=><button key={i} type="button" className={'scattered-envelope '+(active===i?'chosen':'')} style={{left:positions[i].x+'%',top:positions[i].y+'%',transform:'rotate('+positions[i].rotation+'deg)',zIndex:active===i?16:10+i}} onPointerDown={e=>pointerDown(e,i)} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp} onClick={()=>{if(!moved.current){select(i);setOpen(true)}moved.current=false}} aria-label={'Move or open envelope from '+LETTERS[i].name}><span className="envelope-fold"/><span className="env-name">{LETTERS[i].name} ♡</span><span className="mini-sticker">{['✿','♡','✧','★','♥','☾','❀','✦'][i]}</span></button>)}
     </div>
-  )
+    <div className={'letter-zone '+(open?'is-open':'')}>
+      {open?<article className="unfolded-letter"><button className="close" onClick={()=>setOpen(false)} aria-label="Close letter"><X size={18}/></button><div className="paper-caption">A LETTER FROM {current.name.toUpperCase()} ♡</div><div className="attached-photo">{current.photo?<img src={current.photo} alt={'Clar with '+current.name}/>:<div className="empty-photo"><Heart size={26}/><span>YOUR PHOTO<br/>GOES HERE ♡</span></div>}<span className="photo-clip">⌁</span></div><div className="actual-letter"><p className="greeting">Dear Clar,</p>{current.wish.split('\n').filter(Boolean).map((v,i)=><p key={i}>{v}</p>)}<p className="signature">With love,<br/>{current.name} ♡</p></div><div className="pressed-flower">✾</div></article>:<div className="paper-preview"><div className="paper-caption">PERSONAL CORRESPONDENCE / 008</div><div className="preview-heart">✉</div><p>Pick an envelope from the pile<br/>to unfold a letter.</p><small>drag them around the desk ✧</small></div>}
+    </div>
+    <div className="desk-book-replacement" aria-hidden="true"><div className="desk-book-left"><span>Things I love about you</span><i>your kindness<br/>your thoughtful heart<br/>the way you make us laugh<br/>your little surprises</i></div><div className="desk-book-right"><span>For Clarissa</span><i>Eight friends.<br/>Eight little notes.<br/>One very loved person.</i></div></div><button className="background-book-hotspot" type="button" aria-label="Pick up the open book on the left" onClick={()=>{setDiary(true);setDiaryPage(active)}} onPointerDown={e=>{bookDrag.current=e.clientX}} onPointerUp={e=>{if(bookDrag.current!==null&&Math.abs(e.clientX-bookDrag.current)>30){setDiary(true);setDiaryPage(active)}bookDrag.current=null}}><span>OPEN THE BOOK ↗</span></button>
+    {diary&&<div className="journal-dimmer" onClick={()=>setDiary(false)} aria-hidden="true"/>}
+    <aside className={'journal '+(diary?'journal-open':'')} role={diary?'dialog':undefined} aria-modal={diary?'true':undefined} aria-label="Things we love about Clarissa" onPointerDown={e=>{bookDrag.current={x:e.clientX,y:e.clientY}}} onPointerUp={e=>{const start=bookDrag.current;if(start&&typeof start==='object'&&Math.abs(e.clientX-start.x)>75&&Math.abs(e.clientY-start.y)<100){setDiaryPage(i=>(i+(e.clientX<start.x?1:LETTERS.length-1))%LETTERS.length)}bookDrag.current=null}}>
+      <div className="journal-head"><span>THE CLARISSA COLLECTION</span><span>19 NOVEMBER ♡</span></div>
+      <div className="journal-paper">
+        <div className="journal-spread">
+          <div className="journal-leftpage">
+            <div className="journal-ornament">❧</div>
+            <span className="journal-overline">A LITTLE KEEPSAKE · VOL. 01</span>
+            <h2>Things we love<br/><em>about you.</em></h2>
+            <div className="journal-note-scrap"><span>For Clarissa,</span><p>A collection of the little things that make you so very loved, written by your friends.</p></div>
+            <div className="journal-botanical" aria-hidden="true">✿<small>❦</small></div>
+            <span className="journal-leftfolio">WITH ALL OUR LOVE ♡</span>
+          </div>
+          {diary?<div className="journal-entry journal-rightpage" key={diaryPage}>
+            <div className="journal-entry-heading">A NOTE FROM {LETTERS[diaryPage].name.toUpperCase()}</div>
+            <h3>{LETTERS[diaryPage].name}<span> wrote...</span></h3>
+            <p>{LETTERS[diaryPage].appreciation||'A little note from '+LETTERS[diaryPage].name+' is coming soon.'}</p>
+            <span className="journal-rightfolio">PAGE {String(diaryPage+1).padStart(2,'0')} OF {String(LETTERS.length).padStart(2,'0')}</span>
+          </div>:<div className="journal-prompt journal-rightpage"><BookOpen size={32}/><p>Eight little pages of appreciation, just for you.</p><button onClick={()=>{setDiary(true);setDiaryPage(active)}}>OPEN THE BOOK ↗</button></div>}
+        </div>
+      </div>
+      {diary&&<button className="book-close" onClick={()=>setDiary(false)} aria-label="Close appreciation book"><X size={20}/></button>}
+      {diary&&<div className="journal-controls"><button type="button" onClick={()=>setDiaryPage(i=>(i+LETTERS.length-1)%LETTERS.length)} aria-label="Previous appreciation note"><ChevronLeft size={17}/> PREVIOUS</button><span>{String(diaryPage+1).padStart(2,'0')} / {String(LETTERS.length).padStart(2,'0')}</span><button type="button" onClick={()=>setDiaryPage(i=>(i+1)%LETTERS.length)} aria-label="Next appreciation note">NEXT <ChevronRight size={17}/></button></div>}
+    </aside>
+    <div className="bottom-nav"><button onClick={()=>next(-1)}><ChevronLeft size={18}/> PREVIOUS</button><button onClick={shuffle}><Shuffle size={16}/> SHUFFLE LETTERS</button><button onClick={()=>next(1)}>NEXT <ChevronRight size={18}/></button></div>
+  </section>
+  :<section className="family-room">
+    <div className="family-atmosphere" aria-hidden="true"><div className="family-window-glow"/><div className="family-shelf-glow"/></div>
+    <div className="family-intro"><small>THE HOME VIDEO COLLECTION / CLAR_OS</small><h1>With love, <em>from home.</em></h1><p>Birthday wishes from the people who have loved you all along.</p></div>
+    <div className="family-tv-scene">
+      <div className="family-tv-shadow" aria-hidden="true"/>
+      <div className="family-television">
+        <div className="family-tv-brandplate" aria-hidden="true">THE FAMILY ARCHIVE <span>✦</span> 19 NOV</div>
+        <div className="family-tv-screenframe">
+          <div className={'family-screen '+(familyPortrait?'family-screen-portrait':'family-screen-landscape')}>
+            {FAMILY_VIDEOS.length?<video key={FAMILY_VIDEOS[familyIndex].src} src={FAMILY_VIDEOS[familyIndex].src} controls playsInline preload="metadata" onError={()=>setFamilyVideoError(true)} onLoadedData={()=>setFamilyVideoError(false)} onLoadedMetadata={e=>setFamilyPortrait(e.currentTarget.videoHeight>e.currentTarget.videoWidth)} aria-label={'Family video '+String(familyIndex+1)}/>:<div className="family-placeholder"><span>▣</span><h2>FAMILY ARCHIVE</h2><p>Video messages will appear here soon.</p><small>NO TAPES LOADED</small></div>}
+            <div className="family-screen-glass" aria-hidden="true"/>
+            <div className="family-screen-label" aria-hidden="true">REC <span className="family-red-dot">●</span><span>CH {String(familyIndex+1).padStart(2,'0')}</span></div>
+          </div>
+        </div>
+        <div className="family-tv-controls">
+          <div className="family-tv-caption"><span>HOME VIDEOS</span><strong>{FAMILY_VIDEOS.length?FAMILY_VIDEOS[familyIndex].name:'FOR CLAR ♡'}</strong><small>EST. WITH LOVE</small></div>
+          <div className="family-tuning-notch" aria-hidden="true">VHF <span>· · · · ·</span></div>
+          <button className="family-channel-button" type="button" disabled={FAMILY_VIDEOS.length<2} onClick={()=>{setFamilyVideoError(false);setFamilyPortrait(false);setFamilyIndex(i=>(i+1)%FAMILY_VIDEOS.length)}} aria-label="Turn channel dial to next family video"><span className="tv-dial-rim"><span className="tv-dial" style={{transform:'rotate('+(familyIndex*48)+'deg)'}}><i/></span></span><small>TURN TO CHANGE<br/>THE CHANNEL ↻</small></button>
+          <div className="family-speaker" aria-hidden="true"/>
+          <div className="family-tv-footer"><span className="tv-indicator"/> FAMILY CHANNEL <span>01 — 04</span></div>
+        </div>
+        <div className="family-tv-feet" aria-hidden="true"><span/><span/></div>
+      </div>
+      <div className="family-tape-drawer">
+        <span className="family-collection-label">CHOOSE A HOME VIDEO</span>
+        {FAMILY_VIDEOS.length>0&&<div className="family-tapes">{FAMILY_VIDEOS.map((v,i)=><button key={v.src} type="button" className={'family-cassette '+(i===familyIndex?'selected':'')} onClick={()=>{setFamilyVideoError(false);setFamilyPortrait(false);setFamilyIndex(i)}} aria-current={i===familyIndex?'true':undefined}><span className="family-cassette-edge"/><span className="family-cassette-label"><small>HOME MOVIES · NO. {String(i+1).padStart(2,'0')}</small><strong>{v.name}</strong></span><span className="family-cassette-spools" aria-hidden="true">◎　◎</span></button>)}</div>}
+      </div>
+      {familyVideoError&&<p className="family-video-error">This .mov file may not play in every browser. <a href={FAMILY_VIDEOS[familyIndex].src} target="_blank" rel="noopener noreferrer">Open the original video ↗</a></p>}
+      <div className="family-endnote">A LITTLE PIECE OF HOME, SAVED FOR YOU. ♡</div>
+    </div>
+   </section>}
+  {section==='friends'&&<div className="name-bar">{LETTERS.map((l,i)=><button key={i} onClick={()=>select(i)} className={active===i?'active':''}>{l.name}</button>)}</div>}
+  <style jsx global>{`
+   *{box-sizing:border-box}.world{min-height:100vh;background:#0e0719;color:#f5c8e7;font-family:monospace;overflow:hidden}.nav{height:57px;background:#120a1be8;border-bottom:1px solid #683459;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:0 24px;position:relative;z-index:25;font-size:12px;letter-spacing:.07em}.nav a{color:inherit;text-decoration:none}.nav>a{font-size:19px;white-space:nowrap}.pixel-heart{color:#ec75bd}.nav-links{display:flex;gap:clamp(10px,2vw,30px);align-items:center}.nav-links b{color:#ffb5e3;border-bottom:2px solid #ff9ad4;padding:19px 0}.desktop{position:relative;min-height:880px;max-width:1700px;margin:auto;overflow:hidden;background:radial-gradient(ellipse at 52% 38%,#60345255,transparent 58%),radial-gradient(ellipse at 80% 10%,#3c1d65aa,transparent 60%),repeating-linear-gradient(6deg,#21101b 0px,#281521 7px,#180f1b 14px,#231521 25px);box-shadow:inset 0 0 160px #05010c}.desktop:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,#ffb9f005 4px);z-index:20}.desk-text{position:absolute;left:4%;top:4%;width:22%;z-index:4}.script-title{font-family:cursive;font-style:italic;font-size:clamp(35px,4.2vw,68px);line-height:.98;color:#ffacd9;text-shadow:0 0 15px #db51c470;transform:rotate(-7deg)}.desk-text>p{margin-top:30px;font-size:12px;letter-spacing:.15em;line-height:1.7}.sticky{width:150px;min-height:170px;background:#b8849c;color:#2b192b;transform:rotate(-8deg);padding:20px 12px;box-shadow:6px 8px 15px #0008;font-family:cursive;font-size:17px;line-height:1.35;margin-top:32px}.scene{position:absolute;z-index:2;user-select:none;filter:drop-shadow(5px 9px 10px #0009)}.scene-cassette{right:5%;top:6%;width:185px;height:105px;border:12px solid #3a2342;border-radius:12px;background:linear-gradient(140deg,#a47b9e,#27162c);color:#f6b5dc;font-size:34px;text-align:center;transform:rotate(9deg)}.scene-cassette small{display:block;font-size:11px}.scene-cup{right:2%;top:28%;width:125px;height:135px;border-radius:16px 16px 45px 45px;background:linear-gradient(90deg,#9a6b88,#e4b2c5,#8d617d);color:#371d36;font-size:35px;text-align:center;padding:15px;transform:rotate(12deg)}.scene-cup small{display:block;font-size:12px;line-height:1.4}.scene-candle{left:21%;top:9%;font-size:70px;color:#ffb965;text-shadow:0 0 45px #ffab4b}.scene-camera{right:26%;top:2%;font-size:60px;color:#9c7cae;transform:rotate(-13deg)}.scene-camera small{display:block;font-size:10px}.scene-flowers{bottom:13%;left:34%;font-size:35px;color:#c790b5;transform:rotate(-18deg)}.scene-pen{bottom:21%;left:27%;font-size:115px;color:#d8a2b2;transform:rotate(-31deg)}.scene-note{right:12%;bottom:12%;padding:15px;background:#a47791;color:#241020;font-size:17px;transform:rotate(9deg)}.scene-tape{bottom:15%;right:2%;background:#48324b;border:8px solid #2c2034;padding:17px;color:#d6b0d0;transform:rotate(-10deg)}.envelope-pile{position:absolute;inset:0;z-index:7;pointer-events:none}.scattered-envelope{position:absolute;pointer-events:auto;touch-action:none;width:clamp(190px,25vw,355px);height:clamp(68px,8.8vw,118px);background:linear-gradient(155deg,#f2c9c2,#bd8fa6);border:1px solid #a97689;border-radius:4px;box-shadow:4px 7px 15px #0009;cursor:grab;text-align:left;padding:18px 25px;color:#5c2c43;transition:box-shadow .2s}.scattered-envelope:active{cursor:grabbing;box-shadow:4px 15px 25px #000b}.scattered-envelope.chosen{border:2px solid #ffb3e4}.envelope-fold{position:absolute;inset:0;clip-path:polygon(0 0,100% 0,50% 70%);background:#f2d2c7;opacity:.8;pointer-events:none}.env-name{position:relative;z-index:2;font:italic 23px cursive}.mini-sticker{position:absolute;right:13px;bottom:8px;color:#8f305d;font-size:24px}.letter-zone{position:absolute;top:18%;left:35%;width:37%;height:70%;z-index:10;display:flex;align-items:stretch;justify-content:center;transform:rotate(-2deg)}.paper-preview,.unfolded-letter{width:100%;background:linear-gradient(95deg,#ddbaa9,#f7ddc7 7%,#f3d7c0 95%,#cda69b);box-shadow:8px 18px 30px #000b;color:#422c37;border:1px solid #c8a49a;padding:clamp(20px,3vw,40px);position:relative;overflow:auto}.paper-preview:before,.unfolded-letter:before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 29px,#8e567b16 30px);opacity:.65}.paper-caption{font:11px monospace;letter-spacing:.1em;color:#a04d72;border-bottom:1px solid #b67d89;padding-bottom:13px;position:relative}.paper-preview{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:35px;text-align:center}.paper-preview p{font:italic 25px cursive}.paper-preview small{font-size:12px}.preview-heart{font-size:90px;color:#c86a95}.unfolded-letter{animation:unfold .65s cubic-bezier(.2,.8,.2,1) both}.close{position:absolute;top:12px;right:12px;border:0;background:transparent;color:#803f5d;cursor:pointer;z-index:3}.attached-photo{float:left;width:clamp(110px,13vw,165px);background:#fff4e8;padding:8px 8px 24px;margin:25px 22px 10px -13px;transform:rotate(-8deg);box-shadow:3px 6px 13px #4a273e77;position:relative}.attached-photo img,.empty-photo{width:100%;height:155px;object-fit:cover}.empty-photo{background:#d4b8b5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:8px;font:10px monospace}.photo-clip{position:absolute;top:-24px;left:45%;font-size:38px;color:#a96d9c}.actual-letter{font-family:Georgia,serif;font-size:clamp(14px,1.3vw,18px);line-height:1.85;position:relative;white-space:pre-wrap}.actual-letter p{margin:20px 0}.greeting{font-style:italic;font-size:22px}.signature{font-style:italic;margin-top:32px!important}.pressed-flower{position:absolute;right:10px;bottom:8px;font-size:38px;color:#a17a9c}.journal{position:absolute;right:3%;top:29%;width:24%;height:54%;z-index:8;background:linear-gradient(110deg,#b484a2,#dbafbc 8%,#c398ad);border:10px solid #7d536d;border-radius:8px 18px 15px 6px;box-shadow:10px 15px 30px #000b;transform:rotate(5deg);padding:16px 12px;color:#5b2b4c;transition:transform .3s}.journal:hover{transform:rotate(2deg)}.journal-open{z-index:14;transform:rotate(0) scale(1.07)!important}.journal-head{display:flex;justify-content:space-between;gap:7px;font:10px monospace;letter-spacing:.07em;border-bottom:2px solid #a56c8d;padding-bottom:13px}.journal-paper{height:calc(100% - 38px);background:repeating-linear-gradient(0deg,#edd0d0 0 28px,#d1a3b7 29px,#f2d4d7 30px);margin-top:12px;padding:15px;overflow:auto;position:relative}.journal-doodle{font-size:24px;color:#c077a4}.journal-prompt{height:85%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:15px;font:italic 20px cursive}.journal-prompt button,.journal-controls button{background:#61334f;color:#ffdfec;border:0;padding:10px;cursor:pointer;font:11px monospace}.journal-entry h3{font:italic 25px cursive}.journal-entry p{font:italic clamp(14px,1.4vw,19px) Georgia,serif;line-height:1.75;white-space:pre-wrap}.journal-tabs{position:absolute;right:-23px;top:20%;display:flex;flex-direction:column;gap:8px}.journal-tabs span{writing-mode:vertical-rl;background:#b77b9f;padding:10px 5px;font-size:9px}.journal-controls{position:absolute;bottom:-47px;left:0;right:0;display:flex;justify-content:space-between}.bottom-nav{position:absolute;left:3%;bottom:3%;z-index:21;display:flex;gap:10px}.bottom-nav button{display:flex;align-items:center;gap:7px;background:#30192e;border:1px solid #8d5b82;border-radius:5px;color:#f8c8e7;padding:13px;cursor:pointer;font:11px monospace}.bottom-nav button:hover{background:#613553}.name-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;padding:17px;background:#140b1c;border-top:1px solid #6c315e;position:relative;z-index:22}.name-bar button{border:1px solid #804d73;border-radius:30px;background:#21112b;color:#e9b6d9;padding:10px 20px;cursor:pointer}.name-bar button.active{background:#f0a4d6;color:#291124}.waiting{background:#120b1c;min-height:100vh;display:grid;place-items:center;color:#f3b9dc;font:16px monospace}@keyframes unfold{from{opacity:0;transform:rotateX(-75deg) scale(.8);transform-origin:top}to{opacity:1;transform:rotateX(0) scale(1)}}@media(max-width:850px){.nav-links{display:none}.desktop{min-height:1150px}.desk-text{left:5%;top:2%;width:55%}.sticky{display:none}.scene-cup{top:7%}.scene-cassette{right:3%;top:2%;transform:scale(.65) rotate(9deg)}.envelope-pile{height:350px;top:190px;bottom:auto}.scattered-envelope{width:220px;height:80px}.letter-zone{left:5%;top:46%;width:57%;height:43%}.journal{right:3%;top:52%;width:32%;height:33%}.bottom-nav{bottom:2%}.scene-pen{display:none}}@media(max-width:560px){.desktop{min-height:1450px}.script-title{font-size:45px}.desk-text{width:75%}.scene-camera,.scene-cassette,.scene-cup{opacity:.35}.envelope-pile{top:180px;height:330px}.scattered-envelope{width:205px;height:69px}.env-name{font-size:18px}.letter-zone{top:39%;left:5%;width:90%;height:32%}.journal{top:74%;left:10%;right:auto;width:80%;height:20%}.bottom-nav{bottom:1%;left:3%;right:3%;justify-content:center}.bottom-nav button{font-size:9px;padding:9px}.journal-entry p{font-size:15px}.attached-photo{width:105px}.attached-photo img,.empty-photo{height:110px}.scene-note{display:none}}
+
+/* Photographic material treatment: wood, handmade paper, imperfect edges, layered stationery */
+.desktop{background-image:linear-gradient(100deg,#130914aa,#25102a55 45%,#130715b0),url('https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=1800&q=85');background-position:center;background-size:cover;background-blend-mode:multiply,normal;isolation:isolate}
+.desktop:after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 46%,transparent 28%,#100613b0 100%),linear-gradient(160deg,#9a3c8630,#09030b65);mix-blend-mode:multiply}
+.scattered-envelope{background-image:linear-gradient(140deg,#f7e1d3aa,#b8839b66),url('https://images.unsplash.com/photo-1531058020387-3be344556be6?w=700&q=75');background-size:cover;background-position:center;border:1px solid #d5aaa0;box-shadow:2px 3px 1px #583040,7px 11px 16px #000a,inset 0 0 22px #9b637c66;filter:sepia(.35) saturate(.78);border-radius:1px;clip-path:polygon(0 1%,8% 0,25% 1%,51% 0,78% 1%,100% 0,99% 100%,74% 99%,46% 100%,19% 99%,0 100%)}
+.scattered-envelope:nth-child(2n){filter:sepia(.5) saturate(.68) hue-rotate(330deg)}.scattered-envelope:nth-child(3n){filter:sepia(.4) saturate(.85) brightness(.9)}
+.envelope-fold{background:linear-gradient(160deg,#efd5c7e8,#caa2a3e0);clip-path:polygon(0 0,100% 0,50% 65%);filter:drop-shadow(0 4px 3px #663f4a)}.env-name{font-family:cursive;font-weight:400;text-shadow:0 1px 1px #ffeddc}.mini-sticker{background:#823752;color:#f3bbce;border-radius:50%;width:27px;height:27px;text-align:center;box-shadow:inset 0 1px 3px #fff5,1px 3px 4px #45202a80}
+.paper-preview,.unfolded-letter{background-image:linear-gradient(90deg,#b48a6a30,#fff0d1aa 6%,#f4dfc4a0 90%,#8d604930),url('https://images.unsplash.com/photo-1517976487492-5750f3195933?w=1000&q=80');background-blend-mode:normal,multiply;background-size:cover;background-position:center;border:0;box-shadow:0 2px 1px #6e3c43,3px 5px 2px #d0ad9d,9px 11px 2px #8f6b70,17px 24px 35px #000d;clip-path:polygon(0 0,12% .4%,25% 0,41% .4%,56% 0,70% .4%,83% 0,100% .3%,99.6% 20%,100% 45%,99.6% 67%,100% 100%,77% 99.6%,52% 100%,24% 99.6%,0 100%,.3% 70%,0 43%)}
+.paper-preview:after,.unfolded-letter:after{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 90% 10%,#b7786850,transparent 25%),radial-gradient(ellipse at 10% 90%,#885c5444,transparent 35%);mix-blend-mode:multiply}
+.letter-zone{filter:drop-shadow(4px 11px 8px #0006)}.actual-letter{font-family:Georgia,serif;line-height:1.75;letter-spacing:.005em;color:#392c2a}.paper-caption{font-family:'Courier New',monospace}.attached-photo{background:#fff5dc;box-shadow:2px 5px 2px #704d48,5px 10px 18px #0007;filter:sepia(.2)}.attached-photo:before{content:'';position:absolute;top:-12px;left:28%;width:60px;height:20px;background:#d6a3aa99;transform:rotate(8deg)}
+.journal{background-image:linear-gradient(110deg,#785067,#d7acb3 12%,#a7738e);box-shadow:2px 2px 0 #3d2332,8px 10px 0 #8a6075,15px 20px 30px #000c;border:9px ridge #81566d}.journal-paper{background-color:#e4c2b6;background-image:repeating-linear-gradient(0deg,transparent 0 29px,#8b697a55 30px),url('https://images.unsplash.com/photo-1517976487492-5750f3195933?w=600&q=70');background-blend-mode:multiply;background-size:auto,cover;box-shadow:inset 5px 0 12px #734a5766}.journal-entry p{font-family:Georgia,serif;color:#392c37}
+.scene-cassette{background:linear-gradient(120deg,#2b172ac9,#6b3e6488),url('https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&q=75');background-size:cover;box-shadow:3px 8px 20px #000a}.scene-cup{background:linear-gradient(120deg,#b78d86cc,#d9b6b2),url('https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400&q=70');background-size:cover;box-shadow:inset -10px -8px 20px #53304466,7px 12px 15px #000a}.scene-candle{font-size:0;top:7%;left:29%;width:65px;height:93px;border-radius:6px 6px 25px 25px;background:radial-gradient(ellipse at 50% 7%,#fff3b7 0 12%,#f7a554 14%,#a85844 22%,transparent 23%),linear-gradient(90deg,#7e4b51,#e7ae82,#77434e);box-shadow:0 0 35px 12px #ffae7040,5px 10px 16px #000a}.scene-candle:before{content:' ';position:absolute;top:-22px;left:29px;width:8px;height:28px;background:#ffce70;border-radius:100% 0 100% 100%;box-shadow:0 0 25px 8px #ffad55}.scene-camera{width:110px;height:100px;background:url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&q=75') center/cover;transform:rotate(-12deg);border:8px solid #b58ca7;box-shadow:5px 10px 16px #0009;font-size:0}.scene-camera small{display:none}
+.scene-lace{top:3%;left:48%;width:140px;height:110px;background:radial-gradient(circle,#ba7e9b 2px,transparent 3px) 0 0/14px 14px;opacity:.35;transform:rotate(15deg)}.scene-postcards{bottom:4%;left:28%;width:180px;height:135px;background:linear-gradient(#a6798b44,#3d1e3b44),url('https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=350&q=70') center/cover;border:10px solid #e9d6c5;transform:rotate(14deg);box-shadow:6px 12px 15px #000a}.scene-wax{bottom:13%;left:22%;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#d07487,#6e263f);color:#e6b2b7;text-align:center;line-height:58px;font-size:35px;box-shadow:2px 5px 12px #000b}.scene-stamps{top:3%;right:35%;font-size:30px;color:#d1a2c4;transform:rotate(20deg);text-shadow:2px 3px 5px #000a}
+@media(max-width:850px){.scene-postcards,.scene-lace{display:none}.scene-candle{left:72%;top:17%}}
+
+/* Exact uploaded CLAR_OS desk artwork, integrated as the photographed scene */
+.desktop{background-image:linear-gradient(90deg,#16091430,#1d0c2430),url('https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/89BADECE-88E3-4FF8-8332-945F45E12A9F.png')!important;background-size:100% 100%!important;background-position:center!important;background-repeat:no-repeat!important}
+.desktop:after{background:linear-gradient(90deg,#16091533,#180a1c14 55%,#16091522)!important}
+.scene{display:none!important}
+.desk-text{z-index:6}.desk-text .script-title,.desk-text>p{opacity:0}.desk-text .sticky{display:none}
+.envelope-pile{z-index:11}.scattered-envelope{background-image:linear-gradient(155deg,#ead1c0,#ba938c)!important;background-color:#d8b2a8;opacity:.97;box-shadow:2px 3px 2px #45232e,5px 10px 17px #000b!important}
+.letter-zone{z-index:13;top:24%;left:37%;width:32%;height:64%;transform:rotate(-2deg)}
+.paper-preview,.unfolded-letter{background-image:linear-gradient(95deg,#c9a38a,#f2d8bc 6%,#e9ccb0 93%,#c09b88)!important;background-color:#e8cfb3;box-shadow:0 3px 1px #9d7369,4px 7px 2px #b18a79,9px 18px 22px #000a!important}
+.journal{z-index:12;right:2%;top:32%;width:25%;height:51%;background-image:linear-gradient(100deg,#906b72,#cfaaa3 10%,#b88d92)!important}
+.journal-paper{background-image:repeating-linear-gradient(0deg,#e5c4b5 0 29px,#c99b9c 30px)!important}
+.bottom-nav{z-index:22}
+@media(max-width:850px){.desktop{background-size:cover!important;background-position:center!important}.letter-zone{top:46%;left:5%;width:57%;height:43%}.journal{right:3%;top:52%;width:32%;height:33%}}
+@media(max-width:560px){.desktop{background-size:auto 100%!important;background-position:48% center!important}.letter-zone{top:39%;left:5%;width:90%;height:32%}.journal{top:74%;left:10%;width:80%;height:20%}}
+
+
+/* October iPad screenshot fixes: full desk image, legible long-form letters, clear layers */
+.desktop{background-image:linear-gradient(90deg,#16091412,#1d0c2410),url('https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/89BADECE-88E3-4FF8-8332-945F45E12A9F.png')!important;background-size:cover!important;background-position:center center!important;min-height:950px}
+.desktop:before{opacity:.15!important}
+.envelope-pile{z-index:9}.scattered-envelope{width:clamp(170px,23vw,320px);height:clamp(63px,7.7vw,98px);background:linear-gradient(150deg,#ead5c4,#cba99b)!important;border:1px solid #b18a7d;opacity:.96;filter:sepia(.22);box-shadow:2px 5px 13px #0008!important}
+.letter-zone{z-index:15;top:23%;left:37%;width:32%;height:66%}
+.unfolded-letter,.paper-preview{background:linear-gradient(90deg,#ddbea2,#f6e3ca 7%,#efdbc0 93%,#d4b294)!important;padding:clamp(17px,2.2vw,30px)!important;overflow:auto;scrollbar-width:thin;scrollbar-color:#b78d82 transparent}
+.actual-letter{font-family:Georgia,'Times New Roman',serif!important;font-style:normal!important;font-size:clamp(15px,1.25vw,19px)!important;line-height:1.75!important;letter-spacing:normal!important;white-space:pre-wrap;clear:both}
+.actual-letter p{margin:0 0 17px!important}.actual-letter .greeting{font-family:Georgia,serif!important;font-size:22px!important;font-style:italic!important}
+.attached-photo{float:none!important;width:140px!important;max-width:60%;margin:20px auto 25px!important;transform:rotate(-4deg)!important}
+.attached-photo img,.empty-photo{height:135px!important}
+.journal{z-index:12;right:3%;top:30%;height:56%;width:24%;transform:rotate(2deg)}
+.journal-paper{background:repeating-linear-gradient(0deg,#eed8c8 0 29px,#cfaeac 30px)!important}
+.journal-entry p{font-family:Georgia,'Times New Roman',serif!important;font-style:normal!important;font-size:clamp(14px,1.1vw,17px)!important;line-height:1.75!important}
+.journal-entry h3{font-family:Georgia,serif!important;font-style:italic}
+@media(max-width:850px){.desktop{min-height:1200px;background-size:auto 100%!important;background-position:center!important}.envelope-pile{top:170px;height:390px}.letter-zone{top:43%;left:4%;width:57%;height:43%}.journal{top:49%;right:2%;width:33%;height:36%}.actual-letter{font-size:16px!important}.journal-entry p{font-size:15px!important}}
+@media(max-width:560px){.desktop{min-height:1500px}.envelope-pile{top:170px;height:350px}.letter-zone{top:38%;left:5%;width:90%;height:33%}.journal{top:74%;left:8%;width:84%;height:20%}.bottom-nav{bottom:1%}}
+
+
+/* Light archival writing desk, photographed background chosen by user */
+.desktop{background:#e2c8a0 url('https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/IMG_2320.jpeg') center center/100% 100% no-repeat!important;color:#382b27!important;min-height:1000px!important}
+.desktop:before,.desktop:after{opacity:0!important;pointer-events:none!important}
+.scene,.desk-text{display:none!important}
+.envelope-pile{left:4%!important;top:27%!important;width:27%!important;z-index:12!important;filter:sepia(.2)}
+.scattered-envelope{width:clamp(160px,21vw,300px)!important;height:clamp(60px,7vw,90px)!important;background:linear-gradient(145deg,#e4cba6,#c7a77f)!important;box-shadow:1px 2px 1px #9a7957,4px 9px 12px #503a2670!important;border:1px solid #b39872!important;transform:rotate(-3deg)}
+.letter-zone{top:25%!important;left:34%!important;width:37%!important;height:66%!important;z-index:15!important;transform:rotate(-1deg)!important}
+.unfolded-letter,.paper-preview{background:linear-gradient(95deg,#e1c69b,#f9ebd0 8%,#f4e3c4 92%,#d9b989)!important;color:#342821!important;box-shadow:2px 3px 1px #c8a97f,7px 12px 20px #4a34285c!important;border:1px solid #c6a77e!important}
+.actual-letter{color:#332820!important;font-family:Georgia,'Times New Roman',serif!important;font-size:clamp(16px,1.22vw,19px)!important;line-height:1.72!important}
+.journal{right:3%!important;top:34%!important;width:23%!important;height:52%!important;z-index:12!important;transform:rotate(3deg)!important;background:#9a7555!important;border:6px solid #856747!important;box-shadow:5px 8px 18px #39281955!important}
+.journal-paper{background:repeating-linear-gradient(0deg,#f3e5c9 0 28px,#d7c3a5 29px)!important;color:#493626!important}
+.journal-entry p{color:#423228!important;font-family:Georgia,serif!important;font-size:clamp(14px,1.05vw,17px)!important;font-style:normal!important;line-height:1.7!important}
+.bottom-nav{z-index:22!important}
+@media(max-width:850px){.desktop{min-height:1120px!important;background-size:auto 100%!important}.envelope-pile{top:17%!important;left:2%!important}.letter-zone{top:29%!important;left:32%!important;width:41%!important;height:58%!important}.journal{top:39%!important;right:1%!important;width:25%!important;height:44%!important}}
+@media(max-width:560px){.desktop{min-height:1450px!important;background-size:auto 100%!important}.envelope-pile{top:15%!important;left:4%!important}.letter-zone{top:40%!important;left:5%!important;width:90%!important;height:33%!important}.journal{top:77%!important;left:8%!important;width:84%!important;height:18%!important}}
+
+
+/* Vintage stationery and a journal tucked beyond the desk edge */
+.scene,.pressed-flower{display:none!important}
+.desktop:before{opacity:0!important}
+.scattered-envelope{background:linear-gradient(145deg,#e5d3b0,#c5a77c)!important;filter:sepia(.35) saturate(.7)!important;border-radius:1px!important;box-shadow:2px 3px 0 #a48b66,5px 9px 15px #37291a70!important}
+.mini-sticker{background:#825943!important;color:#e8d9bc!important}
+.unfolded-letter,.paper-preview{background-image:repeating-linear-gradient(0deg,transparent 0 34px,#9d795524 35px),linear-gradient(90deg,#d6b98c,#f5e6c8 8%,#f0ddb8 94%,#cba97d)!important;border:1px solid #b99a70!important;box-shadow:2px 3px 0 #ceb28c,5px 7px 0 #bda17a,10px 18px 22px #46302166!important}
+.actual-letter{font-family:Georgia,serif!important;color:#443426!important;line-height:1.8!important}
+.journal{top:30%!important;left:auto!important;right:-15%!important;width:29%!important;height:56%!important;transform:rotate(8deg)!important;z-index:17!important;cursor:grab!important;transition:all .55s ease!important;background:linear-gradient(90deg,#513726,#9d7957 12%,#71503a)!important;border:8px solid #654630!important;border-left:18px ridge #66452f!important;border-radius:3px 13px 13px 3px!important;box-shadow:-9px 15px 25px #33211590!important}
+.journal:not(.journal-open):hover{right:-12%!important;transform:rotate(5deg)!important}
+.journal.journal-open{top:12%!important;left:22%!important;right:auto!important;width:66%!important;height:77%!important;transform:rotate(-1deg)!important;z-index:30!important;cursor:default!important;box-shadow:0 22px 75px #27170cb5!important}
+.journal-head{color:#f0ddbc!important;cursor:pointer!important}
+.journal-paper{background:repeating-linear-gradient(0deg,transparent 0 34px,#987c5a30 35px),linear-gradient(90deg,#c9ac85,#f2e4c7 10%,#ead6b3)!important;box-shadow:inset 13px 0 17px #74513c55!important}
+.journal-entry{overflow:auto!important;max-height:92%!important;padding:clamp(14px,2vw,34px)!important}
+.journal-entry h3{font-family:Georgia,serif!important;font-size:clamp(22px,2.2vw,36px)!important;color:#4c3425!important}
+.journal-entry p{font-family:Georgia,serif!important;font-size:clamp(17px,1.65vw,24px)!important;line-height:1.8!important;color:#493628!important}
+.journal-doodle{color:#826444!important}
+.book-close{position:absolute;top:-16px;right:-16px;z-index:35;border:1px solid #a68b66;background:#f0e1c3;color:#543928;border-radius:50%;padding:8px;cursor:pointer}
+@media(max-width:850px){.journal{top:31%!important;right:-19%!important;width:33%!important;height:52%!important}.journal.journal-open{top:16%!important;left:14%!important;width:79%!important;height:73%!important}}
+@media(max-width:560px){.journal{top:77%!important;right:-37%!important;width:69%!important;height:19%!important}.journal.journal-open{top:43%!important;left:4%!important;width:92%!important;height:48%!important}.journal-entry p{font-size:17px!important}}
+
+
+/* The original photograph's upper-right open book IS the journal when closed */
+.background-book-hotspot{position:absolute;top:1%;right:0;width:37%;height:32%;z-index:19;background:transparent;border:0;cursor:pointer;transform:rotate(5deg);touch-action:pan-y}
+.background-book-hotspot span{position:absolute;right:18%;bottom:12%;padding:9px 13px;background:#efe0bded;color:#513d2b;font:12px Georgia,serif;letter-spacing:.08em;border:1px solid #a88a63;box-shadow:2px 4px 8px #4e382c60;transform:rotate(-5deg);opacity:.88}
+.background-book-hotspot:hover span,.background-book-hotspot:focus-visible span{opacity:1;text-decoration:underline}
+.journal:not(.journal-open){display:none!important}
+.journal.journal-open{position:absolute!important;top:12%!important;left:17%!important;right:auto!important;width:75%!important;height:77%!important;transform:rotate(-1deg)!important;z-index:40!important;display:flex!important;background:linear-gradient(90deg,#60412c 0 3%,#e7d3ac 4%,#d2b78b 49%,#e6d0a5 52%,#ad885f 100%)!important;border:12px solid #765336!important;border-left:20px solid #60432d!important;box-shadow:0 26px 75px #24160cbb!important}
+.journal.journal-open .journal-paper{background:linear-gradient(90deg,#cbb08a,#f1e2c2 8%,#f4e6cb 47%,#bda078 49%,#f0dfbc 52%,#f5e7cc 97%,#c5a77f)!important}
+.journal.journal-open .journal-entry{padding:clamp(18px,3vw,48px)!important}
+.journal.journal-open .journal-entry p{font-size:clamp(18px,1.8vw,26px)!important;line-height:1.8!important}
+.journal.journal-open .journal-head{color:#f2e4cb!important}
+@media(max-width:850px){.background-book-hotspot{top:0;right:0;width:42%;height:28%}.journal.journal-open{top:13%!important;left:7%!important;width:86%!important;height:75%!important}}
+@media(max-width:560px){.background-book-hotspot{width:58%;height:19%}.journal.journal-open{top:38%!important;left:3%!important;width:94%!important;height:48%!important}}
+
+
+/* Correct physical source: the photographed OPEN book on the UPPER LEFT, not right */
+.background-book-hotspot{top:0!important;left:0!important;right:auto!important;width:34%!important;height:42%!important;transform:none!important;clip-path:polygon(0 0,100% 0,100% 78%,70% 94%,0 100%)!important}
+.background-book-hotspot span{left:8%!important;right:auto!important;bottom:20%!important;transform:rotate(-12deg)!important;background:#e5d1aaee!important;color:#4a3322!important}
+.journal.journal-open{top:11%!important;left:13%!important;right:auto!important;width:78%!important;height:79%!important;transform:rotate(-1deg)!important;z-index:40!important;display:flex!important;background:linear-gradient(90deg,#67462d,#c4a37b 5%,#f1dfbc 8%,#ead4a8 47%,#97734c 50%,#e8d3a9 53%,#f0e0c0 95%,#745239)!important;border:9px solid #7c5a3d!important;box-shadow:0 26px 85px #24160cc7!important}
+.journal.journal-open .journal-paper{background:linear-gradient(90deg,#d0b187 0,#f4e4c5 6%,#f3e1bd 46%,#ac8d65 49%,#d0b58d 51%,#f6e8ca 55%,#eddbb7 97%,#c5a47b)!important}
+@media(max-width:850px){.background-book-hotspot{width:35%!important;height:37%!important}.journal.journal-open{top:14%!important;left:5%!important;width:90%!important;height:73%!important}}
+
+
+/* Physical replacement of the upper-left photographed book */
+.desk-book-replacement{position:absolute;top:-3.5%;left:-4%;width:39%;height:42%;z-index:18;pointer-events:none;transform:rotate(-12deg);transform-origin:50% 60%;display:flex;filter:drop-shadow(8px 13px 9px #3320138c);border:7px solid #6c4b30;border-radius:7px 18px 20px 8px;background:#64452f}
+.desk-book-left,.desk-book-right{position:relative;flex:1;min-width:0;padding:12% 5% 6%;background:repeating-linear-gradient(0deg,transparent 0 23px,#8b735222 24px),linear-gradient(90deg,#c5a57b,#f0dfba 11%,#ead2a8 94%,#a88a65);color:#513c2d;font:italic clamp(10px,1.15vw,19px)/1.6 Georgia,serif;box-shadow:inset 0 0 25px #8d6c4560}
+.desk-book-left{border-radius:6px 0 0 8px;transform:perspective(600px) rotateY(7deg)}
+.desk-book-right{border-radius:0 10px 8px 0;transform:perspective(600px) rotateY(-8deg)}
+.desk-book-left:after{content:'✿';position:absolute;right:12%;bottom:8%;font-size:26px;color:#977957}
+.desk-book-right:after{content:'❧';position:absolute;right:12%;bottom:7%;font-size:34px;color:#977957}
+.desk-book-replacement span{display:block;font-size:clamp(11px,1.5vw,24px);margin-bottom:12px;text-decoration:underline;text-decoration-color:#967a59}
+.desk-book-replacement i{display:block;font-style:italic;letter-spacing:.025em}
+.background-book-hotspot{top:0!important;left:0!important;width:36%!important;height:37%!important;clip-path:none!important;z-index:20!important}
+.background-book-hotspot span{left:17%!important;bottom:4%!important;right:auto!important;transform:rotate(-10deg)!important;font:italic 14px Georgia,serif!important;background:#e6d1a8e8!important}
+.journal.journal-open{top:13%!important;left:11%!important;width:80%!important;height:75%!important;z-index:42!important;border-radius:8px 15px 15px 8px!important}
+.journal.journal-open .journal-paper{position:relative!important;background:linear-gradient(90deg,#c3a47d,#f0ddba 5%,#f4e4c4 46%,#b79b74 49%,#ebd8b5 53%,#f1e1c2 96%,#c6a580)!important}
+.journal.journal-open .journal-entry{position:relative!important;width:49%!important;margin-left:50%!important;height:88%!important;overflow-y:auto!important;padding:2% 4%!important}
+.journal.journal-open .journal-entry p{font:clamp(17px,1.6vw,24px)/1.85 Georgia,serif!important;color:#493728!important}
+.journal.journal-open .journal-entry h3{font:italic clamp(22px,2.2vw,35px) Georgia,serif!important}
+.journal.journal-open .journal-doodle{position:absolute!important;left:7%!important;top:10%!important;font:italic clamp(16px,1.6vw,25px) Georgia,serif!important;color:#72573f!important}
+.journal.journal-open .journal-doodle:after{content:'For Clarissa\\A little collection of all the things we appreciate about you.';white-space:pre-line;display:block;margin-top:45px;max-width:75%;line-height:1.8;font-size:clamp(16px,1.5vw,23px)}
+.journal.journal-open .journal-head{position:absolute!important;left:3%!important;top:1%!important;z-index:2!important;color:#765c43!important}
+.journal.journal-open .journal-tabs{display:none!important}
+.journal.journal-open .journal-controls{position:absolute!important;bottom:2%!important;right:5%!important;z-index:45!important}
+@media(max-width:850px){.desk-book-replacement{width:40%;height:36%;top:-1%}.journal.journal-open{left:5%!important;width:90%!important}.journal.journal-open .journal-entry{width:49%!important;margin-left:50%!important}}
+
+
+.message-switch{display:flex;justify-content:center;gap:10px;padding:13px;background:#180e20;border-bottom:1px solid #71535c}.message-switch button{border:1px solid #8d6e70;background:#281b29;color:#e8d6c4;padding:12px 20px;font:12px monospace;letter-spacing:.08em;cursor:pointer;border-radius:3px}.message-switch button.selected{background:#dbc49e;color:#342319;border-color:#dbc49e}
+.family-room{min-height:calc(100vh - 155px);background:radial-gradient(ellipse at 50% 20%,#5c3d2c,#1c1414 75%);display:flex;flex-direction:column;align-items:center;padding:35px 18px 65px;color:#e9d4b4}.family-intro{text-align:center}.family-intro small{font:11px monospace;letter-spacing:.2em}.family-intro h1{font:italic clamp(29px,4vw,55px) Georgia,serif;margin:13px 0}.family-intro p{font:17px Georgia,serif}.family-television{width:min(900px,95vw);display:grid;grid-template-columns:minmax(0,1fr) 145px;gap:13px;padding:24px;border:13px solid #5d3b25;border-radius:34px;background:linear-gradient(135deg,#ad8052,#69452c 45%,#3b271e);box-shadow:0 25px 65px #0009,inset 0 0 0 3px #d6ae76;margin-top:28px}.family-screen{min-height:360px;aspect-ratio:4/3;border:17px solid #24201b;border-radius:35px;background:radial-gradient(ellipse,#4e5a50,#171c1b 80%);box-shadow:inset 0 0 30px #000,0 0 0 2px #c09b6e;overflow:hidden;display:flex;align-items:center;justify-content:center}.family-screen video{width:100%;height:100%;object-fit:contain;background:#090909}.family-placeholder{text-align:center;color:#d9ddc6;font-family:monospace;text-shadow:0 0 12px #9cb1a7}.family-placeholder>span{font-size:55px}.family-placeholder h2{letter-spacing:.18em}.family-placeholder small{opacity:.7}.family-tv-controls{display:flex;flex-direction:column;align-items:center;justify-content:space-around;color:#ebd5b2;text-align:center}.family-tv-label{font:19px Georgia,serif}.family-tv-label small{font:11px monospace}.family-tv-controls button{border:0;background:none;color:#eed7af;cursor:pointer}.family-tv-controls button:disabled{opacity:.45;cursor:default}.tv-dial{display:block;font-size:72px;text-shadow:2px 4px 2px #21140f}.family-tapes{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:22px}.family-tapes button{padding:10px 15px;background:#d9c09a;color:#302219;border:1px solid #85694a;cursor:pointer}.family-tapes button.selected{outline:3px solid #b88363}
+@media(max-width:650px){.family-television{grid-template-columns:1fr;padding:12px;border-width:8px}.family-screen{min-height:220px;border-width:9px}.family-tv-controls{flex-direction:row}.tv-dial{font-size:45px}.message-switch button{font-size:10px;padding:11px 8px}}
+
+
+.family-video-error{font:14px Georgia,serif;color:#ffe2bd;text-align:center}.family-video-error a{color:#fff4d2;text-decoration:underline}
+
+/* 26 Oct: two real pages, readable handwriting and an unclipped iPad journal */
+.journal-dimmer{position:fixed;inset:0;background:#24170d80;backdrop-filter:blur(3px);z-index:36}
+.journal.journal-open{position:fixed!important;top:50%!important;left:50%!important;right:auto!important;width:min(1190px,91vw)!important;height:min(760px,82dvh)!important;min-height:0!important;transform:translate(-50%,-50%)!important;display:flex!important;flex-direction:column!important;padding:13px 17px 56px!important;z-index:100!important;border:10px solid #715032!important;border-left:17px solid #67472b!important;border-radius:6px 16px 16px 7px!important;background:linear-gradient(100deg,#9a754e,#6d4b2d 5%,#a48057 96%,#553921)!important;box-shadow:0 22px 5px -14px #3d281d,0 36px 80px #160b08bc,inset 0 0 0 2px #d9bc8d!important}
+.journal.journal-open .journal-head{position:relative!important;top:auto!important;left:auto!important;width:100%!important;display:flex!important;flex:0 0 24px!important;align-items:center!important;justify-content:space-between!important;border:0!important;padding:0 8px 7px!important;margin:0!important;z-index:3!important;color:#e6d6b8!important;font:10px 'Courier New',monospace!important;letter-spacing:.17em!important;cursor:default!important}
+.journal.journal-open .journal-paper{position:relative!important;flex:1 1 auto!important;display:block!important;min-height:0!important;width:100%!important;height:auto!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#eddbba!important;box-shadow:1px 1px 2px #563b29,inset 0 0 16px #6b50305c!important;border-radius:3px 9px 10px 3px!important}
+.journal-spread{position:relative;display:grid;grid-template-columns:1fr 1fr;width:100%;height:100%;isolation:isolate}
+.journal-spread:after{content:'';position:absolute;left:50%;top:0;bottom:0;width:25px;transform:translateX(-50%);z-index:6;pointer-events:none;background:linear-gradient(90deg,transparent,#7d593a44 23%,#3e291f66 43%,#f7ebd0b8 57%,transparent)}
+.journal-leftpage,.journal-rightpage{min-width:0;height:100%;position:relative;overflow:hidden;color:#4c3726!important;background-image:radial-gradient(circle at 90% 5%,#a17e5330 0 1px,transparent 2px),radial-gradient(ellipse at 7% 90%,#986b383b,transparent 48%),repeating-linear-gradient(0deg,transparent 0 29px,#9a75500b 30px),linear-gradient(90deg,#d4b78e 0%,#f1dfbd 8%,#f6e7c9 83%,#ddc49f 100%)!important;background-size:13px 17px,auto,auto,auto!important;box-shadow:inset 0 0 28px #7e5b3452!important}
+.journal-leftpage{padding:clamp(30px,4.2vw,65px) clamp(22px,4vw,62px) 28px!important;border-radius:3px 0 0 4px}
+.journal-leftpage .journal-overline{font:10px 'Courier New',monospace;letter-spacing:.2em;color:#8a6e4a}
+.journal-leftpage h2{font:normal clamp(32px,4.3vw,62px)/1.18 Georgia,serif!important;letter-spacing:-.04em;margin:22px 0 35px;color:#4e3926}
+.journal-leftpage h2 em{font-weight:normal;color:#7c523d}
+.journal-ornament{position:absolute;right:11%;top:8%;font:36px Georgia,serif;color:#a58b60;opacity:.7}
+.journal-note-scrap{position:relative;width:86%;max-width:340px;margin:5px 0 0 7%;padding:26px 29px 25px;background:linear-gradient(125deg,#ead5ad,#f5e5c7 60%,#d9ba8c);transform:rotate(-3deg);box-shadow:2px 4px 12px #704f3260;color:#654831;border:1px solid #c6aa81;clip-path:polygon(0 2%,12% 0,99% 1%,100% 98%,76% 100%,1% 99%)}
+.journal-note-scrap:before{content:'';position:absolute;left:30%;top:-2px;width:60px;height:19px;transform:rotate(5deg);background:#a38a6580}
+.journal-note-scrap span{font:italic 23px Georgia,serif}
+.journal-note-scrap p{font:italic clamp(15px,1.5vw,21px)/1.55 Georgia,serif;margin:12px 0 0}
+.journal-botanical{position:absolute;right:12%;bottom:11%;font:clamp(35px,5vw,66px) Georgia,serif;line-height:1;color:#87764d;transform:rotate(-23deg);opacity:.65;text-shadow:2px 1px 1px #dec7a1}
+.journal-botanical small{display:block;margin-left:25px;font-size:36px}
+.journal-leftfolio{position:absolute;bottom:26px;left:11%;font:10px 'Courier New',monospace;letter-spacing:.13em;color:#927351}
+.journal.journal-open .journal-entry.journal-rightpage{width:100%!important;max-height:none!important;height:100%!important;margin:0!important;padding:clamp(35px,4vw,62px) clamp(32px,4.5vw,70px) 65px!important;overflow-y:auto!important;scrollbar-width:thin;scrollbar-color:#aa906a transparent;animation:turningPage .35s ease-out both}
+.journal-entry-heading{font:10px 'Courier New',monospace;letter-spacing:.15em;color:#947553;border-bottom:1px solid #af936b75;padding-bottom:14px;margin-bottom:24px}
+.journal.journal-open .journal-entry h3{font:italic clamp(26px,2.6vw,39px) Georgia,serif!important;line-height:1.2!important;letter-spacing:-.015em!important;color:#523726!important;margin:0 0 19px!important}
+.journal.journal-open .journal-entry h3 span{font-size:.63em;color:#765641}
+.journal.journal-open .journal-entry p{font:normal clamp(16px,1.6vw,22px)/1.7 Georgia,serif!important;white-space:pre-line!important;color:#46382c!important;overflow-wrap:break-word;margin:0 0 25px}
+.journal-rightfolio{display:block;text-align:right;font:10px 'Courier New',monospace;letter-spacing:.1em;color:#967b58;margin-top:35px}
+.journal.journal-open .journal-controls{position:absolute!important;bottom:9px!important;left:30%!important;right:7%!important;z-index:50!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:13px!important}
+.journal.journal-open .journal-controls button{display:flex;align-items:center;gap:5px;border:1px solid #ba9770!important;border-radius:2px!important;background:#efdec0!important;color:#533b29!important;font:11px 'Courier New',monospace!important;letter-spacing:.07em!important;padding:8px 13px!important;box-shadow:0 2px 3px #26150a55!important}
+.journal.journal-open .journal-controls span{color:#ecddc4;font:12px 'Courier New',monospace;white-space:nowrap}
+.journal.journal-open .book-close{top:-21px!important;right:-19px!important;width:43px;height:43px;display:flex;justify-content:center;align-items:center;border:2px solid #8f704c!important;box-shadow:1px 3px 10px #301c13a0!important;z-index:55!important}
+@keyframes turningPage{from{opacity:.72;transform:perspective(800px) rotateY(-3deg)}to{opacity:1;transform:perspective(800px) rotateY(0)}}
+@media(max-width:700px){.journal.journal-open{width:96vw!important;height:min(740px,86dvh)!important;padding:9px 9px 57px!important;border-width:7px!important;border-left-width:10px!important}.journal-leftpage{padding:30px 14px 20px!important}.journal-leftpage h2{font-size:clamp(22px,5.6vw,35px)!important;margin:15px 0 20px}.journal-note-scrap{width:95%;margin-left:0;padding:13px!important}.journal-note-scrap span{font-size:18px}.journal-note-scrap p{font-size:14px}.journal.journal-open .journal-entry.journal-rightpage{padding:28px 16px 55px!important}.journal.journal-open .journal-entry h3{font-size:24px!important}.journal.journal-open .journal-entry p{font-size:15px!important;line-height:1.55!important}.journal-ornament,.journal-botanical{display:none}.journal.journal-open .journal-controls{left:7%!important;right:7%!important}.journal.journal-open .journal-controls button{font-size:10px!important;padding:9px 8px!important}}
+
+
+/* FAMILY ARCHIVE — tactile woodgrain television, inset analog screen, cassette library */
+html.clar-family-view .fixed.inset-0.pointer-events-none.z-40{display:none!important}
+.family-room{position:relative!important;isolation:isolate;min-height:calc(100svh - 144px)!important;padding:40px 20px 75px!important;overflow:hidden!important;color:#d9c5a1!important;background:radial-gradient(ellipse at 48% 26%,#67504033,transparent 50%),radial-gradient(ellipse at 88% 8%,#a87c4452,transparent 35%),linear-gradient(140deg,#281b19,#362421 52%,#1d1619)!important}
+.family-room:before{content:'';position:absolute;inset:0;z-index:-2;opacity:.38;pointer-events:none;background:repeating-linear-gradient(3deg,transparent 0 4px,#b6924510 5px),repeating-linear-gradient(91deg,transparent 0 78px,#06030318 80px),radial-gradient(ellipse at 50% 65%,transparent 35%,#090508ad 100%)}
+.family-room:after{content:'';position:absolute;inset:auto 0 0;height:20%;z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent,#190f0d 12%,#452b1c 20%,#2e1b17 68%,#120d0a);border-top:3px solid #9a704752;box-shadow:0 -12px 45px #1b100d9a}
+.family-atmosphere{position:absolute;inset:0;z-index:-1;pointer-events:none}
+.family-window-glow{position:absolute;top:-24%;right:-18%;width:53%;height:85%;filter:blur(65px);background:radial-gradient(circle,#e2bb7550,transparent 68%)}
+.family-shelf-glow{position:absolute;bottom:8%;left:8%;width:85%;height:14%;filter:blur(22px);background:#cb9a5031}
+.family-intro{position:relative!important;z-index:2;text-align:center!important;margin:0 auto 20px!important;max-width:900px}
+.family-intro small{font:11px 'Courier New',monospace!important;letter-spacing:.27em!important;color:#d3b88f!important}
+.family-intro h1{font:normal clamp(36px,4vw,58px)/1.1 Georgia,serif!important;color:#f5dfba!important;letter-spacing:-.035em!important;margin:12px 0 9px!important;text-shadow:0 2px 11px #180c0a}
+.family-intro h1 em{font-weight:normal;color:#dfbc91}
+.family-intro p{font:italic clamp(15px,1.5vw,19px) Georgia,serif!important;color:#d4b994!important;letter-spacing:.015em}
+.family-tv-scene{position:relative;width:min(1080px,100%);margin:auto;z-index:2}
+.family-tv-shadow{position:absolute;top:70%;left:6%;width:88%;height:24%;border-radius:50%;filter:blur(23px);background:#070303b8;pointer-events:none}
+.family-television{position:relative!important;display:grid!important;grid-template-columns:minmax(0,1fr) clamp(130px,16vw,188px)!important;gap:0!important;margin:25px auto 0!important;padding:clamp(19px,2.2vw,31px)!important;width:min(1050px,100%)!important;border:2px solid #a0794d!important;border-bottom:12px solid #3d2519!important;border-radius:29px 32px 21px 22px!important;background:repeating-linear-gradient(94deg,#0000 0px,#6542270b 3px,#0000 9px),linear-gradient(120deg,#65412c,#b88754 11%,#a87348 28%,#875637 48%,#a47244 69%,#523521 100%)!important;box-shadow:inset 3px 3px 4px #e5b784a1,inset -6px -6px 15px #26140eb6,0 2px 0 #d8b07b,0 10px 0 #493121,0 20px 35px #120a0a8a,0 45px 65px #100805b8!important}
+.family-television:before{content:'';position:absolute;inset:9px;pointer-events:none;border:1px solid #e8c5975a;border-radius:19px;box-shadow:0 0 0 2px #391f1468}
+.family-television:after{content:'';position:absolute;top:22px;left:18%;width:46%;height:11%;pointer-events:none;background:linear-gradient(180deg,#ffedc620,transparent);filter:blur(12px)}
+.family-tv-brandplate{position:absolute;left:12%;top:8px;color:#e8c6a085;font:9px 'Courier New',monospace;letter-spacing:.25em;z-index:2;pointer-events:none}
+.family-tv-brandplate span{margin:0 8px}
+.family-tv-screenframe{display:flex;min-width:0;align-items:stretch;padding:clamp(7px,.85vw,13px);border-radius:39px/32px;background:linear-gradient(145deg,#261a15,#141211 26%,#3d3025 62%,#171615);box-shadow:inset 5px 7px 14px #000,inset -5px -5px 8px #8b704d88,0 0 0 3px #d2ad74,0 0 0 8px #4b3425,2px 10px 17px #1d1009b5}
+.family-screen{position:relative!important;width:100%;aspect-ratio:4/3!important;min-height:0!important;border:0!important;border-radius:28px/25px!important;background:radial-gradient(ellipse at center,#28302c,#111513 75%)!important;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 35px #020302,0 0 0 2px #171713!important}
+.family-screen video{position:relative;z-index:1;width:100%!important;height:100%!important;object-fit:contain!important;background:#0b0c0b!important}
+.family-screen-glass{position:absolute;z-index:3;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(ellipse at 50% 50%,transparent 46%,#0205076e 100%),linear-gradient(122deg,#fff9df20 0%,transparent 18%,transparent 80%,#ffffff0a 95%);box-shadow:inset 2px 0 18px #05040580,inset -4px -8px 18px #090b0b80}
+.family-screen-glass:after{content:'';position:absolute;inset:0;border-radius:inherit;opacity:.23;background:repeating-linear-gradient(0deg,#060c092b 0 1px,transparent 2px 5px);pointer-events:none}
+.family-screen-label{position:absolute;z-index:4;top:15px;left:20px;right:20px;display:flex;align-items:center;gap:6px;color:#e9e2c68a;font:11px 'Courier New',monospace;letter-spacing:.09em;pointer-events:none;text-shadow:0 1px 4px #050505}
+.family-screen-label>span:last-child{margin-left:auto}
+.family-red-dot{font-size:12px;color:#d36d58;animation:archive-record-dot 2.5s ease-in-out infinite}
+@keyframes archive-record-dot{50%{opacity:.25}}
+.family-tv-controls{position:relative!important;padding:clamp(14px,2.2vw,31px) 8px 12px clamp(18px,2.5vw,32px)!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;color:#ead8b9!important;text-align:center!important}
+.family-tv-caption{display:flex;flex-direction:column;align-items:center;gap:9px;width:100%;padding:12px 0;border-top:1px solid #f1d6a95e;border-bottom:1px solid #2f1a11a6;text-shadow:0 2px 2px #462a1b}
+.family-tv-caption>span{font:clamp(13px,1.4vw,19px) Georgia,serif!important;letter-spacing:.08em}
+.family-tv-caption strong{font:11px 'Courier New',monospace!important;letter-spacing:.05em;color:#f2dbb1}
+.family-tv-caption small{font:8px 'Courier New',monospace;color:#d8ba90;letter-spacing:.2em}
+.family-tuning-notch{width:100%;font:10px 'Courier New',monospace;color:#ecd6b3ad;letter-spacing:.18em;white-space:nowrap}
+.family-tuning-notch span{font-size:13px;letter-spacing:.06em}
+.family-channel-button{display:flex;align-items:center;flex-direction:column;gap:9px;width:100%;padding:0!important;background:transparent!important;color:#edd2a8!important;border:0!important;cursor:pointer!important}
+.family-channel-button:disabled{opacity:.5;cursor:default!important}
+.tv-dial-rim{width:clamp(65px,8vw,94px);height:clamp(65px,8vw,94px);display:grid;place-items:center;border-radius:50%;background:repeating-conic-gradient(#ba9c6f 0deg 3deg,#63492e 4deg 8deg);box-shadow:0 0 0 3px #342219,0 0 0 6px #ba8f5d,inset 1px 1px 12px #0008,3px 7px 10px #321d1399}
+.tv-dial{position:relative;display:block!important;width:76%;height:76%;border-radius:50%;font-size:0!important;background:radial-gradient(circle at 35% 25%,#e9d4a8,#9d805b 36%,#634a33 78%,#2f251b);border:3px solid #d6bb8e;box-shadow:inset -2px -3px 8px #130d0a99,1px 2px 4px #301b11;transition:transform .4s cubic-bezier(.2,.85,.35,1)}
+.tv-dial i{position:absolute;left:calc(50% - 3px);top:7px;width:6px;height:28%;border-radius:4px;background:#312319;box-shadow:1px 0 #d5ac7c}
+.family-channel-button small{font:9px/1.5 'Courier New',monospace;letter-spacing:.12em;color:#e8cda6}
+.family-speaker{width:90%;height:clamp(60px,9vw,103px);border-radius:5px;border:2px solid #483021;background-image:radial-gradient(circle,#39251c 31%,transparent 38%),linear-gradient(110deg,#715034,#8c6b44);background-size:7px 7px,auto;box-shadow:inset 2px 3px 6px #25140e,0 1px 1px #e9b47b74}
+.family-tv-footer{width:100%;display:flex;align-items:center;justify-content:space-between;gap:4px;font:8px 'Courier New',monospace;letter-spacing:.03em;white-space:nowrap;color:#f1d5af}
+.tv-indicator{width:7px;height:7px;flex:none;border-radius:50%;background:#83b278;box-shadow:0 0 6px #b3db97}
+.family-tv-feet{position:absolute;bottom:-26px;left:12%;right:12%;display:flex;justify-content:space-between;pointer-events:none}
+.family-tv-feet span{width:55px;height:21px;border-radius:0 0 9px 9px;background:linear-gradient(90deg,#402818,#825536,#2a1b15);box-shadow:0 7px 12px #12090988}
+.family-tape-drawer{position:relative;width:100%;padding:42px 5% 0;text-align:center}
+.family-collection-label{display:block;margin-bottom:15px;font:10px 'Courier New',monospace;letter-spacing:.2em;color:#ddc39d}
+.family-tapes{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(6px,1.3vw,15px)!important;max-width:910px;margin:0 auto!important}
+.family-cassette{position:relative;text-align:left!important;display:flex!important;min-width:0;align-items:center;padding:12px 12px 13px!important;gap:8px;background:linear-gradient(145deg,#2d2824,#51483c 46%,#211e1b)!important;border:2px solid #988268!important;border-radius:3px!important;box-shadow:inset 1px 1px 0 #b3a18a5e,inset -4px -5px 4px #18120f,3px 5px 9px #08050499!important;color:#f4e2bf!important;cursor:pointer;transform:rotate(-1deg);transition:transform .2s,filter .2s}
+.family-cassette:nth-child(2n){transform:rotate(1deg)}
+.family-cassette:hover,.family-cassette.selected{transform:translateY(-5px) rotate(0deg);filter:brightness(1.15)}
+.family-cassette.selected{outline:2px solid #dfc494!important;outline-offset:2px}
+.family-cassette-edge{width:9px;align-self:stretch;min-height:45px;flex:none;border-radius:2px;background:repeating-linear-gradient(180deg,#1c1816 0 4px,#5b4a3b 5px 7px)}
+.family-cassette-label{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;padding:8px 7px;background:linear-gradient(115deg,#d1ba91,#f0ddb8 54%,#be9a6d);color:#463426;clip-path:polygon(0 0,99% 0,100% 100%,0 98%)}
+.family-cassette-label small{font:8px 'Courier New',monospace;white-space:nowrap;letter-spacing:.04em}
+.family-cassette-label strong{font:italic clamp(11px,1.1vw,15px) Georgia,serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.family-cassette-spools{display:none;color:#c0a68a;font-size:10px}
+.family-endnote{font:italic 12px Georgia,serif;color:#c9aa81;text-align:center;margin-top:27px;letter-spacing:.15em}
+.family-video-error{padding:14px 10px!important;margin-top:25px!important;background:#372b24!important;border:1px solid #b2936d!important;color:#e9d5b1!important}
+@media(max-width:740px){.family-room{padding:28px 10px 65px!important}.family-intro h1{font-size:35px!important}.family-intro p{font-size:15px!important}.family-television{grid-template-columns:minmax(0,1fr) 107px!important;padding:13px!important;border-radius:20px!important}.family-tv-screenframe{padding:5px;border-radius:22px}.family-screen{border-radius:17px/15px!important}.family-tv-controls{padding:12px 3px 10px 13px!important}.family-tv-caption{gap:6px;padding:6px 0}.family-tv-caption>span{font-size:11px!important}.family-tv-caption strong{font-size:9px!important}.family-tv-caption small,.family-tuning-notch,.family-tv-footer{display:none}.tv-dial-rim{width:53px;height:53px}.family-channel-button small{font-size:8px}.family-speaker{height:40px}.family-screen-label{top:8px;left:10px;right:10px;font-size:9px}.family-tapes{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}.family-tape-drawer{padding-top:36px}}
+@media(max-width:390px){.family-television{grid-template-columns:minmax(0,1fr) 83px!important}.family-tv-controls{padding:9px 2px 8px 9px!important}.family-tv-caption>span{font-size:10px!important}.family-channel-button small{font-size:7px}.family-speaker{height:30px}.family-cassette{padding:7px!important}}
+@media(prefers-reduced-motion:reduce){.family-cassette,.tv-dial{transition:none!important}.family-red-dot{animation:none!important}}
+
+
+/* iPad landscape refinement: whole archive readable without an enormous television */
+.family-room{padding:24px 16px 46px!important}
+.family-intro{margin-bottom:12px!important}
+.family-intro h1{font-size:clamp(33px,3.5vw,49px)!important;margin:8px 0!important}
+.family-intro p{margin:8px 0!important}
+.family-tv-scene{width:min(900px,100%)!important}
+.family-television{width:min(880px,100%)!important;padding:clamp(13px,1.6vw,22px)!important;grid-template-columns:minmax(0,1fr) clamp(115px,12vw,155px)!important;margin-top:15px!important;border-radius:22px!important}
+.family-tv-screenframe{border-radius:29px/25px!important;padding:8px!important}
+.family-screen{aspect-ratio:16/10!important;border-radius:22px/20px!important;background:radial-gradient(ellipse at center,#3a332a,#191915 70%,#101211)!important}
+.family-screen video{flex:none;min-width:0}
+.family-screen-portrait video{width:auto!important;max-width:100%!important;height:100%!important;object-fit:contain!important;background:#131311!important;box-shadow:0 0 20px #070504a8}
+.family-screen-portrait:before,.family-screen-portrait:after{position:absolute;top:13%;bottom:13%;width:17%;z-index:1;display:flex;align-items:center;justify-content:center;border-top:1px solid #c0a27533;border-bottom:1px solid #c0a27533;color:#c1a67c61;font:10px 'Courier New',monospace;letter-spacing:.25em;pointer-events:none;writing-mode:vertical-rl}
+.family-screen-portrait:before{content:'HOME VIDEO  •  19 NOVEMBER';left:8%;transform:rotate(180deg)}
+.family-screen-portrait:after{content:'SAVED WITH LOVE  •  CLAR_OS';right:8%}
+.family-tv-controls{padding:14px 4px 10px 20px!important;gap:7px!important}
+.family-tv-caption{padding:6px 0!important;gap:6px!important}
+.family-tv-caption>span{font-size:15px!important}
+.family-speaker{height:62px!important}
+.tv-dial-rim{width:67px!important;height:67px!important}
+.family-tape-drawer{padding:30px 3% 0!important}
+.family-collection-label{margin-bottom:10px!important}
+.family-cassette{padding:7px!important}
+.family-cassette-label{padding:6px!important;gap:5px!important}
+.family-endnote{margin-top:19px!important}
+@media(max-width:740px){.family-room{padding:24px 10px 40px!important}.family-tv-scene{width:100%!important}.family-television{width:100%!important;grid-template-columns:minmax(0,1fr) 99px!important;padding:11px!important}.family-screen{aspect-ratio:4/3!important}.family-tv-controls{padding:9px 2px 6px 12px!important}.family-tv-caption>span{font-size:11px!important}.tv-dial-rim{width:50px!important;height:50px!important}.family-speaker{height:35px!important}.family-tape-drawer{padding-top:32px!important}.family-screen-portrait:before,.family-screen-portrait:after{font-size:7px;letter-spacing:.1em}}
+@media(min-width:741px) and (max-height:850px){.family-room{padding-top:17px!important}.family-intro h1{font-size:38px!important}.family-tv-scene{width:min(840px,100%)!important}.family-television{width:min(820px,100%)!important;margin-top:10px!important}.family-tape-drawer{padding-top:25px!important}.family-intro p{font-size:15px!important}}
+
+  `}</style>
+ </main>
 }
