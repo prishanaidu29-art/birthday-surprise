@@ -1,575 +1,148 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-
-export const dynamic = 'force-dynamic'
-import { useRouter } from 'next/navigation'
+import React,{useEffect,useState} from 'react'
 import Link from 'next/link'
-import { supabase } from '../../../lib/supabase'
-import { ArrowLeft, Brain, Heart, CheckCircle, XCircle, Trophy, RotateCcw, Sparkles, Star, HelpCircle, Lightbulb } from 'lucide-react'
-import { useDarkMode } from '../../../hooks/useDarkMode'
+import {useRouter} from 'next/navigation'
+import {ArrowLeft,RotateCcw,Sparkles} from 'lucide-react'
 
-export default function QuizPage() {
-  const router = useRouter()
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [showLoadingScreen, setShowLoadingScreen] = useState(false)
-  const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [selectedAnswers, setSelectedAnswers] = useState({})
-  const [showResults, setShowResults] = useState(false)
-  const [score, setScore] = useState(0)
-  const [quizStarted, setQuizStarted] = useState(false)
-  const { isDarkMode, isLoading: darkModeLoading } = useDarkMode()
-
-  // Check authentication
-  useEffect(() => {
-    const authenticated = sessionStorage.getItem('birthday_authenticated')
-    if (authenticated !== 'true') {
-      router.push('/')
-    } else {
-      setShowLoadingScreen(true)
-      
-      // Show loading screen for 1.5 seconds
-      setTimeout(() => {
-        setIsLoaded(true)
-      }, 1500)
-    }
-  }, [router])
-
-  // Quiz questions - these could also come from database in the future
-  const questions = [
-    {
-      id: 1,
-      question: "When did we first meet?",
-      options: ["At a wedding", "At a coffee shop", "At a mall", "At the airport"],
-      correct: 0,
-      explanation: "It was love at first sight! ✨"
-    },
-    {
-      id: 2,
-      question: "What was the first gift you gave me?",
-      options: ["Flowers", "Chocolate", "A book", "A special treat"],
-      correct: 3,
-      explanation: "It was such a thoughtful surprise! 💫"
-    },
-    {
-      id: 3,
-      question: "First movie that we watched together?",
-      options: ["A comedy", "A thriller", "An animated movie", "An action movie"],
-      correct: 2,
-      explanation: "We shared popcorn for the first time! 😄"
-    },
-    {
-      id: 4,
-      question: "First flower that I gave you?",
-      options: ["Pink Roses", "Sunflower", "White flower", "Yellow Tulips"],
-      correct: 3,
-      explanation: "Such a sweet moment we shared! 💛"
-    },
-    {
-      id: 5,
-      question: "Where did we eat when I first met your family?",
-      options: ["A chicken restaurant", "A Filipino restaurant", "A steakhouse", "A casual dining place"],
-      correct: 1,
-      explanation: "It was such a memorable dinner together! 🍽️"
-    },
-    {
-      id: 6,
-      question: "What am I most grateful for?",
-      options: ["My career", "My health", "Finding you", "My dreams coming true"],
-      correct: 2,
-      explanation: "Finding you changed everything. You're my greatest blessing! 💕💛"
-    }
-  ]
-
-  const handleAnswerSelect = (questionIndex, answerIndex) => {
-    setSelectedAnswers({
-      ...selectedAnswers,
-      [questionIndex]: answerIndex
-    })
+// PLACEHOLDERS: replace the questions, options, correct index (0-3), and explanation here.
+const QUESTIONS = [
+  {
+    "id": 1,
+    "question": "Which organ pumps blood around the human body?",
+    "options": [
+      "Lungs",
+      "Heart",
+      "Liver",
+      "Kidneys"
+    ],
+    "correct": 1,
+    "explanation": "The heart pumps blood through the circulatory system."
+  },
+  {
+    "id": 2,
+    "question": "Which planet is known as the Red Planet?",
+    "options": [
+      "Venus",
+      "Jupiter",
+      "Mars",
+      "Mercury"
+    ],
+    "correct": 2,
+    "explanation": "Mars is nicknamed the Red Planet."
+  },
+  {
+    "id": 3,
+    "question": "What is the chemical symbol for gold?",
+    "options": [
+      "Ag",
+      "Au",
+      "Fe",
+      "Cu"
+    ],
+    "correct": 1,
+    "explanation": "Gold's chemical symbol is Au."
+  },
+  {
+    "id": 4,
+    "question": "How many sides does a hexagon have?",
+    "options": [
+      "Five",
+      "Six",
+      "Seven",
+      "Eight"
+    ],
+    "correct": 1,
+    "explanation": "A hexagon has six sides."
+  },
+  {
+    "id": 5,
+    "question": "Which ocean is the largest?",
+    "options": [
+      "Atlantic",
+      "Indian",
+      "Arctic",
+      "Pacific"
+    ],
+    "correct": 3,
+    "explanation": "The Pacific Ocean is the largest."
+  },
+  {
+    "id": 6,
+    "question": "Who wrote Sherlock Holmes?",
+    "options": [
+      "Agatha Christie",
+      "Arthur Conan Doyle",
+      "J. R. R. Tolkien",
+      "Charles Dickens"
+    ],
+    "correct": 1,
+    "explanation": "Arthur Conan Doyle created Sherlock Holmes."
+  },
+  {
+    "id": 7,
+    "question": "What is the capital of Japan?",
+    "options": [
+      "Kyoto",
+      "Osaka",
+      "Tokyo",
+      "Sapporo"
+    ],
+    "correct": 2,
+    "explanation": "Tokyo is Japan's capital."
+  },
+  {
+    "id": 8,
+    "question": "What gas do plants absorb during photosynthesis?",
+    "options": [
+      "Oxygen",
+      "Helium",
+      "Carbon dioxide",
+      "Nitrogen"
+    ],
+    "correct": 2,
+    "explanation": "Plants absorb carbon dioxide for photosynthesis."
+  },
+  {
+    "id": 9,
+    "question": "What is the smallest prime number?",
+    "options": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct": 2,
+    "explanation": "Two is the smallest prime number."
+  },
+  {
+    "id": 10,
+    "question": "How many bones are typically in the adult human body?",
+    "options": [
+      "186",
+      "206",
+      "226",
+      "246"
+    ],
+    "correct": 1,
+    "explanation": "The adult human skeleton typically has 206 bones."
   }
-
-  const nextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1)
-    } else {
-      finishQuiz()
-    }
-  }
-
-  const prevQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(currentQuestion - 1)
-    }
-  }
-
-  const finishQuiz = async () => {
-    // Calculate score
-    let correctAnswers = 0
-    questions.forEach((question, index) => {
-      if (selectedAnswers[index] === question.correct) {
-        correctAnswers++
-      }
-    })
-    
-    setScore(correctAnswers)
-    setShowResults(true)
-
-    // Save to database
-    try {
-      await supabase.from('quiz_attempts').insert({
-        score: correctAnswers,
-        total: questions.length,
-        answers: selectedAnswers
-      })
-    } catch (error) {
-      console.error('Error saving quiz result:', error)
-    }
-  }
-
-  const restartQuiz = () => {
-    setCurrentQuestion(0)
-    setSelectedAnswers({})
-    setShowResults(false)
-    setScore(0)
-    setQuizStarted(false)
-  }
-
-  const getScoreMessage = () => {
-    const percentage = (score / questions.length) * 100
-    if (percentage === 100) return "Perfect! You know me so well! 😍"
-    if (percentage >= 80) return "Amazing! You really pay attention to me! 🥰"
-    if (percentage >= 60) return "Pretty good! We're getting to know each other better! 😊"
-    if (percentage >= 40) return "Not bad! There's still more to discover about me! 😉"
-    return "We have so much more to learn about each other! 💕"
-  }
-
-  // Enhanced loading screen with quiz/brain theme
-  if (showLoadingScreen && !isLoaded) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900' : 'bg-gradient-to-br from-blue-100 via-purple-50 to-indigo-100'} overflow-hidden relative`}>
-        <div className="text-center z-10 max-w-lg mx-auto px-6">
-          <div className="relative mb-8">
-            <div className="relative w-24 h-24 mx-auto mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full animate-brain-pulse"></div>
-              <div className={`absolute inset-3 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-full flex items-center justify-center`}>
-                <Brain className="w-8 h-8 text-blue-500 animate-brain-bounce" />
-              </div>
-            </div>
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-500 bg-clip-text text-transparent animate-quiz-glow">
-                  Loading Quiz Time! 🧠
-                </span>
-              </h1>
-              <p className="text-blue-600 text-lg animate-gentle-pulse mb-4">
-                Preparing fun questions for you...
-              </p>
-            </div>
-            <div className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl px-8 py-6 shadow-lg`}>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full animate-quiz-progress"></div>
-              </div>
-              <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get ready to test your knowledge!</p>
-            </div>
-          </div>
-        </div>
-        <style jsx>{`
-          @keyframes brain-pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); }
-            50% { transform: scale(1.1); box-shadow: 0 0 40px rgba(59, 130, 246, 0.8); }
-          }
-          @keyframes brain-bounce { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-          @keyframes quiz-glow { 0%, 100% { filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3)); } 50% { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6)); } }
-          @keyframes quiz-progress { 0% { width: 0%; } 100% { width: 100%; } }
-          @keyframes gentle-pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
-          .animate-brain-pulse { animation: brain-pulse 2s ease-in-out infinite; }
-          .animate-brain-bounce { animation: brain-bounce 1.5s ease-in-out infinite; }
-          .animate-quiz-glow { animation: quiz-glow 3s ease-in-out infinite; }
-          .animate-quiz-progress { animation: quiz-progress 1.5s ease-out; }
-          .animate-gentle-pulse { animation: gentle-pulse 3s ease-in-out infinite; }
-        `}</style>
-      </div>
-    )
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'} overflow-hidden relative`}>
-        {/* Floating quiz elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-16 text-purple-400 opacity-60">
-            <Brain size={22} className="animate-think" />
-          </div>
-          <div className="absolute top-1/4 right-24 text-pink-400 opacity-50">
-            <HelpCircle size={18} className="animate-question-bounce" />
-          </div>
-          <div className="absolute bottom-32 left-24 text-yellow-400 opacity-70">
-            <Lightbulb size={20} className="animate-idea-glow" />
-          </div>
-          <div className="absolute top-1/3 left-1/3 text-blue-300 opacity-40">
-            <CheckCircle size={16} className="animate-check-pop" />
-          </div>
-          <div className="absolute bottom-1/3 right-1/3 text-green-400 opacity-60">
-            <Star size={14} fill="currentColor" className="animate-star-twinkle" />
-          </div>
-        </div>
-
-        <div className="text-center z-10">
-          {/* Quiz book loading animation */}
-          <div className="relative mb-8">
-            <div className="w-24 h-32 mx-auto bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg shadow-xl relative transform rotate-12 animate-book-flip">
-              {/* Book pages */}
-              <div className={`absolute inset-2 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded flex flex-col justify-center items-center`}>
-                <div className="w-12 h-1 bg-purple-300 rounded mb-1"></div>
-                <div className="w-8 h-1 bg-pink-300 rounded mb-1"></div>
-                <div className="w-10 h-1 bg-blue-300 rounded"></div>
-                <Brain className="w-6 h-6 text-purple-500 mt-2 animate-pulse" />
-              </div>
-              
-              {/* Question marks floating around */}
-              <div className="absolute -top-3 -right-2 text-yellow-400 animate-float-question">
-                <HelpCircle size={14} />
-              </div>
-              <div className="absolute -bottom-2 -left-3 text-pink-400 animate-float-question delay-700">
-                <HelpCircle size={12} />
-              </div>
-            </div>
-          </div>
-
-          {/* Loading text */}
-          <div className="text-2xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-              Loading Quiz
-            </span>
-          </div>
-          <div className="text-purple-600 mb-6">
-            Preparing your questions...
-          </div>
-
-          {/* Quiz progress indicators */}
-          <div className="flex justify-center space-x-3">
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-purple-400 rounded-full animate-quiz-pulse"></div>
-              <span className="text-xs text-purple-600">Questions</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-pink-400 rounded-full animate-quiz-pulse delay-300"></div>
-              <span className="text-xs text-pink-600">Options</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-blue-400 rounded-full animate-quiz-pulse delay-600"></div>
-              <span className="text-xs text-blue-600">Ready</span>
-            </div>
-          </div>
-        </div>
-
-        <style jsx>{`
-          @keyframes think {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-8px) scale(1.1); }
-          }
-          @keyframes question-bounce {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-12px) rotate(15deg); }
-          }
-          @keyframes idea-glow {
-            0%, 100% { opacity: 0.7; filter: brightness(1); }
-            50% { opacity: 1; filter: brightness(1.5) drop-shadow(0 0 10px currentColor); }
-          }
-          @keyframes check-pop {
-            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.4; }
-            50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
-          }
-          @keyframes star-twinkle {
-            0%, 100% { opacity: 0.6; transform: scale(1) rotate(0deg); }
-            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
-          }
-          @keyframes book-flip {
-            0%, 100% { transform: rotate(12deg) rotateY(0deg); }
-            50% { transform: rotate(8deg) rotateY(15deg); }
-          }
-          @keyframes float-question {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.8; }
-            50% { transform: translateY(-15px) rotate(20deg); opacity: 1; }
-          }
-          @keyframes quiz-pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(0.8); }
-          }
-          .animate-think { animation: think 3s ease-in-out infinite; }
-          .animate-question-bounce { animation: question-bounce 2.5s ease-in-out infinite; }
-          .animate-idea-glow { animation: idea-glow 2s ease-in-out infinite; }
-          .animate-check-pop { animation: check-pop 3s ease-in-out infinite; }
-          .animate-star-twinkle { animation: star-twinkle 2.8s ease-in-out infinite; }
-          .animate-book-flip { animation: book-flip 4s ease-in-out infinite; }
-          .animate-float-question { animation: float-question 3s ease-in-out infinite; }
-          .animate-quiz-pulse { animation: quiz-pulse 1.5s ease-in-out infinite; }
-        `}</style>
-      </div>
-    )
-  }
-
-  return (
-    <div className={`center-container ${isDarkMode ? 'bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900' : 'bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100'}`}>
-      {/* Animated background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 text-pink-300 opacity-60 animate-bounce">
-          <Heart size={20} fill="currentColor" />
-        </div>
-        <div className="absolute top-1/3 right-20 text-purple-400 opacity-50">
-          <Sparkles size={25} className="animate-spin-slow" />
-        </div>
-        <div className="absolute bottom-20 left-1/4 text-blue-300 opacity-60">
-          <Brain size={18} className="animate-pulse" />
-        </div>
-        <div className="absolute top-1/2 right-1/4 text-pink-400 opacity-40">
-          <Star size={15} fill="currentColor" className="animate-bounce" />
-        </div>
-      </div>
-
-      <div className="center-content relative z-10">
-        {/* Header */}
-        <div className="header-section">
-          <Link 
-            href="/birthday" 
-            className={`inline-flex items-center ${isDarkMode ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-900/20' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'} transition-colors px-4 py-3 rounded-xl font-medium`}
-          >
-            <ArrowLeft size={20} className="mr-3" />
-            Back to Birthday Hub
-          </Link>
-          
-          <div className="text-center">
-            <div className="inline-flex items-center justify-center mb-4">
-              <Brain className="text-purple-500 w-8 h-8 mr-3" />
-              <Heart className="text-yellow-500 w-6 h-6" fill="currentColor" />
-              <Brain className="text-purple-500 w-8 h-8 ml-3" />
-            </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent">
-                How Well Do You Know Me?
-              </span>
-            </h1>
-            <p className={`text-base sm:text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              A fun quiz to test your knowledge! 🧠💕
-            </p>
-          </div>
-        </div>
-
-        {!quizStarted ? (
-          // Quiz intro
-          <div className="max-w-2xl mx-auto px-2 sm:px-0">
-            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 text-center animate-scale-in`}>
-              <div className="icon-container-xl bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full shadow-lg inline-block mb-6">
-                <Trophy className="text-white w-8 h-8" />
-              </div>
-              <h2 className={`text-xl sm:text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Ready for the Challenge?</h2>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-6 leading-relaxed`}>
-                I&apos;ve prepared {questions.length} questions about myself. Let&apos;s see how much you&apos;ve been paying attention! 
-                Each question has one correct answer, and I&apos;ll share little secrets about myself along the way.
-              </p>
-              <div className={`${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50'} rounded-2xl p-6 mb-8`}>
-                <h3 className={`font-semibold ${isDarkMode ? 'text-purple-300' : 'text-purple-800'} mb-2`}>Quiz Rules:</h3>
-                <ul className={`${isDarkMode ? 'text-purple-400' : 'text-purple-700'} text-sm space-y-1`}>
-                  <li>• {questions.length} multiple choice questions</li>
-                  <li>• Take your time - no rush!</li>
-                  <li>• You can go back and change answers</li>
-                  <li>• I&apos;ll explain each answer at the end</li>
-                </ul>
-              </div>
-              <div className="pt-4">
-                <button
-                  onClick={() => setQuizStarted(true)}
-                  className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 text-lg min-h-[56px] cursor-pointer"
-                >
-                  Start the Quiz! 🚀
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : !showResults ? (
-          // Quiz questions
-          <div className="max-w-3xl mx-auto px-2 sm:px-0">
-            {/* Progress bar */}
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-purple-600">
-                  Question {currentQuestion + 1} of {questions.length}
-                </span>
-                <span className="text-sm text-gray-500">
-                  {Math.round(((currentQuestion + 1) / questions.length) * 100)}% Complete
-                </span>
-              </div>
-              <div className="w-full bg-purple-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Question card */}
-            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-8 sm:p-10 md:p-12 animate-fade-in w-full`}>
-              <h2 className={`text-xl sm:text-2xl md:text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} quiz-question text-center mb-8 min-h-[4rem] flex items-center justify-center`}>
-                {questions[currentQuestion].question}
-              </h2>
-
-              <div className="quiz-options space-y-5">
-                {questions[currentQuestion].options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(currentQuestion, index)}
-                    className={`w-full p-4 text-left rounded-2xl border-2 transition-all transform hover:scale-[1.02] ${
-                      selectedAnswers[currentQuestion] === index
-                        ? `border-purple-500 ${isDarkMode ? 'bg-purple-900/20' : 'bg-purple-50'} shadow-lg`
-                        : `${isDarkMode ? 'border-gray-600 bg-gray-800/50 hover:border-purple-400 hover:bg-purple-900/10' : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-25'}`
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className={`w-6 h-6 rounded-full border-2 quiz-radio flex items-center justify-center flex-shrink-0 ${
-                        selectedAnswers[currentQuestion] === index
-                          ? 'border-purple-500 bg-purple-500'
-                          : 'border-gray-300'
-                      }`}>
-                        {selectedAnswers[currentQuestion] === index && (
-                          <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-200' : 'bg-white'} rounded-full`}></div>
-                        )}
-                      </div>
-                      <span className={`font-medium ml-3 ${
-                        selectedAnswers[currentQuestion] === index
-                          ? 'text-purple-700'
-                          : isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                      }`}>
-                        {option}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Navigation buttons */}
-              <div className="flex justify-between quiz-nav-buttons">
-                <button
-                  onClick={prevQuestion}
-                  disabled={currentQuestion === 0}
-                  className={`px-6 py-3 ${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'} rounded-xl transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md hover:shadow-lg`}
-                >
-                  ← Previous
-                </button>
-                <button
-                  onClick={nextQuestion}
-                  disabled={selectedAnswers[currentQuestion] === undefined}
-                  className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:shadow-lg transform transition-all hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed min-h-[48px] font-medium shadow-md"
-                >
-                  {currentQuestion === questions.length - 1 ? 'Finish Quiz →' : 'Next →'}
-                </button>
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Results
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Score card */}
-            <div className={`${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-floating p-6 sm:p-8 md:p-10 text-center mb-8 animate-scale-in mx-4 sm:mx-0`}>
-              <Trophy className={`w-16 h-16 mx-auto mb-6 ${
-                score === questions.length ? 'text-yellow-500' : 
-                score >= questions.length * 0.8 ? 'text-blue-500' : 
-                score >= questions.length * 0.6 ? 'text-green-500' : 'text-purple-500'
-              }`} />
-              
-              <h2 className={`text-2xl sm:text-3xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Quiz Complete! 🎉</h2>
-              
-              <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-6 mb-6">
-                <div className="text-4xl font-bold mb-2">{score}/{questions.length}</div>
-                <div className="text-lg opacity-90">
-                  {Math.round((score / questions.length) * 100)}% Correct
-                </div>
-              </div>
-              
-              <p className="text-lg sm:text-xl text-gray-700 mb-6 sm:mb-8">{getScoreMessage()}</p>
-              
-              <button
-                onClick={restartQuiz}
-                className="px-10 py-5 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 min-h-[56px] cursor-pointer"
-              >
-                <RotateCcw className="inline w-5 h-5 mr-2" />
-                Take Quiz Again
-              </button>
-            </div>
-
-            {/* Answer explanations */}
-            <div className="space-y-6 mx-4 sm:mx-0">
-              <h3 className={`text-2xl font-bold text-center ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-8`}>Let me explain my answers! 💭</h3>
-              
-              {questions.map((question, index) => (
-                <div key={question.id} className={`${isDarkMode ? 'bg-gray-800/90' : 'bg-white/90'} backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 animate-fade-in`}>
-                  <div className="flex items-start gap-4">
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      selectedAnswers[index] === question.correct
-                        ? 'bg-green-500 text-white'
-                        : 'bg-red-500 text-white'
-                    }`}>
-                      {selectedAnswers[index] === question.correct ? (
-                        <CheckCircle size={20} />
-                      ) : (
-                        <XCircle size={20} />
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 pl-2">
-                      <h4 className={`font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>{question.question}</h4>
-                      <div className="mb-4 space-y-2">
-                        <div>
-                          <span className="text-sm text-gray-600">Correct answer: </span>
-                          <span className="font-semibold text-green-600">
-                            {question.options[question.correct]}
-                          </span>
-                        </div>
-                        {selectedAnswers[index] !== question.correct && (
-                          <div>
-                            <span className="text-sm text-gray-600">Your answer: </span>
-                            <span className="font-semibold text-red-600">
-                              {question.options[selectedAnswers[index]]}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-gray-700 italic leading-relaxed">{question.explanation}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className={`text-center mt-12 mb-8 ${isDarkMode ? 'bg-gray-800/95 border-gray-700/50' : 'bg-white/95 border-white/20'} backdrop-blur-sm rounded-3xl shadow-elegant p-6 max-w-2xl mx-auto`}>
-          <Heart className="text-yellow-500 mx-auto mb-3 w-8 h-8" fill="currentColor" />
-          <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'} font-medium`}>
-            Every question reveals a little more of my heart
-          </p>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mt-2`}>
-            Thanks for taking the time to know me better! 💕
-          </p>
-        </div>
-      </div>
-
-      <style jsx global>{`
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes scale-in {
-          from { transform: scale(0.9); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-        .animate-fade-in { animation: fade-in 0.6s ease-out; }
-        .animate-scale-in { animation: scale-in 0.4s ease-out; }
-      `}</style>
-    </div>
-  )
+]
+export default function QuizPage(){
+ const router=useRouter()
+ const [ready,setReady]=useState(false),[started,setStarted]=useState(false),[index,setIndex]=useState(0),[answers,setAnswers]=useState({}),[finished,setFinished]=useState(false)
+ useEffect(()=>{if(sessionStorage.getItem('birthday_authenticated')!=='true')router.replace('/');else setReady(true)},[router])
+ const q=QUESTIONS[index],picked=answers[index],answered=picked!==undefined
+ const score=QUESTIONS.reduce((n,item,i)=>n+(answers[i]===item.correct?1:0),0)
+ const restart=()=>{setStarted(false);setIndex(0);setAnswers({});setFinished(false)}
+ if(!ready)return <main style={{minHeight:'100vh',background:'#10091f'}}/>
+ return <main className="trivia-page"><div className="trivia-shell">
+ <Link className="trivia-back" href="/birthday"><ArrowLeft size={17}/> BACK TO CLAR_OS</Link>
+ <div className="trivia-kicker">CLAR_OS / ENTERTAINMENT / 0xQUIZ</div>
+ <h1>TRIVIA<span>.exe</span></h1><p className="trivia-sub">A tiny brain workout. Absolutely no pressure. Probably.</p>
+ <section className="trivia-window"><div className="trivia-bar"><span>◉ QUESTION_TERMINAL</span><span>● ONLINE</span></div>
+ {!started?<div className="trivia-body trivia-intro"><div className="trivia-emoji">✦ ? ✦</div><h2>READY, CLAR?</h2><p>10 quick multiple-choice questions. One answer per question. Your score appears at the end.</p><p className="trivia-note">Temporary sample questions — real trivia coming soon!</p><button className="trivia-primary" onClick={()=>setStarted(true)}>START TRIVIA →</button></div>
+ :finished?<div className="trivia-body trivia-intro"><div className="trivia-emoji">✦ ★ ✦</div><div className="trivia-kicker">QUIZ COMPLETE</div><h2>{score} / {QUESTIONS.length}</h2><p>{score===QUESTIONS.length?'PERFECT SCORE. THE MACHINE IS IMPRESSED.':score>=7?'VERY NICE. CLAR_OS APPROVES.':score>=4?'NOT BAD. THE MACHINE HAS QUESTIONS.':'CLAR_OS WOULD LIKE A WORD.'}</p><button className="trivia-primary" onClick={restart}><RotateCcw size={16}/> PLAY AGAIN</button></div>
+ :<div className="trivia-body"><div className="trivia-progress-row"><span>QUESTION {String(index+1).padStart(2,'0')} / {QUESTIONS.length}</span><span>{Math.round((index/QUESTIONS.length)*100)}% COMPLETE</span></div><div className="trivia-progress"><div style={{width:(index/QUESTIONS.length)*100+'%'}}/></div><h2 className="trivia-question">{q.question}</h2><div className="trivia-options">{q.options.map((option,i)=><button key={i} disabled={answered} className={'trivia-option '+(answered&&i===q.correct?'correct':answered&&i===picked?'wrong':'')} onClick={()=>setAnswers(a=>({...a,[index]:i}))}><span>{String.fromCharCode(65+i)}</span>{option}</button>)}</div>{answered&&<div className="trivia-feedback"><Sparkles size={16}/><span>{picked===q.correct?'CORRECT! ':'NOT QUITE! '}{q.explanation}</span></div>}<div className="trivia-actions"><span>{answered?'ANSWER LOCKED':'CHOOSE ONE ANSWER'}</span><button className="trivia-primary" disabled={!answered} onClick={()=>index===QUESTIONS.length-1?setFinished(true):setIndex(i=>i+1)}>{index===QUESTIONS.length-1?'SEE RESULTS →':'NEXT QUESTION →'}</button></div></div>}
+ </section><p className="trivia-foot">CLAR_OS © 2026 · TEST BUILD / QUESTIONS ARE PLACEHOLDERS</p></div>
+ <style jsx global>{`body{margin:0}.trivia-page{min-height:100vh;padding:clamp(20px,4vw,56px) 16px;background:radial-gradient(ellipse at 50% 15%,#40205e 0%,#160b29 55%,#090513 100%);color:#f8eaff;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.trivia-shell{max-width:790px;margin:0 auto}.trivia-back{display:inline-flex;align-items:center;gap:9px;color:#dfb8fa;text-decoration:none;font-size:12px;margin-bottom:38px}.trivia-kicker{font-size:11px;letter-spacing:3px;color:#88e7e9}.trivia-shell h1{font-size:clamp(45px,9vw,84px);margin:9px 0 3px;line-height:1.1;letter-spacing:-3px;text-shadow:4px 4px #9b3f96}.trivia-shell h1 span{color:#ff9cdb}.trivia-sub{color:#d8b9e3;margin:15px 0 34px;font-size:14px}.trivia-window{border:2px solid #b46fd3;box-shadow:9px 9px 0 #080411,0 0 45px #a64dd42e;background:#1a102e}.trivia-bar{padding:12px 16px;background:linear-gradient(90deg,#823da3,#573177);display:flex;justify-content:space-between;gap:8px;font-size:11px;letter-spacing:1px}.trivia-body{padding:clamp(20px,5vw,45px)}.trivia-intro{text-align:center;padding-top:55px;padding-bottom:55px}.trivia-intro h2{font-size:clamp(30px,6vw,49px);margin:16px 0;color:#ffb1df}.trivia-intro p{max-width:460px;margin:15px auto;line-height:1.8;color:#e5d0ed}.trivia-emoji{font-size:38px;color:#a1e9f3}.trivia-note{font-size:12px;color:#a4ebea!important}.trivia-primary{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:14px 22px;border:1px solid #ffd1ef;background:#d66ab6;color:#170920;font:700 12px ui-monospace,monospace;letter-spacing:1px;cursor:pointer;margin-top:20px;min-height:48px;box-shadow:4px 4px 0 #080411}.trivia-primary:disabled{opacity:.35;cursor:not-allowed}.trivia-progress-row,.trivia-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;color:#a7e7ed;font-size:11px;letter-spacing:1px}.trivia-progress{height:7px;background:#38244f;margin:13px 0 35px;border:1px solid #755188}.trivia-progress div{height:100%;background:linear-gradient(90deg,#a275ff,#ff9ad6);transition:width .3s}.trivia-question{font-size:clamp(21px,4vw,32px);line-height:1.4;margin-bottom:28px}.trivia-options{display:grid;gap:12px}.trivia-option{display:flex;align-items:center;gap:15px;text-align:left;width:100%;padding:15px;background:#2a1b42;color:#f9eaff;border:1px solid #674a85;cursor:pointer;font:inherit;font-size:14px;min-height:58px}.trivia-option span{border:1px solid #9d73b7;color:#c5a7e2;min-width:30px;height:30px;display:grid;place-items:center}.trivia-option:not(:disabled):hover{border-color:#ffaddb;background:#412552}.trivia-option.correct{border-color:#7de4ce;background:#1c493e}.trivia-option.wrong{border-color:#ff9cad;background:#54263e}.trivia-feedback{display:flex;align-items:flex-start;gap:10px;margin-top:20px;color:#b7f2e4;font-size:13px;line-height:1.6}.trivia-actions{margin-top:25px}.trivia-actions .trivia-primary{margin-top:0}.trivia-foot{margin:30px 0;text-align:center;color:#806b9a;font-size:10px;letter-spacing:1px}@media(max-width:480px){.trivia-bar{font-size:9px}.trivia-actions{align-items:flex-end}.trivia-actions>span{max-width:110px}}`}</style></main>
 }
