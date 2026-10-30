@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { UPLOADED_MEMORIES } from "./uploadedMemories";
 import { useRouter } from "next/navigation";
@@ -168,6 +168,17 @@ export default function MemoriesPage() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [videoIndex, setVideoIndex] = useState(0);
+  const videoRef = useRef(null);
+  const archiveVideos = useMemo(() => memories.filter(m => m.media_type === "video" || /\.(mp4|mov)(\?|$)/i.test(m.photo_url || "")), [memories]);
+  const currentVideo = archiveVideos[videoIndex] || archiveVideos[0];
+  useEffect(() => {
+    const player = videoRef.current;
+    if (!player) return;
+    player.muted = isMuted;
+    if (isPlaying) player.play().catch(() => setIsPlaying(false));
+    else player.pause();
+  }, [isPlaying, isMuted, videoIndex, currentVideo?.photo_url]);
 
   /* ---------------------------- EFFECTS ---------------------------------- */
 
@@ -293,13 +304,14 @@ export default function MemoriesPage() {
   /* ------------------------------------------------------------------------ */
 
   const filteredMemories = useMemo(() => {
+    const photos = memories.filter(m => m.media_type !== "video" && !/\.(mp4|mov)(\?|$)/i.test(m.photo_url || ""));
     const query = search.trim().toLowerCase();
 
     if (!query) {
-      return memories;
+      return photos;
     }
 
-    return memories.filter((memory) => {
+    return photos.filter((memory) => {
       return (
         memory?.title
           ?.toLowerCase()
@@ -337,8 +349,13 @@ export default function MemoriesPage() {
   /* ------------------------------------------------------------------------ */
 
   const togglePlayback = useCallback(() => {
-    setIsPlaying((current) => !current);
-  }, []);
+    if (archiveVideos.length) setIsPlaying(current => !current);
+  }, [archiveVideos.length]);
+  const changeVideo = useCallback((direction) => {
+    if (!archiveVideos.length) return;
+    setVideoIndex(i => (i + direction + archiveVideos.length) % archiveVideos.length);
+    setIsPlaying(true);
+  }, [archiveVideos.length]);
 
   const nextMemory = useCallback(() => {
     if (!memories.length) return;
@@ -700,7 +717,7 @@ export default function MemoriesPage() {
             </h1>
 
             <p className="hero-description">
-              16 YEARS.
+              LITTLE MOMENTS.
               <br />
               MEMORIES OUT OF ORDER.
               <br />
@@ -757,7 +774,10 @@ export default function MemoriesPage() {
 
           <div className="vhs-player">
             <div className="player-screen">
-              <div className="screen-grid" />
+              {currentVideo ? (
+                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline controls preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:2}} />
+              ) : <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",color:"#f8c4e7",fontSize:12,letterSpacing:2}}>NO VIDEO TAPES FOUND</div>}
+              <div className="screen-grid" style={{pointerEvents:"none"}} />
 
               <div className="player-time">
                 00:
@@ -781,7 +801,7 @@ export default function MemoriesPage() {
               </div>
 
               <div className="player-label">
-                CLAR_ARCHIVE_22
+                {currentVideo ? `HOME_VIDEO_${String(videoIndex + 1).padStart(2,"0")}` : "CLAR_ARCHIVE_22"}
               </div>
 
               <div className="player-corner">
@@ -838,8 +858,8 @@ export default function MemoriesPage() {
 
             <div className="deck-buttons">
               <button
-                onClick={previousMemory}
-                title="Previous memory"
+                onClick={() => changeVideo(-1)}
+                title="Previous video"
               >
                 <SkipBack size={13} />
               </button>
@@ -860,8 +880,8 @@ export default function MemoriesPage() {
               </button>
 
               <button
-                onClick={nextMemory}
-                title="Next memory"
+                onClick={() => changeVideo(1)}
+                title="Next video"
               >
                 <SkipForward size={13} />
               </button>
