@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { UPLOADED_MEMORIES } from "./uploadedMemories";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -45,7 +46,7 @@ const Enhanced3DViewer = dynamic(
 );
 
 /* -------------------------------------------------------------------------- */
-/* TIMELINE                                                                    */
+/* ARCHIVE_SLOTS                                                                    */
 /* -------------------------------------------------------------------------- */
 
 const TIMELINE = [
@@ -72,12 +73,6 @@ const TIMELINE = [
   { tape: "21", year: 2026, age: 22, label: "CURRENT FILE" },
   { tape: "22", year: 2026, age: 22, label: "THE NEXT CHAPTER" },
 ];
-
-const FRIEND_PHOTOS = [
-  ...["ClarAK1.jpeg","ClarAK2.jpeg","ClarAK5.jpeg","ClarAK67.jpeg"].map(file => ({person:"AK",file})),
-  ...["IMG_4480.png","IMG_4477.png","IMG_4482.png","IMG_4483.png"].map(file => ({person:"Arsha",file})),
-  ...["IMG_4034.jpeg","IMG_4035.jpeg","IMG_4036.jpeg","IMG_4037.jpeg"].map(file => ({person:"Azrin",file})),
-].map((item,i)=>({...item,id:"friend-"+i,src:"https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/rpg-experiment/"+encodeURIComponent(item.file)}));
 
 const FALLBACK_MEMORIES = [
   {
@@ -139,68 +134,6 @@ function getMemoryYear(memory) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* FRIENDSHIP TAPE — REAL PHOTO PLAYBACK                                      */
-/* -------------------------------------------------------------------------- */
-function FriendshipTape({ photos }) {
-  const [person,setPerson]=useState("ALL");
-  const [index,setIndex]=useState(0);
-  const [playing,setPlaying]=useState(false);
-  const [expanded,setExpanded]=useState(false);
-  const [sheet,setSheet]=useState(false);
-  const visible=useMemo(()=>photos.filter(p=>person==="ALL"||p.person===person),[photos,person]);
-  const current=visible[Math.min(index,visible.length-1)]||visible[0];
-  const choosePerson=(name)=>{setPerson(name);setIndex(0);setPlaying(false)};
-  const step=useCallback((delta)=>setIndex(i=>(i+delta+visible.length)%visible.length),[visible.length]);
-  useEffect(()=>{if(!playing||visible.length<2)return;const id=setInterval(()=>step(1),4400);return()=>clearInterval(id)},[playing,visible.length,step]);
-  useEffect(()=>{if(!expanded)return;const key=e=>{if(e.key==="Escape")setExpanded(false);if(e.key==="ArrowRight")step(1);if(e.key==="ArrowLeft")step(-1)};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[expanded,step]);
-  if(!current)return null;
-  const control={background:"rgba(25,19,41,.88)",border:"1px solid rgba(217,184,255,.35)",borderRadius:8,color:"#eee3ff",padding:"11px 13px",cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7};
-  return <section aria-label="Through their eyes photo memories" style={{margin:"36px 0 46px",padding:"clamp(16px,3vw,36px)",border:"1px solid rgba(183,162,230,.35)",borderRadius:18,background:"radial-gradient(ellipse at 80% 0%,rgba(93,56,130,.28),transparent 60%),linear-gradient(145deg,#191427,#0a0c17)",boxShadow:"0 22px 75px rgba(0,0,0,.28)"}}>
-    <div className="tiny-label">CLAR_OS // PERSONAL FOOTAGE // TAPE 001</div>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"end",flexWrap:"wrap",gap:12,margin:"12px 0 22px"}}>
-      <div><h2 style={{fontSize:"clamp(28px,4.6vw,54px)",letterSpacing:".045em",lineHeight:1.05,margin:"0 0 9px"}}>THROUGH THEIR EYES</h2><p style={{color:"#aaa1bc",margin:0}}>Different people. Different moments. The same Clar.</p></div>
-      <span style={{color:"#c9aaf0",fontSize:12,letterSpacing:".12em"}}>● RECOVERED // {String(visible.length).padStart(2,"0")} FRAMES</span>
-    </div>
-    <div role="group" aria-label="Select whose memories to watch" style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:20}}>
-      {["ALL","AK","Arsha","Azrin"].map(name=><button key={name} type="button" aria-pressed={person===name} onClick={()=>choosePerson(name)} style={{...control,borderRadius:30,padding:"9px 17px",background:person===name?"#d8baff":"rgba(255,255,255,.04)",color:person===name?"#1a1129":"#e6d8f6",fontWeight:700}}>{name==="ALL"?"EVERYONE":name.toUpperCase()}</button>)}
-    </div>
-    <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr)",gap:0}}>
-      <div style={{background:"#050508",border:"8px solid #282235",borderRadius:12,overflow:"hidden",boxShadow:"inset 0 0 0 2px #5e5272,0 15px 40px rgba(0,0,0,.45)"}}>
-        <div style={{position:"relative",height:"clamp(280px,51vw,590px)",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
-          <img src={current.src} alt={`A memory with Clar, shared by ${current.person}`} style={{width:"100%",height:"100%",objectFit:"contain",display:"block"}}/>
-          <div style={{pointerEvents:"none",position:"absolute",inset:0,background:"repeating-linear-gradient(0deg,transparent 0px,rgba(255,255,255,.025) 2px,transparent 4px)",opacity:.35}}/>
-          <span style={{position:"absolute",top:16,left:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:12,fontWeight:800,letterSpacing:".15em"}}>● REC &nbsp; SP</span>
-          <span style={{position:"absolute",top:16,right:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:12}}>FRAME {String(index+1).padStart(2,"0")} / {String(visible.length).padStart(2,"0")}</span>
-          <span style={{position:"absolute",bottom:15,left:17,color:"#fff",textShadow:"0 1px 8px black",fontSize:13,fontWeight:800,letterSpacing:".1em"}}>{current.person.toUpperCase()} // CLAR</span>
-          <button type="button" onClick={()=>setExpanded(true)} aria-label="Expand current photo" style={{...control,position:"absolute",bottom:12,right:14,padding:10}}><Search size={17}/></button>
-        </div>
-      </div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,margin:"16px 0 20px"}}>
-        <div style={{display:"flex",gap:8}}>
-          <button type="button" style={control} onClick={()=>step(-1)} aria-label="Previous photo"><SkipBack size={18}/></button>
-          <button type="button" style={{...control,background:"#d8baff",color:"#1b112a",fontWeight:800}} onClick={()=>setPlaying(v=>!v)}>{playing?<Pause size={18}/>:<Play size={18}/>} {playing?"PAUSE":"PLAY TAPE"}</button>
-          <button type="button" style={control} onClick={()=>step(1)} aria-label="Next photo"><SkipForward size={18}/></button>
-          <button type="button" style={control} onClick={()=>setIndex(Math.floor(Math.random()*visible.length))} aria-label="Random photo"><Shuffle size={18}/></button>
-        </div>
-        <button type="button" style={control} onClick={()=>setSheet(v=>!v)}><Camera size={16}/> {sheet?"HIDE CONTACT SHEET":"CONTACT SHEET"}</button>
-      </div>
-      <div aria-label="Filmstrip of memories" style={{display:"flex",gap:10,overflowX:"auto",padding:"7px 2px 15px",scrollSnapType:"x mandatory"}}>
-        {visible.map((photo,i)=><button key={photo.id} type="button" onClick={()=>{setIndex(i);setPlaying(false)}} aria-label={`Show ${photo.person} photo ${i+1}`} aria-current={index===i?"true":undefined} style={{flex:"0 0 104px",height:84,background:"#0b0a10",padding:4,border:index===i?"2px solid #dfbaff":"2px solid #433a55",borderRadius:3,opacity:index===i?1:.67,cursor:"pointer",scrollSnapAlign:"center"}}>
-          <img src={photo.src} alt="" loading="lazy" style={{width:"100%",height:"100%",objectFit:"cover"}}/>
-        </button>)}
-      </div>
-      {sheet&&<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(145px,1fr))",gap:12,marginTop:18}}>{visible.map((photo,i)=><button key={photo.id} type="button" onClick={()=>{setIndex(i);setSheet(false)}} style={{background:"#151121",padding:6,border:"1px solid #51436a",borderRadius:6,cursor:"pointer",color:"#ded2ef",textAlign:"left"}}><img src={photo.src} alt={`${photo.person} memory ${i+1}`} loading="lazy" style={{width:"100%",height:140,objectFit:"contain",background:"#07070b"}}/><span style={{fontSize:11}}>{photo.person.toUpperCase()} / {String(i+1).padStart(2,"0")}</span></button>)}</div>}
-    </div>
-    {expanded&&<div role="dialog" aria-modal="true" aria-label="Expanded memory" onClick={()=>setExpanded(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(3,2,8,.97)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
-      <button type="button" aria-label="Close enlarged photo" onClick={()=>setExpanded(false)} style={{...control,position:"absolute",right:20,top:20}}><X size={24}/></button>
-      <button type="button" aria-label="Previous enlarged photo" onClick={e=>{e.stopPropagation();step(-1)}} style={{...control,position:"absolute",left:10,bottom:18}}><ChevronLeft size={23}/></button>
-      <img src={current.src} alt={`Memory with Clar from ${current.person}`} onClick={e=>e.stopPropagation()} style={{maxWidth:"95%",maxHeight:"88vh",objectFit:"contain"}}/>
-      <button type="button" aria-label="Next enlarged photo" onClick={e=>{e.stopPropagation();step(1)}} style={{...control,position:"absolute",right:10,bottom:18}}><ChevronRight size={23}/></button>
-    </div>}
-  </section>;
-}
-
-/* -------------------------------------------------------------------------- */
 /* PAGE                                                                        */
 /* -------------------------------------------------------------------------- */
 
@@ -228,10 +161,8 @@ export default function MemoriesPage() {
 
   /* ------------------------------- UI ------------------------------------ */
 
-  const [viewMode, setViewMode] = useState("timeline");
+  const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
-  const [personFilter,setPersonFilter] = useState("ALL");
-  const [friendPhoto,setFriendPhoto] = useState(null);
 
   /* ------------------------------ PLAYER --------------------------------- */
 
@@ -286,13 +217,9 @@ export default function MemoriesPage() {
 
         if (error) {
           console.error("Memory loading error:", error);
-          setMemories(FALLBACK_MEMORIES);
+          setMemories(UPLOADED_MEMORIES);
         } else {
-          setMemories(
-            data?.length
-              ? data
-              : FALLBACK_MEMORIES
-          );
+          setMemories([...UPLOADED_MEMORIES, ...(data || []).filter(item => !UPLOADED_MEMORIES.some(upload => upload.photo_url === item.photo_url))]);
         }
       } catch (error) {
         if (!cancelled) {
@@ -393,10 +320,7 @@ export default function MemoriesPage() {
 
   const timelineData = useMemo(() => {
     return TIMELINE.map((slot, index) => {
-      const matchingMemory = memories.find(
-        (memory) =>
-          getMemoryYear(memory) === slot.year
-      );
+      const matchingMemory = null;
 
       return {
         ...slot,
@@ -778,7 +702,7 @@ export default function MemoriesPage() {
             <p className="hero-description">
               16 YEARS.
               <br />
-              22 TIMELINE CHAPTERS.
+              MEMORIES OUT OF ORDER.
               <br />
               WAY TOO MUCH LORE.
             </p>
@@ -811,7 +735,7 @@ export default function MemoriesPage() {
                 className="vcr-button"
                 onClick={() => {
                   setSearch("");
-                  setViewMode("timeline");
+                  setViewMode("grid");
                   setCurrentTimeline(0);
                   setSelectedMemory(null);
                   setSelectedIndex(0);
@@ -976,20 +900,6 @@ export default function MemoriesPage() {
             <div className="view-buttons">
               <button
                 className={
-                  viewMode === "timeline"
-                    ? "active"
-                    : ""
-                }
-                onClick={() =>
-                  setViewMode("timeline")
-                }
-              >
-                <Clock size={14} />
-                TIMELINE
-              </button>
-
-              <button
-                className={
                   viewMode === "grid"
                     ? "active"
                     : ""
@@ -1099,134 +1009,9 @@ export default function MemoriesPage() {
           </span>
         </section>
 
-        {/* CINEMATIC FRIENDSHIP TAPE — single player, person filters, filmstrip */}
-        <FriendshipTape photos={FRIEND_PHOTOS} />
-        
         {/* ---------------------------------------------------------------- */}
         {/* TIMELINE                                                         */}
         {/* ---------------------------------------------------------------- */}
-
-        {viewMode === "timeline" && (
-          <section className="timeline-section">
-            <div className="section-heading">
-              <div>
-                <div className="tiny-label">
-                  CHAPTER SELECT
-                </div>
-
-                <h2>
-                  THE LAST 16 YEARS
-                  <span>
-                    // 22 TAPES
-                  </span>
-                </h2>
-              </div>
-
-              <div className="timeline-counter">
-                {String(
-                  currentTimeline + 1
-                ).padStart(2, "0")}
-                /22
-              </div>
-            </div>
-
-            <div className="timeline">
-              <div className="timeline-line" />
-
-              {timelineData.map(
-                (slot, index) => {
-                  const memory =
-                    slot.memory;
-
-                  const hasMemory =
-                    Boolean(memory);
-
-                  return (
-                    <article
-                      key={`${slot.tape}-${index}`}
-                      id={`timeline-${index}`}
-                      className={`timeline-node ${
-                        index % 2 === 0
-                          ? "node-left"
-                          : "node-right"
-                      } ${
-                        currentTimeline ===
-                        index
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => {
-                        jumpToTimeline(
-                          index
-                        );
-
-                        if (memory) {
-                          openMemory(
-                            memory
-                          );
-                        }
-                      }}
-                    >
-                      <div className="timeline-dot">
-                        {hasMemory ? (
-                          <Play size={10} />
-                        ) : (
-                          <span>?</span>
-                        )}
-                      </div>
-
-                      <div className="timeline-card">
-                        <div className="tape-number">
-                          TAPE {slot.tape}
-                        </div>
-
-                        <div className="timeline-year">
-                          {slot.year}
-                        </div>
-
-                        <div className="timeline-age">
-                          AGE {slot.age}
-                        </div>
-
-                        <div className="timeline-card-title">
-                          {memory?.title ||
-                            slot.label}
-                        </div>
-
-                        <div className="timeline-card-status">
-                          {hasMemory
-                            ? "● FOOTAGE AVAILABLE"
-                            : "○ SIGNAL LOST"}
-                        </div>
-
-                        <div className="timeline-preview">
-                          {memory?.photo_url ? (
-                            <img
-                              src={
-                                memory.photo_url
-                              }
-                              alt=""
-                            />
-                          ) : (
-                            <div className="lost-footage">
-                              NO IMAGE
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="timeline-open">
-                          {hasMemory
-                            ? "CLICK TO PLAY →"
-                            : "FILE EMPTY"}
-                        </div>
-                      </div>
-                    </article>
-                  );
-                }
-              )}
-            </div>
-          </section>
-        )}
 
         {/* ---------------------------------------------------------------- */}
         {/* CONTACT SHEET                                                    */}
@@ -1530,7 +1315,9 @@ export default function MemoriesPage() {
 
             <div className="modal-screen">
               {selectedMemory.photo_url ? (
-                <img
+                selectedMemory.media_type === "video" ? (
+                  <video key={selectedMemory.id} src={selectedMemory.photo_url} controls playsInline preload="metadata" style={{width:"100%",height:"100%",objectFit:"contain",background:"#08070e"}} />
+                ) : <img
                   src={
                     selectedMemory.photo_url
                   }
@@ -2928,7 +2715,7 @@ button {
 .timeline-preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   filter: saturate(.85) contrast(1.08);
   transition: .25s;
 }
@@ -3006,7 +2793,7 @@ button {
 }
 
 .memory-image {
-  height: 260px;
+  height: 320px;
   background: #08060e;
   position: relative;
   overflow: hidden;
@@ -3015,12 +2802,12 @@ button {
 .memory-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: .3s;
 }
 
 .memory-tape:hover .memory-image img {
-  transform: scale(1.07);
+  transform: scale(1.015);
   filter: saturate(1.15) contrast(1.08);
 }
 
