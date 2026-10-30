@@ -131,7 +131,7 @@ export default function BirthdayPage() {
     if(cmd==='CONNECTIONS'){setInvalidCommands(0);openProgram(sections[5]);return}
     const responses={
       HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY CONNECTIONS NAIDU CLAR MAGGOT MOP SIKAMBING S**FOL BENEDICT CLEAR EXIT',
-      DIR:'MEMORIES MESSAGES SOUNDTRACK CHAOS QUIZ CONNECTIONS // 0xSECRET',
+      DIR:'MEMORIES MESSAGES SOUNDTRACK TRIVIA RPG CONNECTIONS // 0xSECRET',
       WHOAMI:'CLAR // ARCHIVE OWNER // ADMINISTRATOR: NAIDU',
       DATE:'19.11.2026 // ARCHIVE DATE',
       TIME:'Time passed. Some things stayed.',
@@ -202,10 +202,10 @@ export default function BirthdayPage() {
     },
     {
       number: '04',
-      title: 'CHAOS',
-      sub: 'shits / giggles / questionable decisions',
-      link: '/birthday/games',
-      icon: '🎮',
+      title: 'TRIVIA',
+      sub: 'ten questions / one final score',
+      link: '/birthday/quiz',
+      icon: '❔',
       colour: 'yellow',
     },
     {
