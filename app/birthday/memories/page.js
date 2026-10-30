@@ -169,6 +169,7 @@ export default function MemoriesPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0);
+  const [videoProgress, setVideoProgress] = useState(0);
   const videoRef = useRef(null);
   const archiveVideos = useMemo(() => memories.filter(m => m.media_type === "video" || /\.(mp4|mov)(\?|$)/i.test(m.photo_url || "")), [memories]);
   const currentVideo = archiveVideos[videoIndex] || archiveVideos[0];
@@ -775,9 +776,10 @@ export default function MemoriesPage() {
           <div className="vhs-player">
             <div className="player-screen">
               {currentVideo ? (
-                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline controls preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:2}} />
+                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline webkit-playsinline="true" disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback" preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); }} onTimeUpdate={e => { const v=e.currentTarget; setVideoProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:2,pointerEvents:"none"}} />
               ) : <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",color:"#f8c4e7",fontSize:12,letterSpacing:2}}>NO VIDEO TAPES FOUND</div>}
-              <div className="screen-grid" style={{pointerEvents:"none"}} />
+              <div className="screen-grid" style={{pointerEvents:"none",zIndex:3}} />
+              {currentVideo && <div style={{position:"absolute",left:0,bottom:0,height:3,width:`${videoProgress}%`,background:"#ff68bd",zIndex:5,pointerEvents:"none",boxShadow:"0 0 9px #ff68bd"}} />}
 
               <div className="player-time">
                 00:
