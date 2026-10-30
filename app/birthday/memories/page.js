@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { UPLOADED_MEMORIES } from "./uploadedMemories";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -216,13 +217,9 @@ export default function MemoriesPage() {
 
         if (error) {
           console.error("Memory loading error:", error);
-          setMemories(FALLBACK_MEMORIES);
+          setMemories(UPLOADED_MEMORIES);
         } else {
-          setMemories(
-            data?.length
-              ? data
-              : FALLBACK_MEMORIES
-          );
+          setMemories([...UPLOADED_MEMORIES, ...(data || []).filter(item => !UPLOADED_MEMORIES.some(upload => upload.photo_url === item.photo_url))]);
         }
       } catch (error) {
         if (!cancelled) {
@@ -324,8 +321,7 @@ export default function MemoriesPage() {
   const timelineData = useMemo(() => {
     return TIMELINE.map((slot, index) => {
       const matchingMemory = memories.find(
-        (memory) =>
-          getMemoryYear(memory) === slot.year
+        (memory) => getMemoryYear(memory) === slot.year
       );
 
       return {
@@ -1457,7 +1453,9 @@ export default function MemoriesPage() {
 
             <div className="modal-screen">
               {selectedMemory.photo_url ? (
-                <img
+                selectedMemory.media_type === "video" ? (
+                  <video key={selectedMemory.id} src={selectedMemory.photo_url} controls playsInline preload="metadata" style={{width:"100%",height:"100%",objectFit:"contain",background:"#08070e"}} />
+                ) : <img
                   src={
                     selectedMemory.photo_url
                   }
