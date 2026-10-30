@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 const DarkModeContext = createContext()
 
 export function DarkModeProvider({ children }) {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -16,8 +16,8 @@ export function DarkModeProvider({ children }) {
           const isDark = saved === 'true'
           setIsDarkMode(isDark)
         } else {
-          // Default to light mode instead of system preference
-          setIsDarkMode(false)
+          // Preserve the original CLAR_OS dark appearance unless light is selected.
+          setIsDarkMode(true)
         }
       } catch (error) {
         console.log('Error loading dark mode preference:', error)
