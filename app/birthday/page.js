@@ -796,6 +796,8 @@ export default function BirthdayPage() {
                 the obvious stuff.
               </p>
 
+              {eggOpen === 'two' && <p className="egg-small">Psst... the mail seal in LOVE_MAIL has a secret. Tap it four times. ♡</p>}
+
               <div className="audio-card">
 
                 <div className="audio-icon">
