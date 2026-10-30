@@ -305,5 +305,32 @@ export const UPLOADED_MEMORIES = [
     "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/kodak_colorplus_200(26).jpeg",
     "media_type": "image",
     "source_filename": "kodak_colorplus_200(26).jpeg"
+  },
+  {
+    "id": "uploaded-video-2",
+    "title": "HOME VIDEO 02",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20251117-WA0114.mp4",
+    "media_type": "video",
+    "source_filename": "VID-20251117-WA0114.mp4"
+  },
+  {
+    "id": "uploaded-video-3",
+    "title": "HOME VIDEO 03",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/20260906_210549_2.mov",
+    "media_type": "video",
+    "source_filename": "20260906_210549_2.mov"
+  },
+  {
+    "id": "uploaded-video-4",
+    "title": "HOME VIDEO 04",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20240827-WA0008.mp4",
+    "media_type": "video",
+    "source_filename": "VID-20240827-WA0008.mp4"
   }
 ];
