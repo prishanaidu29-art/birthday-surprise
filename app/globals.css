@@ -631,3 +631,18 @@ input:disabled,
 body {
   cursor: default;
 }
+/* CLAR_OS reversible pastel theme experiment. Original styling remains dark mode. */
+html:not(.dark) .archive-screen,html:not(.dark) .trivia-page,html:not(.dark) .world,html:not(.dark) main:has(> .trivia-shell){background:#f6eafa!important;color:#3b2454!important;transition:background-color .3s,color .3s}
+html:not(.dark) .archive-screen .desktop{background-color:#eee0f7!important}
+html:not(.dark) .archive-screen .window,html:not(.dark) .archive-screen .start-menu,html:not(.dark) .archive-screen .taskbar,html:not(.dark) .trivia-window{background:#fff7ff!important;color:#3b2454!important;border-color:#bb83d0!important;box-shadow:5px 5px 0 #b89cc9!important}
+html:not(.dark) .archive-screen .window-title,html:not(.dark) .trivia-bar{background:#d7b1e8!important;color:#39214c!important}
+html:not(.dark) .archive-screen .desktop-icon,html:not(.dark) .archive-screen .desktop-icon *,html:not(.dark) .archive-screen .window p,html:not(.dark) .archive-screen .window span,html:not(.dark) .archive-screen .window label{color:#432956}
+html:not(.dark) .trivia-body,html:not(.dark) .trivia-question,html:not(.dark) .trivia-intro p{color:#432956!important}
+html:not(.dark) .trivia-option{background:#f4e7fa!important;color:#432956!important;border-color:#c49bd8!important}
+html:not(.dark) .trivia-option.correct{background:#d6f4e8!important}
+html:not(.dark) .trivia-option.wrong{background:#f9dbe8!important}
+html:not(.dark) .trivia-progress{background:#e5c9ef!important}
+html:not(.dark) .trivia-sub,html:not(.dark) .trivia-back{color:#624278!important}
+html:not(.dark) .trivia-kicker{color:#68448e!important}
+html:not(.dark) .trivia-primary{background:#cf76b8!important;color:#24152d!important}
+@media(prefers-reduced-motion:reduce){html:not(.dark) .archive-screen,html:not(.dark) .trivia-page{transition:none}}
