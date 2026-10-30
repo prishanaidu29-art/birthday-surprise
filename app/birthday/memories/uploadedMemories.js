@@ -539,5 +539,239 @@ export const UPLOADED_MEMORIES = [
     "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/c56d32be-b063-4f46-aa52-910dd421c763.JPG",
     "media_type": "image",
     "source_filename": "c56d32be-b063-4f46-aa52-910dd421c763.JPG"
+  },
+  {
+    "id": "batch-oct30-001",
+    "title": "HOME VIDEO 01",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/1A04BDF4-9CBE-4499-8086-E39027FB17CE.MP4",
+    "media_type": "video",
+    "source_filename": "1A04BDF4-9CBE-4499-8086-E39027FB17CE.MP4"
+  },
+  {
+    "id": "batch-oct30-002",
+    "title": "RECOVERED MEMORY 02",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/1D1A0F99-89AF-437D-AEA4-3CC3711568E2.JPG",
+    "media_type": "image",
+    "source_filename": "1D1A0F99-89AF-437D-AEA4-3CC3711568E2.JPG"
+  },
+  {
+    "id": "batch-oct30-003",
+    "title": "RECOVERED MEMORY 03",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/28437C7B-313F-40B8-BAFB-B5697BA84862.JPG",
+    "media_type": "image",
+    "source_filename": "28437C7B-313F-40B8-BAFB-B5697BA84862.JPG"
+  },
+  {
+    "id": "batch-oct30-004",
+    "title": "RECOVERED MEMORY 04",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/395C79F4-B032-4D2F-9097-4BAD301A81CC.JPG",
+    "media_type": "image",
+    "source_filename": "395C79F4-B032-4D2F-9097-4BAD301A81CC.JPG"
+  },
+  {
+    "id": "batch-oct30-005",
+    "title": "RECOVERED MEMORY 05",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/4F2BBB58-62BD-4C0D-9DDB-9628A9932568.JPG",
+    "media_type": "image",
+    "source_filename": "4F2BBB58-62BD-4C0D-9DDB-9628A9932568.JPG"
+  },
+  {
+    "id": "batch-oct30-006",
+    "title": "RECOVERED MEMORY 06",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/541548C1-FC9B-4AE9-BCA8-FB7CC6C46113.JPG",
+    "media_type": "image",
+    "source_filename": "541548C1-FC9B-4AE9-BCA8-FB7CC6C46113.JPG"
+  },
+  {
+    "id": "batch-oct30-007",
+    "title": "RECOVERED MEMORY 07",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/544D3993-F5F7-4ECB-8714-1279FA2F5E45.JPG",
+    "media_type": "image",
+    "source_filename": "544D3993-F5F7-4ECB-8714-1279FA2F5E45.JPG"
+  },
+  {
+    "id": "batch-oct30-008",
+    "title": "RECOVERED MEMORY 08",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/55E5DF15-B8B9-43E6-AA27-94D1FB1D7302.JPG",
+    "media_type": "image",
+    "source_filename": "55E5DF15-B8B9-43E6-AA27-94D1FB1D7302.JPG"
+  },
+  {
+    "id": "batch-oct30-009",
+    "title": "HOME VIDEO 09",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/764FF582-AA06-4063-842B-BFCCDB3568A8.MP4",
+    "media_type": "video",
+    "source_filename": "764FF582-AA06-4063-842B-BFCCDB3568A8.MP4"
+  },
+  {
+    "id": "batch-oct30-010",
+    "title": "RECOVERED MEMORY 10",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/7E410A47-56D6-4EFA-B289-99474111A0B0.JPG",
+    "media_type": "image",
+    "source_filename": "7E410A47-56D6-4EFA-B289-99474111A0B0.JPG"
+  },
+  {
+    "id": "batch-oct30-011",
+    "title": "HOME VIDEO 11",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8B2286FC-EC22-49BD-9EFC-C5341C8A2BA1.MP4",
+    "media_type": "video",
+    "source_filename": "8B2286FC-EC22-49BD-9EFC-C5341C8A2BA1.MP4"
+  },
+  {
+    "id": "batch-oct30-012",
+    "title": "RECOVERED MEMORY 12",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8C6C50DA-9C2E-4F34-820C-0CF9F38AB365.JPG",
+    "media_type": "image",
+    "source_filename": "8C6C50DA-9C2E-4F34-820C-0CF9F38AB365.JPG"
+  },
+  {
+    "id": "batch-oct30-013",
+    "title": "RECOVERED MEMORY 13",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8E0CC0E2-49B2-49AF-B246-435AEC107F48.JPG",
+    "media_type": "image",
+    "source_filename": "8E0CC0E2-49B2-49AF-B246-435AEC107F48.JPG"
+  },
+  {
+    "id": "batch-oct30-014",
+    "title": "HOME VIDEO 14",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8E939B2A-6434-4241-B4F2-7B17ACC64E67.MP4",
+    "media_type": "video",
+    "source_filename": "8E939B2A-6434-4241-B4F2-7B17ACC64E67.MP4"
+  },
+  {
+    "id": "batch-oct30-015",
+    "title": "RECOVERED MEMORY 15",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/93D39DFB-C621-451E-9AF6-7CAA5DEAA8D5.JPG",
+    "media_type": "image",
+    "source_filename": "93D39DFB-C621-451E-9AF6-7CAA5DEAA8D5.JPG"
+  },
+  {
+    "id": "batch-oct30-016",
+    "title": "RECOVERED MEMORY 16",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/A15EAFCD-A042-44EA-BD50-EDC13974F3F3.JPG",
+    "media_type": "image",
+    "source_filename": "A15EAFCD-A042-44EA-BD50-EDC13974F3F3.JPG"
+  },
+  {
+    "id": "batch-oct30-017",
+    "title": "RECOVERED MEMORY 17",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/A5834B54-C966-4478-9548-A0FB52CA6E7C.JPG",
+    "media_type": "image",
+    "source_filename": "A5834B54-C966-4478-9548-A0FB52CA6E7C.JPG"
+  },
+  {
+    "id": "batch-oct30-018",
+    "title": "RECOVERED MEMORY 18",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/BBD895E5-7776-4CB2-8BE6-13C340979BEF.JPG",
+    "media_type": "image",
+    "source_filename": "BBD895E5-7776-4CB2-8BE6-13C340979BEF.JPG"
+  },
+  {
+    "id": "batch-oct30-019",
+    "title": "RECOVERED MEMORY 19",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/C3546563-8584-4AB4-BE06-80CF81F97DB6.JPG",
+    "media_type": "image",
+    "source_filename": "C3546563-8584-4AB4-BE06-80CF81F97DB6.JPG"
+  },
+  {
+    "id": "batch-oct30-020",
+    "title": "HOME VIDEO 20",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/D1154B22-A8B8-477F-B1D6-735470C6337F.MP4",
+    "media_type": "video",
+    "source_filename": "D1154B22-A8B8-477F-B1D6-735470C6337F.MP4"
+  },
+  {
+    "id": "batch-oct30-021",
+    "title": "RECOVERED MEMORY 21",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/D5F89187-046D-4D23-A072-44E59A7C7554.JPG",
+    "media_type": "image",
+    "source_filename": "D5F89187-046D-4D23-A072-44E59A7C7554.JPG"
+  },
+  {
+    "id": "batch-oct30-022",
+    "title": "RECOVERED MEMORY 22",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/D6F1C057-E67A-4BA3-9877-0B54CFD9887F.JPG",
+    "media_type": "image",
+    "source_filename": "D6F1C057-E67A-4BA3-9877-0B54CFD9887F.JPG"
+  },
+  {
+    "id": "batch-oct30-023",
+    "title": "RECOVERED MEMORY 23",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/FC115111-99CA-4A46-AAF5-F14A9620EA11.JPG",
+    "media_type": "image",
+    "source_filename": "FC115111-99CA-4A46-AAF5-F14A9620EA11.JPG"
+  },
+  {
+    "id": "batch-oct30-024",
+    "title": "RECOVERED MEMORY 24",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG-20170828-WA0004.jpg",
+    "media_type": "image",
+    "source_filename": "IMG-20170828-WA0004.jpg"
+  },
+  {
+    "id": "batch-oct30-025",
+    "title": "RECOVERED MEMORY 25",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_1868.PNG",
+    "media_type": "image",
+    "source_filename": "IMG_1868.PNG"
+  },
+  {
+    "id": "batch-oct30-026",
+    "title": "RECOVERED MEMORY 26",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_2682.JPG",
+    "media_type": "image",
+    "source_filename": "IMG_2682.JPG"
   }
 ];
