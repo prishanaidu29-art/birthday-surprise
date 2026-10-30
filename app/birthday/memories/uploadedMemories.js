@@ -332,5 +332,212 @@ export const UPLOADED_MEMORIES = [
     "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20240827-WA0008.mp4",
     "media_type": "video",
     "source_filename": "VID-20240827-WA0008.mp4"
+  },
+  {
+    "id": "additional-001",
+    "title": "RECOVERED MEMORY 35",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/89BADECE-88E3-4FF8-8332-945F45E12A9F.png",
+    "media_type": "image",
+    "source_filename": "89BADECE-88E3-4FF8-8332-945F45E12A9F.png"
+  },
+  {
+    "id": "additional-002",
+    "title": "RECOVERED MEMORY 36",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/9e6960e6-42a8-4f76-980d-5f192cb74c7f.JPG",
+    "media_type": "image",
+    "source_filename": "9e6960e6-42a8-4f76-980d-5f192cb74c7f.JPG"
+  },
+  {
+    "id": "additional-003",
+    "title": "RECOVERED MEMORY 37",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/CEE1156B-52FC-49BB-BC08-D7FD6BF45BBE.JPG",
+    "media_type": "image",
+    "source_filename": "CEE1156B-52FC-49BB-BC08-D7FD6BF45BBE.JPG"
+  },
+  {
+    "id": "additional-004",
+    "title": "RECOVERED MEMORY 38",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/ClarAK1.jpeg",
+    "media_type": "image",
+    "source_filename": "ClarAK1.jpeg"
+  },
+  {
+    "id": "additional-005",
+    "title": "RECOVERED MEMORY 39",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/ClarAK2.jpeg",
+    "media_type": "image",
+    "source_filename": "ClarAK2.jpeg"
+  },
+  {
+    "id": "additional-006",
+    "title": "RECOVERED MEMORY 40",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/ClarAK5.jpeg",
+    "media_type": "image",
+    "source_filename": "ClarAK5.jpeg"
+  },
+  {
+    "id": "additional-007",
+    "title": "RECOVERED MEMORY 41",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/ClarAK67.jpeg",
+    "media_type": "image",
+    "source_filename": "ClarAK67.jpeg"
+  },
+  {
+    "id": "additional-008",
+    "title": "RECOVERED MEMORY 42",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMAG0944_Original.jpg",
+    "media_type": "image",
+    "source_filename": "IMAG0944_Original.jpg"
+  },
+  {
+    "id": "additional-009",
+    "title": "RECOVERED MEMORY 43",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG-20171227-WA0002_Original_Original.jpg",
+    "media_type": "image",
+    "source_filename": "IMG-20171227-WA0002_Original_Original.jpg"
+  },
+  {
+    "id": "additional-010",
+    "title": "HOME VIDEO 14",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_0963.MOV",
+    "media_type": "video",
+    "source_filename": "IMG_0963.MOV"
+  },
+  {
+    "id": "additional-011",
+    "title": "RECOVERED MEMORY 45",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_0964.HEIC",
+    "media_type": "image",
+    "source_filename": "IMG_0964.HEIC"
+  },
+  {
+    "id": "additional-012",
+    "title": "RECOVERED MEMORY 46",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_1066.HEIC",
+    "media_type": "image",
+    "source_filename": "IMG_1066.HEIC"
+  },
+  {
+    "id": "additional-013",
+    "title": "RECOVERED MEMORY 47",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_1068.HEIC",
+    "media_type": "image",
+    "source_filename": "IMG_1068.HEIC"
+  },
+  {
+    "id": "additional-014",
+    "title": "RECOVERED MEMORY 48",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_2320.jpeg",
+    "media_type": "image",
+    "source_filename": "IMG_2320.jpeg"
+  },
+  {
+    "id": "additional-015",
+    "title": "RECOVERED MEMORY 49",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4034.jpeg",
+    "media_type": "image",
+    "source_filename": "IMG_4034.jpeg"
+  },
+  {
+    "id": "additional-016",
+    "title": "RECOVERED MEMORY 50",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4035.jpeg",
+    "media_type": "image",
+    "source_filename": "IMG_4035.jpeg"
+  },
+  {
+    "id": "additional-017",
+    "title": "RECOVERED MEMORY 51",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4036.jpeg",
+    "media_type": "image",
+    "source_filename": "IMG_4036.jpeg"
+  },
+  {
+    "id": "additional-018",
+    "title": "RECOVERED MEMORY 52",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4037.jpeg",
+    "media_type": "image",
+    "source_filename": "IMG_4037.jpeg"
+  },
+  {
+    "id": "additional-019",
+    "title": "RECOVERED MEMORY 53",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4477.png",
+    "media_type": "image",
+    "source_filename": "IMG_4477.png"
+  },
+  {
+    "id": "additional-020",
+    "title": "RECOVERED MEMORY 54",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4480.png",
+    "media_type": "image",
+    "source_filename": "IMG_4480.png"
+  },
+  {
+    "id": "additional-021",
+    "title": "RECOVERED MEMORY 55",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4482.png",
+    "media_type": "image",
+    "source_filename": "IMG_4482.png"
+  },
+  {
+    "id": "additional-022",
+    "title": "RECOVERED MEMORY 56",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_4483.png",
+    "media_type": "image",
+    "source_filename": "IMG_4483.png"
+  },
+  {
+    "id": "additional-023",
+    "title": "RECOVERED MEMORY 57",
+    "description": "A little piece of Clar's story.",
+    "date_taken": null,
+    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/c56d32be-b063-4f46-aa52-910dd421c763.JPG",
+    "media_type": "image",
+    "source_filename": "c56d32be-b063-4f46-aa52-910dd421c763.JPG"
   }
 ];
