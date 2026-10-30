@@ -46,7 +46,7 @@ const Enhanced3DViewer = dynamic(
 );
 
 /* -------------------------------------------------------------------------- */
-/* TIMELINE                                                                    */
+/* ARCHIVE_SLOTS                                                                    */
 /* -------------------------------------------------------------------------- */
 
 const TIMELINE = [
@@ -161,7 +161,7 @@ export default function MemoriesPage() {
 
   /* ------------------------------- UI ------------------------------------ */
 
-  const [viewMode, setViewMode] = useState("timeline");
+  const [viewMode, setViewMode] = useState("grid");
   const [search, setSearch] = useState("");
 
   /* ------------------------------ PLAYER --------------------------------- */
@@ -320,9 +320,7 @@ export default function MemoriesPage() {
 
   const timelineData = useMemo(() => {
     return TIMELINE.map((slot, index) => {
-      const matchingMemory = memories.find(
-        (memory) => getMemoryYear(memory) === slot.year
-      );
+      const matchingMemory = null;
 
       return {
         ...slot,
@@ -704,7 +702,7 @@ export default function MemoriesPage() {
             <p className="hero-description">
               16 YEARS.
               <br />
-              22 TIMELINE CHAPTERS.
+              MEMORIES OUT OF ORDER.
               <br />
               WAY TOO MUCH LORE.
             </p>
@@ -737,7 +735,7 @@ export default function MemoriesPage() {
                 className="vcr-button"
                 onClick={() => {
                   setSearch("");
-                  setViewMode("timeline");
+                  setViewMode("grid");
                   setCurrentTimeline(0);
                   setSelectedMemory(null);
                   setSelectedIndex(0);
@@ -911,7 +909,7 @@ export default function MemoriesPage() {
                 }
               >
                 <Clock size={14} />
-                TIMELINE
+                MEMORY WALL
               </button>
 
               <button
@@ -1038,7 +1036,7 @@ export default function MemoriesPage() {
                 </div>
 
                 <h2>
-                  THE LAST 16 YEARS
+                  MOMENTS, NOT YEARS
                   <span>
                     // 22 TAPES
                   </span>
@@ -1104,11 +1102,11 @@ export default function MemoriesPage() {
                         </div>
 
                         <div className="timeline-year">
-                          {slot.year}
+                          {"✦"}
                         </div>
 
                         <div className="timeline-age">
-                          AGE {slot.age}
+                          A LITTLE PIECE OF THE STORY
                         </div>
 
                         <div className="timeline-card-title">
@@ -2853,7 +2851,7 @@ button {
 .timeline-preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   filter: saturate(.85) contrast(1.08);
   transition: .25s;
 }
@@ -2931,7 +2929,7 @@ button {
 }
 
 .memory-image {
-  height: 260px;
+  height: 320px;
   background: #08060e;
   position: relative;
   overflow: hidden;
@@ -2940,12 +2938,12 @@ button {
 .memory-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: .3s;
 }
 
 .memory-tape:hover .memory-image img {
-  transform: scale(1.07);
+  transform: scale(1.015);
   filter: saturate(1.15) contrast(1.08);
 }
 
