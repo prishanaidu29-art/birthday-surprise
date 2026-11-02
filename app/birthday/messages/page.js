@@ -73,6 +73,13 @@ const LETTERS=[
     "appreciation": "she puts the saying to be loved is to be seen to life.. everytime a little random detail that is (somehow) absurdly related to one of our (niche or not) interest pops up somewhere, we’d definitely get a “this reminded me of u” text. it sounds small but always means alot <3",
     "memory": "”maybe she died halfway up”\nnuff said…",
     "photo": ""
+  },
+  {
+    "name": "Trishia",
+    "wish": "HAPPY BIRTHDAY MISS CLARINGTONNN!!!! Congrats to surviving another year of successful wading thru early adulthood 🫡 You know how awkward I get expressing emotions but for you? I shall get in touch with shakespeare if I need to but unfortunately right now you just have to handle my endless rambling. Despite the relatively short(er) time we have been friends, so many things just clicked immediately that made me feel comfortable with you and thats definitely shown in our random chats and time spent together :D youre the calm and organised anchor of this chaotic and restless fishing boat thats swinging in the wind and for that im always thankful  because friends like you come around once in a lifetime.",
+    "appreciation": "I love how patient and dependable you are whenever something needs to be done, even if they go wrong from your typical pattern. Thank you for being such a great listener and non-judgemental person when we have those bullshit nonsense discourses about fictional men or random quizzes and the occasional deep real talks.",
+    "memory": "Our insta dms convo talking about love confessions and you said the feelings were mutual between REDACTED and REDACTED and i was dyingggg cus i couldnt believe it\nThat time i was tweaking out over our sake results and just dying from exhaustion while you kept trying to keep me level-headed and vice versa that time you werent getting the explanation I was giving for our lab results(??)",
+    "photo": ""
   }
 ]
 const FAMILY_VIDEOS=[
