@@ -104,13 +104,13 @@ const FALLBACK_MEMORIES = [
 /* -------------------------------------------------------------------------- */
 
 function formatDate(date) {
-  if (!date) return "DATE UNKNOWN";
+  if (!date) return "ARCHIVE FILE";
 
   try {
     const parsed = new Date(date);
 
     if (Number.isNaN(parsed.getTime())) {
-      return "DATE UNKNOWN";
+      return "ARCHIVE FILE";
     }
 
     return parsed.toLocaleDateString("en-GB", {
@@ -119,7 +119,7 @@ function formatDate(date) {
       year: "numeric",
     });
   } catch {
-    return "DATE UNKNOWN";
+    return "ARCHIVE FILE";
   }
 }
 
