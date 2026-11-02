@@ -5370,4 +5370,11 @@ button {
   .photo-main .lost-data-static {animation:none!important}
 }
 
+
+/* CLAR_OS refinement: consistent window depth, readable controls and iPad sizing. */
+.window-frame,.desktop-window,.notes-window,.recording-window,.cd-window,.photo-window{transition:box-shadow .18s ease}
+.recording-body button,.music-button,.photo-toolbar button{min-height:28px;touch-action:manipulation}
+.recording-info{min-width:0}.recording-title{overflow-wrap:anywhere}
+@media(min-width:761px) and (max-width:1180px){.recording-body{gap:10px}.recording-info{flex:1}.notes-paper{overflow-y:auto;overscroll-behavior:contain}}
+@media(prefers-reduced-motion:reduce){.window-frame,.desktop-window,.notes-window,.recording-window,.cd-window,.photo-window{transition:none}}
 `;
