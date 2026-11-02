@@ -118,6 +118,44 @@ function Face({person,id}){
   <path d="M15 14 H53 M15 14 V50 M185 14 H147 M185 14 V50" stroke="#ffe5d1" opacity=".65" fill="none" strokeWidth="3"/>
  </svg><div>{person.name}</div></div>;
 }
+
+/* A playable signal-repair minigame: observe, memorise and replay the sequence.
+   Different deterministic patterns per memory, no timer or unrecoverable failure. */
+function SignalRepair({chapter,quest,onComplete}){
+ const seed=(chapter*7+quest.id.split('').reduce((a,c)=>a+c.charCodeAt(0),0));
+ const pattern=Array.from({length:4},(_,i)=>(seed+i*i*3+i*5)%4);
+ const [phase,setPhase]=useState('ready');
+ const [lit,setLit]=useState(-1);
+ const [entered,setEntered]=useState([]);
+ const [mistakes,setMistakes]=useState(0);
+ const timers=useRef([]);
+ useEffect(()=>()=>timers.current.forEach(clearTimeout),[]);
+ const start=()=>{
+  timers.current.forEach(clearTimeout);timers.current=[];
+  setPhase('watch');setEntered([]);setLit(-1);
+  pattern.forEach((value,i)=>{
+   timers.current.push(setTimeout(()=>setLit(value),450+i*850));
+   timers.current.push(setTimeout(()=>setLit(-1),1050+i*850));
+  });
+  timers.current.push(setTimeout(()=>setPhase('input'),450+pattern.length*850));
+ };
+ const tap=n=>{
+  if(phase!=='input')return;
+  const next=[...entered,n];
+  if(n!==pattern[entered.length]){setMistakes(v=>v+1);setEntered([]);setPhase('retry');return}
+  setEntered(next);
+  if(next.length===pattern.length){setPhase('won');onComplete()}
+ };
+ const labels=['◈','✦','◇','✳'];
+ return <div className="act-signal-game">
+  <div className="act-signal-status">{phase==='ready'?'SIGNAL OFFLINE — MEMORISE THE FOUR PULSES':phase==='watch'?'WATCH THE PULSES':phase==='input'?'REPEAT THE PATTERN · '+entered.length+'/4':phase==='retry'?'SIGNAL LOST — TRY AGAIN':'SIGNAL RESTORED'}</div>
+  <div className="act-signal-grid">{labels.map((label,i)=><button key={i} type="button" disabled={phase!=='input'} onClick={()=>tap(i)} className={'act-signal-pad '+(lit===i?'lit':'')} aria-label={'Signal pad '+(i+1)}>{label}</button>)}</div>
+  {phase!=='input'&&phase!=='watch'&&phase!=='won'&&<button className="act-signal-start" onClick={start}>{phase==='retry'?'↻ RETRY SEQUENCE':'▶ START SIGNAL REPAIR'}</button>}
+  {phase==='input'&&<p className="act-muted">Tap the four symbols in the order they flashed. Mistakes reset the sequence, not your progress.</p>}
+  {mistakes>0&&<p className="act-muted">Retries: {mistakes} · You can always try again.</p>}
+ </div>
+}
+
 export default function StoryAct({chapter=2}){
  const act=ACTS[chapter];
  const [p,setP]=useState(()=>makeStart(act)),ref=useRef(p),[loaded,setLoaded]=useState(false);
@@ -177,7 +215,7 @@ export default function StoryAct({chapter=2}){
   <div className="act-progress">{act.quests.map((q,i)=><div key={q.id} className={p.solved.includes(q.id)?'done':''}><span>{p.solved.includes(q.id)?'◆':'◇'}</span>{q.title}</div>)}</div>
   {dialog&&<div className="act-overlay"><article className="act-modal"><small>TRANSMISSION // {dialog.index+1}/{dialog.lines.length}</small><div className="act-dialog"><Face id={dialog.who} person={act.cast[dialog.who]}/><div><h2>{act.cast[dialog.who]?.name||dialog.who}</h2><p>{(dialog.lines[dialog.index]||'').slice(0,typed)}{typed<(dialog.lines[dialog.index]||'').length&&<span className="act-caret">▌</span>}</p></div></div><div className="act-modal-actions"><button onClick={nextLine}>{typed<(dialog.lines[dialog.index]||'').length?'SHOW FULL LINE ▸':dialog.index<dialog.lines.length-1?'CONTINUE ▸':'CLOSE TRANSMISSION ✓'}</button></div></article></div>}
   {panel&&!dialog&&<div className="act-overlay"><article className={'act-modal '+(panel.type==='letter'?'act-letter-shell':'')}><small>{panel.type==='letter'?'UNSENT_LETTER_FOR_CLAR.txt':'CLAR.exe / '+panel.type.toUpperCase()}</small>
-   {panel.type==='puzzle'&&quest&&<><h2>{quest.title}</h2><p>{quest.pre}</p><div className="act-choices">{quest.answers.map((a,i)=><button key={a} onClick={()=>submitAnswer(i,'quest',quest.id)}>{i+1}. {a}</button>)}</div><p className="act-muted">HINT: {act.objects.find(o=>o.quest===quest.id)?.hint}</p></>}
+   {panel.type==='puzzle'&&quest&&<><h2>{quest.title}</h2><p>{quest.pre}</p><SignalRepair key={quest.id} chapter={chapter} quest={quest} onComplete={()=>submitAnswer(quest.correct,'quest',quest.id)}/><p className="act-muted">HINT: {act.objects.find(o=>o.quest===quest.id)?.hint}</p></>}
    {panel.type==='success'&&quest&&<><h2>✦ MEMORY RESTORED</h2>{quest.success.map((s,i)=><p key={i}>{s}</p>)}<div className="act-reward">◆ NEW FILE: {quest.reward}</div></>}
    {panel.type==='gate'&&<><h2>{act.gate.title}</h2><p>{act.gate.prompt}</p><div className="act-choices">{act.gate.answers.map((s,i)=><button onClick={()=>submitAnswer(i,'gate')} key={s}>{i+1}. {s}</button>)}</div><p className="act-muted">HINT: {act.gate.hint}</p></>}
    {panel.type==='locked'&&<><h2>ACCESS DENIED — FOR NOW</h2><p>The exit will not open until all three memory fragments have been restored.</p>{remaining.map(q=><p className="act-muted" key={q.id}>◇ {q.title} — Find {act.objects.find(o=>o.quest===q.id)?.name}</p>)}</>}
