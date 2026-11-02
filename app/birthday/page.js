@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,7 +33,7 @@ export default function BirthdayPage() {
   const launchTimerRef = useRef(null)
 
   const [musicPlaying, setMusicPlaying] = useState(false)
-  const [effectsEnabled, setEffectsEnabled] = useState(true)
+  const [effectsEnabled, setEffectsEnabled] = useState(false)
   const [chaosPopup, setChaosPopup] = useState(null)
   const [crash, setCrash] = useState(null)
   const [clickCounts, setClickCounts] = useState({})
@@ -49,7 +50,7 @@ export default function BirthdayPage() {
   const audioRef = useRef(null)
   const videoRef = useRef(null)
   const resumeAfterVideoRef = useRef(false)
-  const archivePhotos = Array.from({length:8},(_,i)=>'/images/archive-'+String(i+1).padStart(2,'0')+'.jpg')
+  const archivePhotos = UPLOADED_MEMORIES.filter(item=>item.media_type==='image' && item.photo_url).slice(0,24).map(item=>item.photo_url)
   const archiveVideos = Array.from({length:3},(_,i)=>'/media/clar-tape-'+String(i+1).padStart(2,'0')+'.mp4')
   const bringFront = (id) => { nextZRef.current += 1; setWindowOrder(p=>({...p,[id]:nextZRef.current})) }
   const beep = (kind='click') => {
@@ -113,10 +114,10 @@ export default function BirthdayPage() {
     if(next===3||next===5||next===8)showChaos(reactions[id]?.[next===3?0:next===5?1:2]||'CLAR_OS IS JUDGING YOU.')
   }
   const openProgram = (section) => { setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100) }
-  const resetDesktop = () => { setNotesOpen(true);setMusicOpen(true);setFilesOpen(true);setPhotoOpen(true);setTerminalOpen(false);setVideoOpen(false);setWindowPositions({});setStartOpen(false) }
+  const resetDesktop = () => {beep('boot'); setNotesOpen(true);setMusicOpen(true);setFilesOpen(true);setPhotoOpen(true);setTerminalOpen(false);setVideoOpen(false);setWindowPositions({});setStartOpen(false) }
   useEffect(()=>()=>{clearTimeout(launchTimerRef.current);clearTimeout(fxTimerRef.current);clearTimeout(crashTimerRef.current);if(fxContextRef.current)fxContextRef.current.close().catch(()=>{})},[])
-  useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%8),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
-  useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;setWindowPositions(p=>({...p,[d.id]:{x:Math.max(0,d.x+e.clientX-d.startX),y:Math.max(0,d.y+e.clientY-d.startY)}}))};const stop=()=>dragRef.current=null;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop)}},[])
+  useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%archivePhotos.length),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
+  useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;setWindowPositions(p=>({...p,[d.id]:{x:Math.max(0,Math.min(window.innerWidth-260,d.x+e.clientX-d.startX)),y:Math.max(0,Math.min(window.innerHeight-100,d.y+e.clientY-d.startY))}}))};const stop=()=>dragRef.current=null;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop)}},[])
   const startDrag=(e,id)=>{if(window.innerWidth<=850||e.target.closest('button'))return;const rect=e.currentTarget.parentElement.getBoundingClientRect();const desk=document.querySelector('.desktop').getBoundingClientRect();bringFront(id);dragRef.current={id,startX:e.clientX,startY:e.clientY,x:rect.left-desk.left,y:rect.top-desk.top};e.preventDefault()}
   const winProps=(id)=>({style:{zIndex:windowOrder[id]||10,...(windowPositions[id]?{left:windowPositions[id].x,top:windowPositions[id].y,right:'auto',bottom:'auto'}:{})},onPointerDown:()=>bringFront(id)})
   const terminalCommand=e=>{
@@ -508,11 +509,11 @@ export default function BirthdayPage() {
                 {!photoMissing[photoIndex] ? <img src={archivePhotos[photoIndex]} alt={'Archive photo '+(photoIndex+1)} onError={()=>setPhotoMissing(p=>({...p,[photoIndex]:true}))}/> : <div className="archive-photo-pending">▧<br/>IMAGE {String(photoIndex+1).padStart(3,'0')} NOT YET RESTORED<br/><small>ADD PHOTO LATER</small></div>}
               </div>
               <div className="archive-photo-controls">
-                <button onClick={()=>setPhotoIndex(i=>(i+7)%8)}>◀ PREV</button>
+                <button onClick={()=>{beep();setPhotoIndex(i=>(i+archivePhotos.length-1)%archivePhotos.length)}}>◀ PREV</button>
                 <button onClick={()=>setPhotoPaused(p=>!p)}>{photoPaused?'▶ PLAY':'Ⅱ PAUSE'}</button>
-                <button onClick={()=>setPhotoIndex(i=>(i+1)%8)}>NEXT ▶</button>
+                <button onClick={()=>{beep();setPhotoIndex(i=>(i+1)%archivePhotos.length)}}>NEXT ▶</button>
               </div>
-              <div className="archive-photo-meta">{String(photoIndex+1).padStart(2,'0')} / 08 <button onClick={()=>openProgram(sections[0])}>OPEN FULL ARCHIVE ↗</button></div>
+              <div className="archive-photo-meta">{String(photoIndex+1).padStart(2,'0')} / {String(archivePhotos.length).padStart(2,'0')} <button onClick={()=>openProgram(sections[0])}>OPEN FULL ARCHIVE ↗</button></div>
             </div>
           </div>
         )}
