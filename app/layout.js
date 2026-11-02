@@ -1,6 +1,5 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
-import ParticleSystem from '../components/ParticleSystem'
 import DiscoveryTracker from '../components/DiscoveryTracker'
 import { DarkModeProvider } from '../hooks/useDarkMode'
 import ClientOnlyDarkModeToggle from '../components/ClientOnlyDarkModeToggle'
@@ -18,7 +17,6 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <DarkModeProvider>
           <ClientOnlyDarkModeToggle />
-          <ParticleSystem />
           <DiscoveryTracker />
           {children}
         </DarkModeProvider>
