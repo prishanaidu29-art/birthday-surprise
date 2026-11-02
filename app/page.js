@@ -76,6 +76,7 @@ export default function HomePage() {
 
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [recordingPlaying, setRecordingPlaying] = useState(false)
+  const [recordingError, setRecordingError] = useState('')
   const [photoIndex, setPhotoIndex] = useState(0)
   const [photoDataGlitch, setPhotoDataGlitch] = useState(false)
   const photoGlitchTimerRef = useRef(null)
@@ -252,19 +253,21 @@ export default function HomePage() {
 
   useEffect(() => {if(audioRef.current)audioRef.current.muted=!soundOn;if(recordingRef.current)recordingRef.current.muted=!soundOn},[soundOn])
 
-  useEffect(() => {
+  function toggleRecording() {
     const recording = recordingRef.current
-
     if (!recording) return
-
-    if (recordingPlaying) {
-      recording.play().catch(() => {
-        setRecordingPlaying(false)
-      })
-    } else {
-      recording.pause()
-    }
-  }, [recordingPlaying])
+    if (!recording.paused) { recording.pause(); setRecordingPlaying(false); return }
+    setRecordingError('')
+    recording.muted = false
+    recording.volume = 1
+    if (audioRef.current) audioRef.current.pause()
+    setMusicPlaying(false)
+    const result = recording.play()
+    if (result && result.then) result.then(() => setRecordingPlaying(true)).catch(() => {
+      setRecordingPlaying(false)
+      setRecordingError('This audio format could not play on this browser. Try opening the audio file directly below.')
+    })
+  }
 
   /* ---------------------------------------------------------
      CORRUPTED PHOTO FEED / GLITCH AUDIO
@@ -890,7 +893,7 @@ export default function HomePage() {
                           className="recording-button"
                           onClick={(event) => {
                             event.stopPropagation()
-                            setRecordingPlaying((value) => !value)
+                            toggleRecording()
                           }}
                         >
                           {recordingPlaying
@@ -901,8 +904,10 @@ export default function HomePage() {
 
                     </div>
 
+                    <div style={{fontSize:11,marginTop:8}}><a href="/AUDIO-2026-10-12-10-05-55-vhs-tape.wav" target="_blank" rel="noreferrer" style={{color:'#f9b4e7',textDecoration:'underline'}}>OPEN ORIGINAL AUDIO ↗</a>{recordingError&&<p role="alert" style={{color:'#ffb6bd'}}>{recordingError}</p>}</div>
                     <audio
                       ref={recordingRef}
+                      onError={() => setRecordingError('Unable to load this WAV file in this browser.')}
                       src="/AUDIO-2026-10-12-10-05-55-vhs-tape.wav"
                       preload="metadata"
                       onEnded={() => setRecordingPlaying(false)}
