@@ -646,3 +646,14 @@ html:not(.dark) .trivia-sub,html:not(.dark) .trivia-back{color:#624278!important
 html:not(.dark) .trivia-kicker{color:#68448e!important}
 html:not(.dark) .trivia-primary{background:#cf76b8!important;color:#24152d!important}
 @media(prefers-reduced-motion:reduce){html:not(.dark) .archive-screen,html:not(.dark) .trivia-page{transition:none}}
+
+
+/* CLAR_OS unified polish: retain original CRT / Win98 visual identity across apps. */
+:root{--clar-frame:#a86bbf;--clar-pink:#e39ad6;--clar-lavender:#d9b5ed;--clar-ink:#21112f;--clar-paper:#f5eadd;--clar-motion:180ms}
+@media(hover:hover){.window button,.window-title button,.mail-app button,.archive-shell button,.crt-computer button{transition:filter var(--clar-motion) ease,transform var(--clar-motion) ease,box-shadow var(--clar-motion) ease}.window button:hover,.mail-app button:hover,.archive-shell button:hover,.crt-computer button:hover{filter:brightness(1.13)}.window button:active,.mail-app button:active,.archive-shell button:active,.crt-computer button:active{transform:translateY(1px)}}
+.window :is(button,a):focus-visible,.mail-app :is(button,a,input):focus-visible,.archive-shell :is(button,a,input):focus-visible,.crt-computer :is(button,a,input):focus-visible{outline:2px solid var(--clar-pink);outline-offset:3px}
+.mail-app,.window,.crt-computer,.archive-shell{scrollbar-color:#a26ab5 #251430}
+.mail-reader,.mail-list-scroll,.notes-paper{overscroll-behavior:contain}
+@media(min-width:721px) and (max-width:1180px){.mail-columns{grid-template-columns:175px minmax(265px,32%) minmax(0,1fr)!important}.mail-letter{padding:28px 30px!important}.mail-subject{font-size:clamp(22px,2.6vw,30px)!important}}
+@media(max-width:760px){.mail-app,.archive-shell,.crt-computer{max-width:100%}.mail-subject{overflow-wrap:anywhere}}
+@media(prefers-reduced-motion:reduce){.window button,.mail-app button,.archive-shell button,.crt-computer button{transition:none!important}}
