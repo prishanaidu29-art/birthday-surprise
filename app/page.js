@@ -879,7 +879,7 @@ export default function HomePage() {
 
                       <div className="recording-info">
                         <div className="recording-title">
-                          someone_left_a_message.wav
+                          a_message_for_clar.wav
                         </div>
 
                         <div className="recording-wave">
@@ -903,7 +903,7 @@ export default function HomePage() {
 
                     <audio
                       ref={recordingRef}
-                      src="/media/friend-voice.mp3"
+                      src="/AUDIO-2026-10-12-10-05-55-vhs-tape.wav"
                       preload="metadata"
                       onEnded={() => setRecordingPlaying(false)}
                     />
