@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {collectClue} from '../../components/RecoveryConsole'
+import {collectClue,readRecovery,hasClue} from '../../components/RecoveryConsole'
+import CircuitRepair from '../../components/CircuitRepair'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
 
 export const dynamic = 'force-dynamic'
@@ -14,6 +15,10 @@ export default function BirthdayPage() {
   const [eggOpen, setEggOpen] = useState(null)
   const [clueVisible,setClueVisible]=useState(false)
   const [clueCollected,setClueCollected]=useState(false)
+  const [journalOpen,setJournalOpen]=useState(false)
+  const [videoCircuitSolved,setVideoCircuitSolved]=useState(false)
+  const [huntStage,setHuntStage]=useState(0)
+  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setVideoCircuitSolved(localStorage.getItem('clar_circuit_restored')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
@@ -256,7 +261,7 @@ export default function BirthdayPage() {
   }
 
   return (
-    <main className="archive-screen"><div style={{position:"fixed",bottom:24,left:24,zIndex:9999,fontFamily:"monospace"}}><button onClick={()=>setClueVisible(v=>!v)} style={{padding:"12px 16px",background:"#402358",border:"2px solid #c985d9",color:"#ffe0f5",boxShadow:"4px 4px #100819",cursor:"pointer"}}>◈ RECOVERED_SYSTEM_FRAGMENT.dat</button>{clueVisible&&<div style={{maxWidth:330,padding:20,background:"#241334",border:"3px solid #e19bdc",color:"#fce2f8",boxShadow:"8px 8px #0b0616"}}><strong style={{color:"#8ce9e8"}}>SIGNAL_01 // DESKTOP CACHE</strong><p>Recovered pulse order:</p><p style={{fontSize:27,color:"#ffb4db"}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>Return to LOVE_MAIL and input this sequence on the coloured signal pads.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:"#df8bc9",border:0,color:"#25102f",fontWeight:"bold"}}>{clueCollected?"✓ FRAGMENT SAVED":"SAVE FRAGMENT TO JOURNAL"}</button></div>}</div>
+    <main className="archive-screen"><div style={{position:"fixed",right:18,bottom:20,zIndex:9998,fontFamily:"monospace"}}><button onClick={()=>setJournalOpen(v=>!v)} style={{padding:"12px 14px",background:"#3d255a",border:"2px solid #e2a0d8",color:"#ffdcf6",boxShadow:"4px 4px #100819",cursor:"pointer"}}>▤ CLAR_JOURNAL.exe</button>{journalOpen&&<div style={{marginTop:8,padding:18,width:"min(320px,85vw)",maxHeight:"60vh",overflowY:"auto",background:"#241536",color:"#fce8fa",border:"3px solid #ba83d1",boxShadow:"7px 7px #100819"}}><b style={{color:"#8de7e5"}}>RECOVERY LOG // {huntStage}/2 MAIL STAGES</b><p>{huntStage>=1?"✓":"□"} LOVE_MAIL: FIRST SIGNAL</p><p>{huntStage>=1?"✓":"□"} MEMORIES ACCESS</p><p>{huntStage>=2?"✓":"□"} VHS FRAME RESTORATION</p><p>{videoCircuitSolved?"✓":"□"} VIDEO CIRCUIT REPAIR</p><p style={{fontSize:12,color:"#d7b6e6"}}>Complete the puzzles to restore the missing files. Your progress is stored on this device.</p><button onClick={()=>setJournalOpen(false)} style={{padding:8,background:"#e2a0d8",border:0}}>CLOSE JOURNAL</button></div>}</div><div style={{position:"fixed",bottom:24,left:24,zIndex:9999,fontFamily:"monospace"}}><button onClick={()=>setClueVisible(v=>!v)} style={{padding:"12px 16px",background:"#402358",border:"2px solid #c985d9",color:"#ffe0f5",boxShadow:"4px 4px #100819",cursor:"pointer"}}>◈ RECOVERED_SYSTEM_FRAGMENT.dat</button>{clueVisible&&<div style={{maxWidth:330,padding:20,background:"#241334",border:"3px solid #e19bdc",color:"#fce2f8",boxShadow:"8px 8px #0b0616"}}><strong style={{color:"#8ce9e8"}}>SIGNAL_01 // DESKTOP CACHE</strong><p>Recovered pulse order:</p><p style={{fontSize:27,color:"#ffb4db"}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>Return to LOVE_MAIL and input this sequence on the coloured signal pads.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:"#df8bc9",border:0,color:"#25102f",fontWeight:"bold"}}>{clueCollected?"✓ FRAGMENT SAVED":"SAVE FRAGMENT TO JOURNAL"}</button></div>}</div>
 
       {/* =========================================================
           AUDIO
@@ -538,10 +543,10 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="archive-video-viewer">
-              <div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
+            <div className="archive-video-viewer">{huntStage>=2&&!videoCircuitSolved?<CircuitRepair onWin={()=>setVideoCircuitSolved(true)}/>:huntStage<2?<div style={{padding:20,border:"2px solid #d98bcf",background:"#251534",color:"#f8d9ef",fontFamily:"monospace"}}>🔒 VIDEO DECODER OFFLINE. Restore the VHS frames in Memories to enable the repair circuit.</div>:null}
+              {(huntStage>=2&&videoCircuitSolved)&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
               {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
-              <small>SP / VHS / TRACKING AUTO</small>
+              <small>SP / VHS / TRACKING AUTO</small></>}
             </div>
           </div>
         )}
