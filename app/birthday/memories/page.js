@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { UPLOADED_MEMORIES } from "./uploadedMemories";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import {readRecovery} from "../../../components/RecoveryConsole";
+import {readRecovery,collectClue} from "../../../components/RecoveryConsole";
 import dynamic from "next/dynamic";
 
 import {
@@ -141,6 +141,8 @@ function getMemoryYear(memory) {
 export default function MemoriesPage() {
   const router = useRouter();
   const [archiveUnlocked,setArchiveUnlocked]=useState(false);
+  const [memoryClueOpen,setMemoryClueOpen]=useState(false);
+  const [memoryClueSaved,setMemoryClueSaved]=useState(false);
   useEffect(()=>{setArchiveUnlocked(readRecovery()>=1)},[]);
   const {
   isAuthenticated,
@@ -641,7 +643,7 @@ export default function MemoriesPage() {
 
   if(!archiveUnlocked)return <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'radial-gradient(circle at top,#56316e,#140b27 65%,#090512)',color:'#f8dcf4',fontFamily:'monospace'}}><div style={{maxWidth:560,width:'100%',padding:30,border:'3px solid #cf8bdc',background:'#27163c',boxShadow:'10px 10px #080411,0 0 40px #ab5cd655',textAlign:'center'}}><div style={{fontSize:54,marginBottom:15}}>🔒</div><h1 style={{fontSize:'clamp(25px,5vw,42px)',color:'#ffaddc',textShadow:'3px 0 #6be8e7'}}>MEMORIES.exe</h1><p>ARCHIVE ENCRYPTED // FILE SYSTEM RECOVERY REQUIRED</p><p style={{lineHeight:1.7,color:'#d6b7e4'}}>The first LOVE_MAIL signal must be repaired before this photo archive can open. Your progress is saved automatically.</p><Link href="/birthday/messages" style={{display:'inline-block',marginTop:15,padding:'14px 20px',background:'#e58dcf',color:'#20102b',fontWeight:'bold',textDecoration:'none'}}>✦ OPEN LOVE_MAIL TO UNLOCK</Link><p><Link href="/birthday" style={{color:'#c6b2d6'}}>← RETURN TO CLAR_OS</Link></p></div></main>;
   return (
-    <main
+    <><div style={{position:"fixed",bottom:20,left:20,zIndex:9999,fontFamily:"monospace"}}><button onClick={()=>setMemoryClueOpen(v=>!v)} style={{background:"#46205c",border:"2px solid #eb9cd9",color:"#fbe5ff",padding:"12px 16px",boxShadow:"4px 4px #120819"}}>▣ VHS_02 / CORRUPTED FRAME</button>{memoryClueOpen&&<div style={{padding:20,background:"#271639",border:"3px solid #c68ddd",color:"#fce5f7",maxWidth:330,boxShadow:"8px 8px #0d0718"}}><strong>RECOVERED VHS SIGNAL</strong><p style={{fontSize:28,color:"#8cebe8"}}>♥ → ✦ → ✳ → ◆</p><p>Return to LOVE_MAIL and enter this recovered colour sequence.</p><button onClick={()=>{collectClue(1);setMemoryClueSaved(true)}} style={{padding:12,background:"#e89bd4",border:0,color:"#25112d"}}>{memoryClueSaved?"✓ FRAGMENT SAVED":"SAVE SIGNAL FRAGMENT"}</button></div>}</div><main
       className={`archive-page ${
         showGlitch ? "glitch-enabled" : ""
       } ${tracking ? "tracking-active" : ""} ${
@@ -1489,7 +1491,7 @@ export default function MemoriesPage() {
       <style jsx global>
         {ARCHIVE_CSS}
       </style>
-    </main>
+    </main></>
   );
 }
 
