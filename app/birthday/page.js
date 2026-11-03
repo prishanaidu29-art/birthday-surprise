@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import {collectClue} from '../../components/RecoveryConsole'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
 
 export const dynamic = 'force-dynamic'
@@ -11,6 +12,8 @@ export default function BirthdayPage() {
   const router = useRouter()
 
   const [eggOpen, setEggOpen] = useState(null)
+  const [clueVisible,setClueVisible]=useState(false)
+  const [clueCollected,setClueCollected]=useState(false)
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
@@ -253,7 +256,7 @@ export default function BirthdayPage() {
   }
 
   return (
-    <main className="archive-screen">
+    <main className="archive-screen"><div style={{position:"fixed",bottom:24,left:24,zIndex:9999,fontFamily:"monospace"}}><button onClick={()=>setClueVisible(v=>!v)} style={{padding:"12px 16px",background:"#402358",border:"2px solid #c985d9",color:"#ffe0f5",boxShadow:"4px 4px #100819",cursor:"pointer"}}>◈ RECOVERED_SYSTEM_FRAGMENT.dat</button>{clueVisible&&<div style={{maxWidth:330,padding:20,background:"#241334",border:"3px solid #e19bdc",color:"#fce2f8",boxShadow:"8px 8px #0b0616"}}><strong style={{color:"#8ce9e8"}}>SIGNAL_01 // DESKTOP CACHE</strong><p>Recovered pulse order:</p><p style={{fontSize:27,color:"#ffb4db"}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>Return to LOVE_MAIL and input this sequence on the coloured signal pads.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:"#df8bc9",border:0,color:"#25102f",fontWeight:"bold"}}>{clueCollected?"✓ FRAGMENT SAVED":"SAVE FRAGMENT TO JOURNAL"}</button></div>}</div>
 
       {/* =========================================================
           AUDIO
