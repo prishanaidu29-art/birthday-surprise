@@ -2,17 +2,17 @@
 import {useState} from 'react'
 import {saveRecovery} from './RecoveryConsole'
 const FRAMES=[
- {id:0,name:'01 / BOOT',symbol:'☀',caption:'The screen wakes',bg:'linear-gradient(140deg,#ffbb88,#ed76b6,#5b398d)'},
- {id:1,name:'02 / PLAY',symbol:'▶',caption:'The tape begins',bg:'linear-gradient(140deg,#72e8de,#5889c9,#4e2c80)'},
- {id:2,name:'03 / REWIND',symbol:'↶',caption:'The memory rewinds',bg:'linear-gradient(140deg,#ffd078,#ee8e9f,#9d5ec5)'},
- {id:3,name:'04 / SAVE',symbol:'♥',caption:'The memory is saved',bg:'linear-gradient(140deg,#b9a0ff,#dd7ecf,#493c8b)'}
+ {id:0,name:'SUNRISE',symbol:'☀',caption:'The screen wakes',bg:'linear-gradient(140deg,#ffbb88,#ed76b6,#5b398d)'},
+ {id:1,name:'FIRST PLAY',symbol:'▶',caption:'The tape begins',bg:'linear-gradient(140deg,#72e8de,#5889c9,#4e2c80)'},
+ {id:2,name:'REVERSE',symbol:'↶',caption:'The memory rewinds',bg:'linear-gradient(140deg,#ffd078,#ee8e9f,#9d5ec5)'},
+ {id:3,name:'KEEPSAKE',symbol:'♥',caption:'The memory is saved',bg:'linear-gradient(140deg,#b9a0ff,#dd7ecf,#493c8b)'}
 ]
 export default function VHSRepair({onComplete}){
  const [order,setOrder]=useState([2,0,3,1])
  const [selected,setSelected]=useState(null)
  const [attempts,setAttempts]=useState(0)
  const [won,setWon]=useState(false)
- const [hint,setHint]=useState(false)
+ const [hint,setHint]=useState(0)
  const swap=i=>{
   if(won)return
   if(selected===null){setSelected(i);return}
@@ -24,10 +24,10 @@ export default function VHSRepair({onComplete}){
  return <section className="vhs-repair" aria-label="Playable VHS frame restoration puzzle">
  <div className="vhs-repair-top"><span>◉ VHS_REPAIR.exe</span><span>{won?'● RESTORED':'● SIGNAL LOST'}</span></div>
  <h2 className="vhs-repair-heading">{won?'MEMORY RESTORED':'THE TAPE IS OUT OF ORDER'}</h2>
- <p>{won?'The corrupted footage is playing again. Four more letters have been recovered in LOVE_MAIL.':'Four moments were scrambled during playback. Tap one frame, then another to swap their positions. Rebuild the story from beginning to end.'}</p>
- <div className="vhs-repair-grid">{order.map((id,i)=>{const f=FRAMES[id];return <button type="button" key={id} onClick={()=>swap(i)} disabled={won} className={'vhs-repair-frame '+(selected===i?'selected ':'')+(won?'restored':'')} aria-label={'Frame '+f.name+', position '+(i+1)}><span className="vhs-repair-screen" style={{background:f.bg}}><span className="vhs-repair-noise"/><strong>{f.symbol}</strong><small>FRAME {String(i+1).padStart(2,'0')}</small></span><b>{f.name}</b><span>{f.caption}</span></button>})}</div>
- <div className="vhs-repair-bottom"><span>{won?'✓ 11 / 11 FRIEND LETTERS UNLOCKED':selected!==null?'SELECT ANOTHER FRAME TO SWAP':'TAP ANY FRAME TO PICK IT UP'}</span>{!won&&<button onClick={()=>setHint(v=>!v)}>{hint?'HIDE HINT':'? HINT'}</button>}</div>
- {hint&&!won&&<p className="vhs-repair-hint">A memory must wake up before it can play. Only after playback can it rewind; save it last.</p>}
+ <p>{won?'The corrupted footage is playing again. Four more letters have been recovered in LOVE_MAIL.':'Four damaged scenes are out of order. Tap two frames to swap them. The tape has a beginning, a turning point, and an ending — can you reconstruct it?'}</p>
+ <div className="vhs-repair-grid">{order.map((id,i)=>{const f=FRAMES[id];return <button type="button" key={id} onClick={()=>swap(i)} disabled={won} className={'vhs-repair-frame '+(selected===i?'selected ':'')+(won?'restored':'')} aria-label={'Frame '+f.name+', position '+(i+1)}><span className="vhs-repair-screen" style={{background:f.bg}}><span className="vhs-repair-noise"/><strong>{f.symbol}</strong><small>CH-{String(i+1).padStart(2,'0')}</small></span><b>{f.name}</b><span>{f.caption}</span></button>})}</div>
+ <div className="vhs-repair-bottom"><span>{won?'✓ 11 / 11 FRIEND LETTERS UNLOCKED':selected!==null?'SELECT ANOTHER FRAME TO SWAP':'TAP ANY FRAME TO PICK IT UP'}</span>{!won&&<button onClick={()=>setHint(v=>(v+1)%3)}>{hint===0?'? HINT 1':hint===1?'? HINT 2':'HIDE HINTS'}</button>}</div>
+ {hint>0&&!won&&<p className="vhs-repair-hint">{hint===1?'Think of what happens to a tape before you can revisit its contents. The keepsake is the last thing left behind.':'First the screen wakes, then the tape plays. Rewind comes after playback, and the keepsake is saved at the end.'}</p>}
  {won&&<a className="vhs-repair-return" href="/birthday/messages">✉ RETURN TO LOVE_MAIL →</a>}
  <style jsx>{`
  .vhs-repair{color:#fbe7ff;background:repeating-linear-gradient(0deg,#1d102c,#1d102c 5px,#281536 6px);border:3px solid #d68ee7;box-shadow:7px 7px #080511,0 0 35px #ad5ccc55;padding:20px;max-width:760px;font-family:monospace}
