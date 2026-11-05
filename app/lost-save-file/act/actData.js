@@ -23,7 +23,7 @@ export const ACTS = {
       suna: {name:'RINTAROU SUNA',x:1100,y:915,color:'#c4aa91',hair:'#40382e',coat:'#444a5c',portrait:'suna',intro:[
         'Huh. The booth took my photo before I went in. That's kind of impressive. Creepy, but impressive.',
         'There is a silhouette over your shoulder in every frame. Same posture, same stupidly dramatic entrance.',
-        'Look at frame three. It happened after you arrived. Kind of ruins the whole 'we\'re doomed' theory, doesn\'t it?'
+        'Look at frame three. It happened after you arrived. Kind of ruins the whole doomed-forever theory, doesn\'t it?'
       ],after:'The shadow was trying to photobomb a memory. Respect the commitment. Terrible hiding skills, though.'}
     },
     objects: [
