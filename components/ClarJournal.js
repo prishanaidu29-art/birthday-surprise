@@ -1,7 +1,8 @@
 'use client'
+import {scopedStorage} from './ScopedSave';
 import {useEffect,useState} from 'react'
 import {readRecovery,hasClue} from './RecoveryConsole'
-const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),circuit:localStorage.getItem('clar_circuit_restored')==='yes',email:localStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,circuit:false,email:false}}}
+const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),circuit:scopedStorage.getItem('clar_circuit_restored')==='yes',email:scopedStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,circuit:false,email:false}}}
 export default function ClarJournal({onClose}){
  const [data,setData]=useState({stage:0,fragment:false,circuit:false,email:false})
  const [tab,setTab]=useState('evidence')
