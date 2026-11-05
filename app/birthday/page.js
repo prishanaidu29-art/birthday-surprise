@@ -123,7 +123,7 @@ export default function BirthdayPage() {
     if(next===3||next===5||next===8)showChaos(reactions[id]?.[next===3?0:next===5?1:2]||'CLAR_OS IS JUDGING YOU.')
   }
   const openProgram = (section) => { setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100) }
-  const resetDesktop = () => {beep('boot'); setNotesOpen(true);setMusicOpen(true);setFilesOpen(true);setPhotoOpen(true);setTerminalOpen(false);setVideoOpen(false);setWindowPositions({});setStartOpen(false) }
+  const resetDesktop = () => {beep('boot'); setNotesOpen(true);setMusicOpen(false);setFilesOpen(false);setPhotoOpen(false);setTerminalOpen(false);setVideoOpen(false);setJournalOpen(false);setWindowPositions({});setStartOpen(false) }
   useEffect(()=>()=>{clearTimeout(launchTimerRef.current);clearTimeout(fxTimerRef.current);clearTimeout(crashTimerRef.current);if(fxContextRef.current)fxContextRef.current.close().catch(()=>{})},[])
   useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%archivePhotos.length),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
   useEffect(()=>{const move=e=>{const d=dragRef.current;if(!d)return;setWindowPositions(p=>({...p,[d.id]:{x:Math.max(0,Math.min(window.innerWidth-260,d.x+e.clientX-d.startX)),y:Math.max(0,Math.min(window.innerHeight-100,d.y+e.clientY-d.startY))}}))};const stop=()=>dragRef.current=null;window.addEventListener('pointermove',move);window.addEventListener('pointerup',stop);return()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',stop)}},[])
@@ -730,7 +730,7 @@ export default function BirthdayPage() {
             BOTTOM STATUS BAR
         ===================================================== */}
 
-        {startOpen && <div className="archive-start-menu"><strong>CLAR_OS // START</strong>{[['WELCOME',null],['FILES',setFilesOpen],['NOTES',setNotesOpen],['MUSIC',setMusicOpen],['PHOTOS',setPhotoOpen],['VIDEOS',setVideoOpen],['TERMINAL',setTerminalOpen]].map(([label,setter])=><button key={label} onClick={()=>{if(setter)setter(true);setStartOpen(false)}}>▸ {label}</button>)}<button onClick={resetDesktop}>↺ RESET DESKTOP</button><button onClick={handleLogout}>⇥ LOG OUT</button></div>}
+        {startOpen && <div className="archive-start-menu"><strong>CLAR_OS // START</strong>{[['WELCOME',null],['FILES',setFilesOpen],['NOTES',setNotesOpen],['MUSIC',setMusicOpen],['PHOTOS',setPhotoOpen],['VIDEOS',setVideoOpen],['JOURNAL',setJournalOpen],['TERMINAL',setTerminalOpen]].map(([label,setter])=><button key={label} onClick={()=>{if(setter)setter(true);setStartOpen(false)}}>▸ {label}</button>)}<button onClick={resetDesktop}>↺ RESET DESKTOP</button><button onClick={handleLogout}>⇥ LOG OUT</button></div>}
         <div className="bottom-status">
 
           <span>
@@ -835,16 +835,12 @@ export default function BirthdayPage() {
                 className="secret-audio"
                 src={
                   eggOpen === 'one'
-                    ? '/audio/easter-egg-1.mp3'
+                    ? 'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a'
                     : '/audio/easter-egg-2.mp3'
                 }
               />
 
-              <p className="audio-help">
-                Replace the audio files in
-                <br />
-                <code>/public/audio/</code>
-              </p>
+              <p className="audio-help">{eggOpen==='one'?'✦ A recovered recording from the archive.':'✦ Another hidden recording is waiting to be restored.'}</p>
 
             </div>
 
