@@ -262,7 +262,9 @@ export default function BirthdayPage() {
   }
 
   return (
-    <main className="archive-screen"><div style={{position:"fixed",right:18,bottom:20,zIndex:9998,fontFamily:"monospace"}}><button onClick={()=>setJournalOpen(v=>!v)} style={{padding:"12px 14px",background:"#3d255a",border:"2px solid #e2a0d8",color:"#ffdcf6",boxShadow:"4px 4px #100819",cursor:"pointer"}}>▤ CLAR_JOURNAL.exe</button>{journalOpen&&<div style={{marginTop:8}}><ClarJournal onClose={()=>setJournalOpen(false)}/></div>}</div><div style={{position:"fixed",bottom:24,left:24,zIndex:9999,fontFamily:"monospace"}}><button onClick={()=>setClueVisible(v=>!v)} style={{padding:"12px 16px",background:"#402358",border:"2px solid #c985d9",color:"#ffe0f5",boxShadow:"4px 4px #100819",cursor:"pointer"}}>◈ RECOVERED_SYSTEM_FRAGMENT.dat</button>{clueVisible&&<div style={{maxWidth:330,padding:20,background:"#241334",border:"3px solid #e19bdc",color:"#fce2f8",boxShadow:"8px 8px #0b0616"}}><strong style={{color:"#8ce9e8"}}>SIGNAL_01 // DESKTOP CACHE</strong><p>Recovered pulse order:</p><p style={{fontSize:27,color:"#ffb4db"}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>Return to LOVE_MAIL and input this sequence on the coloured signal pads.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:"#df8bc9",border:0,color:"#25102f",fontWeight:"bold"}}>{clueCollected?"✓ FRAGMENT SAVED":"SAVE FRAGMENT TO JOURNAL"}</button></div>}</div>
+    <main className="archive-screen">
+      {journalOpen&&<div className="clar-journal-overlay" style={{position:'fixed',right:24,top:92,zIndex:10020,maxWidth:'calc(100vw - 32px)'}}><ClarJournal onClose={()=>setJournalOpen(false)}/></div>}
+      {clueVisible&&<div role="dialog" aria-label="Recovered system fragment" style={{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:10030,width:'min(380px,90vw)',padding:20,background:'#241334',border:'3px solid #e19bdc',color:'#fce2f8',boxShadow:'8px 8px #0b0616',fontFamily:'monospace'}}><div style={{display:'flex',justifyContent:'space-between'}}><strong style={{color:'#8ce9e8'}}>SIGNAL_01 // DESKTOP CACHE</strong><button onClick={()=>setClueVisible(false)} aria-label="Close fragment">×</button></div><p>Recovered pulse order:</p><p style={{fontSize:27,color:'#ffb4db'}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>This signal may restore a corrupted message.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:'#df8bc9',border:0,color:'#25102f',fontWeight:'bold'}}>{clueCollected?'✓ SAVED TO JOURNAL':'SAVE FRAGMENT TO JOURNAL'}</button></div>}
 
       {/* =========================================================
           AUDIO
@@ -593,6 +595,8 @@ export default function BirthdayPage() {
                 </button>
               ))}
 
+              <button className="mini-file" onClick={()=>setJournalOpen(true)} aria-label="Open Clar Journal"><div className="folder folder-purple"><span>▤</span></div><div className="file-number">07</div><div className="file-name">JOURNAL</div></button>
+              <button className="mini-file" onClick={()=>setClueVisible(true)} aria-label="Open cached system fragment"><div className="folder folder-blue"><span>◇</span></div><div className="file-number">08</div><div className="file-name">CACHE_01</div></button>
             </div>
 
           </div>
