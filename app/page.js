@@ -1504,28 +1504,6 @@ export default function HomePage() {
         </section>
 
         <style jsx global>{styles}
-/* Translucent lavender hardware refresh: cosmetic only; desktop functionality unchanged. */
-.computer-wrapper{width:min(1480px,100%);}
-.crt-computer{filter:drop-shadow(0 18px 30px rgba(49,13,83,.38));}
-.crt-top-label{color:#d4b4e5;text-shadow:0 0 10px rgba(221,155,255,.25);}
-.monitor-bezel{
-  padding:clamp(10px,1.3vw,19px) clamp(10px,1.4vw,21px) 13px;
-  background:linear-gradient(125deg,rgba(250,208,255,.66) 0%,rgba(171,108,218,.42) 14%,rgba(102,49,153,.65) 40%,rgba(190,117,232,.42) 74%,rgba(255,197,246,.58) 100%);
-  border:2px solid rgba(239,183,255,.64);
-  border-radius:29px 29px 24px 24px;
-  box-shadow:inset 0 3px 2px rgba(255,242,255,.56),inset 5px 0 15px rgba(250,207,255,.18),inset -7px -9px 24px rgba(46,13,83,.42),0 16px 45px rgba(26,7,48,.58),0 0 45px rgba(196,104,255,.24);
-  -webkit-backdrop-filter:blur(16px) saturate(150%);
-  backdrop-filter:blur(16px) saturate(150%);
-}
-.monitor-bezel::before{content:"";position:absolute;top:4px;left:4%;width:72%;height:9px;border-radius:100%;background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none;}
-.monitor-inner{border:4px solid rgba(42,18,66,.85);border-radius:18px;box-shadow:inset 0 0 20px rgba(12,4,29,.75),0 0 0 1px rgba(255,217,255,.38),0 0 18px rgba(244,171,255,.18);}
-.monitor-bottom{color:#e0bce9;height:27px;}
-.monitor-controls span{background:rgba(242,187,255,.32);border:1px solid rgba(255,230,255,.68);box-shadow:inset 0 1px 1px rgba(255,255,255,.25);}
-.computer-base{background:linear-gradient(180deg,rgba(205,147,236,.54),rgba(101,45,147,.64));border-color:rgba(226,171,249,.53);box-shadow:inset 0 3px 8px rgba(255,255,255,.22),0 16px 35px rgba(28,5,54,.44);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
-.base-slot{background:rgba(37,12,65,.66);box-shadow:inset 0 1px 3px rgba(0,0,0,.5),0 1px rgba(255,255,255,.26);}
-.key{background:linear-gradient(145deg,rgba(240,194,255,.67),rgba(103,57,151,.75));border-color:rgba(235,178,253,.4);box-shadow:0 2px 1px rgba(29,7,52,.5);}
-@media(max-width:900px){.monitor-bezel{padding:9px 9px 11px;border-radius:22px}.monitor-inner{border-width:3px;border-radius:14px}.computer-base{padding:8px 16px 12px}.crt-top-label{width:94%;font-size:9px}}
-@media(max-width:600px){.monitor-bezel{padding:6px 6px 9px;border-radius:16px}.monitor-inner{border-width:2px;border-radius:11px}.monitor-bottom{height:23px}.computer-base{padding:6px 12px 10px}}
 </style>
       </main>
     )
@@ -5400,4 +5378,27 @@ button {
 .recording-info{min-width:0}.recording-title{overflow-wrap:anywhere}
 @media(min-width:761px) and (max-width:1180px){.recording-body{gap:10px}.recording-info{flex:1}.notes-paper{overflow-y:auto;overscroll-behavior:contain}}
 @media(prefers-reduced-motion:reduce){.window-frame,.desktop-window,.notes-window,.recording-window,.cd-window,.photo-window{transition:none}}
+/* Translucent lavender hardware refresh: cosmetic only; desktop functionality unchanged. */
+.computer-wrapper{width:min(1480px,100%);}
+.crt-computer{filter:drop-shadow(0 18px 30px rgba(49,13,83,.38));}
+.crt-top-label{color:#d4b4e5;text-shadow:0 0 10px rgba(221,155,255,.25);}
+.monitor-bezel{
+  padding:clamp(10px,1.3vw,19px) clamp(10px,1.4vw,21px) 13px;
+  background:linear-gradient(125deg,rgba(250,208,255,.66) 0%,rgba(171,108,218,.42) 14%,rgba(102,49,153,.65) 40%,rgba(190,117,232,.42) 74%,rgba(255,197,246,.58) 100%);
+  border:2px solid rgba(239,183,255,.64);
+  border-radius:29px 29px 24px 24px;
+  box-shadow:inset 0 3px 2px rgba(255,242,255,.56),inset 5px 0 15px rgba(250,207,255,.18),inset -7px -9px 24px rgba(46,13,83,.42),0 16px 45px rgba(26,7,48,.58),0 0 45px rgba(196,104,255,.24);
+  -webkit-backdrop-filter:blur(16px) saturate(150%);
+  backdrop-filter:blur(16px) saturate(150%);
+}
+.monitor-bezel::before{content:"";position:absolute;top:4px;left:4%;width:72%;height:9px;border-radius:100%;background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,0));pointer-events:none;}
+.monitor-inner{border:4px solid rgba(42,18,66,.85);border-radius:18px;box-shadow:inset 0 0 20px rgba(12,4,29,.75),0 0 0 1px rgba(255,217,255,.38),0 0 18px rgba(244,171,255,.18);}
+.monitor-bottom{color:#e0bce9;height:27px;}
+.monitor-controls span{background:rgba(242,187,255,.32);border:1px solid rgba(255,230,255,.68);box-shadow:inset 0 1px 1px rgba(255,255,255,.25);}
+.computer-base{background:linear-gradient(180deg,rgba(205,147,236,.54),rgba(101,45,147,.64));border-color:rgba(226,171,249,.53);box-shadow:inset 0 3px 8px rgba(255,255,255,.22),0 16px 35px rgba(28,5,54,.44);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);}
+.base-slot{background:rgba(37,12,65,.66);box-shadow:inset 0 1px 3px rgba(0,0,0,.5),0 1px rgba(255,255,255,.26);}
+.key{background:linear-gradient(145deg,rgba(240,194,255,.67),rgba(103,57,151,.75));border-color:rgba(235,178,253,.4);box-shadow:0 2px 1px rgba(29,7,52,.5);}
+@media(max-width:900px){.monitor-bezel{padding:9px 9px 11px;border-radius:22px}.monitor-inner{border-width:3px;border-radius:14px}.computer-base{padding:8px 16px 12px}.crt-top-label{width:94%;font-size:9px}}
+@media(max-width:600px){.monitor-bezel{padding:6px 6px 9px;border-radius:16px}.monitor-inner{border-width:2px;border-radius:11px}.monitor-bottom{height:23px}.computer-base{padding:6px 12px 10px}}
+
 `;
