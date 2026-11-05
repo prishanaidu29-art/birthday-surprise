@@ -82,6 +82,13 @@ const LETTERS=[
     "appreciation": "I love how patient and dependable you are whenever something needs to be done, even if they go wrong from your typical pattern. Thank you for being such a great listener and non-judgemental person when we have those bullshit nonsense discourses about fictional men or random quizzes and the occasional deep real talks.",
     "memory": "Our insta dms convo talking about love confessions and you said the feelings were mutual between REDACTED and REDACTED and i was dyingggg cus i couldnt believe it\nThat time i was tweaking out over our sake results and just dying from exhaustion while you kept trying to keep me level-headed and vice versa that time you werent getting the explanation I was giving for our lab results(??)",
     "photo": ""
+  },
+  {
+    "name": "Mashriq",
+    "wish": "Happy birthday clar!!!! I hope you will have an amazing day on your birthday and a great year ahead of you. I'm so grateful to have met and be friend with such an incredible person like you and i hope life will manage to give you back all the love that you have given to all the people that u love because you totally deserve it!! <3",
+    "appreciation": "I love how you care and love people, it always amaze me how you are able to make sure everyone will feel included everytime we all hangout and im really inspired by that. I love how u can remember small things and how you will always get people gifts and notes, it really shows how much you care and remember the people u around you even when they are not around. Keep being you sweet girl <3",
+    "memory": "",
+    "photo": ""
   }
 ]
 const FAMILY_VIDEOS=[
