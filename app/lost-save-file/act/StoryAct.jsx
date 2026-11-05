@@ -4,6 +4,7 @@ import {scopedStorage} from '../../../components/ScopedSave';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {ACTS,GHOST_LETTER} from './actData';
+import QuestMechanic from './QuestMechanic';
 import {drawClar} from '../chapter-one/townRender';
 import './act.css';
 
@@ -229,7 +230,7 @@ export default function StoryAct({chapter=2}){
   <div className="act-progress">{act.quests.map((q,i)=><div key={q.id} className={p.solved.includes(q.id)?'done':''}><span>{p.solved.includes(q.id)?'◆':'◇'}</span>{q.title}</div>)}</div>
   {dialog&&<div className="act-overlay"><article className="act-modal"><small>TRANSMISSION // {dialog.index+1}/{dialog.lines.length}</small><div className="act-dialog"><Face id={dialog.who} person={act.cast[dialog.who]}/><div><h2>{act.cast[dialog.who]?.name||dialog.who}</h2><p>{(dialog.lines[dialog.index]||'').slice(0,typed)}{typed<(dialog.lines[dialog.index]||'').length&&<span className="act-caret">▌</span>}</p></div></div><div className="act-modal-actions"><button onClick={nextLine}>{typed<(dialog.lines[dialog.index]||'').length?'SHOW FULL LINE ▸':dialog.index<dialog.lines.length-1?'CONTINUE ▸':'CLOSE TRANSMISSION ✓'}</button></div></article></div>}
   {panel&&!dialog&&<div className="act-overlay"><article className={'act-modal '+(panel.type==='letter'?'act-letter-shell':'')}><small>{panel.type==='letter'?'UNSENT_LETTER_FOR_CLAR.txt':'CLAR.exe / '+panel.type.toUpperCase()}</small>
-   {panel.type==='puzzle'&&quest&&<><h2>{quest.title}</h2><p>{quest.pre}</p><SignalRepair key={quest.id} chapter={chapter} quest={quest} onComplete={()=>submitAnswer(quest.correct,'quest',quest.id)}/><p className="act-muted">HINT: {act.objects.find(o=>o.quest===quest.id)?.hint}</p></>}
+   {panel.type==='puzzle'&&quest&&<><h2>{quest.title}</h2><p>{quest.pre}</p><QuestMechanic key={quest.id} quest={quest} onComplete={()=>submitAnswer(quest.correct,'quest',quest.id)}/><p className="act-muted">HINT: {act.objects.find(o=>o.quest===quest.id)?.hint}</p></>}
    {panel.type==='success'&&quest&&<><h2>✦ MEMORY RESTORED</h2>{quest.success.map((s,i)=><p key={i}>{s}</p>)}<div className="act-reward">◆ NEW FILE: {quest.reward}</div></>}
    {panel.type==='gate'&&<><h2>{act.gate.title}</h2><p>The exit requires the three recovered artifacts to be physically installed in the right places. You cannot leave with a collection of unused files.</p><ArchiveAssembler chapter={chapter} rewards={act.quests.map(q=>q.reward)} onFinish={()=>submitAnswer(act.gate.correct,'gate')}/><p className="act-muted">HINT: {act.gate.hint}</p></>}
    {panel.type==='locked'&&<><h2>ACCESS DENIED — FOR NOW</h2><p>The exit will not open until all three memory fragments have been restored.</p>{remaining.map(q=><p className="act-muted" key={q.id}>◇ {q.title} — Find {act.objects.find(o=>o.quest===q.id)?.name}</p>)}</>}
