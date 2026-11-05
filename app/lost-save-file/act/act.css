@@ -60,3 +60,18 @@
 .act-signal-pad:not(:disabled):active{transform:scale(.94);background:#c787cb}
 .act-signal-start{padding:12px 18px;background:#a66db9;color:#fff5fa;border:2px solid #e9bde7;font:700 12px monospace;cursor:pointer}
 @media(prefers-reduced-motion:reduce){.act-signal-pad{transition:none}.act-signal-pad.lit{transform:none}}
+
+
+/* Shared interactive inventory crafting: Chapter 2 and Chapter 3 */
+.act-assembly-items,.act-assembly-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.act-assembly-items button,.act-assembly-slots button{min-height:96px;padding:12px;border:2px solid #b58bc6;background:linear-gradient(135deg,#3c2854,#23182f);color:#ffeafa;font:12px/1.5 monospace;text-align:left;cursor:pointer;overflow-wrap:anywhere;touch-action:manipulation;transition:transform .18s,box-shadow .18s}
+.act-assembly-items button span,.act-assembly-slots button small{display:block;color:#a8f0e6;margin-bottom:8px}
+.act-assembly-items button.chosen{border-color:#ffe0f5;background:#694277;box-shadow:0 0 22px #d89bd788;transform:translateY(-3px)}
+.act-assembly-slots button{border-style:dashed;background:#1e2b3c}
+.act-assembly-items button:active,.act-assembly-slots button:active{transform:scale(.97)}
+@keyframes actDialogArrive{from{opacity:.35;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.act-modal{animation:actDialogArrive .32s ease-out both}
+.act-reward{animation:actRewardPulse 2.2s ease-in-out infinite}
+@keyframes actRewardPulse{50%{box-shadow:0 0 28px #dfa8e577}}
+@media(max-width:680px){.act-assembly-items,.act-assembly-slots{grid-template-columns:1fr}.act-assembly-items button,.act-assembly-slots button{min-height:54px}}
+@media(prefers-reduced-motion:reduce){.act-modal,.act-reward{animation:none!important}.act-assembly-items button,.act-assembly-slots button{transition:none!important}}
