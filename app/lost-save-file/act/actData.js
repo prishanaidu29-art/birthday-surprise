@@ -11,9 +11,9 @@ export const ACTS = {
     ],
     cast: {
       watson: {name:'DR JOHN WATSON',x:435,y:390,color:'#9eb8bb',hair:'#9a775c',coat:'#555d6a',portrait:'watson',intro:[
-        'Clar? Right. The departure board has you down as missing. You\'re standing in front of me, so that's clearly bollocks.',
+        'Clar? Right. The departure board has you down as missing. You\'re standing in front of me, so that\'s clearly bollocks.',
         'I found a clinical note inside the ticket machine. No patient, no pulse, yet the handwriting changes whenever you look away.',
-        'Sherlock would be insufferable about this. I\'m a doctor, not a ghost hunter. Let\'s check the console before somebody decides you're the patient.'
+        'Sherlock would be insufferable about this. I\'m a doctor, not a ghost hunter. Let\'s check the console before somebody decides you\'re the patient.'
       ],after:'The note belongs to someone who was trying very hard to get a message to you. I think the station misfiled the sender as a patient.'},
       sakusa: {name:'KIYOOMI SAKUSA',x:1410,y:400,color:'#d8c8e6',hair:'#27212d',coat:'#493953',portrait:'sakusa',intro:[
         'Don\'t touch the speaker with your bare hands. Look at the grime on that thing. Seriously.',
@@ -21,7 +21,7 @@ export const ACTS = {
         'Recalibrate the tower carefully. Filter the interference, not the voice. And wash your hands after. I\'m not joking.'
       ],after:'Better. The interference was engineered to hide the sender, not to destroy the recording. I still dislike this station.'},
       suna: {name:'RINTAROU SUNA',x:1100,y:915,color:'#c4aa91',hair:'#40382e',coat:'#444a5c',portrait:'suna',intro:[
-        'Huh. The booth took my photo before I went in. That's kind of impressive. Creepy, but impressive.',
+        'Huh. The booth took my photo before I went in. That\'s kind of impressive. Creepy, but impressive.',
         'There is a silhouette over your shoulder in every frame. Same posture, same stupidly dramatic entrance.',
         'Look at frame three. It happened after you arrived. Kind of ruins the whole doomed-forever theory, doesn\'t it?'
       ],after:'The shadow was trying to photobomb a memory. Respect the commitment. Terrible hiding skills, though.'}
@@ -80,7 +80,7 @@ export const ACTS = {
         'Clar! Wait—look, the core's still responding! Your save isn't gone. We can still fix this.',
         'The machine thinks ghosts are corrupted data. But maybe some ghosts are just someone who stayed too long trying to finish a gift.',
         'I can keep the repair circuit stable if you choose the right source. Follow the purple light, not the red warning.'
-      ],after:'It's working! The letters are coming back—hold on, I think I recognise that name...'}
+      ],after:'It\'s working! The letters are coming back—hold on, I think I recognise that name...'}
     },
     objects:[
       {id:'banquet',name:'THE RED INVITATION',x:665,y:435,type:'puzzle',quest:'banquet',icon:'♡',hint:'Hannibal knows why the table was set for Clar.'},
