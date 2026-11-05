@@ -157,6 +157,19 @@ function SignalRepair({chapter,quest,onComplete}){
  </div>
 }
 
+function ArchiveAssembler({chapter,rewards,onFinish}){
+ const [slots,setSlots]=useState([null,null,null]),[selected,setSelected]=useState(null),[feedback,setFeedback]=useState('');
+ const labels=chapter===2?['WHO WROTE IT?','WHAT SURVIVED?','WHO OPENED THE WAY?']:['WHAT TO KEEP?','HOW TO CROSS?','WHAT TO RESTORE?'];
+ const target=chapter===2?[0,1,2]:[0,1,2];
+ const assign=i=>{if(selected===null)return;const next=slots.map(v=>v===selected?null:v);next[i]=selected;setSlots(next);setFeedback('')};
+ const check=()=>{if(slots.some(v=>v===null)){setFeedback('Place all three recovered items into the archive slots.');return}if(!target.every((v,i)=>slots[i]===v)){setFeedback('The files are real, but their roles are wrong. Re-read the three labels and rearrange.');return}setFeedback('ARCHIVE ASSEMBLED — PHYSICAL RESTORATION COMPLETE');onFinish()};
+ return <div className="act-assembly"><p className="act-muted">These are the three objects you recovered. Select an object, then a slot to install it. Each item has a purpose.</p>
+ <div className="act-assembly-items">{rewards.map((reward,i)=><button key={i} type="button" onClick={()=>setSelected(i)} className={selected===i?'chosen':''}><span>◆ 0{i+1}</span><strong>{reward}</strong>{slots.includes(i)?' ✓ INSTALLED':''}</button>)}</div>
+ <div className="act-assembly-slots">{labels.map((label,i)=><button key={label} type="button" onClick={()=>assign(i)}><small>PORT {i+1} / {label}</small><strong>{slots[i]===null?'＋ INSTALL ITEM':rewards[slots[i]]}</strong></button>)}</div>
+ {feedback&&<p role="status" className="act-muted">{feedback}</p>}
+ <button type="button" className="act-signal-start" onClick={check}>▣ POWER THE ARCHIVE</button>
+ </div>
+}
 export default function StoryAct({chapter=2}){
  const act=ACTS[chapter];
  const [p,setP]=useState(()=>makeStart(act)),ref=useRef(p),[loaded,setLoaded]=useState(false);
@@ -218,7 +231,7 @@ export default function StoryAct({chapter=2}){
   {panel&&!dialog&&<div className="act-overlay"><article className={'act-modal '+(panel.type==='letter'?'act-letter-shell':'')}><small>{panel.type==='letter'?'UNSENT_LETTER_FOR_CLAR.txt':'CLAR.exe / '+panel.type.toUpperCase()}</small>
    {panel.type==='puzzle'&&quest&&<><h2>{quest.title}</h2><p>{quest.pre}</p><SignalRepair key={quest.id} chapter={chapter} quest={quest} onComplete={()=>submitAnswer(quest.correct,'quest',quest.id)}/><p className="act-muted">HINT: {act.objects.find(o=>o.quest===quest.id)?.hint}</p></>}
    {panel.type==='success'&&quest&&<><h2>✦ MEMORY RESTORED</h2>{quest.success.map((s,i)=><p key={i}>{s}</p>)}<div className="act-reward">◆ NEW FILE: {quest.reward}</div></>}
-   {panel.type==='gate'&&<><h2>{act.gate.title}</h2><p>{act.gate.prompt}</p><div className="act-choices">{act.gate.answers.map((s,i)=><button onClick={()=>submitAnswer(i,'gate')} key={s}>{i+1}. {s}</button>)}</div><p className="act-muted">HINT: {act.gate.hint}</p></>}
+   {panel.type==='gate'&&<><h2>{act.gate.title}</h2><p>The exit requires the three recovered artifacts to be physically installed in the right places. You cannot leave with a collection of unused files.</p><ArchiveAssembler chapter={chapter} rewards={act.quests.map(q=>q.reward)} onFinish={()=>submitAnswer(act.gate.correct,'gate')}/><p className="act-muted">HINT: {act.gate.hint}</p></>}
    {panel.type==='locked'&&<><h2>ACCESS DENIED — FOR NOW</h2><p>The exit will not open until all three memory fragments have been restored.</p>{remaining.map(q=><p className="act-muted" key={q.id}>◇ {q.title} — Find {act.objects.find(o=>o.quest===q.id)?.name}</p>)}</>}
    {panel.type==='journal'&&<><h2>CLAR'S JOURNAL</h2><p>{objective}</p>{p.notes.map((s,i)=><div className="act-journal-entry" key={i}><b>{String(i+1).padStart(2,'0')}</b>{s}</div>)}</>}
    {panel.type==='map'&&<><h2>FIELD NOTES</h2><p>All clues are available in any order. Walk towards the labels on the map and press INTERACT (or E). Speak to characters for hints; wrong answers never cost progress.</p>{act.quests.map(q=><div className="act-journal-entry" key={q.id}><b>{p.solved.includes(q.id)?'✓':'◇'}</b>{q.title}: {act.objects.find(o=>o.quest===q.id)?.name} — near {act.cast[q.speaker]?.name}.</div>)}</>}
