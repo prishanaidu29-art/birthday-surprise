@@ -7,6 +7,7 @@ import Link from 'next/link'
 import {collectClue,readRecovery,hasClue} from '../../components/RecoveryConsole'
 import CircuitRepair from '../../components/CircuitRepair'
 import ClarJournal from '../../components/ClarJournal'
+import SaveManager from '../../components/SaveManager'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
 
 export const dynamic = 'force-dynamic'
@@ -264,6 +265,7 @@ export default function BirthdayPage() {
 
   return (
     <main className="archive-screen">
+      <SaveManager/>
       {journalOpen&&<div className="clar-journal-overlay" style={{position:'fixed',right:24,top:92,zIndex:10020,maxWidth:'calc(100vw - 32px)'}}><ClarJournal onClose={()=>setJournalOpen(false)}/></div>}
       {clueVisible&&<div role="dialog" aria-label="Recovered system fragment" style={{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:10030,width:'min(380px,90vw)',padding:20,background:'#241334',border:'3px solid #e19bdc',color:'#fce2f8',boxShadow:'8px 8px #0b0616',fontFamily:'monospace'}}><div style={{display:'flex',justifyContent:'space-between'}}><strong style={{color:'#8ce9e8'}}>SIGNAL_01 // DESKTOP CACHE</strong><button onClick={()=>setClueVisible(false)} aria-label="Close fragment">×</button></div><p>Recovered pulse order:</p><p style={{fontSize:27,color:'#ffb4db'}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>This signal may restore a corrupted message.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:'#df8bc9',border:0,color:'#25102f',fontWeight:'bold'}}>{clueCollected?'✓ SAVED TO JOURNAL':'SAVE FRAGMENT TO JOURNAL'}</button></div>}
 
