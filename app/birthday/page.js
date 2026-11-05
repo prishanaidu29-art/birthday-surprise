@@ -1,5 +1,6 @@
 'use client'
 
+import {scopedStorage} from '../../components/ScopedSave';
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -19,7 +20,7 @@ export default function BirthdayPage() {
   const [journalOpen,setJournalOpen]=useState(false)
   const [videoCircuitSolved,setVideoCircuitSolved]=useState(false)
   const [huntStage,setHuntStage]=useState(0)
-  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setVideoCircuitSolved(localStorage.getItem('clar_circuit_restored')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
+  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setVideoCircuitSolved(scopedStorage.getItem('clar_circuit_restored')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
