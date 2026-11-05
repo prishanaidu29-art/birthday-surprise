@@ -77,7 +77,7 @@ export const ACTS = {
         'The skybridge locks whenever the Watcher appears. Follow the blue trail and choose the route that protects the person behind you.'
       ],after:'Nice landing! Ten out of ten. And yes, I totally planned that collapse. Don\'t look at me like that.'},
       azusa:{name:'AZUSA',x:1040,y:925,color:'#eab6e9',hair:'#75497e',coat:'#505a82',portrait:'azusa',intro:[
-        'Clar! Wait—look, the core's still responding! Your save isn't gone. We can still fix this.',
+        'Clar! Wait—look, the core\'s still responding! Your save isn\'t gone. We can still fix this.',
         'The machine thinks ghosts are corrupted data. But maybe some ghosts are just someone who stayed too long trying to finish a gift.',
         'I can keep the repair circuit stable if you choose the right source. Follow the purple light, not the red warning.'
       ],after:'It\'s working! The letters are coming back—hold on, I think I recognise that name...'}
