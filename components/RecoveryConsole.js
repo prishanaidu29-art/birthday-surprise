@@ -1,10 +1,11 @@
 'use client'
+import {scopedStorage} from './ScopedSave';
 import {useEffect,useState} from 'react'
 export const RECOVERY_KEY='clar_os_recovery_v1'
-export function readRecovery(){if(typeof window==='undefined')return 0;try{return Math.min(4,Math.max(0,Number(localStorage.getItem(RECOVERY_KEY)||0)))}catch{return 0}}
-export function collectClue(stage){try{localStorage.setItem('clar_clue_'+stage,'found');window.dispatchEvent(new Event('clar-recovery'))}catch{}}
-export function hasClue(stage){try{return localStorage.getItem('clar_clue_'+stage)==='found'}catch{return false}}
-export function saveRecovery(n){try{localStorage.setItem(RECOVERY_KEY,String(n));window.dispatchEvent(new Event('clar-recovery'))}catch{}}
+export function readRecovery(){if(typeof window==='undefined')return 0;try{return Math.min(4,Math.max(0,Number(scopedStorage.getItem(RECOVERY_KEY)||0)))}catch{return 0}}
+export function collectClue(stage){try{scopedStorage.setItem('clar_clue_'+stage,'found');window.dispatchEvent(new Event('clar-recovery'))}catch{}}
+export function hasClue(stage){try{return scopedStorage.getItem('clar_clue_'+stage)==='found'}catch{return false}}
+export function saveRecovery(n){try{scopedStorage.setItem(RECOVERY_KEY,String(n));window.dispatchEvent(new Event('clar-recovery'))}catch{}}
 const COLORS=['#ff83c8','#82e7e7','#ffcf78','#b999ff']
 const GLYPHS=['✦','◆','♥','✳']
 export default function RecoveryConsole({stage=0,onWin,heading='DECRYPT THE ARCHIVE'}){
