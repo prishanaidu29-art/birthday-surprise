@@ -11,19 +11,19 @@ export const ACTS = {
     ],
     cast: {
       watson: {name:'DR JOHN WATSON',x:435,y:390,color:'#9eb8bb',hair:'#9a775c',coat:'#555d6a',portrait:'watson',intro:[
-        'Clar? You look remarkably alive for somebody this station has listed as MISSING.',
+        'Clar? Right. The departure board has you down as missing. You're standing in front of me, so that's clearly bollocks.',
         'I found a clinical note inside the ticket machine. No patient, no pulse, yet the handwriting changes whenever you look away.',
-        'Sherlock would call it fascinating. I call it an excellent reason to get on a different train. Try the medical console, just beyond me.'
+        'Sherlock would be insufferable about this. I'm a doctor, not a ghost hunter. Let's check the console before somebody decides you're the patient.'
       ],after:'The note belongs to someone who was trying very hard to get a message to you. I think the station misfiled the sender as a patient.'},
       sakusa: {name:'KIYOOMI SAKUSA',x:1410,y:400,color:'#d8c8e6',hair:'#27212d',coat:'#493953',portrait:'sakusa',intro:[
-        'Do not touch that speaker. It is covered in something. Possibly static. Possibly worse.',
+        'Don't touch the speaker with your bare hands. Look at the grime on that thing. Seriously.',
         'There is a real voice beneath the interference. The system is treating it like contamination and trying to scrub it out.',
-        'If you recalibrate the signal tower, remove the noise. Not the voice. And wash your hands afterwards.'
+        'Recalibrate the tower carefully. Filter the interference, not the voice. And wash your hands after. I'm not joking.'
       ],after:'Better. The interference was engineered to hide the sender, not to destroy the recording. I still dislike this station.'},
       suna: {name:'RINTAROU SUNA',x:1100,y:915,color:'#c4aa91',hair:'#40382e',coat:'#444a5c',portrait:'suna',intro:[
-        'So, Clar. This photo booth took my picture before I stepped inside. Pretty talented for a machine with no power.',
+        'Huh. The booth took my photo before I went in. That's kind of impressive. Creepy, but impressive.',
         'There is a silhouette over your shoulder in every frame. Same posture, same stupidly dramatic entrance.',
-        'Look at the contact sheet. Frame three is the only one that was taken after you got here. The timestamp is the clue.'
+        'Look at frame three. It happened after you arrived. Kind of ruins the whole 'we're doomed' theory, doesn't it?'
       ],after:'The shadow was trying to photobomb a memory. Respect the commitment. Terrible hiding skills, though.'}
     },
     objects: [
@@ -67,20 +67,20 @@ export const ACTS = {
     ],
     cast: {
       hannibal:{name:'HANNIBAL LECTER',x:435,y:390,color:'#aa6478',hair:'#55443c',coat:'#473844',portrait:'hannibal',intro:[
-        'Clar. There is a place set for you. Naturally, the guest of honour has arrived last.',
+        'Clar. How delightful. I was beginning to worry our guest of honour had lost her appetite for surprises.',
         'The table offers a beautiful illusion: one perfect memory, kept untouched forever. But a memory that cannot change is merely a display.',
-        'The red invitation will ask what you truly wish to keep. Choose carefully. Sentiment is not the enemy of discernment.'
+        'The invitation asks what you wish to preserve. Choose with care. Even imperfect memories deserve a place at a beautifully set table.'
       ],after:'A good celebration is not a mausoleum. It moves, laughs, makes a mess, and begins again.'},
       nightwing:{name:'NIGHTWING',x:1460,y:390,color:'#65b9e3',hair:'#242533',coat:'#1a293c',portrait:'nightwing',intro:[
-        'Hey, birthday girl. The rooftops are doing that thing where they change position when nobody looks.',
-        'I found a zipline leading straight to a folder marked DELETE ME. So obviously I checked it out.',
+        'Hey, birthday girl. So, good news: the rooftops are moving. Bad news: they're moving while we're standing on them.',
+        'Found a zipline to a folder marked DELETE ME. Which, obviously, is an invitation. Don't tell Batman.',
         'The skybridge locks whenever the Watcher appears. Follow the blue trail and choose the route that protects the person behind you.'
-      ],after:'Nice landing. For the record, I absolutely meant for that bridge to collapse behind us. Mostly.'},
+      ],after:'Nice landing! Ten out of ten. And yes, I totally planned that collapse. Don't look at me like that.'},
       azusa:{name:'AZUSA',x:1040,y:925,color:'#eab6e9',hair:'#75497e',coat:'#505a82',portrait:'azusa',intro:[
-        'Clar! The core is still responding to you. That means the last save has not disappeared.',
+        'Clar! Wait—look, the core's still responding! Your save isn't gone. We can still fix this.',
         'The machine thinks ghosts are corrupted data. But maybe some ghosts are just someone who stayed too long trying to finish a gift.',
         'I can keep the repair circuit stable if you choose the right source. Follow the purple light, not the red warning.'
-      ],after:'The repair is holding! A name is forming in the code. It looks like someone you know...'}
+      ],after:'It's working! The letters are coming back—hold on, I think I recognise that name...'}
     },
     objects:[
       {id:'banquet',name:'THE RED INVITATION',x:665,y:435,type:'puzzle',quest:'banquet',icon:'♡',hint:'Hannibal knows why the table was set for Clar.'},
