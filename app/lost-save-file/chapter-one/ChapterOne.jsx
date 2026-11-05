@@ -1,4 +1,5 @@
 'use client';
+import {scopedStorage} from '../../../components/ScopedSave';
 import {useEffect,useRef,useState,useCallback} from 'react';
 import Link from 'next/link';
 import {W,H,BUILDINGS,WORLD_OBJECTS,NPCS,INTRO,EXTRA,RIDDLE,START} from './chapterData';
@@ -129,8 +130,8 @@ const labels={letter:'FOLDED LETTER',key:'BRASS KEY',flashlight:'FLASHLIGHT',hea
 export default function ChapterOne(){
  const [p,setP]=useState(clone),ref=useRef(p),[loaded,setLoaded]=useState(false),[dialog,setDialog]=useState(null),dialogRef=useRef(null),[typed,setTyped]=useState(0),[panel,setPanel]=useState(null),panelRef=useRef(null),[toast,setToast]=useState(''),[music,setMusic]=useState(false),[glitch,setGlitch]=useState(false),glitchRef=useRef(false),[count,setCount]=useState(10);
  const canvas=useRef(null),held=useRef(new Set()),audio=useRef(null);
- useEffect(()=>{try{const v=JSON.parse(localStorage.getItem(SAVE)||'null');if(v&&v.gear&&Number.isFinite(v.x)){const q={...clone(),...v,gear:{...START.gear,...v.gear},notes:Array.isArray(v.notes)?v.notes:[],talked:Array.isArray(v.talked)?v.talked:[]};if(v.mapVersion!==2){q.mapVersion=2;if(q.scene==='town'){q.x=1120;q.y=890}}if(q.scene!=='town'&&(q.x<45||q.x>W-45||q.y<110||q.y>H-85)){q.x=558;q.y=500}if(!canWalk(q,q.x,q.y)){q.x=q.scene==='town'?1120:558;q.y=q.scene==='town'?890:500}setP(q);ref.current=q}}catch{}setLoaded(true)},[]);
- useEffect(()=>{ref.current=p;if(loaded)try{localStorage.setItem(SAVE,JSON.stringify(p))}catch{}},[p,loaded]);
+ useEffect(()=>{try{const v=JSON.parse(scopedStorage.getItem(SAVE)||'null');if(v&&v.gear&&Number.isFinite(v.x)){const q={...clone(),...v,gear:{...START.gear,...v.gear},notes:Array.isArray(v.notes)?v.notes:[],talked:Array.isArray(v.talked)?v.talked:[]};if(v.mapVersion!==2){q.mapVersion=2;if(q.scene==='town'){q.x=1120;q.y=890}}if(q.scene!=='town'&&(q.x<45||q.x>W-45||q.y<110||q.y>H-85)){q.x=558;q.y=500}if(!canWalk(q,q.x,q.y)){q.x=q.scene==='town'?1120:558;q.y=q.scene==='town'?890:500}setP(q);ref.current=q}}catch{}setLoaded(true)},[]);
+ useEffect(()=>{ref.current=p;if(loaded)try{scopedStorage.setItem(SAVE,JSON.stringify(p))}catch{}},[p,loaded]);
  useEffect(()=>{dialogRef.current=dialog},[dialog]);useEffect(()=>{panelRef.current=panel;if(panel)held.current.clear()},[panel]);
  const patch=useCallback(fn=>setP(q=>{const v=typeof fn==='function'?fn(q):{...q,...fn};ref.current=v;return v}),[]);
  const note=useCallback(s=>patch(q=>({...q,notes:q.notes.includes(s)?q.notes:[...q.notes,s]})),[patch]);
