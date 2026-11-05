@@ -1,5 +1,6 @@
 'use client';
 
+import {scopedStorage} from '../../../components/ScopedSave';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {ACTS,GHOST_LETTER} from './actData';
@@ -167,8 +168,8 @@ export default function StoryAct({chapter=2}){
  const note=useCallback(s=>patch(v=>({...v,notes:v.notes.includes(s)?v.notes:[...v.notes,s]})),[patch]);
  const sound=useCallback((freq=440,duration=.13)=>{try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!audio.current)audio.current=new A();audio.current.resume();const o=audio.current.createOscillator(),g=audio.current.createGain();o.type='triangle';o.frequency.value=freq;g.gain.setValueAtTime(.026,audio.current.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audio.current.currentTime+duration);o.connect(g).connect(audio.current.destination);o.start();o.stop(audio.current.currentTime+duration)}catch{}},[]);
  const flash=useCallback((ms=1100)=>{if(reduced)return;setGlitch(true);sound(93,.3);window.setTimeout(()=>setGlitch(false),ms)},[reduced,sound]);
- useEffect(()=>{try{const raw=localStorage.getItem(act.save),v=raw?JSON.parse(raw):null;if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y)){const q={...makeStart(act),...v,solved:Array.isArray(v.solved)?v.solved:[],talked:Array.isArray(v.talked)?v.talked:[],notes:Array.isArray(v.notes)?v.notes:[]};ref.current=q;setP(q)}}catch{}setLoaded(true)},[act]);
- useEffect(()=>{ref.current=p;if(loaded)try{localStorage.setItem(act.save,JSON.stringify(p))}catch{}},[p,loaded,act.save]);
+ useEffect(()=>{try{const raw=scopedStorage.getItem(act.save),v=raw?JSON.parse(raw):null;if(v&&Number.isFinite(v.x)&&Number.isFinite(v.y)){const q={...makeStart(act),...v,solved:Array.isArray(v.solved)?v.solved:[],talked:Array.isArray(v.talked)?v.talked:[],notes:Array.isArray(v.notes)?v.notes:[]};ref.current=q;setP(q)}}catch{}setLoaded(true)},[act]);
+ useEffect(()=>{ref.current=p;if(loaded)try{scopedStorage.setItem(act.save,JSON.stringify(p))}catch{}},[p,loaded,act.save]);
  useEffect(()=>{dialogRef.current=dialog},[dialog]);useEffect(()=>{panelRef.current=panel;if(panel)keys.current.clear()},[panel]);
  useEffect(()=>{if(!loaded||ref.current.started)return;patch(v=>({...v,started:true}));show('SYSTEM',act.intro)},[loaded,act,patch,show]);
  useEffect(()=>{if(!dialog)return;setTyped(0);const line=dialog.lines[dialog.index]||'';const id=window.setInterval(()=>setTyped(n=>Math.min(line.length,n+2)),22);return()=>window.clearInterval(id)},[dialog]);
