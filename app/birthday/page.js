@@ -815,36 +815,18 @@ export default function BirthdayPage() {
 
               {eggOpen === 'two' && <p className="egg-small">Psst... the mail seal in LOVE_MAIL has a secret. Tap it four times. ♡</p>}
 
-              <div className="audio-card">
-
-                <div className="audio-icon">
-                  🎙
+              {eggOpen === 'one' ? <>
+                <div className="audio-card"><div className="audio-icon">🎙</div><div><strong>SECRET VOICE MESSAGE</strong><small>from someone who knows you</small></div></div>
+                <audio controls preload="metadata" className="secret-audio" src="https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a" />
+                <p className="audio-help">✦ A recovered recording from the archive.</p>
+              </> : <>
+                <div className="audio-card" style={{borderColor:'#df9bd7'}}>
+                  <div className="audio-icon">✉</div>
+                  <div><strong>LOVE_MAIL // HIDDEN LETTER</strong><small>Some secrets are sealed, not locked.</small></div>
                 </div>
-
-                <div>
-                  <strong>
-                    SECRET VOICE MESSAGE
-                  </strong>
-
-                  <small>
-                    from someone who knows you
-                  </small>
-                </div>
-
-              </div>
-
-              <audio
-                controls
-                className="secret-audio"
-                src={
-                  eggOpen === 'one'
-                    ? 'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a'
-                    : '/audio/easter-egg-2.mp3'
-                }
-              />
-
-              <p className="audio-help">{eggOpen==='one'?'✦ A recovered recording from the archive.':'✦ Another hidden recording is waiting to be restored.'}</p>
-
+                <p className="audio-help">Find the little seal in LOVE_MAIL. Four taps reveal what it has been keeping. ♡</p>
+                <Link href="/birthday/messages" style={{display:'inline-block',padding:'10px 16px',background:'#d98ac7',color:'#25122d',fontFamily:'monospace',fontWeight:'bold',textDecoration:'none'}}>OPEN LOVE_MAIL ↗</Link>
+              </>}
             </div>
 
           </div>
