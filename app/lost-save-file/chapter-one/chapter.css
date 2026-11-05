@@ -120,3 +120,12 @@
 .ch1-illustrated-portrait img{display:block;width:100%;height:100%;object-fit:cover;image-rendering:auto}
 .ch1-illustrated-name{position:absolute;left:0;right:0;bottom:0;padding:7px 3px;background:#20172fe8;color:#f9e3ed;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em}
 @media(max-width:650px){.ch1-illustrated-portrait{width:126px;height:166px;flex-basis:126px}.ch1-illustrated-name{font-size:9px;padding:4px 2px}}
+
+
+/* Chapter 1 portrait entrance and touch feedback */
+@keyframes ch1PortraitArrive{from{opacity:.45;transform:translateY(12px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ch1PortraitIdle{50%{transform:translateY(-3px)}}
+.ch1-illustrated-portrait{animation:ch1PortraitArrive .34s ease-out both,ch1PortraitIdle 3.5s ease-in-out .35s infinite;box-shadow:0 7px 0 #1c1428,0 0 24px #e1a4e533}
+.ch1-button{touch-action:manipulation;transition:transform .16s ease,filter .16s ease}
+.ch1-button:active{transform:translateY(2px) scale(.98);filter:brightness(1.15)}
+@media(prefers-reduced-motion:reduce){.ch1-illustrated-portrait{animation:none!important}.ch1-button{transition:none!important}}
