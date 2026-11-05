@@ -11,19 +11,19 @@ export const ACTS = {
     ],
     cast: {
       watson: {name:'DR JOHN WATSON',x:435,y:390,color:'#9eb8bb',hair:'#9a775c',coat:'#555d6a',portrait:'watson',intro:[
-        'Clar? Right. The departure board has you down as missing. You're standing in front of me, so that's clearly bollocks.',
+        'Clar? Right. The departure board has you down as missing. You\'re standing in front of me, so that's clearly bollocks.',
         'I found a clinical note inside the ticket machine. No patient, no pulse, yet the handwriting changes whenever you look away.',
-        'Sherlock would be insufferable about this. I'm a doctor, not a ghost hunter. Let's check the console before somebody decides you're the patient.'
+        'Sherlock would be insufferable about this. I\'m a doctor, not a ghost hunter. Let\'s check the console before somebody decides you're the patient.'
       ],after:'The note belongs to someone who was trying very hard to get a message to you. I think the station misfiled the sender as a patient.'},
       sakusa: {name:'KIYOOMI SAKUSA',x:1410,y:400,color:'#d8c8e6',hair:'#27212d',coat:'#493953',portrait:'sakusa',intro:[
-        'Don't touch the speaker with your bare hands. Look at the grime on that thing. Seriously.',
+        'Don\'t touch the speaker with your bare hands. Look at the grime on that thing. Seriously.',
         'There is a real voice beneath the interference. The system is treating it like contamination and trying to scrub it out.',
-        'Recalibrate the tower carefully. Filter the interference, not the voice. And wash your hands after. I'm not joking.'
+        'Recalibrate the tower carefully. Filter the interference, not the voice. And wash your hands after. I\'m not joking.'
       ],after:'Better. The interference was engineered to hide the sender, not to destroy the recording. I still dislike this station.'},
       suna: {name:'RINTAROU SUNA',x:1100,y:915,color:'#c4aa91',hair:'#40382e',coat:'#444a5c',portrait:'suna',intro:[
         'Huh. The booth took my photo before I went in. That's kind of impressive. Creepy, but impressive.',
         'There is a silhouette over your shoulder in every frame. Same posture, same stupidly dramatic entrance.',
-        'Look at frame three. It happened after you arrived. Kind of ruins the whole 'we're doomed' theory, doesn't it?'
+        'Look at frame three. It happened after you arrived. Kind of ruins the whole 'we\'re doomed' theory, doesn\'t it?'
       ],after:'The shadow was trying to photobomb a memory. Respect the commitment. Terrible hiding skills, though.'}
     },
     objects: [
@@ -72,10 +72,10 @@ export const ACTS = {
         'The invitation asks what you wish to preserve. Choose with care. Even imperfect memories deserve a place at a beautifully set table.'
       ],after:'A good celebration is not a mausoleum. It moves, laughs, makes a mess, and begins again.'},
       nightwing:{name:'NIGHTWING',x:1460,y:390,color:'#65b9e3',hair:'#242533',coat:'#1a293c',portrait:'nightwing',intro:[
-        'Hey, birthday girl. So, good news: the rooftops are moving. Bad news: they're moving while we're standing on them.',
-        'Found a zipline to a folder marked DELETE ME. Which, obviously, is an invitation. Don't tell Batman.',
+        'Hey, birthday girl. So, good news: the rooftops are moving. Bad news: they\'re moving while we\'re standing on them.',
+        'Found a zipline to a folder marked DELETE ME. Which, obviously, is an invitation. Don\'t tell Batman.',
         'The skybridge locks whenever the Watcher appears. Follow the blue trail and choose the route that protects the person behind you.'
-      ],after:'Nice landing! Ten out of ten. And yes, I totally planned that collapse. Don't look at me like that.'},
+      ],after:'Nice landing! Ten out of ten. And yes, I totally planned that collapse. Don\'t look at me like that.'},
       azusa:{name:'AZUSA',x:1040,y:925,color:'#eab6e9',hair:'#75497e',coat:'#505a82',portrait:'azusa',intro:[
         'Clar! Wait—look, the core's still responding! Your save isn't gone. We can still fix this.',
         'The machine thinks ghosts are corrupted data. But maybe some ghosts are just someone who stayed too long trying to finish a gift.',
