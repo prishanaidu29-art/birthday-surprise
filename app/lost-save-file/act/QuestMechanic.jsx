@@ -1,0 +1,17 @@
+'use client';
+import {useState} from 'react';
+export default function QuestMechanic({quest,onComplete}){
+ const [value,setValue]=useState(0),[steps,setSteps]=useState([]),[feedback,setFeedback]=useState('');
+ const finish=()=>{setFeedback('✓ RESTORED');onComplete()};
+ const select=(i)=>setSteps(v=>v.includes(i)?v.filter(x=>x!==i):[...v,i]);
+ const choices=(labels,action)=> <div className="act-assembly-items">{labels.map((label,i)=><button key={i} type="button" className={steps.includes(i)?'chosen':''} onClick={()=>action(i)}>{steps.includes(i)?'✓':'◇'} {label}</button>)}</div>;
+ return <div className="act-signal-game"><h3>{({pulse:'HEARTBEAT MONITOR',static:'ANALOG FREQUENCY TUNER',snapshot:'CONTACT SHEET',banquet:'SET THE MEMORY TABLE',bridge:'COLLAPSING SKYBRIDGE',core:'POWER ROUTING'})[quest.id]}</h3>
+ {quest.id==='pulse'&&<><p className="act-muted">The patient's pulse is a message. Reconstruct the three-beat rhythm: short, long, short.</p>{choices(['SHORT BEAT','LONG BEAT'],i=>{const next=[...steps,i];setSteps(next);if(next.length===3){if(next.join('')==='010')finish();else{setFeedback('Irregular rhythm. Start the sequence again.');setSteps([])}}})}<p>{steps.length}/3 BEATS RECORDED</p></>}
+ {quest.id==='static'&&<><p className="act-muted">Tune the dial until the voice breaks through the static.</p><input aria-label="Radio frequency" type="range" min="0" max="100" value={value} onChange={e=>setValue(+e.target.value)} style={{width:'90%',accentColor:'#b8efe7'}}/><p>{Math.abs(value-73)<5?'◉ VOICE DETECTED':'≋ STATIC ≋'} · {88+value/10} MHz</p><button className="act-signal-start" onClick={()=>Math.abs(value-73)<5?finish():setFeedback('Fine-tune the signal.')}>CAPTURE</button></>}
+ {quest.id==='snapshot'&&<><p className="act-muted">Find the photograph proving the shadow is helping Clar.</p>{choices(['EMPTY PLATFORM','BLACK NEGATIVE','HAND HOLDING OPEN A DOOR'],i=>i===2?finish():setFeedback('Look for evidence of intent, not just a silhouette.'))}</>}
+ {quest.id==='banquet'&&<><p className="act-muted">Choose three lived-in birthday details, not a perfect lifeless display.</p>{choices(['Friends laughing','Untouched display','Messy cake','Empty chair','Spontaneous photo'],select)}<button className="act-signal-start" onClick={()=>steps.length===3&&[0,2,4].every(i=>steps.includes(i))?finish():setFeedback('Three genuine memories belong at this table.')}>SET THE TABLE</button></>}
+ {quest.id==='bridge'&&<><p className="act-muted">Cross three spans in order without leaving the shadow behind.</p>{choices(['SECURE THE RAIL','REACH BACK','CROSS TOGETHER'],i=>{if(i!==steps.length){setFeedback('The bridge shakes. Secure the next span first.');return}const n=[...steps,i];setSteps(n);if(n.length===3)finish()})}<p>{steps.length}/3 SPANS SECURED</p></>}
+ {quest.id==='core'&&<><p className="act-muted">Cycle each cell until all three point to the purple archive (◆).</p><div className="act-assembly-items">{[0,1,2].map(i=><button key={i} onClick={()=>setSteps(v=>{const n=[v[0]||0,v[1]||0,v[2]||0];n[i]=(n[i]+1)%3;return n})}>CELL {i+1} <strong style={{fontSize:24,display:'block'}}>{['○','◇','◆'][steps[i]||0]}</strong></button>)}</div><button className="act-signal-start" onClick={()=>[0,1,2].every(i=>steps[i]===2)?finish():setFeedback('All cells must route to the purple archive.')}>RESTORE FILE</button></>}
+ {feedback&&<p role="status" className="act-muted">{feedback}</p>}
+ </div>
+}
