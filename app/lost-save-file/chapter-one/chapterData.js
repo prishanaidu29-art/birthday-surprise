@@ -22,18 +22,18 @@ export const NPCS={
  house:{name:'DR HOUSE',shop:'game',x:650,y:295,color:'#f4ce90',hair:'#6d625e',skin:'#dfb69d',outfit:'#424952',expression:'skeptical'}
 };
 export const INTRO={
- jack:["CLAR! There you are! Right, we've got a haunted bakery, a town that loops, and a clock that refuses to move. Fantastic.","I've tried every exit. Same square, every time. But we're not giving up.","There's a letter outside. Find it, and we'll figure out this glitch together!"],
- jay:["YO, CLAR! Tell me you saw that! The record player just started talking to itself.","This place is straight out of a horror game. And you KNOW I'm checking the locked room.","Find that key, okay? I'll keep an eye on the creepy music."],
- sherlock:["Clar. You arrived at precisely the wrong moment. Or perhaps the only possible one.","Observe the clock: 11:19. Every reflection shows a different time. That isn't random.","Find the back-room key. The answer is almost certainly where someone doesn't want us looking."],
- will:["Clar? I thought I heard someone coming. I wasn't sure it was real.","Something is watching the arcade. I can almost feel where it will appear next.","Take this flashlight. Stay in the light when the screen starts to flicker."],
- house:["Great. Another person trapped in a town with terrible architecture and worse logic.","Here's the diagnosis: reality is malfunctioning. Unfortunately, the treatment isn't in my bag.","Take these headphones, this journal, and the ridiculous practice sword. Try not to make things worse."]
+ jack:["CLAR! Oh, thank God. Right, before you panic: yes, the bakery's haunted, the road loops, and that bloody clock is taking the piss.","I ran through the exit three times. Three! Came back here every single time. Fantastic game design. Ten out of ten, absolutely cursed.","But hey, we're not leaving anyone behind. There's an envelope on the west path. Grab it and we'll figure this mess out together."],
+ jay:["YO, CLAR! Nah, nah, tell me you heard that record scratch by itself. Bro, I almost launched myself over the counter.","This is some horror-game bullshit. You already know the second I see a locked back room, I'm checking it.","I saw something shiny in the bushes outside. You find it, I'll stand here and pretend I'm not scared. Deal?"],
+ sherlock:["Clar. You're late. Not chronologically; the clock is incapable of that. I mean you missed the interesting part.","Eleven nineteen. Every reflection disagrees with it, yet the mechanism makes a sound. An apparent contradiction. Finally, something useful.","A key has been hidden, very deliberately. Find it. And do try not to mistake coincidence for evidence."],
+ will:["Clar? Sorry. I heard footsteps, but they kept stopping when I stopped breathing.","Something's moving between the arcade cabinets. It doesn't want to be seen. I can tell from where it chooses to stand.","Here. Take my flashlight. Please. I'd rather you see it before it sees you."],
+ house:["Oh good. Another volunteer for the world's least competent escape room. And nobody even bothered to provide snacks.","Diagnosis: reality's broken. Differential includes mass hallucination, terrible writing, and an idiot with a clock obsession.","Take the headphones, journal and wooden sword. One detects noise, one records evidence, and one is medically useless. Guess which one's your favourite."]
 };
 export const EXTRA={
- jack:["Keep moving, Clar. We'll find a way out.","That letter has to mean something. Nothing here happens by accident."],
- jay:["That record player is cursed, I'm telling you.","Check the bushes for the key. Horror games love hiding stuff in plain sight."],
- sherlock:["The smallest inconsistency is usually the most revealing.","Eleven nineteen. Remember it."],
- will:["The shadow doesn't move like a person.","Trust your instincts. And keep the flashlight ready."],
- house:["The journal records clues. Try reading them.","If the sword solves anything, I'll be deeply disappointed."]
+ jack:["You're doing great, Clar. Seriously. We can be scared and still get the hell out of here.","That envelope's important. I can feel it. Or maybe that's the haunted croissants. Hard to say."],
+ jay:["Bro, that music started AGAIN. I swear if a ghost asks me to dance, I'm uninstalling.","Check the bushes, Clar. Every horror game hides the important shit somewhere ridiculous."],
+ sherlock:["You looked at the clue. Good. Now ask yourself what it contradicts.","Eleven nineteen. Not because I enjoy repeating myself, but because you've apparently decided to ignore the evidence."],
+ will:["I don't like how quiet it gets when you turn the light off.","The thing in the dark isn't running towards us. It's waiting. That's worse, somehow."],
+ house:["Try actually using the things in your inventory. Radical concept, I know.","If the wooden sword saves us, I'm retiring from medicine and opening a toy shop."]
 };
 export const RIDDLE={
  question:'I stand still while the world forgets. I show the hour that never passed. What must you carry through this door?',
