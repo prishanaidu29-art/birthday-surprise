@@ -160,3 +160,20 @@
 @keyframes ch1Impact{0%,42%{opacity:0;transform:scale(.3)}55%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(1.8)}}
 @keyframes ch1KeyRise{from{opacity:0;transform:translateY(70px) scale(.4) rotate(-35deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.ch1-haunted-mirror *, .ch1-action-scene *{animation:none!important}.ch1-mirror-watcher{opacity:.4;left:8%}}
+
+
+/* Cinematic visual-novel conversation, with existing hand-coded SVG portraits.
+   Future artist-owned PNGs can replace portraits without changing layout. */
+.ch1-cinematic-overlay{align-items:stretch!important;justify-content:center!important;padding:clamp(8px,2vw,24px)!important;background:linear-gradient(180deg,#090a1d3b,#09071cc9 80%)!important;backdrop-filter:blur(2px)}
+.ch1-cinematic-modal{position:relative!important;display:flex!important;flex-direction:column!important;justify-content:flex-end!important;width:min(1160px,98%)!important;max-width:none!important;height:min(92dvh,740px)!important;max-height:92dvh!important;margin:auto!important;overflow:hidden!important;border:1px solid #d5b5e899!important;background:radial-gradient(ellipse at 72% 22%,#5e4c7580,transparent 56%),linear-gradient(180deg,#211d3770 0%,#19122bba 54%,#110c22fa 100%)!important;box-shadow:0 30px 90px #08051dd9,inset 0 0 80px #cbb3ed18!important;padding:clamp(12px,2vw,26px)!important}
+.ch1-cinematic-modal>.ch1-dialog{display:grid!important;grid-template-columns:minmax(180px,40%) 1fr!important;align-items:end!important;gap:clamp(10px,3vw,32px)!important;min-height:0!important;flex:1!important;position:relative!important}
+.ch1-cinematic-modal .ch1-dialog> :first-child{width:100%!important;height:min(59dvh,490px)!important;max-width:none!important;align-self:end!important;object-fit:contain!important;animation:ch1PortraitEnter .4s ease-out both,ch1PortraitBreath 5s ease-in-out .4s infinite;transform-origin:50% 100%;filter:drop-shadow(0 16px 22px #090718b0)}
+.ch1-cinematic-modal .ch1-dialog>div:last-child{align-self:end!important;min-height:155px!important;margin-bottom:18px!important;border:1px solid #c9a3dd91!important;border-radius:8px!important;padding:clamp(14px,2vw,26px)!important;background:linear-gradient(125deg,#1b1232f5,#352342eb)!important;box-shadow:0 10px 30px #080617a6!important}
+.ch1-cinematic-modal .ch1-dialog h2{font-size:clamp(18px,2.1vw,27px)!important;color:#f6c7e9!important;margin-bottom:12px!important}
+.ch1-cinematic-modal .ch1-dialog p{font-size:clamp(15px,1.7vw,21px)!important;line-height:1.65!important;color:#fff3e8!important}
+.ch1-cinematic-modal>.ch1-actions{justify-content:flex-end!important;flex-wrap:wrap!important;gap:10px!important;margin-top:12px!important}
+.ch1-cinematic-modal>small{position:absolute;top:18px;left:22px;z-index:1;color:#eed4f4!important;letter-spacing:2px}
+@keyframes ch1PortraitEnter{from{opacity:0;transform:translateY(26px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ch1PortraitBreath{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(max-width:700px){.ch1-cinematic-modal{height:min(86dvh,620px)!important}.ch1-cinematic-modal>.ch1-dialog{grid-template-columns:1fr!important;grid-template-rows:minmax(150px,1fr) auto!important;gap:0!important}.ch1-cinematic-modal .ch1-dialog>:first-child{height:min(37dvh,290px)!important;max-width:75%!important;justify-self:center!important}.ch1-cinematic-modal .ch1-dialog>div:last-child{margin:0!important;min-height:135px!important}.ch1-cinematic-modal .ch1-dialog p{font-size:15px!important}}
+@media(prefers-reduced-motion:reduce){.ch1-cinematic-modal .ch1-dialog>:first-child{animation:none!important}}
