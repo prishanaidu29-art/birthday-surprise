@@ -39,6 +39,29 @@ function platform(c,a,t){
   rect(c,910,319,180,59,'#35394c');print(c,'PLATFORM 00',1000,344,19,'#b8f7ee');print(c,'11:19 / DELAYED',1000,370,14,'#ffe5af');
   for(let x of [265,660,1150,1690]){rect(c,x-60,1010,120,19,'#c1a9ae');rect(c,x-48,1027,10,25,'#55465b');rect(c,x+40,1027,10,25,'#55465b')}
   print(c,'NO REFUNDS FOR LOST MEMORIES',900,153,20,'#ffdbc6');
+  // Platform Zero: dimensional stained-glass canopy, warm lamps, animated departures.
+  const glow=(x,y,r,col)=>{const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col);g.addColorStop(1,'#ffffff00');rect(c,x-r,y-r,r*2,r*2,g)};
+  for(let x=115;x<a.width-90;x+=205){
+    rect(c,x-8,83,16,210,'#50475f');rect(c,x-16,78,32,13,'#c2a0a7');
+    rect(c,x-69,95,138,9,'#6d597b');rect(c,x-64,105,128,54,'#31425c');
+    for(let k=0;k<5;k++)rect(c,x-56+k*24,109,18,44,k%2?'#48687d':'#705678');
+    rect(c,x-2,163,4,48,'#e0c2a2');ellipse(c,x,215,17,10,'#ffdfb1');glow(x,225,115,'#ffe1b329');
+    rect(c,x-23,284,46,5,'#edc8b65c');
+  }
+  // Layered platform walls and art-deco signage, with light reflected on the floor.
+  rect(c,92,440,a.width-184,16,'#b38d9f');rect(c,92,456,a.width-184,6,'#f0d6c2');
+  for(let x=135;x<a.width-130;x+=180){rect(c,x,470,145,76,'#383b59');rect(c,x+5,476,135,66,'#4b506d');rect(c,x+15,485,115,43,'#293d55');rect(c,x+30,495,85,3,'#91b1bc');rect(c,x+30,504,65,3,'#91b1bc77')}
+  for(let x=130;x<a.width-120;x+=115){rect(c,x,583,58,3,'#f3cdb94c');rect(c,x+9,597,40,2,'#e4a9c13d')}
+  for(let x=140;x<a.width-100;x+=310){rect(c,x,660,125,7,'#d9b8bb');rect(c,x+10,675,110,5,'#9b8caa');glow(x+65,670,85,'#e6b5e81e')}
+  // The ghost train appears only as a passing reflection.
+  c.save();c.globalAlpha=.15+.08*Math.sin(t/800);
+  const trainX=180+((t/35)%(a.width+650))-450;
+  rect(c,trainX,886,470,82,'#a0a5c3');rect(c,trainX+12,898,445,50,'#333b5e');
+  for(let k=0;k<7;k++){rect(c,trainX+26+k*62,908,42,24,'#b8d5d4');rect(c,trainX+30+k*62,910,34,19,'#5b7290')}
+  c.restore();
+  // Floating dust and reflected neon shimmer.
+  for(let i=0;i<48;i++){const xx=(i*179+Math.sin(t/1300+i)*18)%a.width,yy=(i*97+Math.cos(t/1700+i)*9)%a.height;ellipse(c,xx,yy,1.4,1.4,i%3?'#f8cde777':'#b2f1e688')}
+  print(c,'✦  THE LAST TRAIN NEVER ARRIVES  ✦',960,208,18,'#ffcfdf');
   // Ticket windows.
   for(let x of [310,590,1450]){rect(c,x-75,320,150,110,'#48445e');rect(c,x-65,331,130,77,'#a5bec1');rect(c,x-50,344,95,48,'#33495a');rect(c,x-66,409,131,8,'#d3a6a3')}
  }else{
