@@ -9,6 +9,13 @@ import LostDraft from '../../../components/LostDraft'
 export const dynamic='force-dynamic'
 const LETTERS=[
   {
+    "name": "Chloe",
+    "wish": "Sweet sweet Clar!!! Angel!! Sunshine!!! I hope you have the most heart filling day feeling loved and appreciated, you deserve nothing less. I hope you are surrounded by love and good food all day! You radiate such a pure kindness from you, from the day we met I knew it would be a hard goodbye. I am truly so blessed to know you and call you my friend, Im tearing up writing this..\nIll be putting a tiny paper party hat on my mini Clar keychain we made together on my last day in Malay at Taylors, she lives in my car as my passenger princess hehe xx\n\nI love you so much, you are so full of grace and inspire me to be a better, more intentional version of myself. I am so proud of you and all you achieve, of all you love, of all you set out to do. You are truly amazing sweet gal!!\n\nSending you the biggest bday squeezey hug ever, with all my love!!! Happy birthday Clar!!!",
+    "appreciation": "I appreciate how intentional you are with every friend you make. You remember all the small details, and are always so present. Even when faced with hard decisions or emotional situations, you carry yourself so gracefully.",
+    "memory": "CLAR I think one of my favourite memories has to be when we confessed our DNP fangirling to eachother in the backback seats of the uber on our road trip, just absolutely squealing flapping our arms about like little teenage girls with a crush. That HEALED me on another level. That memory makes me laugh cry so hard at the thought of us just having that moment of confession to eachother and turning absolutely feral after HAHAHAHA (ps my mini clar keychain WILL be attending the dnp tour in Syd when I go next week!!! thats the closest to getting you to the tour i can get sorry hehe)",
+    "photo": ""
+  },
+  {
     "name": "Arsha",
     "wish": "happy birthday dear clary! I love you so much and wish you the best years with endless blessings love and success, I don’t even know where to begin of how mcuh of a true blessing you have been in my life! I love you so much and wish you so much love and happiness bb❤️💗",
     "appreciation": "",
