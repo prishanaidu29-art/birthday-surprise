@@ -129,3 +129,34 @@
 .ch1-button{touch-action:manipulation;transition:transform .16s ease,filter .16s ease}
 .ch1-button:active{transform:translateY(2px) scale(.98);filter:brightness(1.15)}
 @media(prefers-reduced-motion:reduce){.ch1-illustrated-portrait{animation:none!important}.ch1-button{transition:none!important}}
+
+
+/* Living haunted mirror: a delayed reflection and a passing watcher. */
+.ch1-haunted-mirror{position:relative;isolation:isolate;overflow:hidden;min-height:225px;max-width:410px;margin:18px auto 24px;border:12px ridge #e6bce7;border-bottom-width:18px;border-radius:48% 48% 14px 14px/34% 34% 14px 14px;background:radial-gradient(ellipse at 50% 38%,#9e8cbb,#39304e 75%,#181324);box-shadow:inset 0 0 38px #110b29,0 8px 0 #3a294e,0 0 26px #edb6f155}
+.ch1-mirror-stars{position:absolute;top:12%;left:12%;color:#f7dcff88;letter-spacing:26px;animation:ch1MirrorStars 4s ease-in-out infinite}
+.ch1-mirror-silhouette{position:absolute;bottom:8%;left:42%;height:135px;width:75px;filter:blur(1px);animation:ch1MirrorLead 6.2s ease-in-out infinite;opacity:.8}
+.ch1-mirror-head{position:absolute;left:23px;top:0;width:39px;height:43px;border-radius:50% 48% 44% 50%;background:#2b243d;box-shadow:-8px -8px 0 #382b46,8px -4px 0 #382b46}
+.ch1-mirror-body{position:absolute;top:41px;left:5px;width:73px;height:105px;border-radius:44% 44% 8% 8%;background:linear-gradient(#41344d,#171525)}
+.ch1-mirror-watcher{position:absolute;bottom:0;left:-34%;height:85%;width:85px;filter:blur(3px);opacity:0;animation:ch1MirrorWatcher 7.5s ease-in-out infinite}
+.ch1-mirror-watcher span{position:absolute;left:24px;top:14%;width:44px;height:53px;background:#110f1e;border-radius:50%}
+.ch1-mirror-watcher i{position:absolute;left:10px;top:43%;width:75px;height:110px;background:#110f1e;border-radius:50% 50% 0 0}
+.ch1-mirror-glimmer{position:absolute;top:45%;right:15%;color:#f7d6fa;animation:ch1MirrorStars 2.4s ease-in-out infinite}
+@keyframes ch1MirrorLead{0%,15%{transform:translateX(-28px) rotate(-3deg)}29%,43%{transform:translateX(30px) rotate(5deg)}54%,70%{transform:translateX(-5px) rotate(-2deg)}85%,100%{transform:translateX(-28px) rotate(-3deg)}}
+@keyframes ch1MirrorWatcher{0%,32%{transform:translateX(0);opacity:0}40%{opacity:.7}70%{transform:translateX(460px);opacity:.8}78%,100%{transform:translateX(500px);opacity:0}}
+@keyframes ch1MirrorStars{50%{opacity:.2;filter:brightness(1.6)}}
+.ch1-stage{position:relative}
+.ch1-action-scene{position:absolute;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;background:radial-gradient(circle at 50% 58%,#21102b11,#140d26a8);animation:ch1ActionIn .2s ease-out}
+.ch1-action-clar{position:absolute;left:31%;top:40%;font-size:clamp(45px,9vw,95px);filter:drop-shadow(0 8px 3px #140d22);transform-origin:70% 85%;animation:ch1SwordSwing .95s cubic-bezier(.3,.1,.4,1) both}
+.ch1-action-bush{position:absolute;left:52%;top:43%;font-size:clamp(52px,10vw,112px);filter:drop-shadow(0 8px 5px #130c22);animation:ch1BushHit .95s ease-in-out both}
+.ch1-action-bush span{display:inline-block;margin-left:-32px}
+.ch1-action-impact{position:absolute;left:52%;top:32%;font-size:clamp(22px,5vw,60px);color:#ffedb4;opacity:0;animation:ch1Impact .95s ease-out both}
+.ch1-action-key{position:absolute;left:48%;top:31%;display:flex;align-items:center;flex-direction:column;gap:6px;font-size:clamp(48px,8vw,88px);filter:drop-shadow(0 0 15px #f9dd7c);animation:ch1KeyRise .75s ease-out both}
+.ch1-action-key small{padding:6px 10px;background:#251631;color:#ffe5a5;font-size:clamp(11px,2vw,18px);font-weight:800;white-space:nowrap}
+.ch1-action-reward .ch1-action-clar{animation:none;transform:rotate(-38deg)}
+.ch1-action-reward .ch1-action-bush{animation:none;transform:rotate(14deg) translateX(18px)}
+@keyframes ch1ActionIn{from{opacity:0}to{opacity:1}}
+@keyframes ch1SwordSwing{0%{transform:translateX(-20px) rotate(-90deg)}42%{transform:translateX(20px) rotate(24deg)}60%{transform:translateX(40px) rotate(85deg)}100%{transform:translateX(35px) rotate(-38deg)}}
+@keyframes ch1BushHit{0%,35%{transform:rotate(0)}52%{transform:rotate(23deg) translateX(22px)}70%{transform:rotate(-16deg) translateX(-12px)}100%{transform:rotate(14deg) translateX(18px)}}
+@keyframes ch1Impact{0%,42%{opacity:0;transform:scale(.3)}55%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(1.8)}}
+@keyframes ch1KeyRise{from{opacity:0;transform:translateY(70px) scale(.4) rotate(-35deg)}to{opacity:1;transform:translateY(0) scale(1) rotate(0)}}
+@media(prefers-reduced-motion:reduce){.ch1-haunted-mirror *, .ch1-action-scene *{animation:none!important}.ch1-mirror-watcher{opacity:.4;left:8%}}
