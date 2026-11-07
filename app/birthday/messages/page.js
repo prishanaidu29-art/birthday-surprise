@@ -9,6 +9,13 @@ import LostDraft from '../../../components/LostDraft'
 export const dynamic='force-dynamic'
 const LETTERS=[
   {
+    "name": "Shahirah",
+    "wish": "Hi lovely one <3 Another year older, and you made it!! It feels like forever ago when either you or me were crying in school over the things we were going through, and we were rushing to comfort one another 🥹 I’m really so proud of where we are now, and I hope you can look in the mirror and say the same. You’ve come so far, and while we have your back, I hope you also celebrate yourself with having the strength to choose to continue on every single say.\nI love you, Clar! May more smiles be on your horizon, as you so deserve ☺️",
+    "appreciation": "You are so caring and attentive, and above all, kind. It shouldn’t be rare or difficult but it is, and you are a show of what it means to choose to be kind to everyone and deciding to make every moment with your loved ones count.",
+    "memory": "Burn all the fanfics I’ve ever written, they don’t exist; but I’ll keep the giggling about it all as we wrote what we did AHAHA—aside from that, I just remember me replying to your story when you posted a picture of you with M****. I was consumed by all means to warn you of her evil 🙂‍↕️🙂‍↕️",
+    "photo": ""
+  },
+  {
     "name": "Chloe",
     "wish": "Sweet sweet Clar!!! Angel!! Sunshine!!! I hope you have the most heart filling day feeling loved and appreciated, you deserve nothing less. I hope you are surrounded by love and good food all day! You radiate such a pure kindness from you, from the day we met I knew it would be a hard goodbye. I am truly so blessed to know you and call you my friend, Im tearing up writing this..\nIll be putting a tiny paper party hat on my mini Clar keychain we made together on my last day in Malay at Taylors, she lives in my car as my passenger princess hehe xx\n\nI love you so much, you are so full of grace and inspire me to be a better, more intentional version of myself. I am so proud of you and all you achieve, of all you love, of all you set out to do. You are truly amazing sweet gal!!\n\nSending you the biggest bday squeezey hug ever, with all my love!!! Happy birthday Clar!!!",
     "appreciation": "I appreciate how intentional you are with every friend you make. You remember all the small details, and are always so present. Even when faced with hard decisions or emotional situations, you carry yourself so gracefully.",
