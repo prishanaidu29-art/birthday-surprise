@@ -33,3 +33,16 @@ The Watcher is not an antagonist; it is the unsent message's ghostly delivery sy
 This is fan-made private-story fiction: characters are cameos, and the user's sender ghost is an intentionally fictional story avatar. The requested 'Azusa' is kept under that name without attributing unverified canon details.
 
 **Build status:** Vercel preview build is automatically deployed after branch commits. Passing build status does not mean the user has completed iPad manual playtesting.
+
+
+## Gameplay polish (Nov 8)
+- Chapter One now requires equipping the practice sword and performing a visible swing to clear the key bush; the key is revealed through a short multi-beat action scene rather than an instant pickup.
+- The southwest mirror now renders a live, oppositely-facing miniature Clar reflection that follows the player's position while nearby.
+- Chapters Two/Three now support a sprint/dash on Shift and a held mobile DASH control.
+- Platform Zero has a decorated ticket/lost-and-found/memory kiosk and an animated train passing behind the play area.
+- A missing `app/birthday/memories/uploadedMemories.js` dependency was restored on this preview branch from master after Vercel exposed the build error.
+
+## Still pending
+- Replace the placeholder stylised character portraits with the actual supplied character images/emotion set when uploaded; don't generate substitute AI-looking character art.
+- Full iPad/laptop playthrough, especially touch pointer release, sprint, sword-to-bush/key sequence, reflection, Chapter Two clue order, and final letter.
+- Verify the newest Vercel preview build is READY before considering this iteration complete.
