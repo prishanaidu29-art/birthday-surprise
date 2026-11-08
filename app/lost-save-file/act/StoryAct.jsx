@@ -37,8 +37,12 @@ function platform(c,a,t){
   rect(c,910,319,180,59,'#35394c');print(c,'PLATFORM 00',1000,344,19,'#b8f7ee');print(c,'11:19 / DELAYED',1000,370,14,'#ffe5af');
   for(let x of [265,660,1150,1690]){rect(c,x-60,1010,120,19,'#c1a9ae');rect(c,x-48,1027,10,25,'#55465b');rect(c,x+40,1027,10,25,'#55465b')}
   print(c,'NO REFUNDS FOR LOST MEMORIES',900,153,20,'#ffdbc6');
-  // Ticket windows.
-  for(let x of [310,590,1450]){rect(c,x-75,320,150,110,'#48445e');rect(c,x-65,331,130,77,'#a5bec1');rect(c,x-50,344,95,48,'#33495a');rect(c,x-66,409,131,8,'#d3a6a3')}
+  // Ticket windows, illustrated station shops and a passing train make the platform feel lived-in.
+  for(let x of [310,590,1450]){rect(c,x-75,320,150,110,'#48445e');rect(c,x-65,331,130,77,'#a5bec1');rect(c,x-50,344,95,48,'#33495a');rect(c,x-66,409,131,8,'#d3a6a3');rect(c,x-75,303,150,18,'#d5b3c9');print(c,x===310?'TICKETS':x===590?'LOST & FOUND':'MEMORY SHOP',x,296,12,'#ffe5c9')}
+  // A little cassette-and-ticket kiosk with animated marquee bulbs.
+  rect(c,1120,300,205,150,'#4b3b5e');rect(c,1132,312,181,32,'#d49db9');print(c,'PLATFORM GIFTS',1222,334,13,'#33233f');rect(c,1138,355,169,78,'#22243b');for(let i=0;i<5;i++){rect(c,1150+i*30,365,22,38,['#c58aa9','#8eb9b5','#e1bf91'][i%3]);rect(c,1154+i*30,370,14,6,'#f8e5ca');rect(c,1154+i*30,390,14,3,'#44364f')}for(let i=0;i<9;i++){ellipse(c,1135+i*22,305,3,3,Math.sin(t/180+i)>0?'#fff0b9':'#c77eab')}
+  // A train glides behind the foreground characters; its loop never blocks the clues.
+  const trainX=220+((t/5)%1740);c.save();c.globalAlpha=.72;rect(c,trainX,690,300,78,'#3b435b');rect(c,trainX+9,698,282,8,'#a8cbd0');rect(c,trainX+12,710,276,45,'#596c83');for(let i=0;i<4;i++){rect(c,trainX+22+i*65,716,48,28,'#b8d9d9');rect(c,trainX+25+i*65,719,12,22,'#e5f0e4');rect(c,trainX+40+i*65,719,24,22,'#8faeb9')}rect(c,trainX+10,758,280,7,'#d3b8c8');c.restore();
  }else{
   // Floating ballroom / broken desktop: chandeliers, staircases, rooftop bridge.
   for(let i=0;i<25;i++){let x=95+i*73;rect(c,x,100+(i%3)*12,35,3,'#e2b2db55')}
