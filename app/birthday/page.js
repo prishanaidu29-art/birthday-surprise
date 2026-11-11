@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {collectClue,readRecovery,hasClue} from '../../components/RecoveryConsole'
-import CircuitRepair from '../../components/CircuitRepair'
+import HiddenRoom from '../../components/HiddenRoom'
 import ClarJournal from '../../components/ClarJournal'
 import SaveManager from '../../components/SaveManager'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
@@ -19,9 +19,9 @@ export default function BirthdayPage() {
   const [clueVisible,setClueVisible]=useState(false)
   const [clueCollected,setClueCollected]=useState(false)
   const [journalOpen,setJournalOpen]=useState(false)
-  const [videoCircuitSolved,setVideoCircuitSolved]=useState(false)
+  const [hiddenRoomOpen,setHiddenRoomOpen]=useState(false)
   const [huntStage,setHuntStage]=useState(0)
-  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setVideoCircuitSolved(scopedStorage.getItem('clar_circuit_restored')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
+  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setHiddenRoomOpen(scopedStorage.getItem('clar_hidden_room_open')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
@@ -541,7 +541,7 @@ export default function BirthdayPage() {
 
             <div className="window-title purple-title" onPointerDown={e=>startDrag(e,"video")}>
 
-              <span>VIDEO_ARCHIVE.exe</span>
+              <span>HIDDEN_ROOM.exe</span>
 
               <button onClick={() => setVideoOpen(false)}>
                 ×
@@ -549,8 +549,8 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="archive-video-viewer">{huntStage>=2&&!videoCircuitSolved?<CircuitRepair onWin={()=>setVideoCircuitSolved(true)}/>:huntStage<2?<div style={{padding:20,border:"2px solid #d98bcf",background:"#251534",color:"#f8d9ef",fontFamily:"monospace"}}>🔒 VIDEO DECODER OFFLINE. Restore the VHS frames in Memories to enable the repair circuit.</div>:null}
-              {(huntStage>=2&&videoCircuitSolved)&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
+            <div className="archive-video-viewer"><HiddenRoom onWin={()=>setHiddenRoomOpen(true)}/>
+              {hiddenRoomOpen&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
               {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
               <small>SP / VHS / TRACKING AUTO</small></>}
             </div>
