@@ -2,7 +2,7 @@
 import {useState} from 'react'
 import {scopedStorage} from './ScopedSave'
 const cipher={A:'△',B:'○',C:'□',D:'◇',E:'☆',F:'✧',G:'☾',H:'☼',I:'♧',J:'♢',K:'♤',L:'♡',M:'♩',N:'♫',O:'♬',P:'☁',Q:'☂',R:'☀',S:'⚑',T:'⚙',U:'⚓',V:'✿',W:'❖',X:'✖',Y:'☯',Z:'☕'}
-const encoded='⚙ ☆ ♡ ♡ / ✿ ♬ ♧ ♤ ☆ / ♧ ⚑ / ♧ ♩ / ⚑ ⚙ ☆ ☀ / ☆ ♑ ♑ / ♬ ♫ ☆'
+const encoded='⚙ ☆ ♡ ♡ / □ ♡ ♧ ☀ ♧ ⚑ ⚑ ♧ / ⚙ ☼ ☆ / ⚑ ⚙ ☆ ☀ / ♧ ⚑ / ⚙ ☼ ☆ / ⚑ ⚙ ♬ ☀ / ♧ ♑ ♑'
 const solution='TELL CLARISSA THE STAR IS IN THE FIRST EGG'
 export default function CipherRoom({onSolved}){
  const [answer,setAnswer]=useState('');const [won,setWon]=useState(()=>{try{return scopedStorage.getItem('clar_cipher_solved')==='yes'}catch{return false}});const [hint,setHint]=useState(false);const [bad,setBad]=useState(false)
