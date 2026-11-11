@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {collectClue,readRecovery,hasClue} from '../../components/RecoveryConsole'
-import HiddenRoom from '../../components/HiddenRoom'
+import CipherRoom from '../../components/CipherRoom'
 import ClarJournal from '../../components/ClarJournal'
 import SaveManager from '../../components/SaveManager'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
@@ -541,7 +541,7 @@ export default function BirthdayPage() {
 
             <div className="window-title purple-title" onPointerDown={e=>startDrag(e,"video")}>
 
-              <span>HIDDEN_ROOM.exe</span>
+              <span>CIPHER_ROOM.exe // SECRET TAPES</span>
 
               <button onClick={() => setVideoOpen(false)}>
                 ×
@@ -549,7 +549,7 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="archive-video-viewer"><HiddenRoom onWin={()=>setHiddenRoomOpen(true)}/>
+            <div className="archive-video-viewer"><CipherRoom onSolved={()=>{}}/>
               {hiddenRoomOpen&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
               {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
               <small>SP / VHS / TRACKING AUTO</small></>}
@@ -817,7 +817,7 @@ export default function BirthdayPage() {
 
               {eggOpen === 'one' ? <>
                 <div className="audio-card"><div className="audio-icon">🎙</div><div><strong>SECRET VOICE MESSAGE</strong><small>from someone who knows you</small></div></div>
-                <audio controls preload="metadata" className="secret-audio" src="https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a" />
+                <audio controls preload="metadata" className="secret-audio" onEnded={()=>{try{scopedStorage.setItem("clar_hidden_room_open","yes");setHiddenRoomOpen(true);window.dispatchEvent(new Event("clar-recovery"))}catch{}}} src="https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a" />
                 <p className="audio-help">✦ A recovered recording from the archive.</p>
               </> : <>
                 <div className="audio-card" style={{borderColor:'#df9bd7'}}>
