@@ -1,0 +1,12 @@
+'use client'
+import {useState} from 'react'
+import {scopedStorage} from './ScopedSave'
+export default function HiddenRoom({onWin}){
+ const [code,setCode]=useState([])
+ const [error,setError]=useState(false)
+ const [opened,setOpened]=useState(()=>{try{return scopedStorage.getItem('clar_hidden_room_open')==='yes'}catch{return false}})
+ const tap=v=>{if(opened)return;setError(false);const next=[...code,v];setCode(next);if(next.length===3){if(next.join('-')==='19-11-04'){setOpened(true);try{scopedStorage.setItem('clar_hidden_room_open','yes');window.dispatchEvent(new Event('clar-recovery'))}catch{}onWin?.()}else{setError(true);setTimeout(()=>{setCode([]);setError(false)},700)}}}
+ return <div className="hidden-room"><div className="hr-head">◈ SECRETROOM.exe <span>{opened?'ACCESS GRANTED':'LOCKED'}</span></div>{opened?<div className="hr-open"><div className="hr-door">▣</div><h3>YOU FOUND IT.</h3><p>A little room hidden between the files.</p><p className="hr-note">Nothing important is kept here. Just a quiet place that was never meant to be found.</p><span>✦ ROOM 19 / 11 / 04 ✦</span></div>:<><h3>THREE KEYS. ONE DOOR.</h3><p>Some dates are easier to remember than passwords.</p><div className="hr-slots">{[0,1,2].map(i=><span key={i}>{code[i]||'—'}</span>)}</div><div className="hr-pad">{['04','19','11','22','07','03'].map(v=><button key={v} onClick={()=>tap(v)}>{v}</button>)}</div><small>{error?'ACCESS DENIED // TRY AGAIN':code.length?'ENTER THE NEXT NUMBER':'HINT: THE ARCHIVE DATE'}</small></>}<style jsx>{`
+.hidden-room{border:2px solid #a876c9;background:linear-gradient(145deg,#21132f,#100a1d);padding:16px;color:#f4d9f6;font:12px/1.6 monospace;box-shadow:0 0 18px #a85ee455}.hr-head{display:flex;justify-content:space-between;color:#9be8e4;font-size:10px}.hidden-room h3{color:#ffaddd;font-size:18px;text-align:center;margin:16px 0}.hidden-room p{text-align:center}.hr-slots{display:flex;justify-content:center;gap:12px;margin:16px}.hr-slots span{border:1px solid #bd8ad7;background:#2e1b42;padding:12px 18px;color:#a8f2eb;font-size:18px}.hr-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hr-pad button{padding:14px;background:#38224f;border:2px solid #9165ad;color:#ffe3f7;font:bold 16px monospace}.hidden-room small{display:block;text-align:center;color:#ffb6dc;margin-top:12px}.hr-open{text-align:center;padding:18px}.hr-door{font-size:60px;color:#b6a1ff;text-shadow:0 0 18px #b6a1ff}.hr-note{border:1px dashed #8b68a5;padding:12px;color:#c9b1dc}
+`}</style></div>
+}
