@@ -598,7 +598,7 @@ export default function BirthdayPage() {
                 </button>
               ))}
 
-              <button className="mini-file" onClick={()=>setJournalOpen(true)} aria-label="Open Clar Journal"><div className="folder folder-purple"><span>▤</span></div><div className="file-number">07</div><div className="file-name">JOURNAL</div></button>
+              <button className="mini-file" onClick={()=>setJournalOpen(true)} aria-label="Open Scavenger Hunt Guide"><div className="folder folder-purple"><span>▤</span></div><div className="file-number">07</div><div className="file-name">HUNT GUIDE</div></button>
               <button className="mini-file" onClick={()=>setClueVisible(true)} aria-label="Open cached system fragment"><div className="folder folder-blue"><span>◇</span></div><div className="file-number">08</div><div className="file-name">CACHE_01</div></button>
             </div>
 
