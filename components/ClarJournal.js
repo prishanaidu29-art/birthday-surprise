@@ -3,19 +3,19 @@ import {scopedStorage} from './ScopedSave';
 import {useEffect,useState} from 'react'
 import Link from 'next/link'
 import {readRecovery,hasClue} from './RecoveryConsole'
-const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),circuit:scopedStorage.getItem('clar_circuit_restored')==='yes',email:scopedStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,circuit:false,email:false}}}
+const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),room:scopedStorage.getItem('clar_hidden_room_open')==='yes',email:scopedStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,room:false,email:false}}}
 const steps=[
  {name:'DESKTOP CACHE / SIGNAL_01',where:'CLAR_OS desktop',detail:'Recover the first symbol pattern from CACHE_01 and save it to your journal.',hint:'Open the FILES window on the desktop → CACHE_01.',href:'/',cta:'RETURN TO DESKTOP'},
  {name:'LOVE_MAIL / SIGNAL_01',where:'LOVE_MAIL',detail:'Use the recovered symbols to repair the first mail signal.',hint:'Open LOVE_MAIL and press RESTORE SIGNAL. The pattern is ◆ → ✳ → ✦.',href:'/birthday/messages',cta:'OPEN LOVE_MAIL'},
  {name:'MEMORIES / VHS_02',where:'MEMORIES',detail:'Repair the corrupted VHS frames to recover the archive.',hint:'The mail signal unlocks Memories. Open VHS_02 / REPAIR CORRUPTED TAPE.',href:'/birthday/memories',cta:'OPEN MEMORIES'},
- {name:'VIDEO_ARCHIVE / CIRCUIT',where:'CLAR_OS desktop',detail:'Reconnect the three coloured ports to restore playback.',hint:'Return to the desktop and open VIDEO ARCHIVE. The repair circuit is now available.',href:'/birthday',cta:'RETURN TO DESKTOP'},
+ {name:'HIDDEN ROOM / ACCESS',where:'CLAR_OS desktop',detail:'Find the concealed room and solve its door lock.',hint:'Return to CLAR_OS. Open the hidden room from the desktop and enter the door code: 19 · 11 · 04.',href:'/birthday',cta:'FIND THE HIDDEN ROOM'},
  {name:'LOVE_MAIL / LOST DRAFT',where:'LOVE_MAIL',detail:'Reconstruct the missing email fragments to finish the recovery.',hint:'Look for the incomplete LOST DRAFT inside LOVE_MAIL.',href:'/birthday/messages',cta:'OPEN LOVE_MAIL'}
 ]
 export default function ClarJournal({onClose}){
  const [data,setData]=useState({stage:0,fragment:false,circuit:false,email:false})
  const [tab,setTab]=useState('guide')
  useEffect(()=>{const sync=()=>setData(read());sync();window.addEventListener('clar-recovery',sync);window.addEventListener('focus',sync);return()=>{window.removeEventListener('clar-recovery',sync);window.removeEventListener('focus',sync)}},[])
- const complete=[data.fragment,data.stage>=1,data.stage>=2,data.circuit,data.email]
+ const complete=[data.fragment,data.stage>=1,data.stage>=2,data.room,data.email]
  const current=complete.findIndex(v=>!v)
  const evidence=steps.map((x,i)=>({...x,ok:complete[i]}))
  const done=current===-1
