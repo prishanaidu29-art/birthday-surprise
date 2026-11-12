@@ -3,13 +3,14 @@ import {scopedStorage} from './ScopedSave';
 import {useEffect,useState} from 'react'
 import Link from 'next/link'
 import {readRecovery,hasClue} from './RecoveryConsole'
-const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),room:scopedStorage.getItem('clar_hidden_room_open')==='yes',cipher:scopedStorage.getItem('clar_cipher_solved')==='yes',email:scopedStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,room:false,email:false}}}
+const read=()=>{try{return {stage:readRecovery(),fragment:hasClue(0),room:scopedStorage.getItem('clar_hidden_room_open')==='yes',cipher:scopedStorage.getItem('clar_cipher_solved')==='yes',email:scopedStorage.getItem('clar_email_restored')==='yes'}}catch{return {stage:0,fragment:false,room:false,cipher:false,email:false}}}
 const steps=[
  {name:'DESKTOP CACHE / SIGNAL_01',where:'CLAR_OS desktop',detail:'Recover the first symbol pattern from CACHE_01 and save it to your journal.',hint:'Open the FILES window on the desktop → CACHE_01.',href:'/',cta:'RETURN TO DESKTOP'},
  {name:'LOVE_MAIL / SIGNAL_01',where:'LOVE_MAIL',detail:'Use the recovered symbols to repair the first mail signal.',hint:'Open LOVE_MAIL and press RESTORE SIGNAL. The pattern is ◆ → ✳ → ✦.',href:'/birthday/messages',cta:'OPEN LOVE_MAIL'},
  {name:'MEMORIES / VHS_02',where:'MEMORIES',detail:'Repair the corrupted VHS frames to recover the archive.',hint:'The mail signal unlocks Memories. Open VHS_02 / REPAIR CORRUPTED TAPE.',href:'/birthday/memories',cta:'OPEN MEMORIES'},
  {name:'CIPHER ROOM / VOICE EGG',where:'CLAR_OS desktop',detail:'Decode the symbol letter, follow its message to EASTER EGG #1, then play the voice recording to unlock the secret tapes.',hint:'Open VIDEOS / CIPHER_ROOM.exe. Decode the message, then click the glowing EASTER EGG #1 hotspot on the desktop and let the recording finish.',href:'/birthday',cta:'OPEN CIPHER ROOM'},
- {name:'EASTER EGG #1 / VOICE',where:'CLAR_OS desktop',detail:'Play the complete voice message. The recording unlocks the hidden room and its tapes.',hint:'Click EASTER EGG #1 and let the voice recording finish. The hidden tapes unlock automatically.',href:'/birthday',cta:'PLAY THE VOICE MESSAGE'},\n {name:'LOVE_MAIL / LOST DRAFT',where:'LOVE_MAIL',detail:'Reconstruct the missing email fragments to finish the recovery.',hint:'Look for the incomplete LOST DRAFT inside LOVE_MAIL.',href:'/birthday/messages',cta:'OPEN LOVE_MAIL'}
+ {name:'EASTER EGG #1 / VOICE',where:'CLAR_OS desktop',detail:'Play the complete voice message. The recording unlocks the hidden room and its tapes.',hint:'Click EASTER EGG #1 and let the voice recording finish. The hidden tapes unlock automatically.',href:'/birthday',cta:'PLAY THE VOICE MESSAGE'},
+ {name:'LOVE_MAIL / LOST DRAFT',where:'LOVE_MAIL',detail:'Reconstruct the missing email fragments to finish the recovery.',hint:'Look for the incomplete LOST DRAFT inside LOVE_MAIL.',href:'/birthday/messages',cta:'OPEN LOVE_MAIL'}
 ]
 export default function ClarJournal({onClose}){
  const [data,setData]=useState({stage:0,fragment:false,circuit:false,email:false})
