@@ -104,6 +104,17 @@ const LETTERS=[
     "memory": "",
     "photo": ""
   }
+  ,
+  {
+    "name": "Nesma",
+    "wish": "I wish we could be at Taylor's making more memories with you and the Feetgang. I'm grateful God had other plans, but I’ll always remember the amazing friends who made our Malaysian adventures worth it. Thank you for being there when I needed you, and I’m sorry I haven’t always been there for you. I want us to keep up with each other through all the life changes and side quests—thank you for always giving me updates. FIS batch 2022 is engraved forever. I’m so grateful you accepted me as I was and as I am. Happy birthday, Clar!",
+    "appreciation": "You are so caring and kind. You were there while I struggled to trust being myself after my first semester at Taylor’s, and you inspired me to be better.",
+    "memory": "I miss those days when Clar wore a red top and yellow skirt like Winnie the Pooh on Wednesdays, while Arsha and I struggled to finish assignments at the last minute. It was chaotic, but so much fun. I miss those days.",
+    "nickname": "my clar clarrrr — because Arsha used to call you that in the library cafe, and it stuck in my head",
+    "song": "Beautiful — Bazzi",
+    "photo": "",
+    "video": ""
+  }
 ]
 const FAMILY_VIDEOS=[
   {name:'Family Tape 01',src:'/videos/family/f04bb3af04b549f091b260b987b23d63.mov'},
