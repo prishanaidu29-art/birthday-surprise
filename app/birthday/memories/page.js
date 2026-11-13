@@ -196,6 +196,7 @@ export default function MemoriesPage() {
   /* ---------------------------- OTHER ------------------------------------ */
 
   const [favoriteIds, setFavoriteIds] = useState([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [currentTimeline, setCurrentTimeline] = useState(0);
 
   /* ------------------------------------------------------------------------ */
@@ -331,7 +332,7 @@ export default function MemoriesPage() {
           .includes(query)
       );
     });
-  }, [memories, search]);
+  }, [memories, search, showFavoritesOnly, favoriteIds]);
 
   /* ------------------------------------------------------------------------ */
   /* TIMELINE                                                                  */
