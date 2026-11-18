@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Disc3, Play, Pause, SkipBack, SkipForward, Music2, Heart, Radio, ExternalLink } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
@@ -12,6 +12,16 @@ const FALLBACK = [
   {id:3,title:'With You',artist:'Chris Brown',album:'Exclusive',duration:'4:12',mood:'Romantic',reason:'For all the little moments that somehow became memories.'},
   {id:4,title:"Enchanted (Taylor's Version)",artist:'Taylor Swift',album:"Speak Now (Taylor's Version)",duration:'5:53',mood:'Dreamy',reason:'A song for those unforgettable first meetings.'},
   {id:5,title:'Beautiful In White',artist:'Shane Filan',album:'Love Always',duration:'3:52',mood:'Romantic',reason:'For the memories we have and the ones still waiting to happen.'},
+]
+const LOCAL_TRACKS = [
+  {id:'local-01',title:'In My Room',artist:'Insane Clown Posse',album:'Insane Clown Posse',mood:'Late night',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Insane%20Clown%20Posse%20-%20In%20My%20Room.mp3'},
+  {id:'local-02',title:'Boogie Woogie Wu',artist:'Insane Clown Posse',album:'Insane Clown Posse',mood:'Chaotic',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Boogie%2BWoogie%2BWu%20%5BNHZe09hCpHk%5D.mp3'},
+  {id:'local-03',title:'BBC Sherlock Theme Song',artist:'David Arnold & Michael Price',album:'Sherlock OST',mood:'Detective mode',reason:'A little soundtrack energy for the detective in the room.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/BBC%20Sherlock%20Theme%20Song.mp3'},
+  {id:'local-04',title:'TOUCH YOU',artist:'Yarichin Bitch Club',album:'Yarichin Bitch Club',mood:'Unhinged',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Yarichin%2BB_tch%2BClub%2B%28%E3%83%A4%E3%83%AA%E3%83%81%E3%83%B3%E2%98%86%E3%83%93%E3%83%83%E3%83%81%E9%83%A8%2B%29%2B_%2BTOUCH%2BYOU_%2B%28Color%2BCoded%2BLyrics%2BKan_Rom_Eng%29%20%5Bx0__kL47eh8%5D.mp3'},
+  {id:'local-05',title:'FLY HIGH',artist:'BURNOUT SYNDROMES',album:'Haikyu!! Season 2 OP',mood:'Hype',reason:'For when the soundtrack needs a little extra momentum.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/BURNOUT%20SYNDROMES%20-%20FLY%20HIGH%20Haikyu%20S2%20OP%20%28KAN%20ROM%20ENG%20Trans%29%20Lyrics.mp3'},
+  {id:'local-06',title:'DICE ROLL',artist:'ODETARI',album:'DICE ROLL',mood:'High energy',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/ODETARI%20-%20DICE%20ROLL%20Official%20Audio.mp3'},
+  {id:'local-07',title:'Obsessica',artist:'Malcolm Todd',album:'Obsessica',mood:'Alt',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Malcolm%2BTodd%2B-%2BObsessica%20%5BTBSejK9UL54%5D.mp3'},
+  {id:'local-08',title:'Dastaan-E-Om Shanti Om',artist:'Shah Rukh Khan / Om Shanti Om',album:'Om Shanti Om',mood:'Bollywood',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Dastaan-E-Om%2BShanti%2BOm%2B%5BFull%2BSong%5D%2B_%2BOm%2BShanti%2BOm%2B_%2BShahrukh%2BKhan%20%5BymuNkKuToao%5D.mp3'}
 ]
 // Temporary YouTube test link for the first soundtrack track.
 const TEST_YOUTUBE_URL = 'https://youtu.be/3sB4Iv_tM7U?si=lrmNbe2dR-S1MnKp'
@@ -30,15 +40,18 @@ export default function PlaylistPage() {
   const [index,setIndex] = useState(0)
   const [playing,setPlaying] = useState(false)
   const [ready,setReady] = useState(false)
+  const audioRef = useRef(null)
+  const [audioError,setAudioError] = useState('')
   useEffect(()=>{
     if (!isAuthenticated) return
     fetch('/api/playlist').then(r=>{if(!r.ok)throw Error('playlist');return r.json()})
-      .then(data=>{if(Array.isArray(data.tracks)&&data.tracks.length)setSongs(data.tracks)})
+      .then(data=>{if(Array.isArray(data.tracks)&&data.tracks.length)setSongs([...data.tracks, ...LOCAL_TRACKS])})
       .catch(()=>{}).finally(()=>setReady(true))
   },[isAuthenticated])
   const song=songs[index]||FALLBACK[0]
-  const videoId=getVideoId(index===0 ? TEST_YOUTUBE_URL : song.youtube_url)
-  const choose=(n)=>{setIndex((n+songs.length)%songs.length);setPlaying(false)}
+  const videoId=song.audio_url ? '' : getVideoId(index===0 ? TEST_YOUTUBE_URL : song.youtube_url)
+  const choose=(n)=>{if(audioRef.current){audioRef.current.pause();audioRef.current.currentTime=0}setIndex((n+songs.length)%songs.length);setPlaying(false);setAudioError('')}
+  const togglePlayback=()=>{if(song.audio_url&&audioRef.current){if(playing){audioRef.current.pause();setPlaying(false)}else{audioRef.current.play().then(()=>setPlaying(true)).catch(()=>{setPlaying(false);setAudioError('This audio file could not be played. Try again in a moment.')})}}else setPlaying(!playing)}
   if(isLoading)return <div className="min-h-screen bg-[#10152c] text-white grid place-items-center font-mono">BOOTING SOUNDTRACK.EXE ...</div>
   if(!isAuthenticated)return <div className="min-h-screen bg-[#10152c] text-white grid place-items-center font-mono"><Link href="/">RETURN TO CLAR_OS LOGIN ↗</Link></div>
   return <main className="mix-page">
@@ -52,19 +65,20 @@ export default function PlaylistPage() {
           <div className="mix-left">
             <div className="mix-disc-zone"><div className="mix-orbit orbit-a"/><div className="mix-orbit orbit-b"/><span className="mix-floatnote">♫</span><div className={`mix-disc ${playing?'mix-spinning':''}`}><div className="mix-disc-label"><small>CLAR_OS</small><strong>22</strong><span>SIDE A · FOR CLAR</span></div><div className="mix-disc-hole"/></div><div className="mix-disc-shadow"/></div>
             <div className="mix-now"><span className="mix-micro">NOW SELECTED // {String(index+1).padStart(2,'0')}</span><h2>{song.title}</h2><p>{song.artist}</p><div className="mix-bars">{Array.from({length:25},(_,i)=><span key={i} style={{height:(9+(i*13%29))+'px',animationDelay:(i*0.075)+'s',animationPlayState:playing?'running':'paused'}}/>)}</div></div>
-            <div className="mix-controls"><button aria-label="Previous track" onClick={()=>choose(index-1)}><SkipBack size={20} fill="currentColor"/></button><button className="mix-play" aria-label={playing?'Pause disc animation':'Play disc animation'} onClick={()=>setPlaying(!playing)}>{playing?<Pause size={24} fill="currentColor"/>:<Play size={24} fill="currentColor"/>}</button><button aria-label="Next track" onClick={()=>choose(index+1)}><SkipForward size={20} fill="currentColor"/></button></div>
-            <div className="mix-player-note">DISC ANIMATION · ACTUAL PLAYBACK VIA YOUTUBE BELOW</div>
+            <div className="mix-controls"><button aria-label="Previous track" onClick={()=>choose(index-1)}><SkipBack size={20} fill="currentColor"/></button><button className="mix-play" aria-label={playing?'Pause disc animation':'Play disc animation'} onClick={togglePlayback}>{playing?<Pause size={24} fill="currentColor"/>:<Play size={24} fill="currentColor"/>}</button><button aria-label="Next track" onClick={()=>choose(index+1)}><SkipForward size={20} fill="currentColor"/></button></div>
+            <div className="mix-player-note">{song.audio_url ? 'LOCAL MP3 PLAYBACK' : 'DISC ANIMATION · YOUTUBE PLAYER BELOW'}</div>
           </div>
           <div className="mix-right">
             <div className="mix-playlist-heading"><div><span className="mix-micro">DIRECTORY: C:\\AUDIO\\FAVOURITES</span><h2>AUDIO FILES <span>({songs.length.toString().padStart(2,'0')})</span></h2></div><Disc3 size={26}/></div>
             <div className="mix-tracks">{songs.map((s,i)=><button key={s.id||i} className={`mix-track ${index===i?'selected':''}`} onClick={()=>choose(i)}><span className="mix-tracknum">{String(i+1).padStart(2,'0')}</span><span className="mix-trackinfo"><strong>{s.title}</strong><small>{s.artist}</small></span><span className="mix-trackduration">{s.duration||'♪'}</span><span className="mix-trackarrow">{index===i?'◀':'↗'}</span></button>)}</div>
             <div className="mix-letter"><span className="mix-micro"><Heart size={13} fill="currentColor"/> ATTACHED FILE: MESSAGE.TXT</span><p>“{song.reason||'This one belongs in your soundtrack.'}”</p><span className="mix-signoff">SIGNED: YOUR EXTREMELY NORMAL FRIEND</span></div>
-            <div className="mix-video"><div className="mix-videohead"><span><Radio size={14}/> EXTERNAL MEDIA // YOUTUBE</span><span>{videoId?'CONNECTED':'AWAITING TRACK LINKS'}</span></div>{videoId?<iframe key={videoId} title={`YouTube player: ${song.title}`} src={`https://www.youtube.com/embed/${videoId}?playsinline=1&rel=0`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/>:<div className="mix-placeholder"><Music2 size={27}/><strong>READY FOR YOUR YOUTUBE LINKS</strong><span>The mixtape is designed. Add each song's YouTube URL later to play it here without leaving CLAR_OS.</span></div>}</div>
+            {song.audio_url && <audio ref={audioRef} src={song.audio_url} onEnded={()=>choose(index+1)} onError={()=>{setPlaying(false);setAudioError("Audio file unavailable.")}} />}
+            {!song.audio_url && <div className="mix-video"><div className="mix-videohead"><span><Radio size={14}/> EXTERNAL MEDIA // YOUTUBE</span><span>{videoId?'CONNECTED':'AWAITING TRACK LINKS'}</span></div>{videoId?<iframe key={videoId} title={`YouTube player: ${song.title}`} src={`https://www.youtube.com/embed/${videoId}?playsinline=1&rel=0`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/>:<div className="mix-placeholder"><Music2 size={27}/><strong>READY FOR YOUR YOUTUBE LINKS</strong><span>The mixtape is designed. Add each song's YouTube URL later to play it here without leaving CLAR_OS.</span></div>}</div>
           </div>
         </div>
         <footer className="mix-footer"><span>CLAR_OS v22.0 // PERSONAL ARCHIVE RECOVERY SYSTEM</span><span>{ready?'PLAYLIST LOADED':'LOADING TRACKS'} · © CLAR_OS</span></footer>
       </section>
-      <p className="mix-bottom">✳ press play on the YouTube deck when your song links are connected. the disc animation is decorative for now.</p>
+      <p className="mix-bottom">✳ select a track, then hit play. local MP3s play directly; existing YouTube tracks keep their embedded player.</p>
     </div>
     <style jsx global>{`
       .mix-page{min-height:100vh;background:radial-gradient(ellipse at 15% 20%,#303b78 0%,transparent 40%),radial-gradient(ellipse at 90% 85%,#51376d 0%,transparent 40%),#111629;color:#f5ecff;font-family:Arial,sans-serif;position:relative;overflow:hidden;padding:28px 20px 70px}
