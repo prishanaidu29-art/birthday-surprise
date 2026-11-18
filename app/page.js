@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic'
 
 const PASSWORD = 'thee.archivess'
 
-const PHOTOS = [
+import { UPLOADED_MEMORIES } from '@/app/birthday/memories/uploadedMemories'
+
+const ORIGINAL_PHOTOS = [
   '/images/clar-01.jpg',
   '/images/clar-02.jpg',
   '/images/clar-03.jpg',
@@ -15,6 +17,30 @@ const PHOTOS = [
   '/images/clar-05.jpg',
   '/images/clar-06.jpg',
 ]
+
+// Keep every existing password-screen photo and mix in every still image
+// from the Memories archive. Videos stay in the gallery, not the photo viewer.
+const ALL_ARCHIVE_PHOTOS = [
+  ...ORIGINAL_PHOTOS,
+  ...UPLOADED_MEMORIES
+    .filter((memory) => memory.media_type === 'image' && memory.photo_url)
+    .map((memory) => memory.photo_url),
+]
+
+// A stable shuffle gives the viewer a mixed camera roll without changing
+// order between renders or dropping any of the original images.
+function seededShuffle(items) {
+  const shuffled = [...items]
+  let seed = 2204
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    seed = (seed * 9301 + 49297) % 233280
+    const swapIndex = Math.floor((seed / 233280) * (index + 1))
+    ;[shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]]
+  }
+  return shuffled
+}
+
+const PHOTOS = seededShuffle(ALL_ARCHIVE_PHOTOS)
 
 const SECTIONS = [
   {
@@ -809,13 +835,13 @@ export default function HomePage() {
                         </div>
 
                         <div className="photo-counter">
-                          {String(photoIndex + 1).padStart(2, '0')} / 06
+                          {String(photoIndex + 1).padStart(2, '0')} / {String(PHOTOS.length).padStart(2, '0')}
                         </div>
                       </div>
 
                       <div className="photo-toolbar">
                         <button type="button" onClick={(event) => { event.stopPropagation(); changePhoto(-1) }} aria-label="Previous memory photo">◀ PREV</button>
-                        <span>CAMERA_ROLL / 2004—2026</span>
+                        <span>CAMERA_ROLL / ARCHIVE MIX</span>
                         <button type="button" onClick={(event) => { event.stopPropagation(); setPhotoPaused((value) => !value) }}>{photoPaused ? '▶ AUTO' : '❚❚ PAUSE'}</button>
                         <button type="button" onClick={(event) => { event.stopPropagation(); changePhoto(1) }} aria-label="Next memory photo">NEXT ▶</button>
                       </div>
