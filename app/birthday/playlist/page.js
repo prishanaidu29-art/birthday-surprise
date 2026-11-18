@@ -36,7 +36,7 @@ const getVideoId = (url) => {
 }
 export default function PlaylistPage() {
   const { isAuthenticated, isLoading } = useAuth()
-  const [songs,setSongs] = useState(FALLBACK)
+  const [songs,setSongs] = useState([...FALLBACK, ...LOCAL_TRACKS])
   const [index,setIndex] = useState(0)
   const [playing,setPlaying] = useState(false)
   const [ready,setReady] = useState(false)
@@ -65,13 +65,14 @@ export default function PlaylistPage() {
           <div className="mix-left">
             <div className="mix-disc-zone"><div className="mix-orbit orbit-a"/><div className="mix-orbit orbit-b"/><span className="mix-floatnote">♫</span><div className={`mix-disc ${playing?'mix-spinning':''}`}><div className="mix-disc-label"><small>CLAR_OS</small><strong>22</strong><span>SIDE A · FOR CLAR</span></div><div className="mix-disc-hole"/></div><div className="mix-disc-shadow"/></div>
             <div className="mix-now"><span className="mix-micro">NOW SELECTED // {String(index+1).padStart(2,'0')}</span><h2>{song.title}</h2><p>{song.artist}</p><div className="mix-bars">{Array.from({length:25},(_,i)=><span key={i} style={{height:(9+(i*13%29))+'px',animationDelay:(i*0.075)+'s',animationPlayState:playing?'running':'paused'}}/>)}</div></div>
-            <div className="mix-controls"><button aria-label="Previous track" onClick={()=>choose(index-1)}><SkipBack size={20} fill="currentColor"/></button><button className="mix-play" aria-label={playing?'Pause disc animation':'Play disc animation'} onClick={togglePlayback}>{playing?<Pause size={24} fill="currentColor"/>:<Play size={24} fill="currentColor"/>}</button><button aria-label="Next track" onClick={()=>choose(index+1)}><SkipForward size={20} fill="currentColor"/></button></div>
+            <div className="mix-controls"><button aria-label="Previous track" onClick={()=>choose(index-1)}><SkipBack size={20} fill="currentColor"/></button><button className="mix-play" aria-label={playing?'Pause track':'Play track'} onClick={togglePlayback}>{playing?<Pause size={24} fill="currentColor"/>:<Play size={24} fill="currentColor"/>}</button><button aria-label="Next track" onClick={()=>choose(index+1)}><SkipForward size={20} fill="currentColor"/></button></div>
             <div className="mix-player-note">{song.audio_url ? 'LOCAL MP3 PLAYBACK' : 'DISC ANIMATION · YOUTUBE PLAYER BELOW'}</div>
           </div>
           <div className="mix-right">
             <div className="mix-playlist-heading"><div><span className="mix-micro">DIRECTORY: C:\\AUDIO\\FAVOURITES</span><h2>AUDIO FILES <span>({songs.length.toString().padStart(2,'0')})</span></h2></div><Disc3 size={26}/></div>
             <div className="mix-tracks">{songs.map((s,i)=><button key={s.id||i} className={`mix-track ${index===i?'selected':''}`} onClick={()=>choose(i)}><span className="mix-tracknum">{String(i+1).padStart(2,'0')}</span><span className="mix-trackinfo"><strong>{s.title}</strong><small>{s.artist}</small></span><span className="mix-trackduration">{s.duration||'♪'}</span><span className="mix-trackarrow">{index===i?'◀':'↗'}</span></button>)}</div>
             <div className="mix-letter"><span className="mix-micro"><Heart size={13} fill="currentColor"/> ATTACHED FILE: MESSAGE.TXT</span><p>“{song.reason||'This one belongs in your soundtrack.'}”</p><span className="mix-signoff">SIGNED: YOUR EXTREMELY NORMAL FRIEND</span></div>
+            {audioError && <p role="alert" className="mix-audio-error">{audioError}</p>}
             {song.audio_url && <audio ref={audioRef} src={song.audio_url} onEnded={()=>choose(index+1)} onError={()=>{setPlaying(false);setAudioError("Audio file unavailable.")}} />}
             {!song.audio_url && <div className="mix-video"><div className="mix-videohead"><span><Radio size={14}/> EXTERNAL MEDIA // YOUTUBE</span><span>{videoId?'CONNECTED':'AWAITING TRACK LINKS'}</span></div>{videoId?<iframe key={videoId} title={`YouTube player: ${song.title}`} src={`https://www.youtube.com/embed/${videoId}?playsinline=1&rel=0`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen/>:<div className="mix-placeholder"><Music2 size={27}/><strong>READY FOR YOUR YOUTUBE LINKS</strong><span>The mixtape is designed. Add each song's YouTube URL later to play it here without leaving CLAR_OS.</span></div>}</div>
           </div>
