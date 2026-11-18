@@ -28,6 +28,7 @@ export default function QuizPage(){
  const [blocked,setBlocked]=useState(false)
  const [game,setGame]=useState(EMPTY)
  const audioRef=useRef(null)
+ const musicRef=useRef(null)
  const gameRef=useRef(game)
  useEffect(()=>{gameRef.current=game},[game])
 
@@ -72,7 +73,7 @@ export default function QuizPage(){
  useEffect(()=>{
   if(ready){try{localStorage.setItem(SAVE_KEY,JSON.stringify(game))}catch{}}
  },[game,ready])
- useEffect(()=>()=>{if(audioRef.current)audioRef.current.close().catch(()=>{})},[])
+ useEffect(()=>()=>{if(audioRef.current)audioRef.current.close().catch(()=>{});if(musicRef.current){musicRef.current.pause();musicRef.current.currentTime=0}},[])
 
  const q=QUESTIONS[game.index]
  const picked=game.answers[game.index]
@@ -81,7 +82,7 @@ export default function QuizPage(){
  const unlocked=score>=9
  const helpingHand=game.attempt>=2
  const update=(patch)=>setGame(prev=>({...prev,...patch}))
- const start=()=>{tone('click');update({started:true})}
+ const start=()=>{tone('click');const track=musicRef.current;if(track){track.currentTime=0;track.volume=.34;track.play().catch(()=>{})}update({started:true})}
  const answer=(choice)=>{
   if(answered)return
   const correct=choice===q.correct
@@ -90,7 +91,7 @@ export default function QuizPage(){
  }
  const next=()=>{
   tone('click')
-  if(game.index===QUESTIONS.length-1){tone('finish');update({finished:true});return}
+  if(game.index===QUESTIONS.length-1){tone('finish');if(musicRef.current){musicRef.current.pause();musicRef.current.currentTime=0}update({finished:true});return}
   update({index:game.index+1})
  }
  const replay=()=>{
@@ -101,7 +102,9 @@ export default function QuizPage(){
  if(!ready)return <main style={{minHeight:'100vh',background:'#10091f'}}/>
  if(blocked)return <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#10091f',color:'#f8eaff',fontFamily:'monospace'}}><section style={{maxWidth:520,padding:30,border:'2px solid #b46fd3',background:'#1a102e',textAlign:'center'}}><h1>TRIVIA.exe // LOCKED</h1><p>Complete the voice recording recovery before this terminal will accept visitors.</p><Link href='/birthday' className='trivia-back'>RETURN TO CLAR_OS</Link></section></main>
 
+ const musicUrl='https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/'+encodeURIComponent('1-Minute+Countdown+-+Quiz+Time+-+Suspense+Music+⏱️ [3OuQ_bzpWZQ].mp3');
  return <main className="trivia-page" onClickCapture={handleClickSound}>
+ <audio ref={musicRef} src={musicUrl} preload="none" loop playsInline />
  <div className="trivia-shell">
  <div className="trivia-topline">
   <Link className="trivia-back" href="/birthday"><ArrowLeft size={17}/> BACK TO CLAR_OS</Link>
