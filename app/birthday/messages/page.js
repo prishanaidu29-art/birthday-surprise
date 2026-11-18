@@ -5,6 +5,7 @@ import {useRouter} from 'next/navigation'
 import {ArrowLeft,Mail,Star,Heart,Film,Inbox,Search,ChevronLeft,Paperclip,Gift} from 'lucide-react'
 import {useDarkMode} from '../../../hooks/useDarkMode'
 import {readHuntStage,advanceHuntStage} from '../../../components/HuntProgress'
+import RecoveryConsole,{saveRecovery} from '../../../components/RecoveryConsole'
 export const dynamic='force-dynamic'
 const LETTERS=[
   {
