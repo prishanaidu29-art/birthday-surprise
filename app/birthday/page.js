@@ -22,7 +22,7 @@ export default function BirthdayPage() {
   const [journalOpen,setJournalOpen]=useState(false)
   const [hiddenRoomOpen,setHiddenRoomOpen]=useState(false)
   const [huntStage,setHuntStage]=useState(0)
-  useEffect(()=>{const sync=()=>{setHuntStage(readHuntStage());try{setHiddenRoomOpen(scopedStorage.getItem('clar_hidden_room_open')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
+  useEffect(()=>{const sync=()=>{setHuntStage(readHuntStage());try{setHiddenRoomOpen(scopedStorage.getItem('clar_hidden_room_open')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);window.addEventListener('clar-hunt-progress',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync);window.removeEventListener('clar-hunt-progress',sync)}},[])
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
