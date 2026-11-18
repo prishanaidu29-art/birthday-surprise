@@ -8,7 +8,7 @@ export default function ChapterOnePage(){
   const [allowed,setAllowed]=useState(false);
   const [ready,setReady]=useState(false);
   useEffect(()=>{
-    const ok=sessionStorage.getItem('birthday_authenticated')==='true' && readHuntStage()>=5;
+    const ok=sessionStorage.getItem('birthday_authenticated')==='true' && readHuntStage()>=6;
     setAllowed(ok);
     setReady(true);
   },[]);
