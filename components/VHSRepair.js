@@ -1,6 +1,7 @@
 'use client'
 import {useState} from 'react'
 import {saveRecovery} from './RecoveryConsole'
+import {advanceHuntStage} from './HuntProgress'
 const FRAMES=[
  {id:0,name:'SUNRISE',symbol:'☀',caption:'The screen wakes',bg:'linear-gradient(140deg,#ffbb88,#ed76b6,#5b398d)'},
  {id:1,name:'FIRST PLAY',symbol:'▶',caption:'The tape begins',bg:'linear-gradient(140deg,#72e8de,#5889c9,#4e2c80)'},
@@ -18,7 +19,7 @@ export default function VHSRepair({onComplete}){
   if(selected===null){setSelected(i);return}
   if(selected===i){setSelected(null);return}
   const next=[...order];[next[selected],next[i]]=[next[i],next[selected]];setOrder(next);setSelected(null)
-  if(next.every((n,j)=>n===j)){setWon(true);saveRecovery(2);onComplete?.()}
+  if(next.every((n,j)=>n===j)){setWon(true);saveRecovery(2);advanceHuntStage(1,2);onComplete?.()}
   else setAttempts(n=>n+1)
  }
  return <section className="vhs-repair" aria-label="Playable VHS frame restoration puzzle">
