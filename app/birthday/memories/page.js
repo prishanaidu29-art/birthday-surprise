@@ -177,6 +177,8 @@ export default function MemoriesPage() {
   const [isMuted, setIsMuted] = useState(false);
   const [videoIndex, setVideoIndex] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef(null);
   const archiveVideos = useMemo(() => memories.filter(m => m.media_type === "video" || /\.(mp4|mov)(\?|$)/i.test(m.photo_url || "")), [memories]);
   const currentVideo = archiveVideos[videoIndex] || archiveVideos[0];
@@ -370,6 +372,8 @@ export default function MemoriesPage() {
     if (!archiveVideos.length) return;
     if (videoRef.current) videoRef.current.pause();
     setIsPlaying(false);
+    setIsBuffering(true);
+    setVideoError(false);
     setVideoProgress(0);
     setVideoIndex(i => (i + direction + archiveVideos.length) % archiveVideos.length);
   }, [archiveVideos.length]);
@@ -793,9 +797,11 @@ export default function MemoriesPage() {
           <div className="vhs-player">
             <div className="player-screen">
               {currentVideo ? (
-                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline webkit-playsinline="true" controls preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); setVideoProgress(0); }} onError={() => setIsPlaying(false)} onTimeUpdate={e => { const v=e.currentTarget; setVideoProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:4,pointerEvents:"auto",touchAction:"manipulation"}} />
+                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline webkit-playsinline="true" controls preload="none" muted={isMuted} onLoadStart={() => {setIsBuffering(true);setVideoError(false)}} onLoadedData={() => setIsBuffering(false)} onCanPlay={() => setIsBuffering(false)} onWaiting={() => setIsBuffering(true)} onPlaying={() => {setIsBuffering(false);setIsPlaying(true)}} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => {setIsPlaying(false);setIsBuffering(false);setVideoProgress(0)}} onError={() => {setIsPlaying(false);setIsBuffering(false);setVideoError(true)}} onTimeUpdate={e => {const v=e.currentTarget;setVideoProgress(v.duration? (v.currentTime/v.duration)*100:0)}} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:4,pointerEvents:"auto",touchAction:"manipulation"}} />
               ) : <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",color:"#f8c4e7",fontSize:12,letterSpacing:2}}>NO VIDEO TAPES FOUND</div>}
               <div className="screen-grid" style={{pointerEvents:"none",zIndex:3}} />
+              {isBuffering&&<div style={{position:"absolute",inset:0,zIndex:6,display:"grid",placeItems:"center",background:"rgba(8,6,16,.72)",color:"#f7c9f1",font:"12px monospace",pointerEvents:"none"}}>LOADING TAPE…</div>}
+              {videoError&&<div style={{position:"absolute",inset:0,zIndex:6,display:"grid",placeItems:"center",padding:18,textAlign:"center",background:"#080610",color:"#ffb6d9",font:"12px monospace",pointerEvents:"none"}}>THIS TAPE COULD NOT BE DECODED. TRY THE NEXT TAPE.</div>}
               {currentVideo && <div style={{position:"absolute",left:0,bottom:0,height:3,width:`${videoProgress}%`,background:"#ff68bd",zIndex:5,pointerEvents:"none",boxShadow:"0 0 9px #ff68bd"}} />}
 
               <div className="player-time">
