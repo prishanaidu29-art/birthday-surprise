@@ -29,6 +29,8 @@ export default function JourneyPage() {
   const [stage, setStage] = useState('checking')
   const [progress, setProgress] = useState(0)
   const [selected, setSelected] = useState(null)
+  const [visited, setVisited] = useState([])
+  const inspectPerson = (person) => { setSelected(person); setVisited((previous) => previous.includes(person.id) ? previous : [...previous, person.id]) }
   const [globeError, setGlobeError] = useState(false)
   const [triviaUnlocked, setTriviaUnlocked] = useState(false)
 
@@ -55,7 +57,7 @@ export default function JourneyPage() {
     return () => window.clearInterval(interval)
   }, [router])
 
-  useEffect(() => { selectRef.current = setSelected }, [])
+  useEffect(() => { selectRef.current = inspectPerson }, [])
 
   useEffect(() => {
     if (stage !== 'ready' || !mount.current) return
@@ -260,7 +262,11 @@ export default function JourneyPage() {
           </div>
         </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(190px,1fr))', gap:12, marginTop:18 }}>
-          {PEOPLE.map(p => <button key={p.id} onClick={() => setSelected(p)} style={{ ...panel, textAlign:'left', padding:17, cursor:'pointer', fontFamily:'inherit' }}><div style={{ color:p.id==='clar'?'#ff94da':'#89e3ff', fontSize:11, marginBottom:8 }}>● {p.id==='clar'?'ORIGIN':'CONNECTED'}</div><strong>{p.name}</strong><div style={{ color:'#bca8d2', fontSize:12, marginTop:5 }}>{p.city}</div></button>)}
+          {PEOPLE.map(p => <button key={p.id} onClick={() => inspectPerson(p)} style={{ ...panel, textAlign:'left', padding:17, cursor:'pointer', fontFamily:'inherit' }}><div style={{ color:p.id==='clar'?'#ff94da':'#89e3ff', fontSize:11, marginBottom:8 }}>{visited.includes(p.id) ? '✓ SIGNAL RECOVERED' : p.id==='clar'?'● ORIGIN':'○ UNEXPLORED'}</div><strong>{p.name}</strong><div style={{ color:'#bca8d2', fontSize:12, marginTop:5 }}>{p.city}</div></button>)}
+        </div>
+        <div style={{ ...panel, marginTop:16, padding:18, display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between', gap:14 }}>
+          <div><div style={{ color:'#86e5ef', fontSize:11, letterSpacing:2 }}>SCAVENGER PROGRESS</div><strong style={{ display:'block', marginTop:7, fontSize:18 }}>{visited.length} / {PEOPLE.length} SIGNALS RECOVERED</strong><div style={{ color:'#bca8d2', fontSize:12, marginTop:5 }}>Inspect every signal card to unlock the next chapter.</div></div>
+          {visited.length === PEOPLE.length ? <Link href="/lost-save-file/chapter-one" style={{ padding:'13px 18px', background:'#d66ab6', color:'#170920', fontWeight:700, textDecoration:'none', boxShadow:'4px 4px #080411' }}>OPEN THE LOST SAVE FILE →</Link> : <span style={{ color:'#a88dc4', fontSize:12 }}> {PEOPLE.length - visited.length} SIGNAL{PEOPLE.length - visited.length === 1 ? '' : 'S'} LEFT</span>}
         </div>
         {selected && <div role="dialog" aria-modal="true" aria-label="Connection details" style={{ position:'fixed', inset:0, zIndex:40, background:'#05020bd9', display:'grid', placeItems:'center', padding:20 }} onClick={() => setSelected(null)}>
           <div onClick={e => e.stopPropagation()} style={{ ...panel, width:'min(440px,100%)', padding:26, position:'relative' }}>
