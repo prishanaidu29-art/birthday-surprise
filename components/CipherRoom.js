@@ -13,7 +13,7 @@ export default function CipherRoom({onSolved}){
  const [hint,setHint]=useState(false)
  const [bad,setBad]=useState(false)
  const stage=readHuntStage()
- useEffect(()=>{if(readHuntStage()===3&&won)advanceHuntStage(3,4)},[won])
+ useEffect(()=>{if(readHuntStage()===3&&won)advanceHuntStage(3,4)},[won,stage])
  const solve=()=>{
   if(readHuntStage()<3)return
   if(answer.trim().toUpperCase().replace(/[^A-Z]/g,'')===solution.replace(/[^A-Z]/g,'')){
