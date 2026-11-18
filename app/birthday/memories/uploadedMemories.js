@@ -239,7 +239,7 @@ export const UPLOADED_MEMORIES = [
     "title": "THE LITTLE THINGS / 27",
     "description": "A snapshot from the shared archive.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20240319-WA0085.mp4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/VID-20240319-WA0085.mp4",
     "media_type": "video",
     "source_filename": "VID-20240319-WA0085.mp4"
   },
@@ -311,7 +311,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 02",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20251117-WA0114.mp4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/VID-20251117-WA0114.mp4",
     "media_type": "video",
     "source_filename": "VID-20251117-WA0114.mp4"
   },
@@ -320,7 +320,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 03",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/20260906_210549_2.mov",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/20260906_210549_2.mov",
     "media_type": "video",
     "source_filename": "20260906_210549_2.mov"
   },
@@ -329,7 +329,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 04",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/VID-20240827-WA0008.mp4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/VID-20240827-WA0008.mp4",
     "media_type": "video",
     "source_filename": "VID-20240827-WA0008.mp4"
   },
@@ -419,7 +419,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 14",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/IMG_0963.MOV",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/IMG_0963.MOV",
     "media_type": "video",
     "source_filename": "IMG_0963.MOV"
   },
@@ -545,7 +545,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 01",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/1A04BDF4-9CBE-4499-8086-E39027FB17CE.MP4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/1A04BDF4-9CBE-4499-8086-E39027FB17CE.MP4",
     "media_type": "video",
     "source_filename": "1A04BDF4-9CBE-4499-8086-E39027FB17CE.MP4"
   },
@@ -617,7 +617,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 09",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/764FF582-AA06-4063-842B-BFCCDB3568A8.MP4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/764FF582-AA06-4063-842B-BFCCDB3568A8.MP4",
     "media_type": "video",
     "source_filename": "764FF582-AA06-4063-842B-BFCCDB3568A8.MP4"
   },
@@ -635,7 +635,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 11",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8B2286FC-EC22-49BD-9EFC-C5341C8A2BA1.MP4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/8B2286FC-EC22-49BD-9EFC-C5341C8A2BA1.MP4",
     "media_type": "video",
     "source_filename": "8B2286FC-EC22-49BD-9EFC-C5341C8A2BA1.MP4"
   },
@@ -662,7 +662,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 14",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/8E939B2A-6434-4241-B4F2-7B17ACC64E67.MP4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/8E939B2A-6434-4241-B4F2-7B17ACC64E67.MP4",
     "media_type": "video",
     "source_filename": "8E939B2A-6434-4241-B4F2-7B17ACC64E67.MP4"
   },
@@ -716,7 +716,7 @@ export const UPLOADED_MEMORIES = [
     "title": "HOME VIDEO 20",
     "description": "A little piece of Clar's story.",
     "date_taken": null,
-    "photo_url": "https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/D1154B22-A8B8-477F-B1D6-735470C6337F.MP4",
+    "photo_url": "https://cdn.jsdelivr.net/gh/prishanaidu29-art/birthday-surprise@master/D1154B22-A8B8-477F-B1D6-735470C6337F.MP4",
     "media_type": "video",
     "source_filename": "D1154B22-A8B8-477F-B1D6-735470C6337F.MP4"
   },
