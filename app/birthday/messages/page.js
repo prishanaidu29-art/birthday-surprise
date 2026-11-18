@@ -4,6 +4,7 @@ import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {ArrowLeft,Mail,Star,Heart,Film,Inbox,Search,ChevronLeft,Paperclip,Gift} from 'lucide-react'
 import {useDarkMode} from '../../../hooks/useDarkMode'
+import {readHuntStage,advanceHuntStage} from '../../../components/HuntProgress'
 export const dynamic='force-dynamic'
 const LETTERS=[
   {
