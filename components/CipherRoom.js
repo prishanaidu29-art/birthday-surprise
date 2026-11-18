@@ -7,7 +7,7 @@ const cipher={A:'△',B:'○',C:'□',D:'◇',E:'☆',F:'✧',G:'☾',H:'☼',I:
 const encoded='⚙ ☆ ♡ ♡ / □ ♡ △ ☀ ♧ ⚑ ⚑ △ / ⚙ ☼ ☆ / ⚑ ⚙ △ ☀ / ♧ ⚑ / ♧ ♫ / ⚙ ☼ ☆ / ✧ ♧ ☀ ⚑ ⚙ / ☆ ☾ ☾'
 const solution='TELL CLARISSA THE STAR IS IN THE FIRST EGG'
 
-export default function CipherRoom({onSolved}){
+export default function CipherRoom({onSolved,onClose}){
  const [answer,setAnswer]=useState('')
  const [won,setWon]=useState(()=>{try{return scopedStorage.getItem('clar_cipher_solved')==='yes'}catch{return false}})
  const [hint,setHint]=useState(false)
@@ -23,7 +23,7 @@ export default function CipherRoom({onSolved}){
   }else setBad(true)
  }
  return <section className="cipher">
-  <header>☾ CIPHER_ROOM.exe <span>{won?'DECODED':'ENCRYPTED'}</span></header>
+  <header>☾ CIPHER_ROOM.exe <span style={{display:'flex',alignItems:'center',gap:10}}>{won?'DECODED':'ENCRYPTED'}{onClose&&<button type="button" aria-label="Close cipher box" onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.preventDefault();e.stopPropagation();onClose()}} style={{margin:0,minWidth:38,minHeight:34,padding:'4px 10px',fontSize:18,touchAction:'manipulation'}}>×</button>}</span></header>
   {stage<3?<div className="cipher-win"><strong>ACCESS LOCKED</strong><p>Restore VHS_02 first. This file will open when the memory tape is repaired.</p></div>:<>
    <h3>THE STATIC LETTER</h3>
    <p>Someone left a message in the desktop noise. Every symbol stands for one letter. Find the key and decode it.</p>
