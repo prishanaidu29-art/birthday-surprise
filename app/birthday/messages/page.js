@@ -135,7 +135,7 @@ export default function MessagesPage(){
  const shown=(folder==='secret'&&secretUnlocked?[LAITO]:MAILS).filter(m=>(folder==='inbox'?m.kind==='friend':folder==='family'?m.kind==='family':folder==='starred'?m.kind==='love':folder==='secret'?m.kind==='secret':true)).filter(m=>(m.name+' '+m.subject+' '+m.preview).toLowerCase().includes(search.toLowerCase()))
  const current=[...MAILS,LAITO].find(m=>m.id===selected)
  const decryptedCount=huntStage>=4?LETTERS.length:huntStage>=3?7:huntStage>=1?3:0
- const locked=m=>m.kind==='friend'&&Number(m.id.split('-')[1])>=decryptedCount
+ const locked=m=>(m.kind==='friend'||m.kind==='love')&&Number(m.id.split('-')[1])>=decryptedCount
  const choose=m=>{if(locked(m)){setDecryptOpen(true);return}setSelected(m.id);setRead(v=>v.includes(m.id)?v:[...v,m.id]);setMobileReading(true);if(reader.current)reader.current.scrollTop=0}
  const switchFolder=key=>{setFolder(key);setSearch('');setMobileReading(false);const next=MAILS.find(m=>key==='inbox'?m.kind==='friend':key==='family'?m.kind==='family':key==='starred'?m.kind==='love':key==='secret'?m.kind==='secret':true);if(next)setSelected(next.id)}
  if(!ready)return <main className="love-mail loading">OPENING LOVE_MAIL...</main>
