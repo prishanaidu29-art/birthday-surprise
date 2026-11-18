@@ -3,8 +3,8 @@ import {scopedStorage} from './ScopedSave'
 
 export const HUNT_STAGE_KEY='clar_hunt_stage_v2'
 export const HUNT_STAGES=[
- {id:0,title:'THE FIRST SIGNAL',description:'Recover the first three letters from the desktop cache.'},
- {id:1,title:'LOVE_MAIL SIGNAL',description:'Restore the first three letters.'},
+ {id:0,title:'DESKTOP CACHE',description:'Find the hidden pulse sequence.'},
+ {id:1,title:'LOVE_MAIL SIGNAL',description:'Use the recovered sequence to decrypt the first three letters.'},
  {id:2,title:'VHS RECOVERY',description:'Repair the corrupted memory tape.'},
  {id:3,title:'THE SECOND CIPHER',description:'Decode the message hidden in the static.'},
  {id:4,title:'VOICE EGG',description:'Find and finish the hidden voice recording.'},
