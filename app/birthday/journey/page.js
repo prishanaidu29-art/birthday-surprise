@@ -30,12 +30,18 @@ export default function JourneyPage() {
   const [progress, setProgress] = useState(0)
   const [selected, setSelected] = useState(null)
   const [globeError, setGlobeError] = useState(false)
+  const [triviaUnlocked, setTriviaUnlocked] = useState(false)
 
   useEffect(() => {
     if (sessionStorage.getItem('birthday_authenticated') !== 'true') {
       router.replace('/')
       return
     }
+    if (sessionStorage.getItem('clar_trivia_unlocked') !== 'true') {
+      setStage('locked')
+      return
+    }
+    setTriviaUnlocked(true)
     setStage('loading')
     const started = Date.now()
     const interval = window.setInterval(() => {
@@ -221,11 +227,12 @@ export default function JourneyPage() {
 
   const panel = { background: 'rgba(17,9,34,.89)', border: '1px solid #a66add', boxShadow: '0 0 25px #8a35cf45', color: '#f5e8ff' }
   if (stage === 'checking') return <main style={{ minHeight:'100vh', background:'#090414' }} />
+  if (stage === 'locked') return <main style={{ minHeight:'100vh', display:'grid', placeItems:'center', padding:24, background:'radial-gradient(ellipse at center,#34144e,#10071f 65%,#06040d)', color:'#f4d7ff', fontFamily:'monospace' }}><div style={{ width:'min(620px,100%)', ...panel, padding:'clamp(24px,5vw,48px)', textAlign:'center' }}><div style={{ color:'#86e5ef', letterSpacing:3, fontSize:12 }}>CLAR_OS // ARCHIVE LOCKED</div><div style={{ fontSize:54, margin:'22px 0' }}>🌐</div><h1 style={{ fontSize:'clamp(30px,6vw,54px)', margin:'0 0 12px', textShadow:'3px 3px #ac359c' }}>THE ORBITAL ARCHIVE</h1><p style={{ color:'#d8b9e3', lineHeight:1.8 }}>This signal is encrypted. Complete the 12-question trivia challenge and score at least 9 to unlock the globe.</p><Link href="/birthday/quiz" style={{ display:'inline-block', marginTop:20, padding:'14px 20px', background:'#d66ab6', color:'#170920', fontWeight:700, textDecoration:'none', boxShadow:'4px 4px #080411' }}>RETURN TO TRIVIA →</Link></div></main>
   if (stage === 'loading') return (
     <main style={{ minHeight:'100vh', display:'grid', placeItems:'center', padding:24, background:'radial-gradient(ellipse at center,#34144e,#10071f 65%,#06040d)', color:'#f4d7ff', fontFamily:'monospace' }}>
       <div style={{ width:'min(690px,100%)', ...panel, padding:'clamp(24px,5vw,50px)' }}>
         <div style={{ color:'#7de6ef', letterSpacing:3, fontSize:12 }}>CLAR_OS // NETWORK BOOT SEQUENCE</div>
-        <h1 style={{ fontSize:'clamp(28px,6vw,60px)', letterSpacing:2, margin:'25px 0 8px', textShadow:'3px 3px #b836a6' }}>CONNECTIONS.exe</h1>
+        <h1 style={{ fontSize:'clamp(28px,6vw,60px)', letterSpacing:2, margin:'25px 0 8px', textShadow:'3px 3px #b836a6' }}>THE ORBITAL ARCHIVE</h1>
         <p style={{ color:'#f5c4eb', fontSize:'clamp(16px,3vw,25px)', marginTop:20 }}>see how far away we are from each other :)</p>
         <div style={{ fontSize:48, textAlign:'center', margin:'32px 0', filter:'drop-shadow(0 0 18px #e18afa)' }}>✧ 🌐 ✧</div>
         <div style={{ height:14, border:'1px solid #b985ea', padding:2 }}>
@@ -241,11 +248,11 @@ export default function JourneyPage() {
     <main style={{ minHeight:'100vh', padding:'clamp(16px,3vw,38px)', background:'radial-gradient(ellipse at 50% 20%,#301347,#10091f 65%,#070410)', color:'#f3eaff', fontFamily:'monospace' }}>
       <div style={{ maxWidth:1200, margin:'0 auto' }}>
         <Link href="/birthday" style={{ display:'inline-flex', alignItems:'center', gap:8, color:'#e8c2ff', textDecoration:'none', marginBottom:24 }}><ArrowLeft size={18}/> BACK TO ARCHIVE</Link>
-        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:6, color:'#86dfea', letterSpacing:3, fontSize:12 }}><Globe2 size={17}/> CLAR_OS / NETWORK SYSTEM</div>
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:6, color:'#86dfea', letterSpacing:3, fontSize:12 }}><Globe2 size={17}/> CLAR_OS / SCAVENGER ARCHIVE</div>
         <h1 style={{ fontSize:'clamp(34px,6vw,68px)', lineHeight:1.1, margin:'12px 0', textShadow:'3px 3px #ac359c' }}>CONNECTIONS.exe</h1>
-        <p style={{ color:'#bda2d4', marginBottom:22 }}>Four locations. One home signal. Click a pin to see the distance from Clar.</p>
+        <p style={{ color:'#bda2d4', marginBottom:22 }}>One planet. Four signal points. Explore the globe and inspect each connection to recover the map.</p>
         <div style={{ ...panel, position:'relative', overflow:'hidden', borderRadius:4 }}>
-          <div style={{ padding:'12px 18px', background:'linear-gradient(90deg,#74359e,#42235f)', display:'flex', justifyContent:'space-between', fontSize:12, letterSpacing:1 }}><span>◉ EARTH_VIEWER.exe</span><span>● SIGNAL ACTIVE</span></div>
+          <div style={{ padding:'12px 18px', background:'linear-gradient(90deg,#74359e,#42235f)', display:'flex', justifyContent:'space-between', fontSize:12, letterSpacing:1 }}><span>◉ ORBITAL_MAP.exe</span><span>● SIGNAL ACTIVE</span></div>
           <div style={{ position:'relative', height:'min(66vw,580px)', minHeight:340, background:'radial-gradient(ellipse at center,#1e1744,#090615 70%)' }}>
             <div ref={mount} style={{ width:'100%', height:'100%' }} />
             {globeError && <div style={{ position:'absolute', inset:0, display:'grid', placeItems:'center', textAlign:'center', padding:24 }}>3D globe unavailable. Select a connection below to see its distance.</div>}
@@ -258,7 +265,7 @@ export default function JourneyPage() {
         {selected && <div role="dialog" aria-modal="true" aria-label="Connection details" style={{ position:'fixed', inset:0, zIndex:40, background:'#05020bd9', display:'grid', placeItems:'center', padding:20 }} onClick={() => setSelected(null)}>
           <div onClick={e => e.stopPropagation()} style={{ ...panel, width:'min(440px,100%)', padding:26, position:'relative' }}>
             <button aria-label="Close" onClick={() => setSelected(null)} style={{ position:'absolute', right:15, top:12, color:'white', background:'transparent', border:0, cursor:'pointer' }}><X size={20}/></button>
-            <div style={{ color:'#86e5ef', fontSize:12, letterSpacing:2 }}>CONNECTION ESTABLISHED</div>
+            <div style={{ color:'#86e5ef', fontSize:12, letterSpacing:2 }}>SIGNAL RECOVERED</div>
             <h2 style={{ fontSize:36, margin:'24px 0 6px' }}>{selected.name}</h2>
             <p style={{ color:'#bba6d2', display:'flex', alignItems:'center', gap:6 }}><MapPin size={16}/>{selected.city}</p>
             <hr style={{ border:'0', borderTop:'1px solid #674781', margin:'22px 0' }}/>
