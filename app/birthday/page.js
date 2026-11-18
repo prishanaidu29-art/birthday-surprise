@@ -140,10 +140,9 @@ export default function BirthdayPage() {
     if(cmd==='CLEAR'){setTerminalLog([]);setInvalidCommands(0);return}
     if(cmd==='EXIT'){setTerminalOpen(false);setInvalidCommands(0);return}
     if(cmd==='MEMORY'){setInvalidCommands(0);openProgram(sections[0]);return}
-    if(cmd==='CONNECTIONS'){setInvalidCommands(0);openProgram(sections[5]);return}
     const responses={
-      HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY CONNECTIONS NAIDU CLAR MAGGOT MOP SIKAMBING S**FOL BENEDICT CLEAR EXIT',
-      DIR:'MEMORIES MESSAGES SOUNDTRACK TRIVIA RPG CONNECTIONS // 0xSECRET',
+      HELP:'HELP DIR WHOAMI DATE TIME RECOVER HOME MEMORY NAIDU CLAR MAGGOT MOP SIKAMBING S**FOL BENEDICT CLEAR EXIT',
+      DIR:'MEMORIES MESSAGES SOUNDTRACK TRIVIA RPG // 0xSECRET',
       WHOAMI:'CLAR // ARCHIVE OWNER // ADMINISTRATOR: NAIDU',
       DATE:'19.11.2026 // ARCHIVE DATE',
       TIME:'Time passed. Some things stayed.',
@@ -215,7 +214,7 @@ export default function BirthdayPage() {
     {
       number: '04',
       title: 'TRIVIA',
-      sub: 'ten questions / one final score',
+      sub: '12 questions / one final score',
       link: '/birthday/quiz',
       icon: '❔',
       colour: 'yellow',
@@ -227,14 +226,6 @@ export default function BirthdayPage() {
       link: '/lost-save-file/chapter-one',
       icon: '🎮',
       colour: 'green',
-    },
-    {
-      number: '06',
-      title: 'ORBITAL ARCHIVE',
-      sub: 'four signals across one small world',
-      link: '/birthday/journey',
-      icon: '🌐',
-      colour: 'red',
     },
   ]
 
