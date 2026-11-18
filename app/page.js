@@ -69,8 +69,8 @@ const SECTIONS = [
   },
   {
     number: '06',
-    title: 'THE JOURNEY',
-    description: 'everywhere, somehow, led to here',
+    title: 'ORBITAL ARCHIVE',
+    description: 'four signals across one small world',
     link: '/birthday/journey',
     icon: '→',
   },
