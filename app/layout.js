@@ -1,8 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
-import DiscoveryTracker from '../components/DiscoveryTracker'
 import { DarkModeProvider } from '../hooks/useDarkMode'
-import ClientOnlyDarkModeToggle from '../components/ClientOnlyDarkModeToggle'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,8 +14,6 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <DarkModeProvider>
-          <ClientOnlyDarkModeToggle />
-          <DiscoveryTracker />
           {children}
         </DarkModeProvider>
       </body>

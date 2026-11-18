@@ -177,3 +177,26 @@
 @keyframes ch1PortraitBreath{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @media(max-width:700px){.ch1-cinematic-modal{height:min(86dvh,620px)!important}.ch1-cinematic-modal>.ch1-dialog{grid-template-columns:1fr!important;grid-template-rows:minmax(150px,1fr) auto!important;gap:0!important}.ch1-cinematic-modal .ch1-dialog>:first-child{height:min(37dvh,290px)!important;max-width:75%!important;justify-self:center!important}.ch1-cinematic-modal .ch1-dialog>div:last-child{margin:0!important;min-height:135px!important}.ch1-cinematic-modal .ch1-dialog p{font-size:15px!important}}
 @media(prefers-reduced-motion:reduce){.ch1-cinematic-modal .ch1-dialog>:first-child{animation:none!important}}
+
+/* Birthday reveal: pull the camera back, then let the whole town celebrate. */
+.ch1-root:has(.ch1-birthday-reveal) .ch1-stage canvas{animation:ch1-town-pullback 2.8s cubic-bezier(.16,.8,.25,1) both;transform-origin:center center}
+@keyframes ch1-town-pullback{0%{transform:scale(1.28);filter:brightness(.45) saturate(.5)}65%{transform:scale(.92);filter:brightness(1.18) saturate(1.2)}100%{transform:scale(1);filter:brightness(1) saturate(1)}}
+.ch1-birthday-reveal{animation:ch1-reveal-in .9s ease-out both;text-align:center}
+@keyframes ch1-reveal-in{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
+.ch1-party-panorama{position:relative;overflow:hidden;margin:16px 0;padding:18px 12px 20px;border:2px solid #e6bfd7;border-radius:14px;background:linear-gradient(#392a55,#67506e 58%,#9d7780 59%,#49394f);box-shadow:inset 0 0 45px #f4c8e033}
+.ch1-party-sky{font-size:26px;letter-spacing:9px;animation:ch1-float 2.5s ease-in-out infinite alternate}
+.ch1-party-banner{margin:12px auto 18px;width:fit-content;max-width:100%;padding:10px 20px;background:#f3d6bc;color:#4c3152;border:3px dashed #a66d91;font-weight:900;letter-spacing:2px;transform:rotate(-1deg);box-shadow:4px 5px #2a1c39}
+.ch1-party-friends{display:flex;justify-content:center;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.ch1-party-friend{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:88px;animation:ch1-friend-arrive .75s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--delay)}
+.ch1-party-friend .ch1-illustrated-portrait{width:84px;height:106px;flex:0 0 106px;border-width:2px;border-radius:9px;transform:scale(.72);transform-origin:bottom center;margin-bottom:-25px}
+.ch1-party-friend .ch1-illustrated-portrait img{width:100%;height:100%;object-fit:cover}
+.ch1-party-friend b{font-size:9px;color:#fff0df;letter-spacing:.04em}
+@keyframes ch1-friend-arrive{from{opacity:0;transform:translateY(75px)}to{opacity:1;transform:translateY(0)}}
+.ch1-party-cake{position:relative;margin:10px auto 0;font-size:64px;animation:ch1-cake-pop .8s .9s cubic-bezier(.2,1.5,.4,1) both}
+.ch1-party-cake span{position:absolute;top:9px;left:calc(50% - 43px);font-size:12px;letter-spacing:9px;color:#fff4b8;animation:ch1-float 1s ease-in-out infinite alternate}
+@keyframes ch1-cake-pop{from{opacity:0;transform:translateY(30px) scale(.5)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ch1-float{to{transform:translateY(-7px)}}
+.ch1-party-caption{font-size:12px!important;color:#ffe6d7;margin:10px auto 0;max-width:550px}
+.ch1-builder-letter{margin:18px auto 4px;padding:22px;max-width:590px;text-align:left;background:#f3e3c8;color:#443047;border:5px double #a77a8d;box-shadow:7px 8px #1c1429;border-radius:3px}
+.ch1-builder-letter small{color:#81516d;letter-spacing:1.5px}.ch1-builder-letter h3{color:#5c3a56;font-family:Georgia,serif;font-size:28px;margin:18px 0 8px}.ch1-builder-letter p{font-family:Georgia,serif;font-size:15px;line-height:1.85;color:#4b3b4b}.ch1-builder-letter .ch1-letter-signoff{font-style:italic;margin-top:18px}.ch1-builder-letter .ch1-letter-personal{text-align:right;font-size:12px;color:#81516d}
+@media(max-width:600px){.ch1-builder-letter{padding:15px}.ch1-party-friend{min-width:70px}.ch1-party-friend b{font-size:8px}}

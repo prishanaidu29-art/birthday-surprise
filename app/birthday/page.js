@@ -4,10 +4,11 @@ import {scopedStorage} from '../../components/ScopedSave';
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import {collectClue,readRecovery,hasClue} from '../../components/RecoveryConsole'
+import {collectClue} from '../../components/RecoveryConsole'
 import CipherRoom from '../../components/CipherRoom'
 import ClarJournal from '../../components/ClarJournal'
 import SaveManager from '../../components/SaveManager'
+import {readHuntStage,advanceHuntStage} from '../../components/HuntProgress'
 import { UPLOADED_MEMORIES } from './memories/uploadedMemories'
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +22,7 @@ export default function BirthdayPage() {
   const [journalOpen,setJournalOpen]=useState(false)
   const [hiddenRoomOpen,setHiddenRoomOpen]=useState(false)
   const [huntStage,setHuntStage]=useState(0)
-  useEffect(()=>{const sync=()=>{setHuntStage(readRecovery());try{setHiddenRoomOpen(scopedStorage.getItem('clar_hidden_room_open')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync)}},[])
+  useEffect(()=>{const sync=()=>{setHuntStage(readHuntStage());try{setHiddenRoomOpen(scopedStorage.getItem('clar_hidden_room_open')==='yes')}catch{}};sync();window.addEventListener('focus',sync);window.addEventListener('clar-recovery',sync);window.addEventListener('clar-hunt-progress',sync);return()=>{window.removeEventListener('focus',sync);window.removeEventListener('clar-recovery',sync);window.removeEventListener('clar-hunt-progress',sync)}},[])
   const [notesOpen, setNotesOpen] = useState(true)
   const [musicOpen, setMusicOpen] = useState(true)
   const [filesOpen, setFilesOpen] = useState(true)
@@ -124,7 +125,12 @@ export default function BirthdayPage() {
     }
     if(next===3||next===5||next===8)showChaos(reactions[id]?.[next===3?0:next===5?1:2]||'CLAR_OS IS JUDGING YOU.')
   }
-  const openProgram = (section) => { setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100) }
+  const openProgram = (section) => {
+    const required = section.title==='MEMORIES'?2:section.title==='TRIVIA'?5:section.title==='THE RPG'?6:0
+    if(readHuntStage()<required){showChaos('ACCESS LOCKED // COMPLETE THE PREVIOUS RECOVERY STEP FIRST.');return}
+    setLaunching(section); clearTimeout(launchTimerRef.current); launchTimerRef.current=setTimeout(()=>router.push(section.link),1100)
+  }
+  const openVideo = () => {if(readHuntStage()<3){showChaos('CIPHER_ROOM LOCKED // REPAIR VHS_02 FIRST.');return}setVideoOpen(true)}
   const resetDesktop = () => {beep('boot'); setNotesOpen(true);setMusicOpen(false);setFilesOpen(false);setPhotoOpen(false);setTerminalOpen(false);setVideoOpen(false);setJournalOpen(false);setWindowPositions({});setStartOpen(false) }
   useEffect(()=>()=>{clearTimeout(launchTimerRef.current);clearTimeout(fxTimerRef.current);clearTimeout(crashTimerRef.current);if(fxContextRef.current)fxContextRef.current.close().catch(()=>{})},[])
   useEffect(()=>{if(photoPaused||!photoOpen)return;const id=setInterval(()=>setPhotoIndex(i=>(i+1)%archivePhotos.length),4300);return()=>clearInterval(id)},[photoPaused,photoOpen])
@@ -251,6 +257,8 @@ export default function BirthdayPage() {
   }
 
   const openEgg = (egg) => {
+    if(egg==='one'&&readHuntStage()<4){showChaos('EASTER EGG #1 LOCKED // DECODE THE STATIC LETTER FIRST.');return}
+    if(egg==='two'&&readHuntStage()<6){showChaos('OPTIONAL SECRET LOCKED // FINISH THE RPG FIRST.');return}
     setEggOpen(egg)
   }
 
@@ -258,7 +266,7 @@ export default function BirthdayPage() {
     <main className="archive-screen">
       <SaveManager/>
       {journalOpen&&<div className="clar-journal-overlay" style={{position:'fixed',right:24,top:92,zIndex:10020,maxWidth:'calc(100vw - 32px)'}}><ClarJournal onClose={()=>setJournalOpen(false)}/></div>}
-      {clueVisible&&<div role="dialog" aria-label="Recovered system fragment" style={{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:10030,width:'min(380px,90vw)',padding:20,background:'#241334',border:'3px solid #e19bdc',color:'#fce2f8',boxShadow:'8px 8px #0b0616',fontFamily:'monospace'}}><div style={{display:'flex',justifyContent:'space-between'}}><strong style={{color:'#8ce9e8'}}>SIGNAL_01 // DESKTOP CACHE</strong><button onClick={()=>setClueVisible(false)} aria-label="Close fragment">×</button></div><p>Recovered pulse order:</p><p style={{fontSize:27,color:'#ffb4db'}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>This signal may restore a corrupted message.</p><button onClick={()=>{collectClue(0);setClueCollected(true)}} style={{padding:12,background:'#df8bc9',border:0,color:'#25102f',fontWeight:'bold'}}>{clueCollected?'✓ SAVED TO JOURNAL':'SAVE FRAGMENT TO JOURNAL'}</button></div>}
+      {clueVisible&&<div role="dialog" aria-label="Recovered system fragment" style={{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:10030,width:'min(380px,90vw)',padding:20,background:'#241334',border:'3px solid #e19bdc',color:'#fce2f8',boxShadow:'8px 8px #0b0616',fontFamily:'monospace'}}><div style={{display:'flex',justifyContent:'space-between'}}><strong style={{color:'#8ce9e8'}}>SIGNAL_01 // DESKTOP CACHE</strong><button onClick={()=>setClueVisible(false)} aria-label="Close fragment">×</button></div><p>Recovered pulse order:</p><p style={{fontSize:27,color:'#ffb4db'}}>◆ → ✳ → ✦</p><p style={{fontSize:12}}>Return to LOVE_MAIL. The first three letters are waiting to be decrypted.</p><button onClick={()=>{collectClue(0);advanceHuntStage(0,1);setHuntStage(readHuntStage());setClueCollected(true)}} style={{padding:12,background:'#df8bc9',border:0,color:'#25102f',fontWeight:'bold'}}>{clueCollected?'✓ SAVED TO JOURNAL':'SAVE FRAGMENT TO JOURNAL'}</button></div>}
 
       {/* =========================================================
           AUDIO
@@ -347,7 +355,7 @@ export default function BirthdayPage() {
             <span>SOUND</span>
           </div>
 
-          <div className="desktop-icon" onClick={() => setVideoOpen(true)}>
+          <div className="desktop-icon" onClick={openVideo}>
             <div className="icon-box blue">📼</div>
             <span>VIDEO</span>
           </div>
@@ -541,7 +549,7 @@ export default function BirthdayPage() {
             </div>
 
             <div className="archive-video-viewer"><CipherRoom onSolved={()=>{}}/>
-              {hiddenRoomOpen&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
+              {hiddenRoomOpen&&huntStage>=4&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
               {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
               <small>SP / VHS / TRACKING AUTO</small></>}
             </div>
@@ -651,7 +659,7 @@ export default function BirthdayPage() {
           </button>
 
           <button
-            onClick={() => setVideoOpen(true)}
+            onClick={openVideo}
             title="Video"
           >
             📼
@@ -680,7 +688,7 @@ export default function BirthdayPage() {
 
         <button
           className="egg-hotspot egg-one"
-          onClick={() => openEgg('one')}
+          onClick={() => openEgg('one')} disabled={huntStage<4}
           aria-label="Hidden archive object"
         >
           <span className="egg-glow" />
@@ -693,7 +701,7 @@ export default function BirthdayPage() {
 
         <button
           className="egg-hotspot egg-two"
-          onClick={() => openEgg('two')}
+          onClick={() => openEgg('two')} disabled={huntStage<6}
           aria-label="Hidden archive object"
         >
           <span className="egg-glow" />
@@ -808,7 +816,7 @@ export default function BirthdayPage() {
 
               {eggOpen === 'one' ? <>
                 <div className="audio-card"><div className="audio-icon">🎙</div><div><strong>SECRET VOICE MESSAGE</strong><small>from someone who knows you</small></div></div>
-                <audio controls preload="metadata" className="secret-audio" onEnded={()=>{try{scopedStorage.setItem("clar_hidden_room_open","yes");setHiddenRoomOpen(true);window.dispatchEvent(new Event("clar-recovery"))}catch{}}} src="https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a" />
+                <audio controls preload="metadata" className="secret-audio" onEnded={()=>{try{scopedStorage.setItem("clar_hidden_room_open","yes");advanceHuntStage(4,5);setHuntStage(readHuntStage());setHiddenRoomOpen(true);window.dispatchEvent(new Event("clar-recovery"))}catch{}}} src="https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/AUDIO-2026-11-04-09-54-23.m4a" />
                 <p className="audio-help">✦ A recovered recording from the archive.</p>
               </> : <>
                 <div className="audio-card" style={{borderColor:'#df9bd7'}}>
