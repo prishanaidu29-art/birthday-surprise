@@ -458,8 +458,13 @@ export default function HomePage() {
     showWindow(name)
   }
   function desktopIconClick(event,name,action){
-    event.stopPropagation();setSelectedIcon(name)
-    if(event.detail===0||event.detail>=2||window.matchMedia('(pointer: coarse)').matches)action()
+    event.preventDefault()
+    event.stopPropagation()
+    setSelectedIcon(name)
+    // Desktop shortcuts are deliberately single-activation on every device.
+    // A second click/double-click handler caused iPad Safari to launch the
+    // same cache/letter action twice and bounce between screens.
+    action()
   }
   function runCommand(raw){
     const command=raw.trim().toLowerCase()
@@ -1091,7 +1096,7 @@ export default function HomePage() {
                       ['💌','secret.txt','secret'],['💻','terminal.exe','terminal'],
                       ['🗑️','recycle bin','recycle']
                     ].map(([icon,label,action]) => (
-                      <button key={label} type="button" className={selectedIcon===label?'selected':''} onClick={event=>desktopIconClick(event,label,()=>openShortcut(action))} onDoubleClick={()=>openShortcut(action)} title="Double-click on computer, tap on mobile">
+                      <button key={label} type="button" className={selectedIcon===label?'selected':''} onClick={event=>desktopIconClick(event,label,()=>openShortcut(action))} title="Tap to open">
                         <span>{icon}</span>{label}
                       </button>
                     ))}
