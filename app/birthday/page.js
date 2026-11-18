@@ -548,7 +548,7 @@ export default function BirthdayPage() {
 
             </div>
 
-            <div className="archive-video-viewer"><CipherRoom onSolved={()=>{}}/>
+            <div className="archive-video-viewer"><CipherRoom onSolved={()=>{}} onClose={()=>setVideoOpen(false)}/>
               {hiddenRoomOpen&&huntStage>=4&&<><div className="archive-tapes">{archiveVideos.map((src,i)=><button key={src} className={videoIndex===i?'active':''} onClick={()=>{if(videoRef.current)videoRef.current.pause();setVideoIndex(i);setVideoMissing(false)}}>📼 TAPE_00{i+1}</button>)}</div>
               {!videoMissing ? <video key={archiveVideos[videoIndex]} ref={videoRef} src={archiveVideos[videoIndex]} controls playsInline onPlay={()=>{resumeAfterVideoRef.current=musicPlaying;if(audioRef.current)audioRef.current.pause();setMusicPlaying(false)}} onPause={()=>{if(resumeAfterVideoRef.current&&audioRef.current){audioRef.current.play().then(()=>setMusicPlaying(true)).catch(()=>{});resumeAfterVideoRef.current=false}}} onError={()=>setVideoMissing(true)}/> : <div className="archive-video-pending">NO SIGNAL // TAPE NOT INSERTED<br/><small>UPLOAD OLD CLIPS LATER</small></div>}
               <small>SP / VHS / TRACKING AUTO</small></>}
