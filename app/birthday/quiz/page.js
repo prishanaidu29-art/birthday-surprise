@@ -3,6 +3,7 @@ import React,{useCallback,useEffect,useRef,useState} from 'react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {ArrowLeft,RotateCcw,Sparkles,Volume2,VolumeX,Lightbulb} from 'lucide-react'
+import {readHuntStage,advanceHuntStage} from '../../../components/HuntProgress'
 
 const QUESTIONS = [
 {id:1,category:'CHEMISTRY',question:'Which molecule gives vinegar its characteristic sour taste?',options:['Citric acid','Acetic acid','Lactic acid','Oxalic acid'],correct:1,explanation:'Vinegar contains dilute acetic acid (CH3COOH).'},
@@ -24,6 +25,7 @@ const EMPTY={attempt:1,started:false,index:0,answers:{},finished:false,sound:tru
 export default function QuizPage(){
  const router=useRouter()
  const [ready,setReady]=useState(false)
+ const [blocked,setBlocked]=useState(false)
  const [game,setGame]=useState(EMPTY)
  const audioRef=useRef(null)
  const gameRef=useRef(game)
@@ -60,6 +62,7 @@ export default function QuizPage(){
 
  useEffect(()=>{
   if(sessionStorage.getItem('birthday_authenticated')!=='true'){router.replace('/');return}
+  if(readHuntStage()<4){setBlocked(true);setReady(true);return}
   try{
    const saved=localStorage.getItem(SAVE_KEY)
    if(saved){const parsed=JSON.parse(saved);setGame({...EMPTY,...parsed,answers:parsed.answers||{}})}
@@ -96,6 +99,7 @@ export default function QuizPage(){
  }
  const toggleSound=()=>{setGame(prev=>({...prev,sound:!prev.sound}));if(!game.sound)tone('click')}
  if(!ready)return <main style={{minHeight:'100vh',background:'#10091f'}}/>
+ if(blocked)return <main style={{minHeight:'100vh',display:'grid',placeItems:'center',padding:24,background:'#10091f',color:'#f8eaff',fontFamily:'monospace'}}><section style={{maxWidth:520,padding:30,border:'2px solid #b46fd3',background:'#1a102e',textAlign:'center'}}><h1>TRIVIA.exe // LOCKED</h1><p>Complete the voice recording recovery before this terminal will accept visitors.</p><Link href='/birthday' className='trivia-back'>RETURN TO CLAR_OS</Link></section></main>
 
  return <main className="trivia-page" onClickCapture={handleClickSound}>
  <div className="trivia-shell">
@@ -107,7 +111,7 @@ export default function QuizPage(){
  <h1>TRIVIA<span>.exe</span></h1><p className="trivia-sub">A tiny brain workout. Absolutely no pressure. Probably.</p>
  <section className="trivia-window"><div className="trivia-bar"><span>◉ QUESTION_TERMINAL</span><span>● ONLINE</span></div>
  {!game.started?<div className="trivia-body trivia-intro"><div className="trivia-emoji">✦ ? ✦</div><h2>{game.attempt===1?'READY, CLAR?':'BACK FOR MORE, CLAR?'}</h2><p>12 questions across chemistry, riddles, research basics and your favourite fictional universes. Score at least 9 to recover the next archive signal.</p><p className="trivia-note">CLEARANCE THRESHOLD: 09 / 12</p>{game.attempt>=2&&<p className="trivia-help-note">HELPING HAND PROTOCOL ENABLED // THE SYSTEM MAY INTERVENE.</p>}<button className="trivia-primary" onClick={start}>START TRIVIA →</button></div>
- :game.finished?<div className="trivia-body trivia-intro"><div className="trivia-emoji">✦ ★ ✦</div><div className="trivia-kicker">PLAYTHROUGH {game.attempt} COMPLETE</div><h2>{score} / {QUESTIONS.length}</h2><p>{unlocked?'SCAVENGER ACCESS GRANTED. YOUR NEXT CLUE IS WAITING.':'CLEARANCE DENIED. YOU NEED 9 / 12 TO CONTINUE.'}</p>{unlocked&&<button className="trivia-primary" onClick={()=>{tone('finish');sessionStorage.setItem('clar_trivia_unlocked','true');router.push('/lost-save-file/chapter-one')}}>ENTER THE SCAVENGER HUNT →</button>}<button className="trivia-primary" onClick={replay}><RotateCcw size={16}/> {unlocked?'PLAY AGAIN':'RETRY THE QUIZ'}</button><p className="trivia-note">PLAYTHROUGH HISTORY SAVED ON THIS DEVICE.</p></div>
+ :game.finished?<div className="trivia-body trivia-intro"><div className="trivia-emoji">✦ ★ ✦</div><div className="trivia-kicker">PLAYTHROUGH {game.attempt} COMPLETE</div><h2>{score} / {QUESTIONS.length}</h2><p>{unlocked?'SCAVENGER ACCESS GRANTED. YOUR NEXT CLUE IS WAITING.':'CLEARANCE DENIED. YOU NEED 9 / 12 TO CONTINUE.'}</p>{unlocked&&<button className="trivia-primary" onClick={()=>{tone('finish');advanceHuntStage(4,5);sessionStorage.setItem('clar_trivia_unlocked','true');router.push('/lost-save-file/chapter-one')}}>ENTER THE SCAVENGER HUNT →</button>}<button className="trivia-primary" onClick={replay}><RotateCcw size={16}/> {unlocked?'PLAY AGAIN':'RETRY THE QUIZ'}</button><p className="trivia-note">PLAYTHROUGH HISTORY SAVED ON THIS DEVICE.</p></div>
  :<div className="trivia-body"><div className="trivia-progress-row"><span>QUESTION {String(game.index+1).padStart(2,'0')} / {QUESTIONS.length}</span><span>RUN {game.attempt} · {Math.round(((game.index+(answered?1:0))/QUESTIONS.length)*100)}%</span></div><div className="trivia-progress"><div style={{width:((game.index+(answered?1:0))/QUESTIONS.length)*100+'%'}}/></div><div className="trivia-kicker">{q.category}</div><h2 className="trivia-question">{q.question}</h2><div className="trivia-options">{q.options.map((option,i)=><button key={i} disabled={answered} className={'trivia-option '+(answered&&picked===i?(picked===q.correct?'correct':'wrong'):'')} onClick={()=>answer(i)}><span>{String.fromCharCode(65+i)}</span>{option}</button>)}</div>
  {answered&&<div className={'trivia-feedback '+(picked===q.correct?'feedback-correct':'feedback-wrong')}>{picked===q.correct?<><Sparkles size={16}/><span>THAT'S IT. NICE ONE.</span></>:<><span className="feedback-mark">×</span><span>{helpingHand?<><strong>CLAR.EXE INTERVENTION // HELPING HAND ACTIVATED</strong><br/>Not quite. The correct answer is <strong>{q.options[q.correct]}</strong>.<br/>{q.explanation}</>:'NOT QUITE. THE SYSTEM IS NOT GIVING YOU THAT ONE. KEEP MOVING.'}</span></>}</div>}
  <div className="trivia-actions"><span>{answered?(picked===q.correct?'ANSWER ACCEPTED':helpingHand?'HINT PROTOCOL ACTIVE':'ANSWER LOCKED'):'CHOOSE ONE ANSWER'}</span><button className="trivia-primary" disabled={!answered} onClick={next}>{game.index===QUESTIONS.length-1?'SEE RESULTS →':'NEXT QUESTION →'}</button></div>
