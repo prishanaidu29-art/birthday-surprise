@@ -423,7 +423,7 @@ export default function BirthdayPage() {
             <div className="window-title yellow-title" onPointerDown={e=>startDrag(e,"notes")}>
               <span>notes.txt</span>
 
-              <button onClick={() => setNotesOpen(false)}>
+              <button type="button" aria-label="Close notes window" onPointerDown={e=>e.stopPropagation()} onClick={e=>{e.preventDefault();e.stopPropagation();setNotesOpen(false)}} style={{position:"relative",zIndex:5,minWidth:40,minHeight:36,touchAction:"manipulation",pointerEvents:"auto"}}>
                 ×
               </button>
             </div>
