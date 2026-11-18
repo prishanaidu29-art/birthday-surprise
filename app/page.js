@@ -67,13 +67,6 @@ const SECTIONS = [
     link: '/lost-save-file/chapter-one',
     icon: '✦',
   },
-  {
-    number: '06',
-    title: 'ORBITAL ARCHIVE',
-    description: 'four signals across one small world',
-    link: '/birthday/journey',
-    icon: '→',
-  },
 ]
 
 export default function HomePage() {
