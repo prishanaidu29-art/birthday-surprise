@@ -29,18 +29,7 @@ const ALL_ARCHIVE_PHOTOS = [
 
 // A stable shuffle gives the viewer a mixed camera roll without changing
 // order between renders or dropping any of the original images.
-function seededShuffle(items) {
-  const shuffled = [...items]
-  let seed = 2204
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    seed = (seed * 9301 + 49297) % 233280
-    const swapIndex = Math.floor((seed / 233280) * (index + 1))
-    ;[shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]]
-  }
-  return shuffled
-}
-
-const PHOTOS = seededShuffle(ALL_ARCHIVE_PHOTOS)
+const PHOTOS = ALL_ARCHIVE_PHOTOS
 
 const SECTIONS = [
   {
@@ -103,7 +92,7 @@ export default function HomePage() {
   const [musicPlaying, setMusicPlaying] = useState(false)
   const [recordingPlaying, setRecordingPlaying] = useState(false)
   const [recordingError, setRecordingError] = useState('')
-  const [photoIndex, setPhotoIndex] = useState(0)
+  const [photoIndex, setPhotoIndex] = useState(0)\n  const [photoOrder, setPhotoOrder] = useState(() => PHOTOS.map((_, index) => index))
   const [photoDataGlitch, setPhotoDataGlitch] = useState(false)
   const photoGlitchTimerRef = useRef(null)
   const glitchAudioRef = useRef(null)
@@ -186,6 +175,20 @@ export default function HomePage() {
     }
   }, [screen, router])
 
+  // Randomize the full camera roll after mount so each visit gets a
+  // genuinely different order without causing a server/client mismatch.
+  useEffect(() => {
+    setPhotoOrder((previous) => {
+      const shuffled = [...previous]
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      return shuffled
+    })
+    setPhotoIndex(0)
+  }, [])
+
   /* ---------------------------------------------------------
      PHOTO APP SLIDESHOW
   --------------------------------------------------------- */
@@ -194,11 +197,11 @@ export default function HomePage() {
     if (screen !== 'boot' || photoPaused || photoDataGlitch) return
 
     const timer = setInterval(() => {
-      setPhotoIndex((previous) => (previous + 1) % PHOTOS.length)
+      setPhotoIndex((previous) => (previous + 1) % photoOrder.length)
     }, 2600)
 
     return () => clearInterval(timer)
-  }, [screen, photoPaused, photoDataGlitch])
+  }, [screen, photoPaused, photoDataGlitch, photoOrder.length])
 
   /* ---------------------------------------------------------
      MUSIC
@@ -483,7 +486,7 @@ export default function HomePage() {
 
   function changePhoto(step) {
     setPhotoPaused(true)
-    setPhotoIndex((previous) => (previous + step + PHOTOS.length) % PHOTOS.length)
+    setPhotoIndex((previous) => (previous + step + photoOrder.length) % photoOrder.length)
     focusWindow('photos')
   }
 
@@ -803,7 +806,7 @@ export default function HomePage() {
 
                       <div className={`photo-main ${photoDataGlitch ? "data-glitch-active" : ""}`}>
                         <img
-                          src={PHOTOS[photoIndex]}
+                          src={PHOTOS[photoOrder[photoIndex]]}
                           alt={`Clar memory ${photoIndex + 1}`}
                           onError={(event) => {
                             event.currentTarget.style.display = 'none'
@@ -835,7 +838,7 @@ export default function HomePage() {
                         </div>
 
                         <div className="photo-counter">
-                          {String(photoIndex + 1).padStart(2, '0')} / {String(PHOTOS.length).padStart(2, '0')}
+                          {String(photoIndex + 1).padStart(2, '0')} / {String(photoOrder.length).padStart(2, '0')}
                         </div>
                       </div>
 
@@ -847,7 +850,7 @@ export default function HomePage() {
                       </div>
 
                       <div className="photo-thumbnails">
-                        {PHOTOS.map((_, index) => (
+                        {photoOrder.map((photoNumber, index) => (
                           <button
                             key={index}
                             className={
