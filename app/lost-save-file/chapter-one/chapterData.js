@@ -12,7 +12,8 @@ export const WORLD_OBJECTS=[
  {id:'mirror',x:310,y:1160,r:35,label:'THE CORNER MIRROR'},
  {id:'exit',x:1990,y:785,r:48,label:'TOWN EXIT'},
  {id:'fountain',x:1120,y:1030,r:66,label:'STILLWATER FOUNTAIN'},
- {id:'sign',x:850,y:680,r:28,label:'TOWN NOTICE'}
+ {id:'sign',x:850,y:680,r:28,label:'TOWN NOTICE'},
+ {id:'echo',x:1460,y:1010,r:48,label:'THE STATIC SHADOW'}
 ];
 export const NPCS={
  jack:{name:'JACKSEPTICEYE',shop:'bakery',x:600,y:385,color:'#426a4e',hair:'#5c392b',skin:'#e5b49c',outfit:'#2e664e',expression:'energetic'},
@@ -26,7 +27,7 @@ export const INTRO={
  jay:["YO, CLAR! Nah, nah, tell me you heard that record scratch by itself. Bro, I almost launched myself over the counter.","This is some horror-game bullshit. You already know the second I see a locked back room, I'm checking it.","I saw something shiny in the bushes outside. You find it, I'll stand here and pretend I'm not scared. Deal?"],
  sherlock:["Clar. You're late. Not chronologically; the clock is incapable of that. I mean you missed the interesting part.","Eleven nineteen. Every reflection disagrees with it, yet the mechanism makes a sound. An apparent contradiction. Finally, something useful.","A key has been hidden, very deliberately. Find it. And do try not to mistake coincidence for evidence."],
  will:["Clar? Sorry. I heard footsteps, but they kept stopping when I stopped breathing.","Something's moving between the arcade cabinets. It doesn't want to be seen. I can tell from where it chooses to stand.","Here. Take my flashlight. Please. I'd rather you see it before it sees you."],
- house:["Oh good. Another volunteer for the world's least competent escape room. And nobody even bothered to provide snacks.","Diagnosis: reality's broken. Differential includes mass hallucination, terrible writing, and an idiot with a clock obsession.","Take the headphones, journal and wooden sword. One detects noise, one records evidence, and one is medically useless. Guess which one's your favourite."]
+ house:["Oh good. Another volunteer for the world's least competent escape room. And nobody even bothered to provide snacks.","Diagnosis: reality's broken. Differential includes mass hallucination, terrible writing, and an idiot with a clock obsession.","Take the headphones, journal and wooden sword. The headphones catch sounds the town is hiding. The sword can cut through things that aren't quite real. The journal keeps you from forgetting what you find. One of these is medically useless. Guess which one's your favourite."]
 };
 export const EXTRA={
  jack:["You're doing great, Clar. Seriously. We can be scared and still get the hell out of here.","That envelope's important. I can feel it. Or maybe that's the haunted croissants. Hard to say."],
@@ -41,4 +42,4 @@ export const RIDDLE={
  correct:1,
  hint:'THE MIRROR WHISPERS: “The clock can stop, the lights can die, and the roads can loop. But the thing that opens the way is not time or a key. It is what you choose to remember.”'
 };
-export const START={mapVersion:2,x:1120,y:890,facing:'down',scene:'town',letter:false,key:false,letterGiven:false,keyGiven:false,backRoom:false,mirror:false,clock:false,gear:{flashlight:false,headphones:false,journal:false,sword:false},flashOn:false,headphonesOn:false,swordOn:false,notes:[],talked:[],gateSolved:false,complete:false};
+export const START={mapVersion:2,x:1120,y:890,facing:'down',scene:'town',letter:false,key:false,letterGiven:false,keyGiven:false,backRoom:false,mirror:false,clock:false,gear:{flashlight:false,headphones:false,journal:false,sword:false},flashOn:false,headphonesOn:false,swordOn:false,notes:[],talked:[],gateSolved:false,shadowCleared:false,celebration:false,complete:false};
