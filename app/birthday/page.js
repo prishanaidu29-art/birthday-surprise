@@ -258,6 +258,7 @@ export default function BirthdayPage() {
 
   const openEgg = (egg) => {
     if(egg==='one'&&readHuntStage()<4){showChaos('EASTER EGG #1 LOCKED // DECODE THE STATIC LETTER FIRST.');return}
+    if(egg==='two'&&readHuntStage()<6){showChaos('OPTIONAL SECRET LOCKED // FINISH THE RPG FIRST.');return}
     setEggOpen(egg)
   }
 
@@ -700,7 +701,7 @@ export default function BirthdayPage() {
 
         <button
           className="egg-hotspot egg-two"
-          onClick={() => openEgg('two')}
+          onClick={() => openEgg('two')} disabled={huntStage<6}
           aria-label="Hidden archive object"
         >
           <span className="egg-glow" />
