@@ -184,9 +184,8 @@ export default function MemoriesPage() {
     const player = videoRef.current;
     if (!player) return;
     player.muted = isMuted;
-    if (isPlaying) player.play().catch(() => setIsPlaying(false));
-    else player.pause();
-  }, [isPlaying, isMuted, videoIndex, currentVideo?.photo_url]);
+    if (!isPlaying) player.pause();
+  }, [isMuted, isPlaying, videoIndex, currentVideo?.photo_url]);
 
   /* ---------------------------- EFFECTS ---------------------------------- */
 
@@ -358,12 +357,21 @@ export default function MemoriesPage() {
   /* ------------------------------------------------------------------------ */
 
   const togglePlayback = useCallback(() => {
-    if (archiveVideos.length) setIsPlaying(current => !current);
+    const player = videoRef.current;
+    if (!player || !archiveVideos.length) return;
+    if (player.paused) {
+      player.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    } else {
+      player.pause();
+      setIsPlaying(false);
+    }
   }, [archiveVideos.length]);
   const changeVideo = useCallback((direction) => {
     if (!archiveVideos.length) return;
+    if (videoRef.current) videoRef.current.pause();
+    setIsPlaying(false);
+    setVideoProgress(0);
     setVideoIndex(i => (i + direction + archiveVideos.length) % archiveVideos.length);
-    setIsPlaying(true);
   }, [archiveVideos.length]);
 
   const nextMemory = useCallback(() => {
@@ -785,7 +793,7 @@ export default function MemoriesPage() {
           <div className="vhs-player">
             <div className="player-screen">
               {currentVideo ? (
-                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline webkit-playsinline="true" disablePictureInPicture controlsList="nodownload nofullscreen noremoteplayback" preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); }} onTimeUpdate={e => { const v=e.currentTarget; setVideoProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:2,pointerEvents:"none"}} />
+                <video ref={videoRef} key={currentVideo.id} src={currentVideo.photo_url} playsInline webkit-playsinline="true" controls preload="metadata" muted={isMuted} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onEnded={() => { setIsPlaying(false); setVideoProgress(0); }} onError={() => setIsPlaying(false)} onTimeUpdate={e => { const v=e.currentTarget; setVideoProgress(v.duration ? (v.currentTime / v.duration) * 100 : 0); }} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#080610",zIndex:4,pointerEvents:"auto",touchAction:"manipulation"}} />
               ) : <div style={{position:"absolute",inset:0,display:"grid",placeItems:"center",color:"#f8c4e7",fontSize:12,letterSpacing:2}}>NO VIDEO TAPES FOUND</div>}
               <div className="screen-grid" style={{pointerEvents:"none",zIndex:3}} />
               {currentVideo && <div style={{position:"absolute",left:0,bottom:0,height:3,width:`${videoProgress}%`,background:"#ff68bd",zIndex:5,pointerEvents:"none",boxShadow:"0 0 9px #ff68bd"}} />}
