@@ -6,13 +6,6 @@ import { useAuth } from '../../../hooks/useAuth'
 
 export const dynamic = 'force-dynamic'
 
-const FALLBACK = [
-  {id:1,title:'Dilaw',artist:'Maki',album:'Dilaw',duration:'3:12',mood:'Uplifting',reason:'This song reminds me of the golden moments we share together.'},
-  {id:2,title:'Off My Face',artist:'Justin Bieber',album:'Justice',duration:'2:36',mood:'Romantic',reason:'Some songs just feel like being completely happy around someone.'},
-  {id:3,title:'With You',artist:'Chris Brown',album:'Exclusive',duration:'4:12',mood:'Romantic',reason:'For all the little moments that somehow became memories.'},
-  {id:4,title:"Enchanted (Taylor's Version)",artist:'Taylor Swift',album:"Speak Now (Taylor's Version)",duration:'5:53',mood:'Dreamy',reason:'A song for those unforgettable first meetings.'},
-  {id:5,title:'Beautiful In White',artist:'Shane Filan',album:'Love Always',duration:'3:52',mood:'Romantic',reason:'For the memories we have and the ones still waiting to happen.'},
-]
 const LOCAL_TRACKS = [
   {id:'local-01',title:'In My Room',artist:'Insane Clown Posse',album:'Insane Clown Posse',mood:'Late night',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Insane%20Clown%20Posse%20-%20In%20My%20Room.mp3'},
   {id:'local-02',title:'Boogie Woogie Wu',artist:'Insane Clown Posse',album:'Insane Clown Posse',mood:'Chaotic',reason:'A new addition to Clar’s personal soundtrack.',audio_url:'https://raw.githubusercontent.com/prishanaidu29-art/birthday-surprise/master/Boogie%2BWoogie%2BWu%20%5BNHZe09hCpHk%5D.mp3'},
@@ -36,7 +29,7 @@ const getVideoId = (url) => {
 }
 export default function PlaylistPage() {
   const { isAuthenticated, isLoading } = useAuth()
-  const [songs,setSongs] = useState([...FALLBACK, ...LOCAL_TRACKS])
+  const [songs,setSongs] = useState([...LOCAL_TRACKS])
   const [index,setIndex] = useState(0)
   const [playing,setPlaying] = useState(false)
   const [ready,setReady] = useState(false)
@@ -48,7 +41,7 @@ export default function PlaylistPage() {
       .then(data=>{if(Array.isArray(data.tracks)&&data.tracks.length)setSongs([...data.tracks, ...LOCAL_TRACKS])})
       .catch(()=>{}).finally(()=>setReady(true))
   },[isAuthenticated])
-  const song=songs[index]||FALLBACK[0]
+  const song=songs[index]||LOCAL_TRACKS[0]
   const videoId=song.audio_url ? '' : getVideoId(index===0 ? TEST_YOUTUBE_URL : song.youtube_url)
   const choose=(n)=>{if(audioRef.current){audioRef.current.pause();audioRef.current.currentTime=0}setIndex((n+songs.length)%songs.length);setPlaying(false);setAudioError('')}
   const togglePlayback=()=>{if(song.audio_url&&audioRef.current){if(playing){audioRef.current.pause();setPlaying(false)}else{audioRef.current.play().then(()=>setPlaying(true)).catch(()=>{setPlaying(false);setAudioError('This audio file could not be played. Try again in a moment.')})}}else setPlaying(!playing)}
