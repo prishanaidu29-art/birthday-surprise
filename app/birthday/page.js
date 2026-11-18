@@ -230,8 +230,8 @@ export default function BirthdayPage() {
     },
     {
       number: '06',
-      title: 'CONNECTIONS',
-      sub: 'everywhere somehow led to here',
+      title: 'ORBITAL ARCHIVE',
+      sub: 'four signals across one small world',
       link: '/birthday/journey',
       icon: '🌐',
       colour: 'red',
