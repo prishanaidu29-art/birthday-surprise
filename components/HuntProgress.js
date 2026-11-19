@@ -1,5 +1,12 @@
 'use client'
-import {scopedStorage} from './ScopedSave'
+import {saveMode} from './ScopedSave'
+
+// Hunt progress belongs to this browser tab, not the shared browser profile.
+// sessionStorage survives refreshes but gives each newly opened tab a clean save.
+const tabStorage={
+ getItem(key){if(typeof window==='undefined')return null;return window.sessionStorage.getItem('claros_tab_'+saveMode()+'_'+key)},
+ setItem(key,value){if(typeof window==='undefined')return;window.sessionStorage.setItem('claros_tab_'+saveMode()+'_'+key,String(value))},
+}
 
 export const HUNT_STAGE_KEY='clar_hunt_stage_v2'
 export const HUNT_STAGES=[
@@ -13,13 +20,13 @@ export const HUNT_STAGES=[
 ]
 export function readHuntStage(){
  if(typeof window==='undefined')return 0
- try{return Math.max(0,Math.min(6,Number(scopedStorage.getItem(HUNT_STAGE_KEY)||0)))}catch{return 0}
+ try{return Math.max(0,Math.min(6,Number(tabStorage.getItem(HUNT_STAGE_KEY)||0)))}catch{return 0}
 }
 export function setHuntStage(stage){
  try{
   const next=Math.max(0,Math.min(6,Number(stage)||0))
   const current=readHuntStage()
-  if(next>current)scopedStorage.setItem(HUNT_STAGE_KEY,String(next))
+  if(next>current)tabStorage.setItem(HUNT_STAGE_KEY,String(next))
   window.dispatchEvent(new Event('clar-hunt-progress'))
   return Math.max(current,next)
  }catch{return readHuntStage()}
